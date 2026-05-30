@@ -369,7 +369,19 @@
           <!-- Quick Templates -->
           <div class="glass-card rounded-2xl p-6 border border-white/10">
             <span class="block text-xs font-bold uppercase tracking-wider text-neon-purple mb-4">Quick Message Templates</span>
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <button type="button" onclick="applyEngagementTemplate('buy_alert')" class="eng-btn py-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 hover:border-emerald-500/50 text-emerald-400 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
+                <span class="text-xl">🟢</span><span>Buy Alert</span>
+              </button>
+              <button type="button" onclick="applyEngagementTemplate('sell_alert')" class="eng-btn py-3 rounded-xl border border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/10 hover:border-rose-500/50 text-rose-400 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
+                <span class="text-xl">🔴</span><span>Sell Alert</span>
+              </button>
+              <button type="button" onclick="applyEngagementTemplate('tp_hit')" class="eng-btn py-3 rounded-xl border border-amber-400/20 bg-amber-400/5 hover:bg-amber-400/10 hover:border-amber-400/50 text-amber-300 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
+                <span class="text-xl">🎯</span><span>TP Hit!</span>
+              </button>
+              <button type="button" onclick="applyEngagementTemplate('stop_out')" class="eng-btn py-3 rounded-xl border border-gray-500/20 bg-gray-500/5 hover:bg-gray-500/10 hover:border-gray-500/50 text-gray-400 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
+                <span class="text-xl">🛑</span><span>Stop Out</span>
+              </button>
               <button type="button" onclick="applyEngagementTemplate('morning')" class="eng-btn py-3 rounded-xl border border-amber-400/20 bg-amber-400/5 hover:bg-amber-400/10 hover:border-amber-400/50 text-amber-300 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
                 <span class="text-xl">🌅</span><span>Good Morning</span>
               </button>
@@ -385,7 +397,7 @@
               <button type="button" onclick="applyEngagementTemplate('weekend')" class="eng-btn py-3 rounded-xl border border-rose-400/20 bg-rose-400/5 hover:bg-rose-400/10 hover:border-rose-400/50 text-rose-400 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
                 <span class="text-xl">😎</span><span>Weekend Recap</span>
               </button>
-              <button type="button" onclick="applyEngagementTemplate('custom')" class="eng-btn py-3 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 hover:border-white/30 text-gray-400 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
+              <button type="button" onclick="applyEngagementTemplate('custom')" class="eng-btn py-3 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 hover:border-white/30 text-gray-400 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1 col-span-2 sm:col-span-2">
                 <span class="text-xl">✍️</span><span>Custom</span>
               </button>
             </div>
@@ -399,13 +411,16 @@
             <div>
               <label class="block text-[11px] font-semibold text-gray-400 mb-2">Quick Emojis</label>
               <div class="flex flex-wrap gap-2">
+                <button type="button" onclick="insertEngEmoji('🟢')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Buy">🟢</button>
+                <button type="button" onclick="insertEngEmoji('🔴')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Sell">🔴</button>
+                <button type="button" onclick="insertEngEmoji('🛑')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Stop">🛑</button>
+                <button type="button" onclick="insertEngEmoji('🎯')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Target">🎯</button>
                 <button type="button" onclick="insertEngEmoji('🔥')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Fire">🔥</button>
                 <button type="button" onclick="insertEngEmoji('💎')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Diamond">💎</button>
                 <button type="button" onclick="insertEngEmoji('📊')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Chart">📊</button>
                 <button type="button" onclick="insertEngEmoji('🚀')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Rocket">🚀</button>
                 <button type="button" onclick="insertEngEmoji('💰')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Money">💰</button>
                 <button type="button" onclick="insertEngEmoji('⚡')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Lightning">⚡</button>
-                <button type="button" onclick="insertEngEmoji('🎯')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Target">🎯</button>
                 <button type="button" onclick="insertEngEmoji('✅')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Check">✅</button>
                 <button type="button" onclick="insertEngEmoji('👀')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Eyes">👀</button>
                 <button type="button" onclick="insertEngEmoji('🙋')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Raise Hand">🙋</button>
@@ -881,6 +896,10 @@
     // --- ENGAGEMENT PANEL LOGIC ---
 
     const engTemplates = {
+      buy_alert: "🟢 *BUY SIGNAL TRIGGERED!* 🟢\n\nPrice action is looking bullish. I'm taking a long position here. 🚀💸\n\nWho's riding this wave with me?",
+      sell_alert: "🔴 *SELL SIGNAL TRIGGERED!* 🔴\n\nBears are in control. I'm taking a short position right now. 📉🩸\n\nSecure your entries!",
+      tp_hit: "🎯 *TAKE PROFIT HIT!* 🎯\n\nBoom! Target smashed. Secured the bag! 💰🍾\n\nHope you all caught this massive move. Move stops to breakeven if you're holding runners!",
+      stop_out: "🛑 *STOP LOSS HIT!* 🛑\n\nMarket reversed on us this time. That's part of the game. We manage risk and move to the next setup. Stay disciplined! 🛡️💯",
       morning: "🌅 *Good morning team!* \n\nHope everyone had a great rest. Let's conquer the markets today! 💰💪\n\nWho is ready for today's setups?",
       ready: "🔔 *Are you ready?*\n\nI'm scanning the charts right now. High probability setups forming... 👀📊\n\nMake sure your notifications are ON! 🚀",
       session: "📈 *London/NY Session Open!*\n\nVolume is kicking in. Let's stick to our trading plan and execute with discipline. 🎯💎\n\nWhat pairs are you watching?",
