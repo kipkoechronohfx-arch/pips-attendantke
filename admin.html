@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Broadcaster Dashboard | Pips_attendant</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png">
+  
+  <!-- Tailwind CSS via Browser CDN -->
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    @theme {
+      --color-dark-navy: #0a0f1c;
+      --color-neon-blue: #00f0ff;
+      --color-neon-purple: #b026ff;
+      --font-inter: "Inter", "Poppins", sans-serif;
+    }
+  </style>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Feather Icons -->
+  <script src="https://unpkg.com/feather-icons"></script>
+
+  <style>
+    body {
+      background-color: #0a0f1c;
+      font-family: 'Inter', sans-serif;
+    }
+    .glass-card {
+      backdrop-filter: blur(16px);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px border;
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+    .neon-glow {
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.2), 0 0 30px rgba(176, 38, 255, 0.1);
+    }
+    .neon-border:focus {
+      outline: none;
+      border-color: rgba(0, 240, 255, 0.6);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+    }
+    /* Telegram Mock Styles */
+    .tg-bubble {
+      background: #182533;
+      border-radius: 12px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 240, 255, 0.3);
+    }
+  </style>
+</head>
+<body class="text-white min-h-screen relative overflow-x-hidden pt-6 pb-12 selection:bg-neon-purple/30">
+
+  <!-- Background Glow Effects -->
+  <div class="fixed inset-0 z-0 pointer-events-none opacity-40">
+    <div class="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-neon-purple/20 blur-[120px] rounded-full mix-blend-screen"></div>
+    <div class="absolute bottom-[-10%] left-[-10%] w-[50%] h-[40%] bg-neon-blue/20 blur-[120px] rounded-full mix-blend-screen"></div>
+  </div>
+
+  <main class="container mx-auto px-4 max-w-5xl relative z-10">
+    
+    <!-- Top Navigation / Header -->
+    <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-8 pb-4 border-b border-white/10">
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="flex items-center justify-center w-10 h-10 rounded-full border border-white/10 bg-white/5 hover:bg-neon-blue/10 hover:border-neon-blue transition duration-300">
+          <i data-feather="arrow-left" class="w-5 h-5 text-gray-400 hover:text-neon-blue"></i>
+        </a>
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-gray-400">
+            Broadcaster Console
+          </h1>
+          <p class="text-neon-blue text-xs font-semibold tracking-wider uppercase">Pips_attendant Trading Hub</p>
+        </div>
+      </div>
+      
+      <!-- Status Badge & Settings Toggle -->
+      <div id="statusSection" class="hidden flex items-center gap-3">
+        <span class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          Ready to Post
+        </span>
+        <button onclick="resetCredentials()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:border-rose-500/50 hover:bg-rose-500/10 hover:text-rose-400 text-gray-400 text-xs font-medium transition duration-300 cursor-pointer">
+          <i data-feather="settings" class="w-3.5 h-3.5"></i>
+          Setup Credentials
+        </button>
+      </div>
+    </div>
+
+    <!-- 🔒 1. SETUP / CONFIGURATION PANEL (Shows if no localStorage) -->
+    <div id="setupPanel" class="max-w-md mx-auto my-12 hidden">
+      <div class="glass-card rounded-2xl p-8 neon-glow border border-white/10">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-12 h-12 rounded-xl bg-neon-blue/10 flex items-center justify-center border border-neon-blue/30 text-neon-blue shadow-[0_0_15px_rgba(0,240,255,0.15)]">
+            <i data-feather="lock" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold">Secure Setup</h2>
+            <p class="text-xs text-gray-400">Credentials are stored locally in your browser.</p>
+          </div>
+        </div>
+
+        <form id="setupForm" onsubmit="saveCredentials(event)" class="space-y-5">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">Telegram Bot API Token</label>
+            <div class="relative">
+              <input type="password" id="botToken" required placeholder="123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ"
+                class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-neon-blue/60 focus:outline-none focus:shadow-[0_0_10px_rgba(0,240,255,0.25)] transition duration-200" />
+            </div>
+            <p class="text-[10px] text-gray-500 mt-1">Get this by messaging <a href="https://t.me/BotFather" target="_blank" class="text-neon-blue hover:underline">@BotFather</a> and executing /newbot.</p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">Telegram Channel/Chat ID</label>
+            <input type="text" id="chatId" required placeholder="@yourchannel or -100123456789"
+              class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-neon-blue/60 focus:outline-none focus:shadow-[0_0_10px_rgba(0,240,255,0.25)] transition duration-200" />
+            <p class="text-[10px] text-gray-500 mt-1">Add your bot as an administrator to your channel so it can post.</p>
+          </div>
+
+          <button type="submit" class="w-full py-3.5 rounded-xl font-bold text-sm bg-gradient-to-r from-neon-purple to-neon-blue hover:brightness-110 active:scale-98 transition duration-200 shadow-lg cursor-pointer">
+            Save Setup &amp; Access Dashboard
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 📊 2. MAIN BROADCAST INTERACTIVE DASHBOARD -->
+    <div id="dashboardPanel" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- Left Column: Form Controls (7 cols) -->
+      <form id="broadcastForm" onsubmit="sendBroadcast(event)" class="lg:col-span-7 space-y-6">
+        
+        <!-- Template Selection -->
+        <div class="glass-card rounded-2xl p-6 border border-white/10">
+          <span class="block text-xs font-bold uppercase tracking-wider text-neon-blue mb-4">1. Select Signal Template</span>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <button type="button" onclick="applyTemplate('buy')" class="template-btn py-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 hover:border-emerald-500/50 text-emerald-400 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
+              <span class="text-lg">📈</span>
+              <span>Buy Signal</span>
+            </button>
+            <button type="button" onclick="applyTemplate('sell')" class="template-btn py-3 rounded-xl border border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/10 hover:border-rose-500/50 text-rose-400 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
+              <span class="text-lg">📉</span>
+              <span>Sell Signal</span>
+            </button>
+            <button type="button" onclick="applyTemplate('analysis')" class="template-btn py-3 rounded-xl border border-neon-blue/20 bg-neon-blue/5 hover:bg-neon-blue/10 hover:border-neon-blue/50 text-neon-blue text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
+              <span class="text-lg">📊</span>
+              <span>Analysis Only</span>
+            </button>
+            <button type="button" onclick="applyTemplate('update')" class="template-btn py-3 rounded-xl border border-amber-500/20 bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/50 text-amber-400 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
+              <span class="text-lg">⚠️</span>
+              <span>Trade Update</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Signal Form Parameters -->
+        <div class="glass-card rounded-2xl p-6 border border-white/10 space-y-4">
+          <span class="block text-xs font-bold uppercase tracking-wider text-neon-blue mb-2">2. Signal Details</span>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-[11px] font-semibold text-gray-400 mb-1">Asset Pair</label>
+              <select id="assetPair" onchange="handlePairChange()" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-neon-blue/50 focus:outline-none transition">
+                <option value="XAUUSD">GOLD (XAUUSD)</option>
+                <option value="EURUSD">EURUSD</option>
+                <option value="GBPUSD">GBPUSD</option>
+                <option value="USDJPY">USDJPY</option>
+                <option value="GBPJPY">GBPJPY</option>
+                <option value="AUDUSD">AUDUSD</option>
+                <option value="CUSTOM">Custom Pair...</option>
+              </select>
+            </div>
+            
+            <div id="customPairWrapper" class="hidden">
+              <label class="block text-[11px] font-semibold text-gray-400 mb-1">Custom Symbol</label>
+              <input type="text" id="customPair" oninput="updateLivePreview()" placeholder="e.g. US30"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-neon-blue/50 focus:outline-none transition" />
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-semibold text-gray-400 mb-1">Order Execution Type</label>
+              <select id="execType" onchange="updateLivePreview()" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-neon-blue/50 focus:outline-none transition">
+                <option value="MARKET EXECUTION">Market Execution</option>
+                <option value="BUY LIMIT">Buy Limit</option>
+                <option value="SELL LIMIT">Sell Limit</option>
+                <option value="BUY STOP">Buy Stop</option>
+                <option value="SELL STOP">Sell Stop</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div>
+              <label class="block text-[11px] font-semibold text-gray-400 mb-1">Entry Price</label>
+              <input type="text" id="entryPrice" oninput="updateLivePreview()" placeholder="e.g. 2035.50"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-neon-blue/50 focus:outline-none transition" />
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-semibold text-gray-400 mb-1 text-rose-400">Stop Loss (SL)</label>
+              <input type="text" id="stopLoss" oninput="updateLivePreview()" placeholder="e.g. 2025.00"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-neon-blue/50 focus:outline-none transition" />
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-semibold text-gray-400 mb-1 text-emerald-400">Take Profit 1 (TP1)</label>
+              <input type="text" id="tp1" oninput="updateLivePreview()" placeholder="e.g. 2045.00"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-neon-blue/50 focus:outline-none transition" />
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-semibold text-gray-400 mb-1 text-emerald-400">Take Profit 2 (TP2)</label>
+              <input type="text" id="tp2" oninput="updateLivePreview()" placeholder="e.g. 2055.00"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-neon-blue/50 focus:outline-none transition" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-[11px] font-semibold text-gray-400 mb-1 text-emerald-400">Take Profit 3 (TP3)</label>
+              <input type="text" id="tp3" oninput="updateLivePreview()" placeholder="e.g. 2065.00"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-neon-blue/50 focus:outline-none transition" />
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-semibold text-gray-400 mb-1">TradingView Chart Link</label>
+              <input type="url" id="tvChart" oninput="updateLivePreview()" placeholder="TradingView chart link"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-neon-blue/50 focus:outline-none transition" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-semibold text-gray-400 mb-1">Analysis Commentary / Notes</label>
+            <textarea id="notes" oninput="updateLivePreview()" rows="3" placeholder="Explain the setup rationale (e.g. 4H demand zone holding nicely...)"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-neon-blue/50 focus:outline-none transition resize-none"></textarea>
+          </div>
+        </div>
+
+        <!-- Submit Button Panel -->
+        <div class="flex items-center justify-between gap-4">
+          <div id="feedbackMsg" class="text-xs font-semibold"></div>
+          
+          <button type="submit" id="broadcastBtn" class="relative overflow-hidden group py-4 px-8 rounded-xl font-bold bg-gradient-to-r from-neon-purple to-neon-blue hover:brightness-110 hover:shadow-[0_0_20px_rgba(0,240,255,0.4)] active:scale-95 transition duration-300 flex items-center gap-2.5 shadow-lg cursor-pointer">
+            <i data-feather="send" class="w-4 h-4 text-white"></i>
+            <span>Broadcast Signal</span>
+          </button>
+        </div>
+      </form>
+
+      <!-- Right Column: Live Telegram Preview (5 cols) -->
+      <div class="lg:col-span-5 flex flex-col gap-4">
+        
+        <!-- Live Preview Header Title -->
+        <div class="flex items-center gap-2">
+          <i data-feather="eye" class="w-4 h-4 text-neon-blue"></i>
+          <span class="text-xs font-bold uppercase tracking-wider text-neon-blue">Live Telegram Preview</span>
+        </div>
+
+        <!-- Simulated Telegram Device Card -->
+        <div class="glass-card rounded-2xl border border-white/10 overflow-hidden flex flex-col flex-1 min-h-[500px]">
+          
+          <!-- Telegram Mock Chat Header -->
+          <div class="bg-[#17212b] px-4 py-3 flex items-center justify-between border-b border-white/5">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full overflow-hidden bg-dark-navy border border-white/10 flex items-center justify-center">
+                <img src="avatar.png?v=2" alt="Avatar" class="w-full h-full object-cover">
+              </div>
+              <div>
+                <h3 class="text-sm font-bold text-white tracking-wide">Pips_attendant</h3>
+                <p class="text-[10px] text-gray-400">5,419 subscribers</p>
+              </div>
+            </div>
+            <i data-feather="more-vertical" class="w-5 h-5 text-gray-400"></i>
+          </div>
+
+          <!-- Telegram Chat Window Area -->
+          <div class="flex-1 bg-[#0e1621] p-4 overflow-y-auto flex flex-col justify-end space-y-4">
+            
+            <!-- Message Bubble Container -->
+            <div class="tg-bubble self-start max-w-[85%] p-3.5 relative select-none">
+              
+              <!-- Author name in channel -->
+              <span class="block text-sky-400 text-xs font-bold mb-1">Pips_attendant</span>
+
+              <!-- Live Formatted Text Container -->
+              <div id="tgPreviewContent" class="text-sm text-gray-100 whitespace-pre-wrap font-sans leading-relaxed break-words">
+                <!-- Preview updates dynamically -->
+              </div>
+              
+              <!-- Message Details / Meta info -->
+              <div class="flex items-center justify-end gap-1.5 mt-2.5 text-[9px] text-gray-400 font-medium">
+                <span id="tgTime">12:00 PM</span>
+                <i data-feather="check" class="w-3 h-3 text-emerald-400"></i>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom placeholder of Device -->
+          <div class="bg-[#17212b] py-3 text-center border-t border-white/5">
+            <p class="text-xs text-sky-400 font-semibold uppercase tracking-wider">Mute / Unmute</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Success Toast Modal -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="flex items-center gap-3 px-5 py-4 rounded-xl glass-card border border-emerald-500/30 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+      <div class="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
+        <i data-feather="check" class="w-5 h-5"></i>
+      </div>
+      <div>
+        <p class="text-sm font-bold text-white">Broadcast Successful!</p>
+        <p class="text-[10px] text-gray-400">Your analysis has been shared on Telegram.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Scripts for Admin Operations -->
+  <script>
+    // State variables
+    let currentTemplate = 'buy';
+    
+    window.addEventListener('DOMContentLoaded', () => {
+      // Set current mock time
+      updateMockTime();
+      setInterval(updateMockTime, 60000);
+      
+      // Initialize feather icons
+      feather.replace();
+      
+      // Check for credentials
+      checkCredentials();
+      
+      // Select standard gold pair
+      document.getElementById('tvChart').value = 'https://www.tradingview.com/chart/ppghN3kx/';
+      
+      // Apply initial template values
+      applyTemplate('buy');
+    });
+
+    function updateMockTime() {
+      const now = new Date();
+      let hours = now.getHours();
+      let minutes = now.getMinutes();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12; // the hour '0' should be '12'
+      minutes = minutes < 10 ? '0' + minutes : minutes;
+      const strTime = hours + ':' + minutes + ' ' + ampm;
+      const tgTimeEl = document.getElementById('tgTime');
+      if (tgTimeEl) tgTimeEl.innerText = strTime;
+    }
+
+    function checkCredentials() {
+      const token = localStorage.getItem('pa_bot_token');
+      const chat = localStorage.getItem('pa_chat_id');
+      
+      if (token && chat) {
+        document.getElementById('setupPanel').classList.add('hidden');
+        document.getElementById('dashboardPanel').classList.remove('hidden');
+        document.getElementById('statusSection').classList.remove('hidden');
+        updateLivePreview();
+      } else {
+        document.getElementById('setupPanel').classList.remove('hidden');
+        document.getElementById('dashboardPanel').classList.add('hidden');
+        document.getElementById('statusSection').classList.add('hidden');
+      }
+    }
+
+    function saveCredentials(e) {
+      e.preventDefault();
+      const token = document.getElementById('botToken').value.trim();
+      const chat = document.getElementById('chatId').value.trim();
+      
+      if (token && chat) {
+        localStorage.setItem('pa_bot_token', token);
+        localStorage.setItem('pa_chat_id', chat);
+        checkCredentials();
+      }
+    }
+
+    function resetCredentials() {
+      if (confirm('Are you sure you want to change your Telegram credentials?')) {
+        localStorage.removeItem('pa_bot_token');
+        localStorage.removeItem('pa_chat_id');
+        checkCredentials();
+      }
+    }
+
+    function handlePairChange() {
+      const select = document.getElementById('assetPair');
+      const customWrapper = document.getElementById('customPairWrapper');
+      
+      if (select.value === 'CUSTOM') {
+        customWrapper.classList.remove('hidden');
+      } else {
+        customWrapper.classList.add('hidden');
+      }
+      updateLivePreview();
+    }
+
+    function applyTemplate(type) {
+      currentTemplate = type;
+      
+      // Update visual template buttons active state
+      const btns = document.querySelectorAll('.template-btn');
+      btns.forEach(btn => {
+        btn.classList.remove('border-neon-purple', 'bg-neon-purple/10', 'text-white');
+      });
+      
+      // Highlight correct active button
+      let activeBtnIndex = 0;
+      if (type === 'buy') activeBtnIndex = 0;
+      else if (type === 'sell') activeBtnIndex = 1;
+      else if (type === 'analysis') activeBtnIndex = 2;
+      else if (type === 'update') activeBtnIndex = 3;
+      
+      btns[activeBtnIndex].classList.add('border-neon-purple', 'bg-neon-purple/10', 'text-white');
+      
+      // Fields to clear or set defaults
+      const entryPrice = document.getElementById('entryPrice');
+      const stopLoss = document.getElementById('stopLoss');
+      const tp1 = document.getElementById('tp1');
+      const tp2 = document.getElementById('tp2');
+      const tp3 = document.getElementById('tp3');
+      const execType = document.getElementById('execType');
+      const notes = document.getElementById('notes');
+
+      if (type === 'buy') {
+        execType.disabled = false;
+        execType.value = 'MARKET EXECUTION';
+        entryPrice.placeholder = 'e.g. 2035.50';
+        stopLoss.placeholder = 'e.g. 2025.00';
+        tp1.placeholder = 'e.g. 2045.00';
+        tp2.placeholder = 'e.g. 2055.00';
+        tp3.placeholder = 'e.g. 2065.00';
+        notes.placeholder = 'Reason for the buy signal...';
+      } else if (type === 'sell') {
+        execType.disabled = false;
+        execType.value = 'MARKET EXECUTION';
+        entryPrice.placeholder = 'e.g. 2050.00';
+        stopLoss.placeholder = 'e.g. 2060.00';
+        tp1.placeholder = 'e.g. 2040.00';
+        tp2.placeholder = 'e.g. 2030.00';
+        tp3.placeholder = 'e.g. 2020.00';
+        notes.placeholder = 'Reason for the sell signal...';
+      } else if (type === 'analysis') {
+        execType.value = 'MARKET EXECUTION';
+        execType.disabled = true;
+        entryPrice.value = '';
+        stopLoss.value = '';
+        tp1.value = '';
+        tp2.value = '';
+        tp3.value = '';
+        notes.placeholder = 'Share details about current price action, setups or trend direction...';
+      } else if (type === 'update') {
+        execType.value = 'MARKET EXECUTION';
+        execType.disabled = true;
+        entryPrice.value = '';
+        stopLoss.value = '';
+        tp1.value = '';
+        tp2.value = '';
+        tp3.value = '';
+        notes.placeholder = 'Update on active trade: e.g. XAUUSD Buy running +50 pips, move SL to entry!';
+      }
+
+      updateLivePreview();
+    }
+
+    function buildTelegramMessageText() {
+      // Gather inputs
+      const pairSelect = document.getElementById('assetPair').value;
+      const customPair = document.getElementById('customPair').value.toUpperCase().trim();
+      const symbol = pairSelect === 'CUSTOM' ? (customPair || 'CUSTOM') : pairSelect;
+      
+      const exec = document.getElementById('execType').value;
+      const entry = document.getElementById('entryPrice').value.trim();
+      const sl = document.getElementById('stopLoss').value.trim();
+      const t1 = document.getElementById('tp1').value.trim();
+      const t2 = document.getElementById('tp2').value.trim();
+      const t3 = document.getElementById('tp3').value.trim();
+      const tvLink = document.getElementById('tvChart').value.trim();
+      const commentary = document.getElementById('notes').value.trim();
+      
+      let message = "";
+      
+      if (currentTemplate === 'buy') {
+        message += `📈 *TRADE SIGNAL: BUY*\n`;
+        message += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+        message += `🔥 *Symbol:* ${symbol}\n`;
+        message += `💡 *Type:* ${exec}\n`;
+        if (entry) message += `📥 *Entry Zone:* ${entry}\n`;
+        message += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+        if (sl) message += `🛡️ *Stop Loss:* ${sl}\n`;
+        if (t1) message += `🎯 *Take Profit 1:* ${t1}\n`;
+        if (t2) message += `🎯 *Take Profit 2:* ${t2}\n`;
+        if (t3) message += `🎯 *Take Profit 3:* ${t3}\n`;
+        message += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+      } else if (currentTemplate === 'sell') {
+        message += `📉 *TRADE SIGNAL: SELL*\n`;
+        message += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+        message += `🔥 *Symbol:* ${symbol}\n`;
+        message += `💡 *Type:* ${exec}\n`;
+        if (entry) message += `📥 *Entry Zone:* ${entry}\n`;
+        message += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+        if (sl) message += `🛡️ *Stop Loss:* ${sl}\n`;
+        if (t1) message += `🎯 *Take Profit 1:* ${t1}\n`;
+        if (t2) message += `🎯 *Take Profit 2:* ${t2}\n`;
+        if (t3) message += `🎯 *Take Profit 3:* ${t3}\n`;
+        message += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+      } else if (currentTemplate === 'analysis') {
+        message += `📊 *MARKET ANALYSIS: ${symbol}*\n`;
+        message += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+      } else if (currentTemplate === 'update') {
+        message += `⚠️ *TRADE UPDATE: ${symbol}*\n`;
+        message += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+      }
+
+      if (commentary) {
+        message += `💬 *Analysis / Notes:*\n${commentary}\n\n`;
+      }
+
+      if (tvLink) {
+        message += `🌐 *Live Chart Drawing:*\n${tvLink}\n\n`;
+      }
+
+      message += `💎 _Trading involves risk. Practice proper risk management!_`;
+      return message;
+    }
+
+    function updateLivePreview() {
+      const plainText = buildTelegramMessageText();
+      
+      // Formatting preview for HTML display
+      // Convert markdown-like symbols to HTML spans
+      let htmlText = plainText
+        .replace(/\*(.*?)\*/g, '<strong class="font-bold text-white">$1</strong>')
+        .replace(/_(.*?)_/g, '<em class="italic text-gray-300">$1</em>');
+
+      document.getElementById('tgPreviewContent').innerHTML = htmlText;
+    }
+
+    async function sendBroadcast(e) {
+      e.preventDefault();
+      
+      const token = localStorage.getItem('pa_bot_token');
+      const chat = localStorage.getItem('pa_chat_id');
+      
+      if (!token || !chat) {
+        alert('Credentials missing! Please setup settings first.');
+        checkCredentials();
+        return;
+      }
+
+      const messageText = buildTelegramMessageText();
+      const broadcastBtn = document.getElementById('broadcastBtn');
+      const feedbackMsg = document.getElementById('feedbackMsg');
+      
+      // Visual Loading State
+      broadcastBtn.disabled = true;
+      broadcastBtn.classList.add('opacity-75', 'cursor-not-allowed');
+      feedbackMsg.innerHTML = '<span class="text-neon-blue animate-pulse flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-neon-blue animate-ping"></span>Broadcasting...</span>';
+      
+      const url = `https://api.telegram.org/bot${token}/sendMessage`;
+      
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            chat_id: chat,
+            text: messageText,
+            parse_mode: 'Markdown'
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.ok) {
+          showToast();
+          feedbackMsg.innerHTML = '<span class="text-emerald-400">Broadcast sent successfully!</span>';
+          
+          // Clear signal values (except defaults)
+          document.getElementById('entryPrice').value = '';
+          document.getElementById('stopLoss').value = '';
+          document.getElementById('tp1').value = '';
+          document.getElementById('tp2').value = '';
+          document.getElementById('tp3').value = '';
+          document.getElementById('notes').value = '';
+          updateLivePreview();
+        } else {
+          feedbackMsg.innerHTML = `<span class="text-rose-400">Error: ${data.description || 'Failed to send'}</span>`;
+        }
+      } catch (err) {
+        console.error(err);
+        feedbackMsg.innerHTML = '<span class="text-rose-400">Network Error. Check connection.</span>';
+      } finally {
+        broadcastBtn.disabled = false;
+        broadcastBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+      }
+    }
+
+    function showToast() {
+      const toast = document.getElementById('toast');
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 4000);
+    }
+  </script>
+</body>
+</html>
