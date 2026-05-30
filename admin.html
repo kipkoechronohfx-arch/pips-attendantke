@@ -206,7 +206,7 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-[11px] font-semibold text-gray-400 mb-1">Entry Price</label>
               <input type="text" id="entryPrice" oninput="updateLivePreview()" placeholder="e.g. 2035.50"
@@ -218,7 +218,9 @@
               <input type="text" id="stopLoss" oninput="updateLivePreview()" placeholder="e.g. 2025.00"
                 class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-neon-blue/50 focus:outline-none transition" />
             </div>
+          </div>
 
+          <div class="grid grid-cols-3 gap-4">
             <div>
               <label class="block text-[11px] font-semibold text-gray-400 mb-1 text-emerald-400">Take Profit 1 (TP1)</label>
               <input type="text" id="tp1" oninput="updateLivePreview()" placeholder="e.g. 2045.00"
@@ -230,18 +232,10 @@
               <input type="text" id="tp2" oninput="updateLivePreview()" placeholder="e.g. 2055.00"
                 class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-neon-blue/50 focus:outline-none transition" />
             </div>
-          </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block text-[11px] font-semibold text-gray-400 mb-1 text-emerald-400">Take Profit 3 (TP3)</label>
               <input type="text" id="tp3" oninput="updateLivePreview()" placeholder="e.g. 2065.00"
-                class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-neon-blue/50 focus:outline-none transition" />
-            </div>
-
-            <div>
-              <label class="block text-[11px] font-semibold text-gray-400 mb-1">TradingView Chart Link (Optional)</label>
-              <input type="url" id="tvChart" oninput="updateLivePreview()" placeholder="TradingView chart link"
                 class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-neon-blue/50 focus:outline-none transition" />
             </div>
           </div>
@@ -372,10 +366,6 @@
       
       // Check for credentials
       checkCredentials();
-      
-      // Select standard gold pair
-      document.getElementById('tvChart').value = 'https://www.tradingview.com/chart/ppghN3kx/';
-      
       // Apply initial template values
       applyTemplate('buy');
     });
@@ -521,7 +511,6 @@
       const t1 = document.getElementById('tp1').value.trim();
       const t2 = document.getElementById('tp2').value.trim();
       const t3 = document.getElementById('tp3').value.trim();
-      const tvLink = document.getElementById('tvChart').value.trim();
       const commentary = document.getElementById('notes').value.trim();
       
       let message = "";
@@ -560,10 +549,6 @@
 
       if (commentary) {
         message += `💬 *Analysis / Notes:*\n${commentary}\n\n`;
-      }
-
-      if (tvLink) {
-        message += `🌐 *Live Chart Drawing:*\n${tvLink}\n\n`;
       }
 
       message += `💎 _Trading involves risk. Practice proper risk management!_`;
