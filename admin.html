@@ -240,9 +240,25 @@
             </div>
 
             <div>
-              <label class="block text-[11px] font-semibold text-gray-400 mb-1">TradingView Chart Link</label>
+              <label class="block text-[11px] font-semibold text-gray-400 mb-1">TradingView Chart Link (Optional)</label>
               <input type="url" id="tvChart" oninput="updateLivePreview()" placeholder="TradingView chart link"
                 class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-neon-blue/50 focus:outline-none transition" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 gap-4">
+            <div>
+              <label class="block text-[11px] font-semibold text-gray-400 mb-1">📸 Upload Chart Screenshot (Optional)</label>
+              <div class="flex items-center gap-2">
+                <input type="file" id="chartImage" accept="image/*" onchange="handleImageUpload(event)" class="hidden" />
+                <label for="chartImage" class="flex-1 px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-gray-400 text-sm hover:border-neon-blue hover:text-white transition duration-200 cursor-pointer flex items-center gap-2">
+                  <i data-feather="image" class="w-4 h-4"></i>
+                  <span id="fileNameLabel">Choose Image...</span>
+                </label>
+                <button type="button" id="clearImageBtn" onclick="clearImage()" class="hidden px-3.5 py-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 hover:border-rose-500 text-rose-400 hover:text-white transition duration-200 cursor-pointer">
+                  <i data-feather="x" class="w-4 h-4"></i>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -291,16 +307,21 @@
           </div>
 
           <!-- Telegram Chat Window Area -->
-          <div class="flex-1 bg-[#0e1621] p-4 overflow-y-auto flex flex-col justify-end space-y-4">
+          <div class="flex-1 bg-[#0e1621] p-4 overflow-y-auto flex flex-col justify-end space-y-4 font-sans">
             
             <!-- Message Bubble Container -->
-            <div class="tg-bubble self-start max-w-[85%] p-3.5 relative select-none">
+            <div id="tgBubble" class="tg-bubble self-start max-w-[85%] p-3 relative select-none">
               
               <!-- Author name in channel -->
-              <span class="block text-sky-400 text-xs font-bold mb-1">Pips_attendant</span>
+              <span class="block text-sky-400 text-xs font-bold mb-1.5">Pips_attendant</span>
+
+              <!-- Simulated image preview -->
+              <div id="tgImagePreviewContainer" class="hidden mb-2 rounded-lg overflow-hidden border border-white/5 bg-black/20 max-h-48 flex items-center justify-center">
+                <img id="tgImagePreview" src="" alt="Chart Screenshot" class="max-w-full max-h-48 object-cover w-full" />
+              </div>
 
               <!-- Live Formatted Text Container -->
-              <div id="tgPreviewContent" class="text-sm text-gray-100 whitespace-pre-wrap font-sans leading-relaxed break-words">
+              <div id="tgPreviewContent" class="text-sm text-gray-100 whitespace-pre-wrap leading-relaxed break-words">
                 <!-- Preview updates dynamically -->
               </div>
               
@@ -582,19 +603,34 @@
       broadcastBtn.classList.add('opacity-75', 'cursor-not-allowed');
       feedbackMsg.innerHTML = '<span class="text-neon-blue animate-pulse flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-neon-blue animate-ping"></span>Broadcasting...</span>';
       
-      const url = `https://api.telegram.org/bot${token}/sendMessage`;
+      const imageInput = document.getElementById('chartImage');
+      const hasImage = imageInput.files && imageInput.files[0];
+      const endpoint = hasImage ? 'sendPhoto' : 'sendMessage';
+      const url = `https://api.telegram.org/bot${token}/${endpoint}`;
+      
+      let body;
+      let headers = {};
+      
+      if (hasImage) {
+        body = new FormData();
+        body.append('chat_id', chat);
+        body.append('photo', imageInput.files[0]);
+        body.append('caption', messageText);
+        body.append('parse_mode', 'Markdown');
+      } else {
+        headers['Content-Type'] = 'application/json';
+        body = JSON.stringify({
+          chat_id: chat,
+          text: messageText,
+          parse_mode: 'Markdown'
+        });
+      }
       
       try {
         const response = await fetch(url, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            chat_id: chat,
-            text: messageText,
-            parse_mode: 'Markdown'
-          })
+          headers: headers,
+          body: body
         });
         
         const data = await response.json();
@@ -610,6 +646,7 @@
           document.getElementById('tp2').value = '';
           document.getElementById('tp3').value = '';
           document.getElementById('notes').value = '';
+          clearImage();
           updateLivePreview();
         } else {
           feedbackMsg.innerHTML = `<span class="text-rose-400">Error: ${data.description || 'Failed to send'}</span>`;
@@ -621,6 +658,37 @@
         broadcastBtn.disabled = false;
         broadcastBtn.classList.remove('opacity-75', 'cursor-not-allowed');
       }
+    }
+
+    function handleImageUpload(e) {
+      const file = e.target.files[0];
+      const fileNameLabel = document.getElementById('fileNameLabel');
+      const clearBtn = document.getElementById('clearImageBtn');
+      const tgImgContainer = document.getElementById('tgImagePreviewContainer');
+      const tgImg = document.getElementById('tgImagePreview');
+      
+      if (file) {
+        fileNameLabel.innerText = file.name;
+        clearBtn.classList.remove('hidden');
+        
+        // Show in simulated preview
+        const objectUrl = URL.createObjectURL(file);
+        tgImg.src = objectUrl;
+        tgImgContainer.classList.remove('hidden');
+      }
+    }
+
+    function clearImage() {
+      const fileInput = document.getElementById('chartImage');
+      fileInput.value = '';
+      
+      document.getElementById('fileNameLabel').innerText = 'Choose Image...';
+      document.getElementById('clearImageBtn').classList.add('hidden');
+      
+      const tgImgContainer = document.getElementById('tgImagePreviewContainer');
+      const tgImg = document.getElementById('tgImagePreview');
+      tgImg.src = '';
+      tgImgContainer.classList.add('hidden');
     }
 
     function showToast() {
