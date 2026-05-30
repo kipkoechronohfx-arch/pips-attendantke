@@ -347,6 +347,176 @@
         </div>
       </div>
     </div>
+
+    <!-- 💬 3. COMMUNITY ENGAGEMENT SECTION -->
+    <div id="engagementPanel" class="hidden mt-12">
+
+      <!-- Section Divider -->
+      <div class="flex items-center gap-4 mb-6">
+        <div class="flex-1 h-px bg-white/10"></div>
+        <div class="flex items-center gap-2 px-4 py-2 rounded-full border border-neon-purple/30 bg-neon-purple/5">
+          <span class="w-2 h-2 rounded-full bg-neon-purple animate-pulse"></span>
+          <span class="text-neon-purple text-xs font-bold tracking-[0.2em] uppercase">Community Engagement</span>
+        </div>
+        <div class="flex-1 h-px bg-white/10"></div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+        <!-- Left Column: Engagement Composer -->
+        <div class="lg:col-span-7 space-y-5">
+
+          <!-- Quick Templates -->
+          <div class="glass-card rounded-2xl p-6 border border-white/10">
+            <span class="block text-xs font-bold uppercase tracking-wider text-neon-purple mb-4">Quick Message Templates</span>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <button type="button" onclick="applyEngagementTemplate('morning')" class="eng-btn py-3 rounded-xl border border-amber-400/20 bg-amber-400/5 hover:bg-amber-400/10 hover:border-amber-400/50 text-amber-300 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
+                <span class="text-xl">🌅</span><span>Good Morning</span>
+              </button>
+              <button type="button" onclick="applyEngagementTemplate('ready')" class="eng-btn py-3 rounded-xl border border-neon-blue/20 bg-neon-blue/5 hover:bg-neon-blue/10 hover:border-neon-blue/50 text-neon-blue text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
+                <span class="text-xl">🔔</span><span>Are You Ready?</span>
+              </button>
+              <button type="button" onclick="applyEngagementTemplate('session')" class="eng-btn py-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 hover:border-emerald-500/50 text-emerald-400 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
+                <span class="text-xl">📈</span><span>Session Open</span>
+              </button>
+              <button type="button" onclick="applyEngagementTemplate('mindset')" class="eng-btn py-3 rounded-xl border border-violet-500/20 bg-violet-500/5 hover:bg-violet-500/10 hover:border-violet-500/50 text-violet-400 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
+                <span class="text-xl">🧠</span><span>Trader Mindset</span>
+              </button>
+              <button type="button" onclick="applyEngagementTemplate('weekend')" class="eng-btn py-3 rounded-xl border border-rose-400/20 bg-rose-400/5 hover:bg-rose-400/10 hover:border-rose-400/50 text-rose-400 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
+                <span class="text-xl">😎</span><span>Weekend Recap</span>
+              </button>
+              <button type="button" onclick="applyEngagementTemplate('custom')" class="eng-btn py-3 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 hover:border-white/30 text-gray-400 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
+                <span class="text-xl">✍️</span><span>Custom</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Message Composer -->
+          <div class="glass-card rounded-2xl p-6 border border-white/10 space-y-4">
+            <span class="block text-xs font-bold uppercase tracking-wider text-neon-purple mb-2">Compose Message</span>
+
+            <!-- Quick Emoji Palette -->
+            <div>
+              <label class="block text-[11px] font-semibold text-gray-400 mb-2">Quick Emojis</label>
+              <div class="flex flex-wrap gap-2">
+                <button type="button" onclick="insertEngEmoji('🔥')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Fire">🔥</button>
+                <button type="button" onclick="insertEngEmoji('💎')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Diamond">💎</button>
+                <button type="button" onclick="insertEngEmoji('📊')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Chart">📊</button>
+                <button type="button" onclick="insertEngEmoji('🚀')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Rocket">🚀</button>
+                <button type="button" onclick="insertEngEmoji('💰')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Money">💰</button>
+                <button type="button" onclick="insertEngEmoji('⚡')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Lightning">⚡</button>
+                <button type="button" onclick="insertEngEmoji('🎯')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Target">🎯</button>
+                <button type="button" onclick="insertEngEmoji('✅')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Check">✅</button>
+                <button type="button" onclick="insertEngEmoji('👀')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Eyes">👀</button>
+                <button type="button" onclick="insertEngEmoji('🙋')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Raise Hand">🙋</button>
+                <button type="button" onclick="insertEngEmoji('💪')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Strong">💪</button>
+                <button type="button" onclick="insertEngEmoji('🌅')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Sunrise">🌅</button>
+                <button type="button" onclick="insertEngEmoji('📱')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Phone">📱</button>
+                <button type="button" onclick="insertEngEmoji('🏆')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Trophy">🏆</button>
+                <button type="button" onclick="insertEngEmoji('⏰')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Clock">⏰</button>
+                <button type="button" onclick="insertEngEmoji('📣')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Megaphone">📣</button>
+                <button type="button" onclick="insertEngEmoji('💸')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Dollars">💸</button>
+                <button type="button" onclick="insertEngEmoji('🤝')" class="text-xl hover:scale-125 transition-transform duration-150 cursor-pointer" title="Handshake">🤝</button>
+              </div>
+            </div>
+
+            <!-- Message Text Area -->
+            <div>
+              <label class="block text-[11px] font-semibold text-gray-400 mb-1">Message Text</label>
+              <textarea id="engMessage" oninput="updateEngPreview()" rows="5" placeholder="Type your community message here..."
+                class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-neon-purple/50 focus:outline-none transition resize-none font-sans"></textarea>
+            </div>
+
+            <!-- Image Upload -->
+            <div>
+              <label class="block text-[11px] font-semibold text-gray-400 mb-1">📸 Attach Image (Optional)</label>
+              <div class="flex items-center gap-2">
+                <input type="file" id="engImage" accept="image/*" onchange="handleEngImage(event)" class="hidden" />
+                <label for="engImage" class="flex-1 px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-gray-400 text-sm hover:border-neon-purple hover:text-white transition duration-200 cursor-pointer flex items-center gap-2">
+                  <i data-feather="image" class="w-4 h-4"></i>
+                  <span id="engFileLabel">Choose Image...</span>
+                </label>
+                <button type="button" id="clearEngImageBtn" onclick="clearEngImage()" class="hidden px-3.5 py-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 hover:border-rose-500 text-rose-400 transition duration-200 cursor-pointer">
+                  <i data-feather="x" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Telegram Sticker (optional sticker_id input) -->
+            <div>
+              <label class="block text-[11px] font-semibold text-gray-400 mb-1">🎭 Telegram Sticker ID (Optional)</label>
+              <input type="text" id="engStickerId" oninput="updateEngPreview()" placeholder="e.g. CAACAgIAAxkBAAIBZ..."
+                class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-neon-purple/50 focus:outline-none transition font-mono" />
+              <p class="text-[10px] text-gray-500 mt-1">Find sticker File IDs by forwarding any sticker to <a href="https://t.me/RawDataBot" target="_blank" class="text-neon-blue hover:underline">@RawDataBot</a> on Telegram.</p>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex flex-col sm:flex-row gap-3">
+            <button type="button" onclick="sendEngagement()" class="flex-1 py-4 px-6 rounded-xl font-bold bg-gradient-to-r from-neon-purple to-violet-600 hover:brightness-110 hover:shadow-[0_0_20px_rgba(176,38,255,0.4)] active:scale-95 transition duration-300 flex items-center justify-center gap-2.5 shadow-lg cursor-pointer">
+              <i data-feather="message-circle" class="w-4 h-4 text-white"></i>
+              <span>Send to Telegram</span>
+            </button>
+            <button type="button" onclick="shareEngToWhatsApp()" class="flex-1 py-4 px-6 rounded-xl font-bold border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 hover:border-emerald-400 hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-95 text-emerald-400 hover:text-white transition duration-300 flex items-center justify-center gap-2.5 cursor-pointer">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              <span>Share to WhatsApp</span>
+            </button>
+          </div>
+          <div id="engFeedback" class="text-xs font-semibold min-h-[16px]"></div>
+        </div>
+
+        <!-- Right Column: Live Preview -->
+        <div class="lg:col-span-5 flex flex-col gap-4">
+          <div class="flex items-center gap-2">
+            <i data-feather="eye" class="w-4 h-4 text-neon-purple"></i>
+            <span class="text-xs font-bold uppercase tracking-wider text-neon-purple">Live Preview</span>
+          </div>
+
+          <!-- Simulated Telegram Card -->
+          <div class="glass-card rounded-2xl border border-white/10 overflow-hidden flex flex-col min-h-[420px]">
+            <div class="bg-[#17212b] px-4 py-3 flex items-center justify-between border-b border-white/5">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full overflow-hidden bg-dark-navy border border-white/10">
+                  <img src="avatar.png?v=2" alt="Avatar" class="w-full h-full object-cover">
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-white tracking-wide">Pips_attendant</h3>
+                  <p class="text-[10px] text-gray-400">5,419 subscribers</p>
+                </div>
+              </div>
+              <i data-feather="more-vertical" class="w-5 h-5 text-gray-400"></i>
+            </div>
+
+            <div class="flex-1 bg-[#0e1621] p-4 flex flex-col justify-end">
+              <div class="tg-bubble self-start max-w-[90%] p-3 select-none">
+                <span class="block text-sky-400 text-xs font-bold mb-1.5">Pips_attendant</span>
+
+                <!-- Sticker Preview -->
+                <div id="engStickerPreview" class="hidden mb-2 text-5xl">🎭</div>
+
+                <!-- Image Preview -->
+                <div id="engImgContainer" class="hidden mb-2 rounded-lg overflow-hidden border border-white/5 bg-black/20 max-h-40">
+                  <img id="engImgPreview" src="" alt="Preview" class="max-w-full object-cover w-full max-h-40" />
+                </div>
+
+                <div id="engPreviewContent" class="text-sm text-gray-100 whitespace-pre-wrap leading-relaxed break-words font-sans">
+                  Select a template to preview your message...
+                </div>
+
+                <div class="flex items-center justify-end gap-1.5 mt-2.5 text-[9px] text-gray-400">
+                  <span id="engTime">12:00 PM</span>
+                  <i data-feather="check" class="w-3 h-3 text-emerald-400"></i>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-[#17212b] py-3 text-center border-t border-white/5">
+              <p class="text-xs text-sky-400 font-semibold uppercase tracking-wider">Mute / Unmute</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 
   <!-- Success Toast Modal -->
@@ -401,11 +571,14 @@
       if (token && chat) {
         document.getElementById('setupPanel').classList.add('hidden');
         document.getElementById('dashboardPanel').classList.remove('hidden');
+        document.getElementById('engagementPanel').classList.remove('hidden');
         document.getElementById('statusSection').classList.remove('hidden');
         updateLivePreview();
+        updateEngPreview();
       } else {
         document.getElementById('setupPanel').classList.remove('hidden');
         document.getElementById('dashboardPanel').classList.add('hidden');
+        document.getElementById('engagementPanel').classList.add('hidden');
         document.getElementById('statusSection').classList.add('hidden');
       }
     }
@@ -701,6 +874,198 @@
       
       // Open WhatsApp with the message pre-filled
       // On mobile: opens the WhatsApp app. On desktop: opens WhatsApp Web.
+      const url = `https://api.whatsapp.com/send?text=${encoded}`;
+      window.open(url, '_blank');
+    }
+
+    // --- ENGAGEMENT PANEL LOGIC ---
+
+    const engTemplates = {
+      morning: "🌅 *Good morning team!* \n\nHope everyone had a great rest. Let's conquer the markets today! 💰💪\n\nWho is ready for today's setups?",
+      ready: "🔔 *Are you ready?*\n\nI'm scanning the charts right now. High probability setups forming... 👀📊\n\nMake sure your notifications are ON! 🚀",
+      session: "📈 *London/NY Session Open!*\n\nVolume is kicking in. Let's stick to our trading plan and execute with discipline. 🎯💎\n\nWhat pairs are you watching?",
+      mindset: "🧠 *Trader Mindset*\n\nRemember: Patience pays. Don't force trades. Wait for your edge to present itself. Risk management is everything! 🛡️💯",
+      weekend: "😎 *Weekend Recap*\n\nGreat week of trading! Take some time to review your trades, rest up, and enjoy the weekend with family. We go hard again on Monday! 🏆🥂",
+      custom: ""
+    };
+
+    function applyEngagementTemplate(type) {
+      document.getElementById('engMessage').value = engTemplates[type] || "";
+      updateEngPreview();
+    }
+
+    function insertEngEmoji(emoji) {
+      const textarea = document.getElementById('engMessage');
+      const startPos = textarea.selectionStart;
+      const endPos = textarea.selectionEnd;
+      const text = textarea.value;
+      
+      textarea.value = text.substring(0, startPos) + emoji + text.substring(endPos, text.length);
+      textarea.selectionStart = startPos + emoji.length;
+      textarea.selectionEnd = startPos + emoji.length;
+      textarea.focus();
+      updateEngPreview();
+    }
+
+    function updateEngPreview() {
+      const msg = document.getElementById('engMessage').value;
+      const stickerId = document.getElementById('engStickerId').value.trim();
+      const previewEl = document.getElementById('engPreviewContent');
+      const stickerPreview = document.getElementById('engStickerPreview');
+      
+      let html = msg || 'Select a template or type a message...';
+      html = html.replace(/\*(.*?)\*/g, '<strong>$1</strong>')
+                 .replace(/_(.*?)_/g, '<em>$1</em>')
+                 .replace(/\n/g, '<br>');
+      previewEl.innerHTML = html;
+
+      if (stickerId) {
+        stickerPreview.classList.remove('hidden');
+      } else {
+        stickerPreview.classList.add('hidden');
+      }
+
+      const now = new Date();
+      let hours = now.getHours();
+      let minutes = now.getMinutes();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      minutes = minutes < 10 ? '0' + minutes : minutes;
+      const timeStr = hours + ':' + minutes + ' ' + ampm;
+      const timeEl = document.getElementById('engTime');
+      if (timeEl) timeEl.innerText = timeStr;
+    }
+
+    function handleEngImage(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      document.getElementById('engFileLabel').innerText = file.name;
+      document.getElementById('clearEngImageBtn').classList.remove('hidden');
+      
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const imgContainer = document.getElementById('engImgContainer');
+        const imgPreview = document.getElementById('engImgPreview');
+        imgPreview.src = event.target.result;
+        imgContainer.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearEngImage() {
+      document.getElementById('engImage').value = '';
+      document.getElementById('engFileLabel').innerText = 'Choose Image...';
+      document.getElementById('clearEngImageBtn').classList.add('hidden');
+      
+      const imgContainer = document.getElementById('engImgContainer');
+      const imgPreview = document.getElementById('engImgPreview');
+      imgPreview.src = '';
+      imgContainer.classList.add('hidden');
+    }
+
+    async function sendEngagement() {
+      const token = localStorage.getItem('pa_bot_token');
+      const chat = localStorage.getItem('pa_chat_id');
+      const btn = event.currentTarget;
+      const feedbackMsg = document.getElementById('engFeedback');
+      
+      if (!token || !chat) {
+        feedbackMsg.innerHTML = '<span class="text-rose-400">Error: Missing credentials in Setup.</span>';
+        return;
+      }
+
+      const text = document.getElementById('engMessage').value;
+      const stickerId = document.getElementById('engStickerId').value.trim();
+      const imageFile = document.getElementById('engImage').files[0];
+
+      if (!text && !stickerId && !imageFile) {
+        feedbackMsg.innerHTML = '<span class="text-amber-400">Please provide a message, sticker, or image.</span>';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.classList.add('opacity-75', 'cursor-not-allowed');
+      feedbackMsg.innerHTML = '<span class="text-sky-400 animate-pulse">Sending to Telegram...</span>';
+
+      try {
+        let sentTextOrImage = false;
+
+        if (imageFile) {
+          const formData = new FormData();
+          formData.append('chat_id', chat);
+          formData.append('photo', imageFile);
+          if (text && !stickerId) {
+             formData.append('caption', text);
+             formData.append('parse_mode', 'Markdown');
+          }
+          const res = await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
+            method: 'POST',
+            body: formData
+          });
+          const data = await res.json();
+          if (!data.ok) throw new Error(data.description);
+          sentTextOrImage = true;
+        } 
+        
+        if (text && !sentTextOrImage) {
+          const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: chat,
+              text: text,
+              parse_mode: 'Markdown',
+              disable_web_page_preview: true
+            })
+          });
+          const data = await res.json();
+          if (!data.ok) throw new Error(data.description);
+        }
+
+        if (stickerId) {
+          const res = await fetch(`https://api.telegram.org/bot${token}/sendSticker`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: chat,
+              sticker: stickerId
+            })
+          });
+          const data = await res.json();
+          if (!data.ok) throw new Error(data.description);
+        }
+
+        feedbackMsg.innerHTML = '<span class="text-emerald-400">Message sent successfully!</span>';
+        showToast();
+        
+        document.getElementById('engMessage').value = '';
+        document.getElementById('engStickerId').value = '';
+        clearEngImage();
+        updateEngPreview();
+
+      } catch (err) {
+        console.error(err);
+        feedbackMsg.innerHTML = `<span class="text-rose-400">Error: ${err.message || 'Failed to send'}</span>`;
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('opacity-75', 'cursor-not-allowed');
+      }
+    }
+
+    function shareEngToWhatsApp() {
+      const text = document.getElementById('engMessage').value;
+      if (!text) {
+        document.getElementById('engFeedback').innerHTML = '<span class="text-amber-400">Please provide a message to share.</span>';
+        return;
+      }
+      
+      const whatsappText = text
+        .replace(/\*(.*?)\*/g, '*$1*')
+        .replace(/_(.*?)_/g, '_$1_');
+      
+      const encoded = encodeURIComponent(whatsappText);
       const url = `https://api.whatsapp.com/send?text=${encoded}`;
       window.open(url, '_blank');
     }
