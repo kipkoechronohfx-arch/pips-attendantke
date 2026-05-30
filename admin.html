@@ -97,6 +97,9 @@
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           Ready to Post
         </span>
+        <button onclick="toggleTheme()" class="flex items-center justify-center w-8 h-8 rounded-full bg-white/5 border border-white/10 hover:border-neon-blue/50 hover:bg-neon-blue/10 hover:text-neon-blue text-gray-400 transition duration-300 cursor-pointer" title="Toggle Theme">
+          <i data-feather="sun" id="themeIcon" class="w-4 h-4"></i>
+        </button>
         <button onclick="resetCredentials()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:border-rose-500/50 hover:bg-rose-500/10 hover:text-rose-400 text-gray-400 text-xs font-medium transition duration-300 cursor-pointer">
           <i data-feather="settings" class="w-3.5 h-3.5"></i>
           Setup Credentials
@@ -653,6 +656,105 @@
         </div>
       </div>
     </div>
+
+    <!-- 📊 5. PERFORMANCE TRACKER -->
+    <div id="perfPanel" class="hidden mt-12 mb-20">
+      <div class="flex items-center gap-4 mb-6">
+        <div class="flex-1 h-px bg-white/10"></div>
+        <div class="flex items-center gap-2 px-4 py-2 rounded-full border border-amber-400/30 bg-amber-400/5">
+          <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+          <span class="text-amber-400 text-xs font-bold tracking-[0.2em] uppercase">Performance Tracker</span>
+        </div>
+        <div class="flex-1 h-px bg-white/10"></div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div class="lg:col-span-7 space-y-5">
+
+          <!-- Stats Input -->
+          <div class="glass-card rounded-2xl p-6 border border-white/10 space-y-4">
+            <span class="block text-xs font-bold uppercase tracking-wider text-amber-400 mb-2">Weekly Stats</span>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-[11px] font-semibold text-gray-400 mb-1">✅ Wins</label>
+                <input type="number" id="perfWins" oninput="updatePerfPreview()" min="0" placeholder="e.g. 7"
+                  class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-gray-400 mb-1">❌ Losses</label>
+                <input type="number" id="perfLosses" oninput="updatePerfPreview()" min="0" placeholder="e.g. 2"
+                  class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-gray-400 mb-1">📈 Total Pips Gained</label>
+                <input type="number" id="perfPips" oninput="updatePerfPreview()" placeholder="e.g. 320"
+                  class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-gray-400 mb-1">🗓️ Week (e.g. "Week 22")</label>
+                <input type="text" id="perfWeek" oninput="updatePerfPreview()" placeholder="Week 22"
+                  class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-gray-400 mb-1">💬 Additional Notes (Optional)</label>
+              <textarea id="perfNotes" oninput="updatePerfPreview()" rows="2" placeholder="e.g. Market was choppy Monday but we adapted..."
+                class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition resize-none"></textarea>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex flex-col sm:flex-row gap-3">
+            <button type="button" onclick="sendPerformance()" class="flex-1 py-4 px-6 rounded-xl font-bold bg-gradient-to-r from-amber-500 to-yellow-400 hover:brightness-110 hover:shadow-[0_0_20px_rgba(251,191,36,0.4)] active:scale-95 transition duration-300 flex items-center justify-center gap-2.5 shadow-lg cursor-pointer text-dark-navy">
+              <i data-feather="bar-chart-2" class="w-4 h-4"></i>
+              <span>Broadcast Weekly Recap</span>
+            </button>
+            <button type="button" onclick="sharePerfToWhatsApp()" class="flex-1 py-4 px-6 rounded-xl font-bold border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 hover:border-emerald-400 hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-95 text-emerald-400 hover:text-white transition duration-300 flex items-center justify-center gap-2.5 cursor-pointer">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              <span>Share to WhatsApp</span>
+            </button>
+          </div>
+          <div id="perfFeedback" class="text-xs font-semibold min-h-[16px]"></div>
+        </div>
+
+        <!-- Live Preview -->
+        <div class="lg:col-span-5 flex flex-col gap-4">
+          <div class="flex items-center gap-2">
+            <i data-feather="eye" class="w-4 h-4 text-amber-400"></i>
+            <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Live Preview</span>
+          </div>
+          <div class="glass-card rounded-2xl border border-white/10 overflow-hidden flex flex-col min-h-[380px]">
+            <div class="bg-[#17212b] px-4 py-3 flex items-center justify-between border-b border-white/5">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full overflow-hidden bg-dark-navy border border-white/10">
+                  <img src="avatar.png?v=2" alt="Avatar" class="w-full h-full object-cover">
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-white">Pips_attendant</h3>
+                  <p class="text-[10px] text-gray-400">5,419 subscribers</p>
+                </div>
+              </div>
+              <i data-feather="more-vertical" class="w-5 h-5 text-gray-400"></i>
+            </div>
+            <div class="flex-1 bg-[#0e1621] p-4 flex flex-col justify-end">
+              <div class="tg-bubble self-start max-w-[95%] p-3 select-none">
+                <span class="block text-sky-400 text-xs font-bold mb-1.5">Pips_attendant</span>
+                <div id="perfPreviewContent" class="text-sm text-gray-100 whitespace-pre-wrap leading-relaxed break-words font-sans">
+                  Fill in your stats to preview...
+                </div>
+                <div class="flex items-center justify-end gap-1.5 mt-2.5 text-[9px] text-gray-400">
+                  <span id="perfTime">12:00 PM</span>
+                  <i data-feather="check" class="w-3 h-3 text-emerald-400"></i>
+                </div>
+              </div>
+            </div>
+            <div class="bg-[#17212b] py-3 text-center border-t border-white/5">
+              <p class="text-xs text-sky-400 font-semibold uppercase tracking-wider">Mute / Unmute</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 
   <!-- Success Toast Modal -->
@@ -673,7 +775,27 @@
     // State variables
     let currentTemplate = 'buy';
     
+    // --- THEME LOGIC ---
+    function initTheme() {
+      if (localStorage.getItem('theme') === 'light') {
+        document.body.classList.add('light-mode');
+        const icon = document.getElementById('themeIcon');
+        if (icon) icon.setAttribute('data-feather', 'moon');
+      }
+    }
+
+    function toggleTheme() {
+      const isLight = document.body.classList.toggle('light-mode');
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+      const icon = document.getElementById('themeIcon');
+      if (icon) {
+        icon.setAttribute('data-feather', isLight ? 'moon' : 'sun');
+        feather.replace();
+      }
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
+      initTheme();
       // Set current mock time
       updateMockTime();
       setInterval(updateMockTime, 60000);
@@ -709,6 +831,7 @@
         document.getElementById('dashboardPanel').classList.remove('hidden');
         document.getElementById('engagementPanel').classList.remove('hidden');
         document.getElementById('livePanel').classList.remove('hidden');
+        document.getElementById('perfPanel').classList.remove('hidden');
         document.getElementById('statusSection').classList.remove('hidden');
         updateLivePreview();
         updateEngPreview();
@@ -718,6 +841,7 @@
         document.getElementById('dashboardPanel').classList.add('hidden');
         document.getElementById('engagementPanel').classList.add('hidden');
         document.getElementById('livePanel').classList.add('hidden');
+        document.getElementById('perfPanel').classList.add('hidden');
         document.getElementById('statusSection').classList.add('hidden');
       }
     }
@@ -1339,6 +1463,88 @@
       const encoded = encodeURIComponent(whatsappText);
       const url = `https://api.whatsapp.com/send?text=${encoded}`;
       window.open(url, '_blank');
+    }
+
+    // --- PERFORMANCE TRACKER LOGIC ---
+    function buildPerfMessage() {
+      const wins = parseInt(document.getElementById('perfWins').value) || 0;
+      const losses = parseInt(document.getElementById('perfLosses').value) || 0;
+      const pips = document.getElementById('perfPips').value || '0';
+      const week = document.getElementById('perfWeek').value || 'This Week';
+      const notes = document.getElementById('perfNotes').value.trim();
+      const total = wins + losses;
+      const winRate = total > 0 ? Math.round((wins / total) * 100) : 0;
+
+      let ratingEmoji = winRate >= 80 ? '🔥' : winRate >= 60 ? '✅' : '📊';
+
+      let msg = `📊 *WEEKLY PERFORMANCE RECAP* 📊\n`;
+      msg += `🗓️ *${week}*\n\n`;
+      msg += `━━━━━━━━━━━━━━━━━━━━━\n`;
+      msg += `✅ Wins: *${wins}*\n`;
+      msg += `❌ Losses: *${losses}*\n`;
+      msg += `🎯 Win Rate: *${winRate}%* ${ratingEmoji}\n`;
+      msg += `📈 Total Pips: *+${pips} pips*\n`;
+      msg += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
+      if (notes) msg += `💬 ${notes}\n\n`;
+      msg += `Stay consistent, manage risk, and let's go even harder next week! 💪💰`;
+      return msg;
+    }
+
+    function updatePerfPreview() {
+      const msg = buildPerfMessage();
+      const previewEl = document.getElementById('perfPreviewContent');
+      let html = msg.replace(/\*(.*?)\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+      previewEl.innerHTML = html;
+
+      const now = new Date();
+      let hours = now.getHours();
+      let minutes = now.getMinutes();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12;
+      minutes = minutes < 10 ? '0' + minutes : minutes;
+      const timeEl = document.getElementById('perfTime');
+      if (timeEl) timeEl.innerText = `${hours}:${minutes} ${ampm}`;
+    }
+
+    async function sendPerformance() {
+      const token = localStorage.getItem('pa_bot_token');
+      const chat = localStorage.getItem('pa_chat_id');
+      const btn = event.currentTarget;
+      const feedbackMsg = document.getElementById('perfFeedback');
+
+      if (!token || !chat) {
+        feedbackMsg.innerHTML = '<span class="text-rose-400">Error: Missing credentials.</span>';
+        return;
+      }
+
+      const msg = buildPerfMessage();
+
+      btn.disabled = true;
+      btn.classList.add('opacity-75', 'cursor-not-allowed');
+      feedbackMsg.innerHTML = '<span class="text-sky-400 animate-pulse">Broadcasting Recap...</span>';
+
+      try {
+        const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: chat, text: msg, parse_mode: 'Markdown' })
+        });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.description);
+        feedbackMsg.innerHTML = '<span class="text-emerald-400">Weekly Recap sent!</span>';
+        showToast();
+      } catch (err) {
+        feedbackMsg.innerHTML = `<span class="text-rose-400">Error: ${err.message}</span>`;
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('opacity-75', 'cursor-not-allowed');
+      }
+    }
+
+    function sharePerfToWhatsApp() {
+      const msg = buildPerfMessage();
+      const encoded = encodeURIComponent(msg.replace(/\*(.*?)\*/g, '*$1*'));
+      window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
     }
 
     function showToast() {

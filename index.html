@@ -60,6 +60,13 @@
     <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[40%] bg-neon-blue/20 blur-[120px] rounded-full mix-blend-screen animate-pulse duration-1000" style="animation-delay: 1s"></div>
   </div>
 
+  <!-- Theme Toggle Button -->
+  <div class="fixed top-[60px] right-4 z-[90]">
+    <button onclick="toggleTheme()" class="flex items-center justify-center w-10 h-10 rounded-full glass-card border border-white/10 hover:border-neon-blue/50 hover:bg-neon-blue/10 hover:text-neon-blue text-gray-400 transition duration-300 cursor-pointer shadow-lg" title="Toggle Theme">
+      <i data-feather="sun" id="themeIcon" class="w-5 h-5"></i>
+    </button>
+  </div>
+
   <main class="container mx-auto px-4 py-5 max-w-2xl relative z-10 pb-20">
     
     <!-- Profile Header -->
@@ -257,8 +264,147 @@
       </div>
       
       <!-- Trust Text -->
-      <p class="text-gray-500 text-xs mb-12">Trusted by 5,000+ traders worldwide.</p>
-      
+      <p class="text-gray-500 text-xs mb-8">Trusted by 5,000+ traders worldwide.</p>
+
+      <!-- 🏆 TESTIMONIALS CAROUSEL -->
+      <div class="w-full mb-10">
+        <div class="flex items-center gap-3 mb-5 justify-center">
+          <span class="text-neon-blue text-lg">🏆</span>
+          <h2 class="text-lg font-bold text-white tracking-tight">What Traders Are Saying</h2>
+        </div>
+
+        <div class="relative overflow-hidden" id="testimonialTrack">
+          <div id="testimonialSlider" class="flex gap-4 transition-transform duration-500 ease-in-out">
+
+            <!-- Card 1 -->
+            <div class="flex-shrink-0 w-72 glass-card rounded-2xl p-5 border border-white/10">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-neon-purple to-neon-blue flex items-center justify-center text-sm font-bold text-white flex-shrink-0">JK</div>
+                <div>
+                  <p class="text-white text-sm font-bold">James K.</p>
+                  <p class="text-gray-500 text-[10px]">🇰🇪 Nairobi, Kenya</p>
+                </div>
+                <div class="ml-auto text-amber-400 text-xs">★★★★★</div>
+              </div>
+              <p class="text-gray-300 text-xs leading-relaxed">"Pips_attendant is the real deal. Caught a 120 pip move on GBPUSD last Tuesday thanks to the signal. Finally making consistent profits! 🚀"</p>
+              <p class="text-emerald-400 text-[10px] font-bold mt-3">+120 PIPS ✅</p>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="flex-shrink-0 w-72 glass-card rounded-2xl p-5 border border-neon-purple/20">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-500 to-sky-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">AM</div>
+                <div>
+                  <p class="text-white text-sm font-bold">Amara M.</p>
+                  <p class="text-gray-500 text-[10px]">🇳🇬 Lagos, Nigeria</p>
+                </div>
+                <div class="ml-auto text-amber-400 text-xs">★★★★★</div>
+              </div>
+              <p class="text-gray-300 text-xs leading-relaxed">"I've been following for 3 months and my account is up 40%. The live voice sessions are worth it alone. Highly recommended! 💎"</p>
+              <p class="text-emerald-400 text-[10px] font-bold mt-3">+40% Account Growth ✅</p>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="flex-shrink-0 w-72 glass-card rounded-2xl p-5 border border-white/10">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-rose-500 to-amber-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">DW</div>
+                <div>
+                  <p class="text-white text-sm font-bold">Daniel W.</p>
+                  <p class="text-gray-500 text-[10px]">🇬🇧 London, UK</p>
+                </div>
+                <div class="ml-auto text-amber-400 text-xs">★★★★★</div>
+              </div>
+              <p class="text-gray-300 text-xs leading-relaxed">"Clear entries, stop losses, and TP levels. No guessing games. The risk management advice alone transformed my trading mentality. 🎯"</p>
+              <p class="text-emerald-400 text-[10px] font-bold mt-3">85% Win Rate This Month ✅</p>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="flex-shrink-0 w-72 glass-card rounded-2xl p-5 border border-neon-blue/20">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-violet-500 to-pink-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">FN</div>
+                <div>
+                  <p class="text-white text-sm font-bold">Fatuma N.</p>
+                  <p class="text-gray-500 text-[10px]">🇹🇿 Dar es Salaam</p>
+                </div>
+                <div class="ml-auto text-amber-400 text-xs">★★★★★</div>
+              </div>
+              <p class="text-gray-300 text-xs leading-relaxed">"Started with $200, now at $650 in 2 months. The Telegram alerts are instant and the analysis is spot on every single time! 🔥"</p>
+              <p class="text-emerald-400 text-[10px] font-bold mt-3">$200 → $650 ✅</p>
+            </div>
+
+            <!-- Card 5 -->
+            <div class="flex-shrink-0 w-72 glass-card rounded-2xl p-5 border border-white/10">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-500 to-neon-blue flex items-center justify-center text-sm font-bold text-white flex-shrink-0">TP</div>
+                <div>
+                  <p class="text-white text-sm font-bold">Theo P.</p>
+                  <p class="text-gray-500 text-[10px]">🇿🇦 Johannesburg</p>
+                </div>
+                <div class="ml-auto text-amber-400 text-xs">★★★★★</div>
+              </div>
+              <p class="text-gray-300 text-xs leading-relaxed">"The community is so supportive and the signals are consistent. Best forex group I've ever joined. Worth every penny! 💰"</p>
+              <p class="text-emerald-400 text-[10px] font-bold mt-3">Top Community Pick ✅</p>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Carousel Controls -->
+        <div class="flex items-center justify-center gap-4 mt-4">
+          <button onclick="slideTestimonial(-1)" class="w-8 h-8 rounded-full glass-card border border-white/10 flex items-center justify-center text-gray-400 hover:text-neon-blue hover:border-neon-blue/50 transition cursor-pointer">
+            <i data-feather="chevron-left" class="w-4 h-4"></i>
+          </button>
+          <div id="testimonialDots" class="flex gap-2">
+            <span class="w-2 h-2 rounded-full bg-neon-blue dot-indicator"></span>
+            <span class="w-2 h-2 rounded-full bg-white/20 dot-indicator"></span>
+            <span class="w-2 h-2 rounded-full bg-white/20 dot-indicator"></span>
+            <span class="w-2 h-2 rounded-full bg-white/20 dot-indicator"></span>
+            <span class="w-2 h-2 rounded-full bg-white/20 dot-indicator"></span>
+          </div>
+          <button onclick="slideTestimonial(1)" class="w-8 h-8 rounded-full glass-card border border-white/10 flex items-center justify-center text-gray-400 hover:text-neon-blue hover:border-neon-blue/50 transition cursor-pointer">
+            <i data-feather="chevron-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- 📅 ECONOMIC CALENDAR WIDGET -->
+      <div class="w-full mb-10">
+        <div class="flex items-center gap-3 mb-5 justify-center">
+          <span class="text-amber-400 text-lg">📅</span>
+          <h2 class="text-lg font-bold text-white tracking-tight">Upcoming High-Impact News</h2>
+        </div>
+        <div class="glass-card rounded-2xl border border-white/10 overflow-hidden">
+          <div class="tradingview-widget-container" style="height:300px;">
+            <div class="tradingview-widget-container__widget" style="height:300px;"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
+            {
+              "colorTheme": "dark",
+              "isTransparent": true,
+              "width": "100%",
+              "height": "300",
+              "locale": "en",
+              "importanceFilter": "1",
+              "countryFilter": "us,eu,gb,jp,cn,ca,au,nz"
+            }
+            </script>
+          </div>
+        </div>
+      </div>
+
+      <!-- 🔒 VIP PREMIUM RESOURCES LINK -->
+      <div class="w-full mb-10">
+        <a href="premium.html" class="group flex items-center justify-between px-6 py-4 rounded-2xl border border-amber-400/30 bg-amber-400/5 hover:bg-amber-400/10 hover:border-amber-400/60 transition duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.2)]">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center text-dark-navy text-xl font-bold shadow-lg">🔒</div>
+            <div>
+              <h3 class="text-white font-bold text-base tracking-wide group-hover:text-amber-400 transition">VIP Premium Resources</h3>
+              <p class="text-gray-400 text-xs mt-0.5">Exclusive strategies, indicators & PDF guides</p>
+            </div>
+          </div>
+          <i data-feather="chevron-right" class="w-5 h-5 text-amber-400 group-hover:translate-x-1 transition-transform"></i>
+        </a>
+      </div>
+
       <!-- Copyright & Disclaimer -->
       <div class="text-gray-500 text-[10px] leading-relaxed max-w-md mx-auto">
         <p class="mb-2">&copy; 2026 Pips_attendant. All rights reserved. <a href="admin.html" class="opacity-15 hover:opacity-100 hover:text-neon-blue transition duration-300 ml-1">Console</a></p>
