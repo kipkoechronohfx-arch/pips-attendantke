@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pips_attendant</title>
+  
+  <!-- Tailwind CSS via Browser CDN for pure static usage -->
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    @theme {
+      --color-dark-navy: #0a0f1c;
+      --color-neon-blue: #00f0ff;
+      --color-neon-purple: #b026ff;
+      --font-inter: "Inter", "Poppins", sans-serif;
+    }
+  </style>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Feather Icons for lightweight SVGs -->
+  <script src="https://unpkg.com/feather-icons"></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-dark-navy text-white font-inter relative overflow-x-hidden selection:bg-neon-purple/30 min-h-screen pt-[46px]">
+  
+  <!-- Header Ticker -->
+  <div class="fixed top-0 left-0 w-full z-[100]">
+    <div class="tradingview-widget-container">
+      <div class="tradingview-widget-container__widget"></div>
+      <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+      {
+      "symbols": [
+        { "proName": "FX_IDC:EURUSD", "title": "EUR/USD" },
+        { "proName": "FX_IDC:GBPUSD", "title": "GBP/USD" },
+        { "proName": "FX_IDC:USDJPY", "title": "USD/JPY" },
+        { "proName": "FX_IDC:AUDUSD", "title": "AUD/USD" },
+        { "proName": "FX_IDC:GBPJPY", "title": "GBP/JPY" },
+        { "proName": "OANDA:XAUUSD", "title": "XAU/USD" }
+      ],
+      "showSymbolLogo": true,
+      "isTransparent": false,
+      "displayMode": "adaptive",
+      "colorTheme": "dark",
+      "locale": "en"
+      }
+      </script>
+    </div>
+  </div>
+
+  <!-- Background Glow Effects -->
+  <div class="fixed inset-0 z-0 pointer-events-none opacity-50">
+    <div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-neon-purple/20 blur-[120px] rounded-full mix-blend-screen animate-pulse duration-1000"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[40%] bg-neon-blue/20 blur-[120px] rounded-full mix-blend-screen animate-pulse duration-1000" style="animation-delay: 1s"></div>
+  </div>
+
+  <main class="container mx-auto px-4 py-5 max-w-2xl relative z-10 pb-20">
+    
+    <!-- Profile Header -->
+    <div class="flex flex-col items-center text-center mb-10 pt-10 relative">
+      <div class="relative w-32 h-32 mb-6 transform transition-transform duration-500 hover:scale-105">
+        <div class="absolute inset-0 rounded-full bg-gradient-to-tr from-neon-purple to-neon-blue animate-spin-slow opacity-75 blur-md"></div>
+        <div class="absolute inset-1 rounded-full bg-dark-navy z-10 flex items-center justify-center overflow-hidden border-2 border-white/10">
+          <img src="avatar.png?v=2" alt="Pips_Attendant" class="w-full h-full object-cover" />
+        </div>
+      </div>
+      <h1 class="text-4xl md:text-5xl font-bold mb-3 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-gray-400">
+        Pips_attendant
+      </h1>
+      <p class="text-neon-blue font-medium tracking-widest uppercase text-sm mb-4">
+        Professional Forex Trader
+      </p>
+      <p class="text-gray-400 max-w-md mx-auto text-sm md:text-base leading-relaxed">
+        Precision. Patience. Profit. Turning pips into possibilities. Join my community to trade alongside me.
+      </p>
+    </div>
+
+    <!-- Link Cards -->
+    <div class="flex flex-col gap-4 mb-8">
+      
+
+      <!-- Link 1 (JustMarkets) -->
+      <a href="https://justmarkets.com" target="_blank" class="link-card highlight-card group">
+        <div class="link-icon highlight-icon">
+          <i data-feather="trending-up"></i>
+        </div>
+        <div class="flex-1 text-left">
+          <h3 class="text-lg font-semibold text-white tracking-wide group-hover:text-neon-blue transition-colors">JustMarkets</h3>
+          <p class="text-sm text-gray-400 mt-1 line-clamp-1">Trade with the best conditions</p>
+        </div>
+        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-neon-blue ml-2">
+          <i data-feather="external-link" class="w-5 h-5"></i>
+        </div>
+      </a>
+
+      <!-- Link 2 (XM) -->
+      <a href="https://xm.com" target="_blank" class="link-card highlight-card group">
+        <div class="link-icon highlight-icon">
+          <i data-feather="bar-chart-2"></i>
+        </div>
+        <div class="flex-1 text-left">
+          <h3 class="text-lg font-semibold text-white tracking-wide group-hover:text-neon-blue transition-colors">XM</h3>
+          <p class="text-sm text-gray-400 mt-1 line-clamp-1">Global broker of choice</p>
+        </div>
+        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-neon-blue ml-2">
+          <i data-feather="external-link" class="w-5 h-5"></i>
+        </div>
+      </a>
+
+      <!-- Link 3 -->
+      <a href="https://t.me/pipsattendant" target="_blank" class="link-card highlight-card group">
+        <div class="link-icon highlight-icon">
+          <i data-feather="send"></i>
+        </div>
+        <div class="flex-1 text-left">
+          <h3 class="text-lg font-semibold text-white tracking-wide group-hover:text-neon-blue transition-colors">Join Our Community</h3>
+          <p class="text-sm text-gray-400 mt-1 line-clamp-1">Free signals & mentorship</p>
+        </div>
+        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-neon-blue ml-2">
+          <i data-feather="external-link" class="w-5 h-5"></i>
+        </div>
+      </a>
+
+      <!-- Link VIP Signals -->
+      <a href="https://t.me/pipsattendant" target="_blank" class="link-card highlight-card group">
+        <div class="link-icon highlight-icon">
+          <i data-feather="star"></i>
+        </div>
+        <div class="flex-1 text-left">
+          <h3 class="text-lg font-semibold text-white tracking-wide group-hover:text-neon-blue transition-colors">VIP Signals</h3>
+          <p class="text-sm text-gray-400 mt-1 line-clamp-1">Premium daily setups & analysis</p>
+        </div>
+        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-neon-blue ml-2">
+          <i data-feather="external-link" class="w-5 h-5"></i>
+        </div>
+      </a>
+
+      <!-- Link 4 -->
+      <a href="https://instagram.com/pips_attendant" target="_blank" class="link-card normal-card group">
+        <div class="link-icon normal-icon">
+          <i data-feather="instagram"></i>
+        </div>
+        <div class="flex-1 text-left">
+          <h3 class="text-lg font-semibold text-white tracking-wide group-hover:text-neon-blue transition-colors">Instagram</h3>
+        </div>
+        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-neon-blue ml-2">
+          <i data-feather="external-link" class="w-5 h-5"></i>
+        </div>
+      </a>
+
+      <!-- Link 5 -->
+      <a href="https://youtube.com/@pips_attendant" target="_blank" class="link-card normal-card group">
+        <div class="link-icon normal-icon">
+          <i data-feather="youtube"></i>
+        </div>
+        <div class="flex-1 text-left">
+          <h3 class="text-lg font-semibold text-white tracking-wide group-hover:text-neon-blue transition-colors">YouTube</h3>
+        </div>
+        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-neon-blue ml-2">
+          <i data-feather="external-link" class="w-5 h-5"></i>
+        </div>
+      </a>
+
+      <!-- Link 6 -->
+      <a href="https://twitter.com/pips_attendant" target="_blank" class="link-card normal-card group">
+        <div class="link-icon normal-icon">
+          <i data-feather="twitter"></i>
+        </div>
+        <div class="flex-1 text-left">
+          <h3 class="text-lg font-semibold text-white tracking-wide group-hover:text-neon-blue transition-colors">Twitter</h3>
+        </div>
+        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-neon-blue ml-2">
+          <i data-feather="external-link" class="w-5 h-5"></i>
+        </div>
+      </a>
+
+      <!-- Link TikTok -->
+      <a href="https://tiktok.com/@pips_attendant" target="_blank" class="link-card normal-card group">
+        <div class="link-icon normal-icon">
+          <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+             <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 2.22-1.15 4.35-2.9 5.61-1.61 1.16-3.7 1.53-5.61 1.09-2.06-.48-3.79-1.89-4.7-3.77-.85-1.74-.9-3.83-.24-5.62.6-1.62 1.94-2.96 3.6-3.5 1.58-.51 3.32-.4 4.86.06V14.8c-.89-.33-1.92-.3-2.76.13-.8.41-1.4 1.15-1.6 2.03-.22.95.03 1.99.68 2.69.64.69 1.63 1 2.58.89 1.1-.12 2.05-.88 2.45-1.9.15-.4.21-.83.21-1.25V.02h-3.08z"/>
+          </svg>
+        </div>
+        <div class="flex-1 text-left">
+          <h3 class="text-lg font-semibold text-white tracking-wide group-hover:text-neon-blue transition-colors">TikTok</h3>
+        </div>
+        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-neon-blue ml-2">
+          <i data-feather="external-link" class="w-5 h-5"></i>
+        </div>
+      </a>
+    </div>
+
+    <!-- Market Sentiment Section -->
+    <div class="w-full mb-8">
+
+      <!-- Section Label -->
+      <div class="flex items-center gap-2 mb-4">
+        <span class="w-2.5 h-2.5 rounded-full bg-neon-blue animate-pulse inline-block"></span>
+        <span class="text-neon-blue text-xs font-bold tracking-[0.2em] uppercase">Market Sentiment: XAUUSD</span>
+      </div>
+
+      <!-- Technical Analysis Gauge Widget -->
+      <div class="rounded-xl overflow-hidden border border-white/10 bg-[#131722] mb-4">
+        <div class="tradingview-widget-container">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" async>
+          {
+            "interval": "1h",
+            "width": "100%",
+            "isTransparent": false,
+            "height": 450,
+            "symbol": "OANDA:XAUUSD",
+            "showIntervalTabs": true,
+            "displayMode": "single",
+            "locale": "en",
+            "colorTheme": "dark"
+          }
+          </script>
+        </div>
+      </div>
+
+      <!-- Live Analysis CTA Button -->
+      <a href="https://www.tradingview.com/chart/ppghN3kx/" target="_blank" class="group flex items-center justify-between w-full px-6 py-5 rounded-xl border border-neon-blue/40 bg-[#0d1a2a] hover:bg-neon-blue/10 hover:border-neon-blue transition-all duration-300">
+        <div>
+          <p class="text-neon-blue text-[10px] font-bold tracking-[0.25em] uppercase mb-1">Live Technical Analysis</p>
+          <p class="text-white text-lg font-bold">View My Full Analysis &amp; Drawings</p>
+        </div>
+        <svg class="w-6 h-6 text-neon-blue group-hover:translate-x-2 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      </a>
+
+      <!-- Updated label -->
+      <p class="text-center text-gray-600 text-[10px] tracking-widest uppercase mt-3">Updated in real-time via TradingView</p>
+    </div>
+
+    <!-- Footer Section -->
+    <div class="mt-16 flex flex-col items-center text-center">
+      <!-- Call to Action Button -->
+      <div class="relative group cursor-pointer mb-4">
+        <!-- Glowing aura behind the button -->
+        <div class="absolute -inset-1 bg-gradient-to-r from-neon-purple to-neon-blue rounded-xl blur opacity-75 group-hover:opacity-100 transition duration-500"></div>
+        <!-- Button content -->
+        <a href="https://t.me/pipsattendant" target="_blank" class="relative flex items-center justify-center px-8 py-4 bg-dark-navy rounded-xl border border-white/10 leading-none">
+          <svg class="w-5 h-5 text-neon-blue mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
+            <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path>
+            <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path>
+            <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path>
+          </svg>
+          <span class="text-white font-bold text-lg">Join My Trading Community</span>
+        </a>
+      </div>
+      
+      <!-- Trust Text -->
+      <p class="text-gray-500 text-xs mb-12">Trusted by 5,000+ traders worldwide.</p>
+      
+      <!-- Copyright & Disclaimer -->
+      <div class="text-gray-500 text-[10px] leading-relaxed max-w-md mx-auto">
+        <p class="mb-2">&copy; 2026 Pips_attendant. All rights reserved.</p>
+        <p>Trading foreign exchange carries a high level of risk and may not be suitable for all investors.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Floating Telegram Button -->
+  <a href="https://t.me/pipsattendant" target="_blank" class="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-tr from-sky-400 to-blue-600 rounded-full flex items-center justify-center text-white shadow-[0_0_20px_rgba(56,189,248,0.4)] z-50 hover:shadow-[0_0_30px_rgba(56,189,248,0.6)] transition-all hover:scale-110 active:scale-95 duration-300" aria-label="Contact on Telegram">
+    <i data-feather="message-circle" class="w-7 h-7"></i>
+  </a>
+
+  <!-- Custom Logic -->
+  <script src="app.js"></script>
+</body>
+</html>

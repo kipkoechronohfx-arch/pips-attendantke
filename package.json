@@ -1,0 +1,11 @@
+{
+  "name": "link-landing-page",
+  "version": "1.0.0",
+  "description": "Premium glassmorphic link landing page with a simulated notification engine and sound synthesizer.",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx http-server -p 3000 ."
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
