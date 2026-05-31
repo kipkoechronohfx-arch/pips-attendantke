@@ -201,28 +201,48 @@
   <script>
     feather.replace();
 
-    // The VIP password (change this to whatever you want!)
-    const VIP_PASSWORD = 'PIPSVIP2026';
-
-    function checkPassword() {
+    async function checkPassword() {
       const input = document.getElementById('vipPassword').value.trim();
       const error = document.getElementById('gateError');
+      const btn = document.querySelector('button[onclick="checkPassword()"]');
+      
+      if (!input) return;
 
-      if (input.toUpperCase() === VIP_PASSWORD.toUpperCase()) {
-        // Correct! Save to session and show content
-        sessionStorage.setItem('vip_unlocked', 'true');
-        document.getElementById('gatePanel').style.display = 'none';
-        document.getElementById('contentPanel').classList.remove('hidden');
-        feather.replace();
-      } else {
-        error.textContent = '❌ Incorrect password. Please try again.';
-        document.getElementById('vipPassword').value = '';
-        setTimeout(() => { error.textContent = ''; }, 3000);
+      // Loading state
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<span class="animate-pulse">Verifying...</span>';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/verify-vip', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: input })
+        });
+        
+        const data = await res.json();
+
+        if (data.ok) {
+          // Correct! Save session token and show content
+          sessionStorage.setItem('vip_session_token', data.sessionToken);
+          document.getElementById('gatePanel').style.display = 'none';
+          document.getElementById('contentPanel').classList.remove('hidden');
+          feather.replace();
+        } else {
+          error.textContent = '❌ Incorrect password. Please try again.';
+          document.getElementById('vipPassword').value = '';
+          setTimeout(() => { error.textContent = ''; }, 3000);
+        }
+      } catch (err) {
+        error.textContent = '❌ Server error. Please try again later.';
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
       }
     }
 
     function lockVIP() {
-      sessionStorage.removeItem('vip_unlocked');
+      sessionStorage.removeItem('vip_session_token');
       document.getElementById('gatePanel').style.display = '';
       document.getElementById('contentPanel').classList.add('hidden');
       document.getElementById('vipPassword').value = '';
@@ -230,7 +250,7 @@
 
     // Auto-unlock if already authenticated this session
     window.addEventListener('DOMContentLoaded', () => {
-      if (sessionStorage.getItem('vip_unlocked') === 'true') {
+      if (sessionStorage.getItem('vip_session_token')) {
         document.getElementById('gatePanel').style.display = 'none';
         document.getElementById('contentPanel').classList.remove('hidden');
       }

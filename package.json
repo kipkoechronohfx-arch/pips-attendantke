@@ -1,11 +1,19 @@
 {
-  "name": "link-landing-page",
+  "name": "pips-attendant-server",
   "version": "1.0.0",
-  "description": "Premium glassmorphic link landing page with a simulated notification engine and sound synthesizer.",
-  "main": "index.html",
+  "description": "Pips_attendant trading platform with Express backend",
+  "main": "server.js",
   "scripts": {
-    "dev": "npx http-server -p 3000 ."
+    "start": "node server.js",
+    "dev": "node server.js"
   },
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "node-fetch": "^2.7.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }

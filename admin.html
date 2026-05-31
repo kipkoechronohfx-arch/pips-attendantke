@@ -1033,45 +1033,50 @@
       // Visual Loading State
       broadcastBtn.disabled = true;
       broadcastBtn.classList.add('opacity-75', 'cursor-not-allowed');
-      feedbackMsg.innerHTML = '<span class="text-neon-blue animate-pulse flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-neon-blue animate-ping"></span>Broadcasting...</span>';
+      feedbackMsg.innerHTML = '<span class="text-neon-blue animate-pulse flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-neon-blue animate-ping"></span>Broadcasting via API...</span>';
       
       const imageInput = document.getElementById('chartImage');
-      const hasImage = imageInput.files && imageInput.files[0];
-      const endpoint = hasImage ? 'sendPhoto' : 'sendMessage';
-      const url = `https://api.telegram.org/bot${token}/${endpoint}`;
+      const file = imageInput.files ? imageInput.files[0] : null;
       
-      let body;
-      let headers = {};
-      
-      if (hasImage) {
-        body = new FormData();
-        body.append('chat_id', chat);
-        body.append('photo', imageInput.files[0]);
-        body.append('caption', messageText);
-        body.append('parse_mode', 'Markdown');
-      } else {
-        headers['Content-Type'] = 'application/json';
-        body = JSON.stringify({
-          chat_id: chat,
-          text: messageText,
-          parse_mode: 'Markdown'
-        });
-      }
-      
+      const payload = {
+        token: token,
+        chatId: chat,
+        text: messageText,
+        type: 'signal'
+      };
+
       try {
-        const response = await fetch(url, {
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = async function(event) {
+            payload.imageBase64 = event.target.result;
+            await doBackendBroadcast(payload, broadcastBtn, feedbackMsg);
+          };
+          reader.readAsDataURL(file);
+        } else {
+          await doBackendBroadcast(payload, broadcastBtn, feedbackMsg);
+        }
+      } catch (err) {
+        console.error(err);
+        feedbackMsg.innerHTML = '<span class="text-rose-400">Network Error. Check connection.</span>';
+        broadcastBtn.disabled = false;
+        broadcastBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+      }
+    }
+
+    async function doBackendBroadcast(payload, btn, feedbackEl) {
+      try {
+        const response = await fetch('/api/broadcast', {
           method: 'POST',
-          headers: headers,
-          body: body
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
         });
-        
         const data = await response.json();
         
         if (data.ok) {
           showToast();
-          feedbackMsg.innerHTML = '<span class="text-emerald-400">Broadcast sent successfully!</span>';
+          feedbackEl.innerHTML = '<span class="text-emerald-400">Broadcast sent successfully!</span>';
           
-          // Clear signal values (except defaults)
           document.getElementById('entryPrice').value = '';
           document.getElementById('stopLoss').value = '';
           document.getElementById('tp1').value = '';
@@ -1081,14 +1086,13 @@
           clearImage();
           updateLivePreview();
         } else {
-          feedbackMsg.innerHTML = `<span class="text-rose-400">Error: ${data.description || 'Failed to send'}</span>`;
+          feedbackEl.innerHTML = `<span class="text-rose-400">Error: ${data.error || 'Failed to send'}</span>`;
         }
       } catch (err) {
-        console.error(err);
-        feedbackMsg.innerHTML = '<span class="text-rose-400">Network Error. Check connection.</span>';
+        feedbackEl.innerHTML = '<span class="text-rose-400">API Error. Is the backend running?</span>';
       } finally {
-        broadcastBtn.disabled = false;
-        broadcastBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+        btn.disabled = false;
+        btn.classList.remove('opacity-75', 'cursor-not-allowed');
       }
     }
 
@@ -1245,76 +1249,63 @@
 
       const text = document.getElementById('engMessage').value;
       const stickerId = document.getElementById('engStickerId').value.trim();
-      const imageFile = document.getElementById('engImage').files[0];
+      const file = document.getElementById('engImage').files[0];
 
-      if (!text && !stickerId && !imageFile) {
+      if (!text && !stickerId && !file) {
         feedbackMsg.innerHTML = '<span class="text-amber-400">Please provide a message, sticker, or image.</span>';
         return;
       }
 
       btn.disabled = true;
       btn.classList.add('opacity-75', 'cursor-not-allowed');
-      feedbackMsg.innerHTML = '<span class="text-sky-400 animate-pulse">Sending to Telegram...</span>';
+      feedbackMsg.innerHTML = '<span class="text-sky-400 animate-pulse">Sending via API...</span>';
+
+      const payload = { token, chatId: chat, text, stickerId, type: 'engagement' };
 
       try {
-        let sentTextOrImage = false;
-
-        if (imageFile) {
-          const formData = new FormData();
-          formData.append('chat_id', chat);
-          formData.append('photo', imageFile);
-          if (text && !stickerId) {
-             formData.append('caption', text);
-             formData.append('parse_mode', 'Markdown');
-          }
-          const res = await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
-            method: 'POST',
-            body: formData
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = async function(event) {
+            payload.imageBase64 = event.target.result;
+            await sendPayload('/api/broadcast', payload, btn, feedbackMsg, () => {
+              document.getElementById('engMessage').value = '';
+              document.getElementById('engStickerId').value = '';
+              clearEngImage();
+              updateEngPreview();
+            });
+          };
+          reader.readAsDataURL(file);
+        } else {
+          await sendPayload('/api/broadcast', payload, btn, feedbackMsg, () => {
+            document.getElementById('engMessage').value = '';
+            document.getElementById('engStickerId').value = '';
+            clearEngImage();
+            updateEngPreview();
           });
-          const data = await res.json();
-          if (!data.ok) throw new Error(data.description);
-          sentTextOrImage = true;
-        } 
-        
-        if (text && !sentTextOrImage) {
-          const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              chat_id: chat,
-              text: text,
-              parse_mode: 'Markdown',
-              disable_web_page_preview: true
-            })
-          });
-          const data = await res.json();
-          if (!data.ok) throw new Error(data.description);
         }
-
-        if (stickerId) {
-          const res = await fetch(`https://api.telegram.org/bot${token}/sendSticker`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              chat_id: chat,
-              sticker: stickerId
-            })
-          });
-          const data = await res.json();
-          if (!data.ok) throw new Error(data.description);
-        }
-
-        feedbackMsg.innerHTML = '<span class="text-emerald-400">Message sent successfully!</span>';
-        showToast();
-        
-        document.getElementById('engMessage').value = '';
-        document.getElementById('engStickerId').value = '';
-        clearEngImage();
-        updateEngPreview();
-
       } catch (err) {
         console.error(err);
-        feedbackMsg.innerHTML = `<span class="text-rose-400">Error: ${err.message || 'Failed to send'}</span>`;
+        feedbackMsg.innerHTML = `<span class="text-rose-400">Error: ${err.message}</span>`;
+        btn.disabled = false;
+        btn.classList.remove('opacity-75', 'cursor-not-allowed');
+      }
+    }
+
+    async function sendPayload(url, payload, btn, feedbackEl, onSuccess) {
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'Request failed');
+        
+        feedbackEl.innerHTML = '<span class="text-emerald-400">Sent successfully!</span>';
+        showToast();
+        if (onSuccess) onSuccess();
+      } catch (err) {
+        feedbackEl.innerHTML = `<span class="text-rose-400">Error: ${err.message}</span>`;
       } finally {
         btn.disabled = false;
         btn.classList.remove('opacity-75', 'cursor-not-allowed');
@@ -1402,44 +1393,20 @@
         return;
       }
 
-      // Combine message and link
       let fullMessage = msg;
-      if (link) {
-         fullMessage += `\n\n${link}`;
-      }
+      if (link) fullMessage += `\n\n${link}`;
 
       btn.disabled = true;
       btn.classList.add('opacity-75', 'cursor-not-allowed');
-      feedbackMsg.innerHTML = '<span class="text-sky-400 animate-pulse">Broadcasting Live Alert...</span>';
+      feedbackMsg.innerHTML = '<span class="text-sky-400 animate-pulse">Broadcasting via API...</span>';
 
-      try {
-        const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: chat,
-            text: fullMessage,
-            parse_mode: 'Markdown',
-            disable_web_page_preview: false // We explicitly want link previews for video chat links
-          })
-        });
-        const data = await res.json();
-        if (!data.ok) throw new Error(data.description);
-
-        feedbackMsg.innerHTML = '<span class="text-emerald-400">Live Alert sent successfully!</span>';
-        showToast();
-        
+      const payload = { token, chatId: chat, text: fullMessage, type: 'live' };
+      
+      await sendPayload('/api/broadcast', payload, btn, feedbackMsg, () => {
         document.getElementById('liveMessage').value = '';
         document.getElementById('liveInviteLink').value = '';
         updateLiveRoomPreview();
-
-      } catch (err) {
-        console.error(err);
-        feedbackMsg.innerHTML = `<span class="text-rose-400">Error: ${err.message || 'Failed to send'}</span>`;
-      } finally {
-        btn.disabled = false;
-        btn.classList.remove('opacity-75', 'cursor-not-allowed');
-      }
+      });
     }
 
     function shareLiveToWhatsApp() {
@@ -1521,24 +1488,11 @@
 
       btn.disabled = true;
       btn.classList.add('opacity-75', 'cursor-not-allowed');
-      feedbackMsg.innerHTML = '<span class="text-sky-400 animate-pulse">Broadcasting Recap...</span>';
+      feedbackMsg.innerHTML = '<span class="text-sky-400 animate-pulse">Broadcasting via API...</span>';
 
-      try {
-        const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chat_id: chat, text: msg, parse_mode: 'Markdown' })
-        });
-        const data = await res.json();
-        if (!data.ok) throw new Error(data.description);
-        feedbackMsg.innerHTML = '<span class="text-emerald-400">Weekly Recap sent!</span>';
-        showToast();
-      } catch (err) {
-        feedbackMsg.innerHTML = `<span class="text-rose-400">Error: ${err.message}</span>`;
-      } finally {
-        btn.disabled = false;
-        btn.classList.remove('opacity-75', 'cursor-not-allowed');
-      }
+      const payload = { token, chatId: chat, text: msg, type: 'performance' };
+      
+      await sendPayload('/api/broadcast', payload, btn, feedbackMsg);
     }
 
     function sharePerfToWhatsApp() {
