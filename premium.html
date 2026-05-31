@@ -106,7 +106,7 @@
               onkeydown="if(event.key==='Enter') checkPassword()" />
           </div>
           <div id="gateError" class="text-rose-400 text-xs min-h-[16px]"></div>
-          <button onclick="checkPassword()" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r from-amber-500 to-yellow-400 text-dark-navy hover:brightness-110 hover:shadow-[0_0_20px_rgba(251,191,36,0.4)] active:scale-95 transition duration-300 cursor-pointer text-sm">
+          <button id="unlockBtn" onclick="checkPassword()" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r from-amber-500 to-yellow-400 text-dark-navy hover:brightness-110 hover:shadow-[0_0_20px_rgba(251,191,36,0.4)] active:scale-95 transition duration-300 cursor-pointer text-sm">
             Unlock 🔓
           </button>
         </div>
@@ -405,14 +405,16 @@
     async function checkPassword() {
       const input = document.getElementById('vipPassword').value.trim();
       const error = document.getElementById('gateError');
-      const btn = document.querySelector('button[onclick="checkPassword()"]');
+      const btn = document.getElementById('unlockBtn');
       
       if (!input) return;
 
       // Loading state
-      const originalText = btn.innerHTML;
-      btn.innerHTML = '<span class="animate-pulse">Verifying...</span>';
-      btn.disabled = true;
+      const originalText = btn ? btn.innerHTML : 'Unlock 🔓';
+      if (btn) {
+        btn.innerHTML = '<span class="animate-pulse">Verifying...</span>';
+        btn.disabled = true;
+      }
 
       try {
         const res = await fetch('/api/verify-vip', {
@@ -432,15 +434,18 @@
           document.getElementById('contentPanel').classList.remove('hidden');
           feather.replace();
         } else {
-          error.textContent = '❌ Incorrect password. Please try again.';
+          error.textContent = `❌ ${data.error || 'Incorrect password. Please try again.'}`;
           document.getElementById('vipPassword').value = '';
-          setTimeout(() => { error.textContent = ''; }, 3000);
+          setTimeout(() => { error.textContent = ''; }, 4000);
         }
       } catch (err) {
-        error.textContent = '❌ Server error. Please try again later.';
+        error.textContent = '❌ Server error or connection timeout.';
+        setTimeout(() => { error.textContent = ''; }, 4000);
       } finally {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
+        if (btn) {
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }
       }
     }
 

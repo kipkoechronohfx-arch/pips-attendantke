@@ -38,14 +38,29 @@ const TODAYS_SETUP_FILE = path.join(DATA_DIR, 'todays_setup.json');
 
 // Helper to get configuration (especially dynamic VIP password)
 function getAppConfig() {
+  let fileConfig = {};
   try {
     if (fs.existsSync(CONFIG_FILE)) {
-      return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+      fileConfig = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
     }
   } catch (err) {
     console.error('[config read error]', err.message);
   }
-  return { vipPassword: process.env.VIP_PASSWORD || 'PIPSVIP2026' };
+
+  // Prioritize custom file-configured password, otherwise check .env, fallback to default
+  const envPassword = process.env.VIP_PASSWORD;
+  const filePassword = fileConfig.vipPassword;
+  
+  let vipPassword = 'PIPSVIP2026';
+  if (filePassword && filePassword !== 'PIPSVIP2026') {
+    vipPassword = filePassword;
+  } else if (envPassword) {
+    vipPassword = envPassword;
+  } else if (filePassword) {
+    vipPassword = filePassword;
+  }
+
+  return { ...fileConfig, vipPassword };
 }
 
 function saveAppConfig(config) {
