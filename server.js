@@ -30,6 +30,38 @@ const DATA_DIR     = path.join(__dirname, 'data');
 const SIGNALS_FILE = path.join(DATA_DIR, 'signals.json');
 const SUBS_FILE    = path.join(DATA_DIR, 'subscribers.json');
 const VIP_DOCS_DIR = path.join(DATA_DIR, 'vip_documents');
+const CONFIG_FILE  = path.join(DATA_DIR, 'config.json');
+
+// Helper to get configuration (especially dynamic VIP password)
+function getAppConfig() {
+  try {
+    if (fs.existsSync(CONFIG_FILE)) {
+      return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+    }
+  } catch (err) {
+    console.error('[config read error]', err.message);
+  }
+  return { vipPassword: process.env.VIP_PASSWORD || 'PIPSVIP2026' };
+}
+
+function saveAppConfig(config) {
+  try {
+    fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
+    return true;
+  } catch (err) {
+    console.error('[config write error]', err.message);
+    return false;
+  }
+}
+
+function validateAdminKey(req, res, next) {
+  const key = req.headers['x-admin-key'];
+  const expectedKey = process.env.ADMIN_KEY || 'pips-admin-2026';
+  if (key !== expectedKey) {
+    return res.status(403).json({ ok: false, error: 'Forbidden. Invalid admin key.' });
+  }
+  next();
+}
 
 // Ensure data directory and files exist on first run
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
@@ -204,7 +236,8 @@ app.get('/api/signals', (req, res) => {
 // Server-side VIP password check (password never lives in the browser)
 app.post('/api/verify-vip', (req, res) => {
   const { password } = req.body;
-  const correct = process.env.VIP_PASSWORD || 'PIPSVIP2026';
+  const config = getAppConfig();
+  const correct = config.vipPassword || 'PIPSVIP2026';
 
   if (!password) return res.status(400).json({ ok: false, error: 'No password provided.' });
 
@@ -287,15 +320,109 @@ app.post('/api/subscribe', (req, res) => {
 });
 
 // ── GET /api/subscribers ──────────────────────────────────────
-// Returns subscriber list (admin only — add API key check in production)
-app.get('/api/subscribers', (req, res) => {
-  const key = req.headers['x-admin-key'];
-  const expectedKey = process.env.ADMIN_KEY || 'pips-admin-2026';
-  if (key !== expectedKey) {
-    return res.status(403).json({ ok: false, error: 'Forbidden.' });
-  }
+// Returns subscriber list (admin only)
+app.get('/api/subscribers', validateAdminKey, (req, res) => {
   const subscribers = readJSON(SUBS_FILE);
   res.json({ ok: true, count: subscribers.length, subscribers });
+});
+
+// ── GET /api/vip-documents ────────────────────────────────────
+// Lists metadata for VIP documents in the private folder (Admin only)
+app.get('/api/vip-documents', validateAdminKey, (req, res) => {
+  try {
+    const files = fs.readdirSync(VIP_DOCS_DIR);
+    const documents = files.map(filename => {
+      const filePath = path.join(VIP_DOCS_DIR, filename);
+      const stats = fs.statSync(filePath);
+      return {
+        filename,
+        sizeBytes: stats.size,
+        modifiedAt: stats.mtime.toISOString()
+      };
+    });
+    res.json({ ok: true, documents });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── POST /api/upload-vip-document ─────────────────────────────
+// Uploads a new VIP document from base64 (Admin only)
+app.post('/api/upload-vip-document', validateAdminKey, (req, res) => {
+  const { filename, fileData } = req.body;
+
+  if (!filename || !fileData) {
+    return res.status(400).json({ ok: false, error: 'Missing filename or fileData.' });
+  }
+
+  // 10MB file size limit protection (base64 length is ~1.33x binary size)
+  if (fileData.length > 14 * 1024 * 1024) {
+    return res.status(400).json({ ok: false, error: 'File size exceeds 10MB limit.' });
+  }
+
+  try {
+    const safeFilename = path.basename(filename);
+    const filePath = path.resolve(VIP_DOCS_DIR, safeFilename);
+
+    if (!filePath.startsWith(VIP_DOCS_DIR)) {
+      return res.status(403).json({ ok: false, error: 'Access Denied. Path traversal detected.' });
+    }
+
+    const base64Clean = fileData.replace(/^data:.*;base64,/, '');
+    const buffer = Buffer.from(base64Clean, 'base64');
+
+    fs.writeFileSync(filePath, buffer);
+    res.json({ ok: true, message: `File ${safeFilename} uploaded successfully.` });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── DELETE /api/delete-vip-document/:filename ─────────────────
+// Deletes a VIP document (Admin only)
+app.delete('/api/delete-vip-document/:filename', validateAdminKey, (req, res) => {
+  const { filename } = req.params;
+
+  if (!filename) {
+    return res.status(400).json({ ok: false, error: 'Missing filename.' });
+  }
+
+  try {
+    const safeFilename = path.basename(filename);
+    const filePath = path.resolve(VIP_DOCS_DIR, safeFilename);
+
+    if (!filePath.startsWith(VIP_DOCS_DIR)) {
+      return res.status(403).json({ ok: false, error: 'Access Denied. Path traversal detected.' });
+    }
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ ok: false, error: 'File not found.' });
+    }
+
+    fs.unlinkSync(filePath);
+    res.json({ ok: true, message: `File ${safeFilename} deleted successfully.` });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── POST /api/update-vip-password ─────────────────────────────
+// Dynamic password configuration (Admin only)
+app.post('/api/update-vip-password', validateAdminKey, (req, res) => {
+  const { vipPassword } = req.body;
+
+  if (!vipPassword || vipPassword.trim().length < 4) {
+    return res.status(400).json({ ok: false, error: 'Password must be at least 4 characters.' });
+  }
+
+  const config = getAppConfig();
+  config.vipPassword = vipPassword.trim();
+
+  if (saveAppConfig(config)) {
+    res.json({ ok: true, message: 'VIP password updated successfully.' });
+  } else {
+    res.status(500).json({ ok: false, error: 'Failed to save configuration.' });
+  }
 });
 
 // ── POST /api/engagement ─────────────────────────────────────
