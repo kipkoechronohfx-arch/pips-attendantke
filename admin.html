@@ -1273,7 +1273,8 @@
           feedbackEl.innerHTML = `<span class="text-rose-400">Error: ${data.error || 'Failed to send'}</span>`;
         }
       } catch (err) {
-        feedbackEl.innerHTML = '<span class="text-rose-400">API Error. Is the backend running?</span>';
+        console.error('Frontend Broadcast Error:', err);
+        feedbackEl.innerHTML = `<span class="text-rose-400">Error: ${err.message || 'Network/Server Error'}</span>`;
       } finally {
         btn.disabled = false;
         btn.classList.remove('opacity-75', 'cursor-not-allowed');

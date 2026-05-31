@@ -262,10 +262,14 @@ app.post('/api/broadcast', async (req, res) => {
     }
 
     // 4. Log to signals history
-    const signals = readJSON(SIGNALS_FILE);
-    signals.unshift({ id: Date.now(), type, text: text || '', sentAt: now() });
-    if (signals.length > 100) signals.pop(); // Keep max 100 entries
-    writeJSON(SIGNALS_FILE, signals);
+    try {
+      const signals = readJSON(SIGNALS_FILE);
+      signals.unshift({ id: Date.now(), type, text: text || '', sentAt: now() });
+      if (signals.length > 100) signals.pop(); // Keep max 100 entries
+      writeJSON(SIGNALS_FILE, signals);
+    } catch (logErr) {
+      console.warn('[warning] Failed to log signal to file:', logErr.message);
+    }
 
     res.json({ ok: true, message: 'Broadcast sent and logged.' });
   } catch (err) {
