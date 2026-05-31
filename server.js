@@ -14,6 +14,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
 const fetch = require('node-fetch');
 const fs = require('fs');
 const path = require('path');
@@ -87,6 +88,22 @@ dummyDocs.forEach(doc => {
 // ── Middleware ───────────────────────────────────────────────
 app.use(cors());
 app.use(express.json());
+
+// Global rate limiter for all API requests
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: { ok: false, error: 'Too many requests, please try again later.' }
+});
+
+// Stricter rate limiter specifically for VIP password verification
+const vipAuthLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // Limit each IP to 10 failed/successful password attempts per window
+  message: { ok: false, error: 'Too many password attempts. Try again in 15 minutes.' }
+});
+
+app.use('/api/', globalLimiter);
 
 // Block access to sensitive server configuration/code files
 app.use((req, res, next) => {
@@ -234,7 +251,7 @@ app.get('/api/signals', (req, res) => {
 
 // ── POST /api/verify-vip ──────────────────────────────────────
 // Server-side VIP password check (password never lives in the browser)
-app.post('/api/verify-vip', (req, res) => {
+app.post('/api/verify-vip', vipAuthLimiter, (req, res) => {
   const { password } = req.body;
   const config = getAppConfig();
   const correct = config.vipPassword || 'PIPSVIP2026';
