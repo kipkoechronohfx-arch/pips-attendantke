@@ -21,6 +21,7 @@ const path = require('path');
 const crypto = require('crypto');
 
 const app = express();
+app.set('trust proxy', 1); // Trust Render's load balancer for rate limiting
 const PORT = process.env.PORT || 3000;
 
 // Generate a secure HMAC key on startup
@@ -273,7 +274,7 @@ app.post('/api/pay-vip', globalLimiter, async (req, res) => {
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const callback_url = `${protocol}://${host}/api/payhero-webhook`;
 
-    const response = await fetch('https://app.payhero.co.ke/api/v2/payments', {
+    const response = await fetch('https://backend.payhero.co.ke/api/v2/payments', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
