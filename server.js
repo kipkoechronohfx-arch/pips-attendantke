@@ -322,7 +322,8 @@ app.post('/api/payhero-webhook', async (req, res) => {
       const payments = readJSON(PAYMENTS_FILE);
       if (payments[ref]) {
         // Mark as Success if status matches known success strings
-        const isSuccess = ['Success', 'Completed', 'Successful'].includes(String(status));
+        const statusStr = String(status).toLowerCase();
+        const isSuccess = ['success', 'completed', 'successful'].includes(statusStr) || body.status === true || body.success === true;
         payments[ref].status = isSuccess ? 'Success' : 'Failed';
         payments[ref].rawWebhook = body;
         writeJSON(PAYMENTS_FILE, payments);
