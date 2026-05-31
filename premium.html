@@ -128,7 +128,7 @@
               <p class="text-gray-400 text-xs mt-0.5">Advanced ICT & SMC strategy breakdown. 42 pages.</p>
             </div>
           </div>
-          <a href="#" class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-400/10 border border-amber-400/20 hover:bg-amber-400/20 hover:border-amber-400/50 text-amber-400 text-xs font-bold transition cursor-pointer">
+          <a href="#" data-filename="smart-money-concepts-guide.pdf" class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-400/10 border border-amber-400/20 hover:bg-amber-400/20 hover:border-amber-400/50 text-amber-400 text-xs font-bold transition cursor-pointer">
             <i data-feather="download" class="w-3.5 h-3.5"></i> Download
           </a>
         </div>
@@ -142,7 +142,7 @@
               <p class="text-gray-400 text-xs mt-0.5">Position sizing, lot calculator, drawdown rules. 18 pages.</p>
             </div>
           </div>
-          <a href="#" class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-emerald-400 text-xs font-bold transition cursor-pointer">
+          <a href="#" data-filename="risk-management-workbook.pdf" class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-emerald-400 text-xs font-bold transition cursor-pointer">
             <i data-feather="download" class="w-3.5 h-3.5"></i> Download
           </a>
         </div>
@@ -156,7 +156,7 @@
               <p class="text-gray-400 text-xs mt-0.5">My personal top 5 trade setups with real examples.</p>
             </div>
           </div>
-          <a href="#" class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-neon-blue/10 border border-neon-blue/20 hover:bg-neon-blue/20 hover:border-neon-blue/50 text-neon-blue text-xs font-bold transition cursor-pointer">
+          <a href="#" data-filename="high-probability-setups-playbook.pdf" class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-neon-blue/10 border border-neon-blue/20 hover:bg-neon-blue/20 hover:border-neon-blue/50 text-neon-blue text-xs font-bold transition cursor-pointer">
             <i data-feather="download" class="w-3.5 h-3.5"></i> Download
           </a>
         </div>
@@ -172,7 +172,7 @@
               <p class="text-gray-400 text-xs mt-0.5">My exact EMA periods and color settings for TradingView.</p>
             </div>
           </div>
-          <a href="#" class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-neon-purple/10 border border-neon-purple/20 hover:bg-neon-purple/20 hover:border-neon-purple/50 text-neon-purple text-xs font-bold transition cursor-pointer">
+          <a href="#" data-filename="custom-ema-settings-pack.zip" class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-neon-purple/10 border border-neon-purple/20 hover:bg-neon-purple/20 hover:border-neon-purple/50 text-neon-purple text-xs font-bold transition cursor-pointer">
             <i data-feather="download" class="w-3.5 h-3.5"></i> Download
           </a>
         </div>
@@ -186,7 +186,7 @@
               <p class="text-gray-400 text-xs mt-0.5">Key trading times for London, NY & Asian overlap sessions.</p>
             </div>
           </div>
-          <a href="#" class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/20 hover:border-rose-500/50 text-rose-400 text-xs font-bold transition cursor-pointer">
+          <a href="#" data-filename="session-kill-zones-cheat-sheet.pdf" class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/20 hover:border-rose-500/50 text-rose-400 text-xs font-bold transition cursor-pointer">
             <i data-feather="download" class="w-3.5 h-3.5"></i> Download
           </a>
         </div>
@@ -200,6 +200,17 @@
 
   <script>
     feather.replace();
+
+    function updateDownloadLinks() {
+      const token = sessionStorage.getItem('vip_session_token');
+      if (!token) return;
+      
+      const downloadLinks = document.querySelectorAll('a[data-filename]');
+      downloadLinks.forEach(link => {
+        const file = link.getAttribute('data-filename');
+        link.href = `/api/download-vip?file=${encodeURIComponent(file)}&token=${encodeURIComponent(token)}`;
+      });
+    }
 
     async function checkPassword() {
       const input = document.getElementById('vipPassword').value.trim();
@@ -225,6 +236,7 @@
         if (data.ok) {
           // Correct! Save session token and show content
           sessionStorage.setItem('vip_session_token', data.sessionToken);
+          updateDownloadLinks();
           document.getElementById('gatePanel').style.display = 'none';
           document.getElementById('contentPanel').classList.remove('hidden');
           feather.replace();
@@ -246,11 +258,17 @@
       document.getElementById('gatePanel').style.display = '';
       document.getElementById('contentPanel').classList.add('hidden');
       document.getElementById('vipPassword').value = '';
+      // Reset link hrefs
+      const downloadLinks = document.querySelectorAll('a[data-filename]');
+      downloadLinks.forEach(link => {
+        link.href = '#';
+      });
     }
 
     // Auto-unlock if already authenticated this session
     window.addEventListener('DOMContentLoaded', () => {
       if (sessionStorage.getItem('vip_session_token')) {
+        updateDownloadLinks();
         document.getElementById('gatePanel').style.display = 'none';
         document.getElementById('contentPanel').classList.remove('hidden');
       }

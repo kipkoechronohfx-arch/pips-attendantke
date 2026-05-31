@@ -17,23 +17,55 @@ const cors = require('cors');
 const fetch = require('node-fetch');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Generate a secure HMAC key on startup
+const serverSecret = crypto.randomBytes(32).toString('hex');
 
 // ── Paths ────────────────────────────────────────────────────
 const DATA_DIR     = path.join(__dirname, 'data');
 const SIGNALS_FILE = path.join(DATA_DIR, 'signals.json');
 const SUBS_FILE    = path.join(DATA_DIR, 'subscribers.json');
+const VIP_DOCS_DIR = path.join(DATA_DIR, 'vip_documents');
 
 // Ensure data directory and files exist on first run
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
 if (!fs.existsSync(SIGNALS_FILE)) fs.writeFileSync(SIGNALS_FILE, '[]');
 if (!fs.existsSync(SUBS_FILE))    fs.writeFileSync(SUBS_FILE, '[]');
 
+// Ensure VIP documents directory and placeholder files exist
+if (!fs.existsSync(VIP_DOCS_DIR)) fs.mkdirSync(VIP_DOCS_DIR);
+const dummyDocs = [
+  { name: 'smart-money-concepts-guide.pdf', content: 'PDF Dummy Content: Smart Money Concepts Guide' },
+  { name: 'risk-management-workbook.pdf', content: 'PDF Dummy Content: Risk Management Workbook' },
+  { name: 'high-probability-setups-playbook.pdf', content: 'PDF Dummy Content: High Probability Setups Playbook' },
+  { name: 'custom-ema-settings-pack.zip', content: 'ZIP Dummy Content: Custom EMA Settings Pack' },
+  { name: 'session-kill-zones-cheat-sheet.pdf', content: 'PDF Dummy Content: Session Kill Zones Cheat Sheet' }
+];
+dummyDocs.forEach(doc => {
+  const filePath = path.join(VIP_DOCS_DIR, doc.name);
+  if (!fs.existsSync(filePath)) {
+    fs.writeFileSync(filePath, doc.content);
+  }
+});
+
 // ── Middleware ───────────────────────────────────────────────
 app.use(cors());
 app.use(express.json());
+
+// Block access to sensitive server configuration/code files
+app.use((req, res, next) => {
+  const forbiddenFiles = ['.env', 'server.js', 'package.json', 'package-lock.json', '.gitignore'];
+  const requestedFile = path.basename(req.path).toLowerCase();
+  if (forbiddenFiles.includes(requestedFile) || req.path.startsWith('/data')) {
+    return res.status(403).json({ error: 'Access Denied' });
+  }
+  next();
+});
+
 app.use(express.static(__dirname)); // Serve all static HTML/CSS/JS files
 
 // ── Helpers ──────────────────────────────────────────────────
@@ -177,12 +209,59 @@ app.post('/api/verify-vip', (req, res) => {
   if (!password) return res.status(400).json({ ok: false, error: 'No password provided.' });
 
   if (password.toUpperCase() === correct.toUpperCase()) {
-    // Return a simple session token (timestamp-based, lightweight)
-    const sessionToken = Buffer.from(`vip:${Date.now()}`).toString('base64');
+    // Generate a secure HMAC-signed token
+    const expires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+    const hmac = crypto.createHmac('sha256', serverSecret).update(String(expires)).digest('hex');
+    const sessionToken = `${expires}.${hmac}`;
     res.json({ ok: true, sessionToken });
   } else {
     res.status(401).json({ ok: false, error: 'Incorrect password.' });
   }
+});
+
+// ── GET /api/download-vip ─────────────────────────────────────
+// Secure document download (verifies token & prevents path traversal)
+app.get('/api/download-vip', (req, res) => {
+  const { file, token } = req.query;
+
+  if (!file || !token) {
+    return res.status(400).json({ error: 'Missing file or token.' });
+  }
+
+  // 1. Verify session token
+  try {
+    const [expires, hmac] = token.split('.');
+    if (!expires || !hmac) {
+      return res.status(401).json({ error: 'Invalid token format.' });
+    }
+
+    if (Date.now() > Number(expires)) {
+      return res.status(401).json({ error: 'Session expired. Please log in again.' });
+    }
+
+    const expectedHmac = crypto.createHmac('sha256', serverSecret).update(String(expires)).digest('hex');
+    if (hmac !== expectedHmac) {
+      return res.status(401).json({ error: 'Invalid token signature.' });
+    }
+  } catch (err) {
+    return res.status(401).json({ error: 'Token verification failed.' });
+  }
+
+  // 2. Prevent Directory Traversal
+  const safeFilename = path.basename(file);
+  const filePath = path.resolve(VIP_DOCS_DIR, safeFilename);
+
+  // Double check that the resolved path is actually inside the VIP_DOCS_DIR
+  if (!filePath.startsWith(VIP_DOCS_DIR)) {
+    return res.status(403).json({ error: 'Access Denied. Path traversal detected.' });
+  }
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: 'Requested file not found.' });
+  }
+
+  // 3. Serve the file for download
+  res.download(filePath, safeFilename);
 });
 
 // ── POST /api/subscribe ───────────────────────────────────────
