@@ -131,10 +131,17 @@
           </div>
 
           <div>
-            <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">Telegram Channel/Chat ID</label>
+            <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">Telegram Channel/Chat ID (General)</label>
             <input type="text" id="chatId" required placeholder="@yourchannel or -100123456789"
               class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-neon-blue/60 focus:outline-none focus:shadow-[0_0_10px_rgba(0,240,255,0.25)] transition duration-200" />
             <p class="text-[10px] text-gray-500 mt-1">Add your bot as an administrator to your channel so it can post.</p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-amber-400 mb-1.5">VIP Channel/Chat ID (Optional)</label>
+            <input type="text" id="vipChatId" placeholder="@yourvipchannel or -100987654321"
+              class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/60 focus:outline-none focus:shadow-[0_0_10px_rgba(251,191,36,0.25)] transition duration-200" />
+            <p class="text-[10px] text-gray-500 mt-1">Leave blank if you don't have a separate VIP channel yet.</p>
           </div>
 
           <div>
@@ -157,6 +164,21 @@
       <!-- Left Column: Form Controls (7 cols) -->
       <form id="broadcastForm" onsubmit="sendBroadcast(event)" class="lg:col-span-7 space-y-6">
         
+        <!-- Target Audience Selection -->
+        <div class="glass-card rounded-2xl p-6 border border-white/10">
+          <span class="block text-xs font-bold uppercase tracking-wider text-neon-blue mb-4">0. Target Audience</span>
+          <div class="flex items-center gap-6">
+            <label class="flex items-center gap-2 cursor-pointer group">
+              <input type="radio" name="targetChannel" value="general" checked class="w-4 h-4 text-neon-blue bg-black border-white/20 focus:ring-neon-blue focus:ring-offset-gray-900" />
+              <span class="text-sm font-medium text-gray-300 group-hover:text-white transition">General Community</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer group">
+              <input type="radio" name="targetChannel" value="vip" class="w-4 h-4 text-amber-500 bg-black border-white/20 focus:ring-amber-500 focus:ring-offset-gray-900" />
+              <span class="text-sm font-medium text-gray-300 group-hover:text-amber-400 transition">VIP Channel</span>
+            </label>
+          </div>
+        </div>
+
         <!-- Template Selection -->
         <div class="glass-card rounded-2xl p-6 border border-white/10">
           <span class="block text-xs font-bold uppercase tracking-wider text-neon-blue mb-4">1. Select Signal Template</span>
@@ -953,6 +975,7 @@
     function checkCredentials() {
       const token = localStorage.getItem('pa_bot_token');
       const chat = localStorage.getItem('pa_chat_id');
+      const vipChat = localStorage.getItem('pa_vip_chat_id');
       const adminKey = localStorage.getItem('pa_admin_key');
       
       if (token && chat && adminKey) {
@@ -983,6 +1006,7 @@
         if (document.getElementById('botToken')) {
           document.getElementById('botToken').value = token || '';
           document.getElementById('chatId').value = chat || '';
+          document.getElementById('vipChatId').value = vipChat || '';
           document.getElementById('adminKey').value = adminKey || '';
         }
       }
@@ -992,11 +1016,14 @@
       e.preventDefault();
       const token = document.getElementById('botToken').value.trim();
       const chat = document.getElementById('chatId').value.trim();
+      const vipChat = document.getElementById('vipChatId').value.trim();
       const adminKey = document.getElementById('adminKey').value.trim();
       
       if (token && chat && adminKey) {
         localStorage.setItem('pa_bot_token', token);
         localStorage.setItem('pa_chat_id', chat);
+        if (vipChat) localStorage.setItem('pa_vip_chat_id', vipChat);
+        else localStorage.removeItem('pa_vip_chat_id');
         localStorage.setItem('pa_admin_key', adminKey);
         checkCredentials();
       }
@@ -1006,6 +1033,7 @@
       if (confirm('Are you sure you want to change your credentials?')) {
         localStorage.removeItem('pa_bot_token');
         localStorage.removeItem('pa_chat_id');
+        localStorage.removeItem('pa_vip_chat_id');
         localStorage.removeItem('pa_admin_key');
         checkCredentials();
       }
@@ -1163,11 +1191,22 @@
       e.preventDefault();
       
       const token = localStorage.getItem('pa_bot_token');
-      const chat = localStorage.getItem('pa_chat_id');
+      const generalChat = localStorage.getItem('pa_chat_id');
+      const vipChat = localStorage.getItem('pa_vip_chat_id');
       
-      if (!token || !chat) {
+      if (!token || !generalChat) {
         alert('Credentials missing! Please setup settings first.');
         checkCredentials();
+        return;
+      }
+
+      // Determine target channel
+      const targetSelection = document.querySelector('input[name="targetChannel"]:checked');
+      const isVip = targetSelection && targetSelection.value === 'vip';
+      const chat = isVip ? vipChat : generalChat;
+
+      if (isVip && !chat) {
+        alert('VIP Channel Chat ID is missing! Please configure it in Setup Credentials.');
         return;
       }
 
