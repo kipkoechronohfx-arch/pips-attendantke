@@ -128,8 +128,8 @@
         </button>
       </div>
 
-      <!-- Today's Setup Section -->
-      <div id="todaysSetupSection" class="hidden mb-10">
+      <!-- Today's Setup Section - Always visible, shows placeholder when no image -->
+      <div id="todaysSetupSection" class="mb-10">
         <div class="glass-card border border-amber-400/20 rounded-2xl overflow-hidden relative group">
           <!-- Premium Header -->
           <div class="bg-gradient-to-r from-amber-500/10 to-transparent p-4 border-b border-white/5 flex items-center justify-between">
@@ -143,17 +143,61 @@
           </div>
           
           <!-- Image Container -->
-          <div class="p-4 bg-black/40 flex justify-center">
-            <img id="todaysSetupImage" src="" alt="Today's Analysis" class="max-w-full h-auto rounded-xl border border-white/10 shadow-lg" />
+          <div class="p-4 bg-black/40 flex justify-center" id="setupImageContainer">
+            <!-- Placeholder shown when no image uploaded -->
+            <div id="setupPlaceholder" class="w-full flex flex-col items-center justify-center py-16 rounded-xl border border-dashed border-amber-400/20 bg-amber-500/5 text-center">
+              <div class="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center mb-4 mx-auto">
+                <i data-feather="image" class="w-8 h-8 text-amber-400/50"></i>
+              </div>
+              <p class="text-amber-400/70 font-bold text-sm">Today's Setup Coming Soon</p>
+              <p class="text-gray-500 text-xs mt-1">Check back soon — the admin uploads fresh analysis daily.</p>
+            </div>
+            <!-- Actual image (hidden until loaded) -->
+            <img id="todaysSetupImage" src="" alt="Today's Analysis" class="hidden max-w-full h-auto rounded-xl border border-white/10 shadow-lg" />
           </div>
 
           <!-- Footer/Download -->
           <div class="p-4 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 bg-black/20">
             <p class="text-gray-400 text-xs">This setup is updated daily by the admin.</p>
-            <a id="todaysSetupDownload" href="#" download="todays-setup.png" class="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500 hover:text-dark-navy transition duration-300 shadow-[0_0_15px_rgba(251,191,36,0.2)]">
+            <a id="todaysSetupDownload" href="#" download="todays-setup.png" class="hidden flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500 hover:text-dark-navy transition duration-300 shadow-[0_0_15px_rgba(251,191,36,0.2)]">
               <i data-feather="download" class="w-4 h-4"></i>
               Download Image
             </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Market Sentiment Widget -->
+      <div class="mb-10">
+        <div class="glass-card border border-cyan-400/20 rounded-2xl overflow-hidden">
+          <div class="bg-gradient-to-r from-cyan-500/10 to-transparent p-4 border-b border-white/5 flex items-center gap-3">
+            <div class="p-2 bg-cyan-500/20 rounded-lg">
+              <i data-feather="bar-chart-2" class="w-5 h-5 text-cyan-400"></i>
+            </div>
+            <h3 class="text-white font-bold text-lg">Market Sentiment: XAUUSD</h3>
+            <span class="ml-auto flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="text-emerald-400 text-xs font-bold">LIVE</span>
+            </span>
+          </div>
+          <div class="p-4 bg-black/30">
+            <!-- TradingView Technical Analysis Widget -->
+            <div class="tradingview-widget-container" style="height:400px; width:100%;">
+              <div class="tradingview-widget-container__widget" style="height:calc(100% - 32px); width:100%"></div>
+              <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" async>
+              {
+                "interval": "1h",
+                "width": "100%",
+                "isTransparent": true,
+                "height": 400,
+                "symbol": "OANDA:XAUUSD",
+                "showIntervalTabs": true,
+                "displayMode": "single",
+                "locale": "en",
+                "colorTheme": "dark"
+              }
+              <\/script>
+            </div>
           </div>
         </div>
       </div>
@@ -435,14 +479,19 @@
         const res = await fetch(`/api/todays-setup?token=${token}`);
         const data = await res.json();
         if (data.ok && data.setup.image) {
-          document.getElementById('todaysSetupSection').classList.remove('hidden');
+          // Hide placeholder, show real image + download button
+          document.getElementById('setupPlaceholder').classList.add('hidden');
           const img = document.getElementById('todaysSetupImage');
           const dlBtn = document.getElementById('todaysSetupDownload');
           
           img.src = data.setup.image;
+          img.classList.remove('hidden');
           dlBtn.href = data.setup.image;
           dlBtn.download = data.setup.filename || 'todays-setup.png';
+          dlBtn.classList.remove('hidden');
+          feather.replace();
         }
+        // If no image, placeholder stays visible (already the default)
       } catch (err) {
         console.error('Failed to load setup:', err);
       }
