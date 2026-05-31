@@ -160,10 +160,11 @@ function writeJSON(filePath, data) {
 }
 
 function getCredentials(body) {
-  // Accept credentials from environment (server-side) or fallback to body for legacy
+  // Prioritize body credentials (frontend) to support dynamically switching channels (General vs VIP).
+  // Fallback to environment variables if not provided.
   return {
-    token:  process.env.TELEGRAM_BOT_TOKEN || body.token,
-    chatId: process.env.TELEGRAM_CHAT_ID   || body.chatId,
+    token:  body.token  || process.env.TELEGRAM_BOT_TOKEN,
+    chatId: body.chatId || process.env.TELEGRAM_CHAT_ID,
   };
 }
 
