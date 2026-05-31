@@ -774,6 +774,29 @@
         <div class="flex-1 h-px bg-white/10"></div>
       </div>
 
+      <!-- Today's Setup Upload Card -->
+      <div class="glass-card border border-amber-400/20 rounded-2xl p-6 relative overflow-hidden group">
+        <div class="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-transparent pointer-events-none"></div>
+        <div class="flex items-center gap-3 mb-4">
+          <div class="p-2 bg-amber-500/10 rounded-lg">
+            <i data-feather="image" class="w-5 h-5 text-amber-400"></i>
+          </div>
+          <h3 class="text-white font-bold">Today's Setup (Analysis)</h3>
+        </div>
+        <p class="text-gray-400 text-xs mb-4">Upload a chart or analysis image. This will be prominently displayed at the top of the VIP Portal for your subscribers.</p>
+        
+        <div class="flex items-center gap-3">
+          <label class="flex-1 cursor-pointer">
+            <input type="file" id="todaysSetupFile" accept="image/*" class="hidden" onchange="uploadTodaysSetup()" />
+            <div class="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-dashed border-amber-400/30 bg-amber-400/5 text-amber-400 hover:bg-amber-400/10 hover:border-amber-400/50 transition">
+              <i data-feather="upload-cloud" class="w-4 h-4"></i>
+              <span id="setupUploadLabel">Click to Upload Image</span>
+            </div>
+          </label>
+        </div>
+        <div id="setupUploadStatus" class="mt-2 text-xs"></div>
+      </div>
+
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         <!-- Left: Subscribers List & Password Manager (7 cols) -->
@@ -1241,7 +1264,7 @@
       fileInput.value = '';
       
       document.getElementById('fileNameLabel').innerText = 'Choose Image...';
-      document.getElementById('clearImageBtn').classList.add('hidden');
+      document.getElementById('clearBtn').classList.add('hidden');
       
       const tgImgContainer = document.getElementById('tgImagePreviewContainer');
       const tgImg = document.getElementById('tgImagePreview');
@@ -1676,7 +1699,52 @@
       }
     }
 
-    // --- VIP DOCUMENTS LOGIC ---
+    // VIP Documents & Setup Management
+    async function uploadTodaysSetup() {
+      const fileInput = document.getElementById('todaysSetupFile');
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      const label = document.getElementById('setupUploadLabel');
+      const status = document.getElementById('setupUploadStatus');
+      const adminKey = localStorage.getItem('pa_admin_key');
+
+      label.innerHTML = '<i data-feather="loader" class="w-4 h-4 animate-spin"></i> Uploading...';
+      feather.replace();
+
+      try {
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          const base64Image = reader.result;
+          
+          const res = await fetch('/api/upload-todays-setup', {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'x-admin-key': adminKey 
+            },
+            body: JSON.stringify({ image: base64Image, filename: file.name })
+          });
+          
+          const data = await res.json();
+          if (data.ok) {
+            status.textContent = '✅ Setup updated successfully!';
+            status.className = 'mt-2 text-xs text-emerald-400';
+            label.innerHTML = 'Update Image Again';
+          } else {
+            status.textContent = '❌ ' + data.error;
+            status.className = 'mt-2 text-xs text-rose-400';
+            label.innerHTML = 'Click to Upload Image';
+          }
+        };
+        reader.readAsDataURL(file);
+      } catch (err) {
+        status.textContent = '❌ Error uploading file.';
+        status.className = 'mt-2 text-xs text-rose-400';
+        label.innerHTML = 'Click to Upload Image';
+      }
+    }
+
     async function fetchVIPDocuments() {
       const adminKey = localStorage.getItem('pa_admin_key');
       const container = document.getElementById('documentListContainer');

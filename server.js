@@ -34,6 +34,7 @@ const SUBS_FILE    = path.join(DATA_DIR, 'subscribers.json');
 const VIP_DOCS_DIR = path.join(DATA_DIR, 'vip_documents');
 const CONFIG_FILE  = path.join(DATA_DIR, 'config.json');
 const PAYMENTS_FILE= path.join(DATA_DIR, 'payments.json');
+const TODAYS_SETUP_FILE = path.join(DATA_DIR, 'todays_setup.json');
 
 // Helper to get configuration (especially dynamic VIP password)
 function getAppConfig() {
@@ -66,11 +67,24 @@ function validateAdminKey(req, res, next) {
   next();
 }
 
+function validateVipSession(req, res, next) {
+  const token = req.headers['x-vip-token'] || req.query.token;
+  if (!token) return res.status(401).json({ error: 'Missing token.' });
+  try {
+    const [expires, hmac] = token.split('.');
+    if (Date.now() > Number(expires)) return res.status(401).json({ error: 'Token expired.' });
+    const expectedHmac = crypto.createHmac('sha256', serverSecret).update(String(expires)).digest('hex');
+    if (hmac !== expectedHmac) return res.status(401).json({ error: 'Invalid token.' });
+    next();
+  } catch { return res.status(401).json({ error: 'Invalid token format.' }); }
+}
+
 // Ensure data directory and files exist on first run
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
 if (!fs.existsSync(SIGNALS_FILE)) fs.writeFileSync(SIGNALS_FILE, '[]');
 if (!fs.existsSync(SUBS_FILE))    fs.writeFileSync(SUBS_FILE, '[]');
 if (!fs.existsSync(PAYMENTS_FILE))fs.writeFileSync(PAYMENTS_FILE, '{}');
+if (!fs.existsSync(TODAYS_SETUP_FILE)) fs.writeFileSync(TODAYS_SETUP_FILE, JSON.stringify({}, null, 2));
 
 // Ensure VIP documents directory and placeholder files exist
 if (!fs.existsSync(VIP_DOCS_DIR)) fs.mkdirSync(VIP_DOCS_DIR);
@@ -305,6 +319,34 @@ app.post('/api/pay-vip', globalLimiter, async (req, res) => {
     console.error('[payhero error]', error);
     res.status(500).json({ ok: false, error: 'Failed to initiate payment. Please try again.' });
   }
+});
+
+// ── GET /api/todays-setup (VIP ONLY) ──────────────────────────
+app.get('/api/todays-setup', validateVipSession, (req, res) => {
+  const setup = readJSON(TODAYS_SETUP_FILE);
+  if (setup.image) {
+    res.json({ ok: true, setup });
+  } else {
+    res.json({ ok: false, error: 'No setup available for today yet.' });
+  }
+});
+
+// ── ADMIN: UPLOAD TODAY'S SETUP ───────────────────────────────
+app.post('/api/upload-todays-setup', validateAdminKey, (req, res) => {
+  const { image, filename } = req.body;
+  
+  if (!image || !image.startsWith('data:image/')) {
+    return res.status(400).json({ ok: false, error: 'Invalid image format. Must be an image.' });
+  }
+
+  const setupData = {
+    image,
+    filename: filename || 'todays-setup.png',
+    timestamp: new Date().toISOString()
+  };
+
+  writeJSON(TODAYS_SETUP_FILE, setupData);
+  res.json({ ok: true, message: 'Today\'s setup updated successfully!' });
 });
 
 // ── POST /api/payhero-webhook ─────────────────────────────────
