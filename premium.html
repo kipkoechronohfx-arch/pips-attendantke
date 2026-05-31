@@ -69,33 +69,46 @@
       <p class="text-gray-400 text-sm max-w-sm mx-auto">Exclusive strategies, indicators, and guides reserved for Pips_attendant VIP members.</p>
     </div>
 
-    <!-- PASSWORD GATE PANEL -->
+    <!-- GATE PANEL -->
     <div id="gatePanel">
-      <div class="glass-card border border-amber-400/20 rounded-2xl p-8 max-w-sm mx-auto">
+      <div class="glass-card border border-emerald-400/20 rounded-2xl p-8 max-w-sm mx-auto">
         <div class="flex items-center gap-2 mb-6">
-          <i data-feather="lock" class="w-5 h-5 text-amber-400"></i>
-          <h2 class="text-white font-bold text-lg">Enter VIP Password</h2>
+          <i data-feather="smartphone" class="w-5 h-5 text-emerald-400"></i>
+          <h2 class="text-white font-bold text-lg">VIP Access (M-Pesa)</h2>
         </div>
-        <p class="text-gray-400 text-xs mb-5">This area is exclusive to VIP members. Enter the password shared in the VIP Telegram channel to access resources.</p>
+        <p class="text-gray-400 text-xs mb-5">Pay <strong>4,000 KES</strong> via M-Pesa to unlock 30-day access to all VIP resources. Enter your phone number below.</p>
         
-        <div class="space-y-4">
+        <div class="space-y-4" id="mpesaForm">
           <div>
-            <input type="password" id="vipPassword" placeholder="Enter VIP Password"
+            <input type="tel" id="mpesaPhone" placeholder="e.g. 0712345678"
+              class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-emerald-400/50 focus:outline-none transition font-mono"
+              onkeydown="if(event.key==='Enter') payMpesa()" />
+          </div>
+          <div id="mpesaError" class="text-rose-400 text-xs min-h-[16px]"></div>
+          <button onclick="payMpesa()" id="payBtn" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r from-emerald-500 to-emerald-300 text-dark-navy hover:brightness-110 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] active:scale-95 transition duration-300 cursor-pointer text-sm">
+            Pay 4,000 KES 💸
+          </button>
+        </div>
+
+        <div class="mt-6 pt-5 border-t border-white/5 text-center">
+          <p class="text-gray-500 text-[11px] mb-2">Admin or have a manual access code?</p>
+          <button onclick="togglePasswordForm()" class="inline-flex items-center gap-2 text-amber-400 text-xs font-bold hover:underline cursor-pointer bg-transparent border-none">
+            <i data-feather="key" class="w-3.5 h-3.5"></i>
+            Use Master Password
+          </button>
+        </div>
+
+        <!-- Hidden Password Form for Admins -->
+        <div class="space-y-4 hidden mt-4 pt-4 border-t border-white/5" id="passwordForm">
+          <div>
+            <input type="password" id="vipPassword" placeholder="Enter Master Password"
               class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition font-mono"
               onkeydown="if(event.key==='Enter') checkPassword()" />
           </div>
           <div id="gateError" class="text-rose-400 text-xs min-h-[16px]"></div>
           <button onclick="checkPassword()" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r from-amber-500 to-yellow-400 text-dark-navy hover:brightness-110 hover:shadow-[0_0_20px_rgba(251,191,36,0.4)] active:scale-95 transition duration-300 cursor-pointer text-sm">
-            Unlock VIP Access 🔓
+            Unlock 🔓
           </button>
-        </div>
-
-        <div class="mt-6 pt-5 border-t border-white/5 text-center">
-          <p class="text-gray-500 text-[11px] mb-2">Don't have the password yet?</p>
-          <a href="https://t.me/pipsattendant" target="_blank" class="inline-flex items-center gap-2 text-neon-blue text-xs font-bold hover:underline">
-            <i data-feather="send" class="w-3.5 h-3.5"></i>
-            Join the Telegram Channel
-          </a>
         </div>
       </div>
     </div>
@@ -210,6 +223,108 @@
         const file = link.getAttribute('data-filename');
         link.href = `/api/download-vip?file=${encodeURIComponent(file)}&token=${encodeURIComponent(token)}`;
       });
+    }
+
+    function togglePasswordForm() {
+      const form = document.getElementById('passwordForm');
+      form.classList.toggle('hidden');
+    }
+
+    let pollInterval;
+
+    async function payMpesa() {
+      const phone = document.getElementById('mpesaPhone').value.trim();
+      const error = document.getElementById('mpesaError');
+      const btn = document.getElementById('payBtn');
+      
+      if (!phone) {
+        error.textContent = '❌ Please enter a phone number.';
+        return;
+      }
+
+      // Start Loading state
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<span class="animate-pulse flex items-center justify-center gap-2"><i data-feather="loader" class="w-4 h-4 animate-spin"></i> Initiating STK Push...</span>';
+      feather.replace();
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/pay-vip', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone })
+        });
+        
+        const data = await res.json();
+
+        if (data.ok) {
+          error.textContent = '';
+          error.classList.remove('text-rose-400');
+          error.classList.add('text-emerald-400');
+          error.textContent = '✅ STK Push sent! Please enter your PIN on your phone.';
+          
+          btn.innerHTML = '<span class="animate-pulse flex items-center justify-center gap-2"><i data-feather="loader" class="w-4 h-4 animate-spin"></i> Waiting for payment...</span>';
+          feather.replace();
+
+          // Start polling for payment success
+          pollPayment(data.reference, btn, originalText, error);
+        } else {
+          error.classList.remove('text-emerald-400');
+          error.classList.add('text-rose-400');
+          error.textContent = `❌ ${data.error}`;
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }
+      } catch (err) {
+        error.classList.add('text-rose-400');
+        error.textContent = '❌ Server error. Please try again later.';
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    }
+
+    async function pollPayment(ref, btn, originalText, errorElement) {
+      if (pollInterval) clearInterval(pollInterval);
+      let attempts = 0;
+      
+      pollInterval = setInterval(async () => {
+        attempts++;
+        if (attempts > 60) { // Timeout after 3 minutes (60 * 3s)
+          clearInterval(pollInterval);
+          errorElement.classList.add('text-rose-400');
+          errorElement.classList.remove('text-emerald-400');
+          errorElement.textContent = '❌ Payment timed out. Please try again.';
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+          return;
+        }
+
+        try {
+          const res = await fetch(`/api/check-payment/${ref}`);
+          const data = await res.json();
+          
+          if (data.ok && data.status === 'Success') {
+            clearInterval(pollInterval);
+            // Grant access
+            sessionStorage.setItem('vip_session_token', data.sessionToken);
+            updateDownloadLinks();
+            document.getElementById('gatePanel').style.display = 'none';
+            document.getElementById('contentPanel').classList.remove('hidden');
+            feather.replace();
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+          } else if (data.ok && data.status === 'Failed') {
+            clearInterval(pollInterval);
+            errorElement.classList.add('text-rose-400');
+            errorElement.classList.remove('text-emerald-400');
+            errorElement.textContent = '❌ Payment failed or was cancelled.';
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+          }
+        } catch (e) {
+          // ignore network error during polling
+        }
+      }, 3000);
     }
 
     async function checkPassword() {

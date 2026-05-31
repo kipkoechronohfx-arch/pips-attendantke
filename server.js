@@ -32,6 +32,7 @@ const SIGNALS_FILE = path.join(DATA_DIR, 'signals.json');
 const SUBS_FILE    = path.join(DATA_DIR, 'subscribers.json');
 const VIP_DOCS_DIR = path.join(DATA_DIR, 'vip_documents');
 const CONFIG_FILE  = path.join(DATA_DIR, 'config.json');
+const PAYMENTS_FILE= path.join(DATA_DIR, 'payments.json');
 
 // Helper to get configuration (especially dynamic VIP password)
 function getAppConfig() {
@@ -68,6 +69,7 @@ function validateAdminKey(req, res, next) {
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
 if (!fs.existsSync(SIGNALS_FILE)) fs.writeFileSync(SIGNALS_FILE, '[]');
 if (!fs.existsSync(SUBS_FILE))    fs.writeFileSync(SUBS_FILE, '[]');
+if (!fs.existsSync(PAYMENTS_FILE))fs.writeFileSync(PAYMENTS_FILE, '{}');
 
 // Ensure VIP documents directory and placeholder files exist
 if (!fs.existsSync(VIP_DOCS_DIR)) fs.mkdirSync(VIP_DOCS_DIR);
@@ -249,8 +251,112 @@ app.get('/api/signals', (req, res) => {
   res.json({ ok: true, signals: signals.slice(0, limit) });
 });
 
+// ── POST /api/pay-vip ─────────────────────────────────────────
+// Initiates an STK Push to the user's phone via Payhero
+app.post('/api/pay-vip', globalLimiter, async (req, res) => {
+  const { phone } = req.body;
+  const { PAYHERO_API_USER, PAYHERO_API_PASS, PAYHERO_CHANNEL_ID } = process.env;
+
+  if (!phone) return res.status(400).json({ ok: false, error: 'Phone number is required.' });
+  if (!PAYHERO_API_USER || !PAYHERO_API_PASS || !PAYHERO_CHANNEL_ID) {
+    return res.status(500).json({ ok: false, error: 'Payment gateway not configured.' });
+  }
+
+  // Generate a unique reference for this transaction
+  const ref = `VIP_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+
+  try {
+    const auth = Buffer.from(`${PAYHERO_API_USER}:${PAYHERO_API_PASS}`).toString('base64');
+    
+    // Determine callback URL (must be public for Payhero to reach it)
+    const host = req.get('host');
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    const callback_url = `${protocol}://${host}/api/payhero-webhook`;
+
+    const response = await fetch('https://app.payhero.co.ke/api/v2/payments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Basic ${auth}`
+      },
+      body: JSON.stringify({
+        amount: 4000,
+        phone_number: phone,
+        channel_id: PAYHERO_CHANNEL_ID,
+        provider: 'm-pesa',
+        external_reference: ref,
+        callback_url: callback_url
+      })
+    });
+
+    const data = await response.json();
+    if (data.success || response.ok) {
+      // Save pending transaction
+      const payments = readJSON(PAYMENTS_FILE);
+      payments[ref] = { status: 'Pending', phone, timestamp: now() };
+      writeJSON(PAYMENTS_FILE, payments);
+
+      res.json({ ok: true, reference: ref, message: 'Check your phone for the M-Pesa PIN prompt.' });
+    } else {
+      throw new Error(data.message || 'Payment initiation failed');
+    }
+  } catch (error) {
+    console.error('[payhero error]', error);
+    res.status(500).json({ ok: false, error: 'Failed to initiate payment. Please try again.' });
+  }
+});
+
+// ── POST /api/payhero-webhook ─────────────────────────────────
+// Webhook receiver for Payhero to post transaction status
+app.post('/api/payhero-webhook', async (req, res) => {
+  try {
+    const body = req.body;
+    console.log('[Payhero Webhook Received]', body);
+
+    // Extract reference and status (handles different Payhero webhook structures)
+    const ref = body.external_reference || (body.response && body.response.ExternalReference);
+    const status = body.status || (body.response && body.response.Status) || 'Failed';
+
+    if (ref) {
+      const payments = readJSON(PAYMENTS_FILE);
+      if (payments[ref]) {
+        // Mark as Success if status matches known success strings
+        const isSuccess = ['Success', 'Completed', 'Successful'].includes(String(status));
+        payments[ref].status = isSuccess ? 'Success' : 'Failed';
+        payments[ref].rawWebhook = body;
+        writeJSON(PAYMENTS_FILE, payments);
+      }
+    }
+    res.status(200).json({ received: true });
+  } catch (err) {
+    console.error('[webhook error]', err);
+    res.status(500).send('Error');
+  }
+});
+
+// ── GET /api/check-payment/:ref ───────────────────────────────
+// Polled by the frontend to check if payment succeeded and get token
+app.get('/api/check-payment/:ref', (req, res) => {
+  const { ref } = req.params;
+  const payments = readJSON(PAYMENTS_FILE);
+  const payment = payments[ref];
+
+  if (!payment) return res.status(404).json({ ok: false, error: 'Transaction not found.' });
+
+  if (payment.status === 'Success') {
+    // Generate a secure HMAC-signed token valid for 30 days
+    const expires = Date.now() + 30 * 24 * 60 * 60 * 1000; 
+    const hmac = crypto.createHmac('sha256', serverSecret).update(String(expires)).digest('hex');
+    const sessionToken = `${expires}.${hmac}`;
+    
+    res.json({ ok: true, status: 'Success', sessionToken });
+  } else {
+    res.json({ ok: true, status: payment.status });
+  }
+});
+
 // ── POST /api/verify-vip ──────────────────────────────────────
-// Server-side VIP password check (password never lives in the browser)
+// Server-side VIP password check (Admin backup override)
 app.post('/api/verify-vip', vipAuthLimiter, (req, res) => {
   const { password } = req.body;
   const config = getAppConfig();
@@ -259,8 +365,8 @@ app.post('/api/verify-vip', vipAuthLimiter, (req, res) => {
   if (!password) return res.status(400).json({ ok: false, error: 'No password provided.' });
 
   if (password.toUpperCase() === correct.toUpperCase()) {
-    // Generate a secure HMAC-signed token
-    const expires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+    // Generate a secure HMAC-signed token for 30 days
+    const expires = Date.now() + 30 * 24 * 60 * 60 * 1000; 
     const hmac = crypto.createHmac('sha256', serverSecret).update(String(expires)).digest('hex');
     const sessionToken = `${expires}.${hmac}`;
     res.json({ ok: true, sessionToken });
