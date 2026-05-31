@@ -315,7 +315,7 @@ app.post('/api/pay-vip', globalLimiter, async (req, res) => {
         'Authorization': `Basic ${auth}`
       },
       body: JSON.stringify({
-        amount: 20,
+        amount: 5000,
         phone_number: phone,
         channel_id: PAYHERO_CHANNEL_ID,
         provider: 'm-pesa',
