@@ -479,6 +479,38 @@ app.get('/api/download-vip', (req, res) => {
   res.download(filePath, safeFilename);
 });
 
+// ── GET /api/redirect-vip-telegram ────────────────────────────
+// Secure redirection to VIP Telegram (prevents scraping from HTML)
+app.get('/api/redirect-vip-telegram', (req, res) => {
+  const { token } = req.query;
+
+  if (!token) {
+    return res.status(400).send('Missing session token.');
+  }
+
+  // 1. Verify session token
+  try {
+    const [expires, hmac] = token.split('.');
+    if (!expires || !hmac) {
+      return res.status(401).send('Invalid token format.');
+    }
+
+    if (Date.now() > Number(expires)) {
+      return res.status(401).send('Session expired. Please log in again.');
+    }
+
+    const expectedHmac = crypto.createHmac('sha256', serverSecret).update(String(expires)).digest('hex');
+    if (hmac !== expectedHmac) {
+      return res.status(401).send('Invalid token signature.');
+    }
+  } catch (err) {
+    return res.status(401).send('Token verification failed.');
+  }
+
+  // Token is valid! Redirect to the VIP Telegram channel
+  res.redirect('https://t.me/pipsattendant');
+});
+
 // ── POST /api/subscribe ───────────────────────────────────────
 // Save an interested subscriber (name + telegram handle)
 app.post('/api/subscribe', (req, res) => {

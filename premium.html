@@ -131,7 +131,7 @@
       <!-- VIP Signals Card -->
       <div class="mb-8">
         <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400 mb-3">⭐ VIP Signals</h3>
-        <a href="https://t.me/pipsattendant" target="_blank" class="premium-card border rounded-2xl p-5 flex items-center justify-between gap-4 group no-underline">
+        <a id="vipTelegramLink" target="_blank" class="premium-card border rounded-2xl p-5 flex items-center justify-between gap-4 group no-underline">
           <div class="flex items-center gap-4">
             <div class="w-12 h-12 rounded-xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-xl flex-shrink-0">⭐</div>
             <div>
@@ -325,6 +325,12 @@
         const file = link.getAttribute('data-filename');
         link.href = `/api/download-vip?file=${encodeURIComponent(file)}&token=${encodeURIComponent(token)}`;
       });
+
+      // Set the secure Telegram redirect link
+      const tgLink = document.getElementById('vipTelegramLink');
+      if (tgLink) {
+        tgLink.href = `/api/redirect-vip-telegram?token=${encodeURIComponent(token)}`;
+      }
     }
 
     function togglePasswordForm() {
@@ -487,6 +493,8 @@
       downloadLinks.forEach(link => {
         link.href = '#';
       });
+      const tgLink = document.getElementById('vipTelegramLink');
+      if (tgLink) tgLink.removeAttribute('href');
     }
 
     // Auto-login check on page load
