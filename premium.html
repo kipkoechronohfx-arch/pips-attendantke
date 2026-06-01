@@ -91,18 +91,18 @@
         </div>
 
         <div class="mt-6 pt-5 border-t border-white/5 text-center">
-          <p class="text-gray-500 text-[11px] mb-2">Admin or have a manual access code?</p>
+          <p class="text-gray-500 text-[11px] mb-2">Already have an access code or are you an admin?</p>
           <button onclick="togglePasswordForm()" class="inline-flex items-center gap-2 text-amber-400 text-xs font-bold hover:underline cursor-pointer bg-transparent border-none">
             <i data-feather="key" class="w-3.5 h-3.5"></i>
-            Use Master Password
+            Enter Access Code
           </button>
         </div>
 
-        <!-- Hidden Password Form for Admins -->
+        <!-- Hidden Code / Password Form -->
         <div class="space-y-4 hidden mt-4 pt-4 border-t border-white/5" id="passwordForm">
           <div>
-            <input type="password" id="vipPassword" placeholder="Enter Master Password"
-              class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition font-mono"
+            <input type="text" id="vipPassword" placeholder="e.g. PIPS-AB3K7M or admin password"
+              class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition font-mono uppercase tracking-widest"
               onkeydown="if(event.key==='Enter') checkPassword()" />
           </div>
           <div id="gateError" class="text-rose-400 text-xs min-h-[16px]"></div>
@@ -316,151 +316,181 @@
   <script>
     feather.replace();
 
+    // ── State Variables ────────────────────────────────────────
+    let pollInterval;
+    let currentAccessCode = '';
+    let currentSessionToken = '';
+
+    // ── Update download & Telegram links with session token ────
     function updateDownloadLinks() {
       const token = sessionStorage.getItem('vip_session_token');
       if (!token) return;
-      
-      const downloadLinks = document.querySelectorAll('a[data-filename]');
-      downloadLinks.forEach(link => {
-        const file = link.getAttribute('data-filename');
-        link.href = `/api/download-vip?file=${encodeURIComponent(file)}&token=${encodeURIComponent(token)}`;
+      document.querySelectorAll('a[data-filename]').forEach(link => {
+        link.href = `/api/download-vip?file=${encodeURIComponent(link.getAttribute('data-filename'))}&token=${encodeURIComponent(token)}`;
       });
-
-      // Set the secure Telegram redirect link
       const tgLink = document.getElementById('vipTelegramLink');
-      if (tgLink) {
-        tgLink.href = `/api/redirect-vip-telegram?token=${encodeURIComponent(token)}`;
-      }
+      if (tgLink) tgLink.href = `/api/redirect-vip-telegram?token=${encodeURIComponent(token)}`;
     }
 
     function togglePasswordForm() {
-      const form = document.getElementById('passwordForm');
-      form.classList.toggle('hidden');
+      document.getElementById('passwordForm').classList.toggle('hidden');
     }
 
-    let pollInterval;
+    // ── Show "Save Your Code" panel after payment ──────────────
+    function showSaveCodePanel(accessCode, sessionToken, expiryTimestamp) {
+      currentAccessCode  = accessCode;
+      currentSessionToken = sessionToken;
 
+      document.getElementById('displayedAccessCode').textContent = accessCode;
+
+      if (expiryTimestamp) {
+        const d = new Date(expiryTimestamp).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        document.getElementById('codeExpiryText').textContent = `⏱ Expires on ${d}`;
+      }
+
+      document.getElementById('gatePanel').style.display = 'none';
+      document.getElementById('saveCodePanel').classList.remove('hidden');
+      feather.replace();
+    }
+
+    // ── Copy unique access code to clipboard ───────────────────
+    function copyAccessCode() {
+      if (!currentAccessCode) return;
+      navigator.clipboard.writeText(currentAccessCode).then(() => {
+        const btn = document.getElementById('copyCodeBtn');
+        btn.innerHTML = '<i data-feather="check" class="w-3.5 h-3.5"></i> Copied!';
+        feather.replace();
+        setTimeout(() => {
+          btn.innerHTML = '<i data-feather="copy" class="w-3.5 h-3.5"></i> Copy';
+          feather.replace();
+        }, 2500);
+      }).catch(() => {
+        // Fallback for older browsers
+        const el = document.getElementById('displayedAccessCode');
+        const range = document.createRange();
+        range.selectNode(el);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        document.execCommand('copy');
+        window.getSelection().removeAllRanges();
+      });
+    }
+
+    // ── Transition from Save Code panel → VIP Content ─────────
+    function enterVIPFromSavePanel() {
+      sessionStorage.setItem('vip_session_token', currentSessionToken);
+      document.getElementById('saveCodePanel').classList.add('hidden');
+      document.getElementById('contentPanel').classList.remove('hidden');
+      updateDownloadLinks();
+      loadTodaysSetup();
+      feather.replace();
+    }
+
+    // ── M-Pesa Payment Flow ────────────────────────────────────
     async function payMpesa() {
       const phone = document.getElementById('mpesaPhone').value.trim();
       const error = document.getElementById('mpesaError');
-      const btn = document.getElementById('payBtn');
-      
-      if (!phone) {
-        error.textContent = '❌ Please enter a phone number.';
-        return;
-      }
+      const btn   = document.getElementById('payBtn');
 
-      // Start Loading state
+      if (!phone) { error.textContent = '❌ Please enter a phone number.'; return; }
+
       const originalText = btn.innerHTML;
       btn.innerHTML = '<span class="animate-pulse flex items-center justify-center gap-2"><i data-feather="loader" class="w-4 h-4 animate-spin"></i> Initiating STK Push...</span>';
       feather.replace();
       btn.disabled = true;
 
       try {
-        const res = await fetch('/api/pay-vip', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone })
-        });
-        
+        const res  = await fetch('/api/pay-vip', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone }) });
         const data = await res.json();
 
         if (data.ok) {
-          error.textContent = '';
-          error.classList.remove('text-rose-400');
-          error.classList.add('text-emerald-400');
-          error.textContent = '✅ STK Push sent! Please enter your PIN on your phone.';
-          
+          error.className = 'text-emerald-400 text-xs min-h-[16px]';
+          error.textContent = '✅ STK Push sent! Enter your M-Pesa PIN on your phone.';
           btn.innerHTML = '<span class="animate-pulse flex items-center justify-center gap-2"><i data-feather="loader" class="w-4 h-4 animate-spin"></i> Waiting for payment...</span>';
           feather.replace();
-
-          // Start polling for payment success
           pollPayment(data.reference, btn, originalText, error);
         } else {
-          error.classList.remove('text-emerald-400');
-          error.classList.add('text-rose-400');
+          error.className = 'text-rose-400 text-xs min-h-[16px]';
           error.textContent = `❌ ${data.error}`;
           btn.innerHTML = originalText;
           btn.disabled = false;
         }
-      } catch (err) {
-        error.classList.add('text-rose-400');
+      } catch {
+        error.className = 'text-rose-400 text-xs min-h-[16px]';
         error.textContent = '❌ Server error. Please try again later.';
         btn.innerHTML = originalText;
         btn.disabled = false;
       }
     }
 
-    async function pollPayment(ref, btn, originalText, errorElement) {
+    async function pollPayment(ref, btn, originalText, errorEl) {
       if (pollInterval) clearInterval(pollInterval);
       let attempts = 0;
-      
+
       pollInterval = setInterval(async () => {
-        attempts++;
-        if (attempts > 60) { // Timeout after 3 minutes (60 * 3s)
+        if (++attempts > 60) {
           clearInterval(pollInterval);
-          errorElement.classList.add('text-rose-400');
-          errorElement.classList.remove('text-emerald-400');
-          errorElement.textContent = '❌ Payment timed out. Please try again.';
+          errorEl.className = 'text-rose-400 text-xs min-h-[16px]';
+          errorEl.textContent = '❌ Payment timed out. Please try again.';
           btn.innerHTML = originalText;
           btn.disabled = false;
           return;
         }
 
         try {
-          const res = await fetch(`/api/check-payment/${ref}`);
+          const res  = await fetch(`/api/check-payment/${ref}`);
           const data = await res.json();
-          
+
           if (data.ok && data.status === 'Success') {
             clearInterval(pollInterval);
-            // Grant access
-            sessionStorage.setItem('vip_session_token', data.sessionToken);
-            updateDownloadLinks();
-            loadTodaysSetup();
-            document.getElementById('gatePanel').style.display = 'none';
-            document.getElementById('contentPanel').classList.remove('hidden');
-            feather.replace();
             btn.innerHTML = originalText;
-            btn.disabled = false;
+            btn.disabled  = false;
+
+            if (data.accessCode) {
+              // Show the "Save Your Unique Code" panel
+              showSaveCodePanel(data.accessCode, data.sessionToken, data.accessCodeExpiry);
+            } else {
+              // Fallback: grant access directly
+              sessionStorage.setItem('vip_session_token', data.sessionToken);
+              updateDownloadLinks();
+              loadTodaysSetup();
+              document.getElementById('gatePanel').style.display = 'none';
+              document.getElementById('contentPanel').classList.remove('hidden');
+              feather.replace();
+            }
+
           } else if (data.ok && data.status === 'Failed') {
             clearInterval(pollInterval);
-            errorElement.classList.add('text-rose-400');
-            errorElement.classList.remove('text-emerald-400');
-            errorElement.textContent = '❌ Payment failed or was cancelled.';
+            errorEl.className = 'text-rose-400 text-xs min-h-[16px]';
+            errorEl.textContent = '❌ Payment failed or was cancelled.';
             btn.innerHTML = originalText;
-            btn.disabled = false;
+            btn.disabled  = false;
           }
-        } catch (e) {
-          // ignore network error during polling
-        }
+        } catch { /* ignore transient network errors during polling */ }
       }, 3000);
     }
 
+    // ── Access Code / Admin Password Login ────────────────────
     async function checkPassword() {
-      const input = document.getElementById('vipPassword').value.trim();
+      const raw   = document.getElementById('vipPassword').value.trim();
       const error = document.getElementById('gateError');
-      const btn = document.getElementById('unlockBtn');
-      
-      if (!input) return;
+      const btn   = document.getElementById('unlockBtn');
 
-      // Loading state
+      if (!raw) return;
+
+      // Auto-detect: subscriber codes start with PIPS-, otherwise treat as admin password
+      const isAccessCode = raw.toUpperCase().startsWith('PIPS-');
+      const endpoint     = isAccessCode ? '/api/verify-access-code' : '/api/verify-vip';
+      const body         = isAccessCode ? { code: raw } : { password: raw };
+
       const originalText = btn ? btn.innerHTML : 'Unlock 🔓';
-      if (btn) {
-        btn.innerHTML = '<span class="animate-pulse">Verifying...</span>';
-        btn.disabled = true;
-      }
+      if (btn) { btn.innerHTML = '<span class="animate-pulse">Verifying...</span>'; btn.disabled = true; }
 
       try {
-        const res = await fetch('/api/verify-vip', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password: input })
-        });
-        
+        const res  = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         const data = await res.json();
 
         if (data.ok) {
-          // Correct! Save session token and show content
           sessionStorage.setItem('vip_session_token', data.sessionToken);
           updateDownloadLinks();
           loadTodaysSetup();
@@ -468,42 +498,35 @@
           document.getElementById('contentPanel').classList.remove('hidden');
           feather.replace();
         } else {
-          error.textContent = `❌ ${data.error || 'Incorrect password. Please try again.'}`;
+          error.textContent = `❌ ${data.error || 'Invalid code or password.'}`;
           document.getElementById('vipPassword').value = '';
-          setTimeout(() => { error.textContent = ''; }, 4000);
+          setTimeout(() => { error.textContent = ''; }, 5000);
         }
-      } catch (err) {
+      } catch {
         error.textContent = '❌ Server error or connection timeout.';
-        setTimeout(() => { error.textContent = ''; }, 4000);
+        setTimeout(() => { error.textContent = ''; }, 5000);
       } finally {
-        if (btn) {
-          btn.innerHTML = originalText;
-          btn.disabled = false;
-        }
+        if (btn) { btn.innerHTML = originalText; btn.disabled = false; }
       }
     }
 
+    // ── Lock / Log Out ─────────────────────────────────────────
     function lockVIP() {
       sessionStorage.removeItem('vip_session_token');
       document.getElementById('gatePanel').style.display = '';
+      document.getElementById('saveCodePanel').classList.add('hidden');
       document.getElementById('contentPanel').classList.add('hidden');
       document.getElementById('vipPassword').value = '';
-      // Reset link hrefs
-      const downloadLinks = document.querySelectorAll('a[data-filename]');
-      downloadLinks.forEach(link => {
-        link.href = '#';
-      });
+      document.querySelectorAll('a[data-filename]').forEach(l => { l.href = '#'; });
       const tgLink = document.getElementById('vipTelegramLink');
       if (tgLink) tgLink.removeAttribute('href');
     }
 
-    // Auto-login check on page load
+    // ── Auto-login on page load if token still valid ───────────
     document.addEventListener('DOMContentLoaded', () => {
       feather.replace();
-      
       const token = sessionStorage.getItem('vip_session_token');
       if (token) {
-        // If we already have a token, show the content right away
         document.getElementById('gatePanel').style.display = 'none';
         document.getElementById('contentPanel').classList.remove('hidden');
         updateDownloadLinks();
@@ -511,20 +534,17 @@
       }
     });
 
-    // Load Today's Setup
+    // ── Load Today's Setup image (VIP only) ────────────────────
     async function loadTodaysSetup() {
       const token = sessionStorage.getItem('vip_session_token');
       if (!token) return;
-
       try {
-        const res = await fetch(`/api/todays-setup?token=${token}`);
+        const res  = await fetch(`/api/todays-setup?token=${token}`);
         const data = await res.json();
         if (data.ok && data.setup.image) {
-          // Hide placeholder, show real image + download button
           document.getElementById('setupPlaceholder').classList.add('hidden');
-          const img = document.getElementById('todaysSetupImage');
+          const img  = document.getElementById('todaysSetupImage');
           const dlBtn = document.getElementById('todaysSetupDownload');
-          
           img.src = data.setup.image;
           img.classList.remove('hidden');
           dlBtn.href = data.setup.image;
@@ -532,10 +552,7 @@
           dlBtn.classList.remove('hidden');
           feather.replace();
         }
-        // If no image, placeholder stays visible (already the default)
-      } catch (err) {
-        console.error('Failed to load setup:', err);
-      }
+      } catch (err) { console.error('Failed to load setup:', err); }
     }
   </script>
 </body>

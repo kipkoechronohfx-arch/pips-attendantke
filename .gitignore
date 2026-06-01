@@ -1,3 +1,13 @@
 .env
 node_modules/
 data/subscribers.json
+data/payments.json
+data/todays_setup.json
+data/config.json
+data/signals.json
+data/config.json.migrated
+data/signals.json.migrated
+data/subscribers.json.migrated
+data/payments.json.migrated
+data/todays_setup.json.migrated
+data/vip_documents/
