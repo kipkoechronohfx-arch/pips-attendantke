@@ -408,14 +408,25 @@ async function savePayment(ref, paymentData) {
 }
 
 async function getTodaysSetup() {
+  let setup = null;
   if (db) {
     try {
-      return await getSetupColl().findOne({ type: 'todays_setup' });
+      setup = await getSetupColl().findOne({ type: 'todays_setup' });
     } catch (err) {
       console.error('[DB Setup Find Error]', err.message);
     }
+  } else {
+    setup = readJSON(TODAYS_SETUP_FILE);
   }
-  return readJSON(TODAYS_SETUP_FILE);
+
+  if (setup && setup.timestamp) {
+    const ageMs = Date.now() - new Date(setup.timestamp).getTime();
+    // 24 hours in milliseconds
+    if (ageMs > 24 * 60 * 60 * 1000) {
+      return null;
+    }
+  }
+  return setup;
 }
 
 async function saveTodaysSetup(setupData) {
