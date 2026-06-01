@@ -894,6 +894,24 @@ app.post('/api/upload-todays-setup', validateAdminKey, async (req, res) => {
   res.json({ ok: true, message: "Today's setup updated successfully!" });
 });
 
+// ── ADMIN: DELETE TODAY'S SETUP ───────────────────────────────
+app.delete('/api/todays-setup', validateAdminKey, async (req, res) => {
+  if (db) {
+    try {
+      await getSetupColl().deleteOne({ type: 'todays_setup' });
+    } catch (err) {
+      return res.status(500).json({ ok: false, error: err.message });
+    }
+  }
+  // Local fallback wipe
+  try {
+    if (fs.existsSync(TODAYS_SETUP_FILE)) {
+      fs.unlinkSync(TODAYS_SETUP_FILE);
+    }
+  } catch(e) {}
+  res.json({ ok: true, message: "Today's setup removed successfully!" });
+});
+
 // ── POST /api/payhero-webhook ─────────────────────────────────
 app.post('/api/payhero-webhook', async (req, res) => {
   try {

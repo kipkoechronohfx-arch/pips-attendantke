@@ -851,6 +851,9 @@
               <span id="setupUploadLabel">Click to Upload Image</span>
             </div>
           </label>
+          <button type="button" onclick="removeTodaysSetup()" class="p-3 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition cursor-pointer" title="Remove Today's Setup">
+            <i data-feather="trash-2" class="w-5 h-5"></i>
+          </button>
         </div>
         <div id="setupUploadStatus" class="mt-2 text-xs"></div>
       </div>
@@ -1860,6 +1863,36 @@
         status.textContent = '❌ Error uploading file.';
         status.className = 'mt-2 text-xs text-rose-400';
         label.innerHTML = 'Click to Upload Image';
+      }
+    }
+
+    async function removeTodaysSetup() {
+      if (!confirm('Are you sure you want to remove the current Today\'s Setup?')) return;
+      const adminKey = localStorage.getItem('pa_admin_key');
+      const status = document.getElementById('setupUploadStatus');
+      const label = document.getElementById('setupUploadLabel');
+      
+      status.textContent = 'Removing...';
+      status.className = 'mt-2 text-xs text-amber-400';
+      
+      try {
+        const res = await fetch('/api/todays-setup', {
+          method: 'DELETE',
+          headers: { 'x-admin-key': adminKey }
+        });
+        const data = await res.json();
+        
+        if (data.ok) {
+          status.textContent = '✅ Setup removed successfully!';
+          status.className = 'mt-2 text-xs text-emerald-400';
+          label.innerHTML = 'Click to Upload Image';
+        } else {
+          status.textContent = '❌ ' + data.error;
+          status.className = 'mt-2 text-xs text-rose-400';
+        }
+      } catch (err) {
+        status.textContent = '❌ Network error.';
+        status.className = 'mt-2 text-xs text-rose-400';
       }
     }
 
