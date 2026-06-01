@@ -21,6 +21,15 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { MongoClient } = require('mongodb');
+const webpush = require('web-push');
+
+if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails(
+    'mailto:support@pipsattendant.com',
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  );
+}
 
 const app = express();
 app.set('trust proxy', 1); // Trust Render's load balancer for rate limiting
@@ -78,6 +87,8 @@ const getPaymentsColl = () => db.collection('payments');
 const getConfigsColl = () => db.collection('config');
 const getDocsColl = () => db.collection('vip_documents');
 const getSetupColl = () => db.collection('todays_setup');
+const getPerformanceColl = () => db.collection('performance_logs');
+const getPushSubsColl = () => db.collection('push_subscriptions');
 
 // ── One-Time Auto-Migration Script ───────────────────────────
 async function runMigrations() {
@@ -623,6 +634,57 @@ function generateAccessCode() {
 //  ROUTES
 // ════════════════════════════════════════════════════════════
 
+// ── GET /api/performance/stats ──────────────────────────────
+app.get('/api/performance/stats', async (req, res) => {
+  if (!db) return res.json({ ok: false, error: 'Database not connected' });
+  try {
+    const logs = await getPerformanceColl().find({}).toArray();
+    let totalPips = 0;
+    let wins = 0;
+    logs.forEach(log => {
+      totalPips += Number(log.pips) || 0;
+      if (log.result === 'Win') wins++;
+    });
+    const winRate = logs.length > 0 ? Math.round((wins / logs.length) * 100) : 0;
+    res.json({ ok: true, totalTrades: logs.length, totalPips, winRate, recent: logs.slice(-5).reverse() });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── POST /api/performance ───────────────────────────────────
+app.post('/api/performance', validateAdminKey, async (req, res) => {
+  if (!db) return res.status(500).json({ ok: false, error: 'Database not connected' });
+  const { asset, type, result, pips } = req.body;
+  if (!asset || !type || !result || pips === undefined) return res.status(400).json({ ok: false, error: 'Missing fields' });
+  
+  try {
+    await getPerformanceColl().insertOne({ asset, type, result, pips: Number(pips), date: now() });
+    res.json({ ok: true, message: 'Performance logged successfully.' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── POST /api/push/subscribe ────────────────────────────────
+app.post('/api/push/subscribe', async (req, res) => {
+  if (!db) return res.status(500).json({ ok: false, error: 'Database not connected' });
+  const subscription = req.body;
+  if (!subscription || !subscription.endpoint) return res.status(400).json({ ok: false, error: 'Invalid subscription' });
+  
+  try {
+    // Upsert subscription based on endpoint
+    await getPushSubsColl().updateOne(
+      { endpoint: subscription.endpoint },
+      { $set: subscription },
+      { upsert: true }
+    );
+    res.status(201).json({ ok: true, message: 'Subscribed to push notifications.' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // ── Health check ─────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: now(), service: 'pips-attendant-api', dbConnected: !!db });
@@ -704,6 +766,32 @@ app.post('/api/broadcast', async (req, res) => {
       await addSignal({ id: Date.now(), type, text: text || '', sentAt: now() });
     } catch (logErr) {
       console.warn('[warning] Failed to log signal:', logErr.message);
+    }
+
+    // 5. Send Web Push Notifications
+    if (db) {
+      try {
+        const subscriptions = await getPushSubsColl().find({}).toArray();
+        const pushPayload = JSON.stringify({
+          title: 'New VIP Signal Alert!',
+          body: text ? text.substring(0, 100) + '...' : 'A new signal or update was just posted.',
+          icon: '/favicon.png',
+          url: '/'
+        });
+        
+        const pushPromises = subscriptions.map(sub => 
+          webpush.sendNotification(sub, pushPayload).catch(err => {
+            if (err.statusCode === 404 || err.statusCode === 410) {
+              console.log('Subscription expired, removing:', sub.endpoint);
+              return getPushSubsColl().deleteOne({ endpoint: sub.endpoint });
+            }
+          })
+        );
+        await Promise.all(pushPromises);
+        console.log(`[Push] Sent to ${subscriptions.length} clients.`);
+      } catch (pushErr) {
+        console.warn('[Push Error]', pushErr.message);
+      }
     }
 
     res.json({ ok: true, message: 'Broadcast sent and logged.' });
