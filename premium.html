@@ -91,17 +91,17 @@
         </div>
 
         <div class="mt-6 pt-5 border-t border-white/5 text-center">
-          <p class="text-gray-500 text-[11px] mb-2">Already have an access code or are you an admin?</p>
+          <p class="text-gray-500 text-[11px] mb-2">Already have a unique access code?</p>
           <button onclick="togglePasswordForm()" class="inline-flex items-center gap-2 text-amber-400 text-xs font-bold hover:underline cursor-pointer bg-transparent border-none">
             <i data-feather="key" class="w-3.5 h-3.5"></i>
             Enter Access Code
           </button>
         </div>
 
-        <!-- Hidden Code / Password Form -->
+        <!-- Hidden Code Form -->
         <div class="space-y-4 hidden mt-4 pt-4 border-t border-white/5" id="passwordForm">
           <div>
-            <input type="text" id="vipPassword" placeholder="e.g. PIPS-AB3K7M or admin password"
+            <input type="text" id="vipPassword" placeholder="e.g. PIPS-AB3K7M"
               class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition font-mono uppercase tracking-widest"
               onkeydown="if(event.key==='Enter') checkPassword()" />
           </div>
@@ -110,6 +110,30 @@
             Unlock 🔓
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- SAVE CODE PANEL (Hidden by default, shown after successful payment) -->
+    <div id="saveCodePanel" class="hidden">
+      <div class="glass-card border border-emerald-400/30 rounded-2xl p-8 max-w-md mx-auto text-center">
+        <div class="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-5 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+          <i data-feather="check" class="w-8 h-8 text-emerald-400"></i>
+        </div>
+        <h2 class="text-white font-bold text-xl mb-2">Payment Successful!</h2>
+        <p class="text-gray-400 text-sm mb-6">Here is your unique access code. <strong class="text-amber-400 block mt-1">Please save it securely!</strong> You will need this code to log in next time.</p>
+        
+        <div class="bg-black/50 border border-white/10 rounded-xl p-4 flex items-center justify-between mb-4">
+          <span id="displayedAccessCode" class="text-amber-400 font-mono text-xl tracking-widest font-bold drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]"></span>
+          <button id="copyCodeBtn" onclick="copyAccessCode()" class="text-gray-400 hover:text-white transition flex items-center gap-1.5 text-xs bg-white/5 px-3 py-2 rounded-lg border border-white/10 hover:border-white/30 cursor-pointer">
+            <i data-feather="copy" class="w-3.5 h-3.5"></i> Copy
+          </button>
+        </div>
+        
+        <p id="codeExpiryText" class="text-emerald-400/80 text-xs font-medium mb-8 bg-emerald-500/10 inline-block px-3 py-1.5 rounded-full border border-emerald-500/20">⏱ Expires in 30 days</p>
+        
+        <button onclick="enterVIPFromSavePanel()" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r from-emerald-500 to-emerald-300 text-dark-navy hover:brightness-110 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] active:scale-95 transition duration-300 cursor-pointer">
+          Enter VIP Area Now 🔓
+        </button>
       </div>
     </div>
 
