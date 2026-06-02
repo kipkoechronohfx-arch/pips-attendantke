@@ -429,6 +429,20 @@ async function getTodaysSetup() {
   return setup;
 }
 
+async function getAdminTodaysSetup() {
+  let setup = null;
+  if (db) {
+    try {
+      setup = await getSetupColl().findOne({ type: 'todays_setup' });
+    } catch (err) {
+      console.error('[DB Setup Find Error]', err.message);
+    }
+  } else {
+    setup = readJSON(TODAYS_SETUP_FILE);
+  }
+  return setup;
+}
+
 async function saveTodaysSetup(setupData) {
   if (db) {
     try {
@@ -873,6 +887,22 @@ app.get('/api/todays-setup', validateVipSession, async (req, res) => {
     res.json({ ok: true, setup });
   } else {
     res.json({ ok: false, error: 'No setup available for today yet.' });
+  }
+});
+
+// ── ADMIN: GET TODAY'S SETUP ───────────────────────────────────
+app.get('/api/admin/todays-setup', validateAdminKey, async (req, res) => {
+  try {
+    const setup = await getAdminTodaysSetup();
+    if (setup && setup.image) {
+      const ageMs = Date.now() - new Date(setup.timestamp).getTime();
+      const expired = ageMs > 24 * 60 * 60 * 1000;
+      res.json({ ok: true, setup: { ...setup, expired } });
+    } else {
+      res.json({ ok: false, error: 'No setup available.' });
+    }
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 

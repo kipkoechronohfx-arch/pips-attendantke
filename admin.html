@@ -843,6 +843,15 @@
         </div>
         <p class="text-gray-400 text-xs mb-4">Upload a chart or analysis image. This will be prominently displayed at the top of the VIP Portal for your subscribers.</p>
         
+        <!-- Today's Setup Preview Container -->
+        <div id="todaysSetupPreviewContainer" class="hidden mb-4 relative rounded-xl overflow-hidden border border-amber-400/20 group/img bg-black/40 flex flex-col items-center justify-center p-2">
+          <img id="todaysSetupPreviewImg" src="" alt="Active Setup Preview" class="w-full h-auto max-h-[220px] object-contain rounded-xl border border-white/5 shadow-md" />
+          <div class="absolute inset-0 bg-black/60 opacity-0 group-hover/img:opacity-100 transition duration-300 flex flex-col items-center justify-center gap-2">
+            <span id="todaysSetupFilename" class="text-white text-xs font-semibold px-3 py-1.5 rounded-lg bg-black/50 border border-white/10 select-all">todays-setup.png</span>
+            <span id="todaysSetupExpiryStatus" class="hidden text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">EXPIRED FOR VIPS (>24H)</span>
+          </div>
+        </div>
+
         <div class="flex items-center gap-3">
           <label class="flex-1 cursor-pointer">
             <input type="file" id="todaysSetupFile" accept="image/*" class="hidden" onchange="uploadTodaysSetup()" />
@@ -1032,6 +1041,7 @@
         // Load VIP dynamic metrics
         fetchSubscribers();
         fetchVIPDocuments();
+        fetchTodaysSetup();
       } else {
         document.getElementById('setupPanel').classList.remove('hidden');
         document.getElementById('dashboardPanel').classList.add('hidden');
@@ -1821,6 +1831,50 @@
     }
 
     // VIP Documents & Setup Management
+    async function fetchTodaysSetup() {
+      const adminKey = localStorage.getItem('pa_admin_key');
+      if (!adminKey) return;
+
+      const label = document.getElementById('setupUploadLabel');
+      const status = document.getElementById('setupUploadStatus');
+      const previewContainer = document.getElementById('todaysSetupPreviewContainer');
+      const previewImg = document.getElementById('todaysSetupPreviewImg');
+      const filenameEl = document.getElementById('todaysSetupFilename');
+      const expiryStatus = document.getElementById('todaysSetupExpiryStatus');
+
+      try {
+        const res = await fetch('/api/admin/todays-setup', {
+          headers: { 'x-admin-key': adminKey }
+        });
+        const data = await res.json();
+        
+        if (data.ok && data.setup && data.setup.image) {
+          previewImg.src = data.setup.image;
+          previewContainer.classList.remove('hidden');
+          if (filenameEl) {
+            filenameEl.textContent = data.setup.filename || 'todays-setup.png';
+          }
+          if (expiryStatus) {
+            if (data.setup.expired) {
+              expiryStatus.classList.remove('hidden');
+            } else {
+              expiryStatus.classList.add('hidden');
+            }
+          }
+          label.innerHTML = 'Update Image Again';
+          status.textContent = 'Active Today\'s Setup is loaded.';
+          status.className = 'mt-2 text-xs text-emerald-400';
+        } else {
+          previewContainer.classList.add('hidden');
+          previewImg.src = '';
+          label.innerHTML = 'Click to Upload Image';
+          status.textContent = '';
+        }
+      } catch (err) {
+        console.error('Error fetching today\'s setup:', err);
+      }
+    }
+
     async function uploadTodaysSetup() {
       const fileInput = document.getElementById('todaysSetupFile');
       const file = fileInput.files[0];
@@ -1852,6 +1906,7 @@
             status.textContent = '✅ Setup updated successfully!';
             status.className = 'mt-2 text-xs text-emerald-400';
             label.innerHTML = 'Update Image Again';
+            fetchTodaysSetup();
           } else {
             status.textContent = '❌ ' + data.error;
             status.className = 'mt-2 text-xs text-rose-400';
@@ -1886,6 +1941,11 @@
           status.textContent = '✅ Setup removed successfully!';
           status.className = 'mt-2 text-xs text-emerald-400';
           label.innerHTML = 'Click to Upload Image';
+          
+          const previewContainer = document.getElementById('todaysSetupPreviewContainer');
+          const previewImg = document.getElementById('todaysSetupPreviewImg');
+          if (previewContainer) previewContainer.classList.add('hidden');
+          if (previewImg) previewImg.src = '';
         } else {
           status.textContent = '❌ ' + data.error;
           status.className = 'mt-2 text-xs text-rose-400';
