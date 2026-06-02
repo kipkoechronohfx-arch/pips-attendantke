@@ -1854,13 +1854,7 @@
           if (filenameEl) {
             filenameEl.textContent = data.setup.filename || 'todays-setup.png';
           }
-          if (expiryStatus) {
-            if (data.setup.expired) {
-              expiryStatus.classList.remove('hidden');
-            } else {
-              expiryStatus.classList.add('hidden');
-            }
-          }
+          if (expiryStatus) expiryStatus.classList.add('hidden');
           label.innerHTML = 'Update Image Again';
           status.textContent = 'Active Today\'s Setup is loaded.';
           status.className = 'mt-2 text-xs text-emerald-400';

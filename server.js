@@ -418,14 +418,7 @@ async function getTodaysSetup() {
   } else {
     setup = readJSON(TODAYS_SETUP_FILE);
   }
-
-  if (setup && setup.timestamp) {
-    const ageMs = Date.now() - new Date(setup.timestamp).getTime();
-    // 24 hours in milliseconds
-    if (ageMs > 24 * 60 * 60 * 1000) {
-      return null;
-    }
-  }
+  // Setup persists until admin manually removes it — no auto-expiry
   return setup;
 }
 
@@ -895,9 +888,7 @@ app.get('/api/admin/todays-setup', validateAdminKey, async (req, res) => {
   try {
     const setup = await getAdminTodaysSetup();
     if (setup && setup.image) {
-      const ageMs = Date.now() - new Date(setup.timestamp).getTime();
-      const expired = ageMs > 24 * 60 * 60 * 1000;
-      res.json({ ok: true, setup: { ...setup, expired } });
+      res.json({ ok: true, setup });
     } else {
       res.json({ ok: false, error: 'No setup available.' });
     }
