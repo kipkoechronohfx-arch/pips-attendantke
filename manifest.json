@@ -1,0 +1,22 @@
+{
+  "name": "Pips Attendant",
+  "short_name": "PipsAttendant",
+  "description": "Professional Forex Trading, Signals & Mentorship Tracker",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0f1c",
+  "theme_color": "#0a0f1c",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/avatar.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
