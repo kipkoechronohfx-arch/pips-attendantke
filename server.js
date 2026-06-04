@@ -788,10 +788,20 @@ app.post('/api/broadcast', async (req, res) => {
   try {
     if (imageBase64) {
       // 1. Send photo with caption
+      // Extract actual MIME type from data URL (e.g. image/jpeg, image/png)
+      const mimeMatch = imageBase64.match(/^data:(image\/[\w+.-]+);base64,/);
+      const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+      const ext = mimeType.split('/')[1].replace('+xml', '');
+      const base64Data = imageBase64.replace(/^data:image\/[\w+.-]+;base64,/, '');
+      const imgBuffer = Buffer.from(base64Data, 'base64');
+
       const form = new FormData();
       form.append('chat_id', chatId);
-      const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
-      form.append('photo', Buffer.from(base64Data, 'base64'), { filename: 'image.png' });
+      form.append('photo', imgBuffer, {
+        filename: `image.${ext}`,
+        contentType: mimeType,
+        knownLength: imgBuffer.length,
+      });
       if (text) {
         form.append('caption', text);
         form.append('parse_mode', 'Markdown');
@@ -805,19 +815,8 @@ app.post('/api/broadcast', async (req, res) => {
       const photoData = await photoRes.json();
 
       if (!photoData.ok) {
-        // Fallback to text-only message
-        const txtRes = await fetch(`${TG_BASE}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: chatId,
-            text: text || 'Signal sent.',
-            parse_mode: 'Markdown',
-            disable_web_page_preview: true,
-          }),
-        });
-        const txtData = await txtRes.json();
-        if (!txtData.ok) throw new Error(txtData.description);
+        console.error('[Telegram sendPhoto Error]', JSON.stringify(photoData));
+        throw new Error(`Telegram image send failed: ${photoData.description || 'Unknown error'}`);
       }
     } else if (text) {
       // 2. Text-only broadcast
