@@ -800,6 +800,7 @@ app.post('/api/broadcast', async (req, res) => {
       const photoRes = await fetch(`${TG_BASE}/sendPhoto`, {
         method: 'POST',
         body: form,
+        headers: form.getHeaders(),
       });
       const photoData = await photoRes.json();
 
