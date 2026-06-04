@@ -867,6 +867,40 @@
         <div id="setupUploadStatus" class="mt-2 text-xs"></div>
       </div>
 
+      <!-- Today's Setup Results Upload Card -->
+      <div class="glass-card border border-emerald-400/20 rounded-2xl p-6 relative overflow-hidden group">
+        <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-transparent pointer-events-none"></div>
+        <div class="flex items-center gap-3 mb-4">
+          <div class="p-2 bg-emerald-500/10 rounded-lg">
+            <i data-feather="check-circle" class="w-5 h-5 text-emerald-400"></i>
+          </div>
+          <h3 class="text-white font-bold">Today's Setup (Results)</h3>
+        </div>
+        <p class="text-gray-400 text-xs mb-4">Upload the results of today's setup (e.g., TP hit, SL hit). This will be displayed below the analysis.</p>
+        
+        <!-- Today's Setup Results Preview Container -->
+        <div id="todaysSetupResultsPreviewContainer" class="hidden mb-4 relative rounded-xl overflow-hidden border border-emerald-400/20 group/img bg-black/40 flex flex-col items-center justify-center p-2">
+          <img id="todaysSetupResultsPreviewImg" src="" alt="Active Setup Results Preview" class="w-full h-auto max-h-[220px] object-contain rounded-xl border border-white/5 shadow-md" />
+          <div class="absolute inset-0 bg-black/60 opacity-0 group-hover/img:opacity-100 transition duration-300 flex flex-col items-center justify-center gap-2">
+            <span id="todaysSetupResultsFilename" class="text-white text-xs font-semibold px-3 py-1.5 rounded-lg bg-black/50 border border-white/10 select-all">todays-setup-results.png</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <label class="flex-1 cursor-pointer">
+            <input type="file" id="todaysSetupResultsFile" accept="image/*" class="hidden" onchange="uploadTodaysSetupResults()" />
+            <div class="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-dashed border-emerald-400/30 bg-emerald-400/5 text-emerald-400 hover:bg-emerald-400/10 hover:border-emerald-400/50 transition">
+              <i data-feather="upload-cloud" class="w-4 h-4"></i>
+              <span id="setupResultsUploadLabel">Click to Upload Results</span>
+            </div>
+          </label>
+          <button type="button" onclick="removeTodaysSetupResults()" class="p-3 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition cursor-pointer" title="Remove Today's Setup Results">
+            <i data-feather="trash-2" class="w-5 h-5"></i>
+          </button>
+        </div>
+        <div id="setupResultsUploadStatus" class="mt-2 text-xs"></div>
+      </div>
+
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         <!-- Left: Subscribers List & Password Manager (7 cols) -->
@@ -1042,6 +1076,7 @@
         fetchSubscribers();
         fetchVIPDocuments();
         fetchTodaysSetup();
+        fetchTodaysSetupResults();
       } else {
         document.getElementById('setupPanel').classList.remove('hidden');
         document.getElementById('dashboardPanel').classList.add('hidden');
@@ -1938,6 +1973,123 @@
           
           const previewContainer = document.getElementById('todaysSetupPreviewContainer');
           const previewImg = document.getElementById('todaysSetupPreviewImg');
+          if (previewContainer) previewContainer.classList.add('hidden');
+          if (previewImg) previewImg.src = '';
+        } else {
+          status.textContent = '❌ ' + data.error;
+          status.className = 'mt-2 text-xs text-rose-400';
+        }
+      } catch (err) {
+        status.textContent = '❌ Network error.';
+        status.className = 'mt-2 text-xs text-rose-400';
+      }
+    }
+
+    async function fetchTodaysSetupResults() {
+      const adminKey = localStorage.getItem('pa_admin_key');
+      if (!adminKey) return;
+
+      const label = document.getElementById('setupResultsUploadLabel');
+      const status = document.getElementById('setupResultsUploadStatus');
+      const previewContainer = document.getElementById('todaysSetupResultsPreviewContainer');
+      const previewImg = document.getElementById('todaysSetupResultsPreviewImg');
+      const filenameEl = document.getElementById('todaysSetupResultsFilename');
+
+      try {
+        const res = await fetch('/api/admin/todays-setup-results', {
+          headers: { 'x-admin-key': adminKey }
+        });
+        const data = await res.json();
+        
+        if (data.ok && data.setup && data.setup.image) {
+          previewImg.src = data.setup.image;
+          previewContainer.classList.remove('hidden');
+          if (filenameEl) {
+            filenameEl.textContent = data.setup.filename || 'todays-setup-results.png';
+          }
+          label.innerHTML = 'Update Image Again';
+          status.textContent = 'Active Today\'s Setup Results is loaded.';
+          status.className = 'mt-2 text-xs text-emerald-400';
+        } else {
+          previewContainer.classList.add('hidden');
+          previewImg.src = '';
+          label.innerHTML = 'Click to Upload Results';
+          status.textContent = '';
+        }
+      } catch (err) {
+        console.error('Error fetching today\'s setup results:', err);
+      }
+    }
+
+    async function uploadTodaysSetupResults() {
+      const fileInput = document.getElementById('todaysSetupResultsFile');
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      const label = document.getElementById('setupResultsUploadLabel');
+      const status = document.getElementById('setupResultsUploadStatus');
+      const adminKey = localStorage.getItem('pa_admin_key');
+
+      label.innerHTML = '<i data-feather="loader" class="w-4 h-4 animate-spin"></i> Uploading...';
+      feather.replace();
+
+      try {
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          const base64Image = reader.result;
+          
+          const res = await fetch('/api/upload-todays-setup-results', {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'x-admin-key': adminKey 
+            },
+            body: JSON.stringify({ image: base64Image, filename: file.name })
+          });
+          
+          const data = await res.json();
+          if (data.ok) {
+            status.textContent = '✅ Setup results updated successfully!';
+            status.className = 'mt-2 text-xs text-emerald-400';
+            label.innerHTML = 'Update Image Again';
+            fetchTodaysSetupResults();
+          } else {
+            status.textContent = '❌ ' + data.error;
+            status.className = 'mt-2 text-xs text-rose-400';
+            label.innerHTML = 'Click to Upload Results';
+          }
+        };
+        reader.readAsDataURL(file);
+      } catch (err) {
+        status.textContent = '❌ Error uploading file.';
+        status.className = 'mt-2 text-xs text-rose-400';
+        label.innerHTML = 'Click to Upload Results';
+      }
+    }
+
+    async function removeTodaysSetupResults() {
+      if (!confirm('Are you sure you want to remove the current Today\'s Setup Results?')) return;
+      const adminKey = localStorage.getItem('pa_admin_key');
+      const status = document.getElementById('setupResultsUploadStatus');
+      const label = document.getElementById('setupResultsUploadLabel');
+      
+      status.textContent = 'Removing...';
+      status.className = 'mt-2 text-xs text-amber-400';
+      
+      try {
+        const res = await fetch('/api/todays-setup-results', {
+          method: 'DELETE',
+          headers: { 'x-admin-key': adminKey }
+        });
+        const data = await res.json();
+        
+        if (data.ok) {
+          status.textContent = '✅ Setup results removed successfully!';
+          status.className = 'mt-2 text-xs text-emerald-400';
+          label.innerHTML = 'Click to Upload Results';
+          
+          const previewContainer = document.getElementById('todaysSetupResultsPreviewContainer');
+          const previewImg = document.getElementById('todaysSetupResultsPreviewImg');
           if (previewContainer) previewContainer.classList.add('hidden');
           if (previewImg) previewImg.src = '';
         } else {

@@ -216,6 +216,44 @@
         </div>
       </div>
 
+      <!-- Today's Setup Results Section -->
+      <div id="todaysSetupResultsSection" class="mb-10">
+        <div class="glass-card border border-emerald-400/20 rounded-2xl overflow-hidden relative group">
+          <!-- Premium Header -->
+          <div class="bg-gradient-to-r from-emerald-500/10 to-transparent p-4 border-b border-white/5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-emerald-500/20 rounded-lg">
+                <i data-feather="check-circle" class="w-5 h-5 text-emerald-400"></i>
+              </div>
+              <h3 class="text-white font-bold text-lg">Today's Setup (Results)</h3>
+            </div>
+          </div>
+          
+          <!-- Image Container -->
+          <div class="p-4 bg-black/40 flex justify-center" id="setupResultsImageContainer">
+            <!-- Placeholder shown when no image uploaded -->
+            <div id="setupResultsPlaceholder" class="w-full flex flex-col items-center justify-center py-16 rounded-xl border border-dashed border-emerald-400/20 bg-emerald-500/5 text-center">
+              <div class="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-4 mx-auto">
+                <i data-feather="image" class="w-8 h-8 text-emerald-400/50"></i>
+              </div>
+              <p class="text-emerald-400/70 font-bold text-sm">Results Coming Soon</p>
+              <p class="text-gray-500 text-xs mt-1">Check back later for the setup outcome.</p>
+            </div>
+            <!-- Actual image (hidden until loaded) -->
+            <img id="todaysSetupResultsImage" src="" alt="Today's Results" class="hidden max-w-full h-auto rounded-xl border border-white/10 shadow-lg" />
+          </div>
+
+          <!-- Footer/Download -->
+          <div class="p-4 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 bg-black/20">
+            <p class="text-gray-400 text-xs">These results correspond to today's setup.</p>
+            <a id="todaysSetupResultsDownload" href="#" download="todays-setup-results.png" class="hidden flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500 hover:text-dark-navy transition duration-300 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+              <i data-feather="download" class="w-4 h-4"></i>
+              Download Image
+            </a>
+          </div>
+        </div>
+      </div>
+
       <!-- Market Sentiment Widget -->
       <div class="mb-10">
         <div class="glass-card border border-cyan-400/20 rounded-2xl overflow-hidden">
@@ -415,6 +453,7 @@
       document.getElementById('contentPanel').classList.remove('hidden');
       updateDownloadLinks();
       loadTodaysSetup();
+      loadTodaysSetupResults();
       feather.replace();
     }
 
@@ -486,6 +525,7 @@
               sessionStorage.setItem('vip_session_token', data.sessionToken);
               updateDownloadLinks();
               loadTodaysSetup();
+              loadTodaysSetupResults();
               document.getElementById('gatePanel').style.display = 'none';
               document.getElementById('contentPanel').classList.remove('hidden');
               feather.replace();
@@ -526,6 +566,7 @@
           sessionStorage.setItem('vip_session_token', data.sessionToken);
           updateDownloadLinks();
           loadTodaysSetup();
+          loadTodaysSetupResults();
           document.getElementById('gatePanel').style.display = 'none';
           document.getElementById('contentPanel').classList.remove('hidden');
           feather.replace();
@@ -563,6 +604,7 @@
         document.getElementById('contentPanel').classList.remove('hidden');
         updateDownloadLinks();
         loadTodaysSetup();
+        loadTodaysSetupResults();
       }
     });
 
@@ -585,6 +627,27 @@
           feather.replace();
         }
       } catch (err) { console.error('Failed to load setup:', err); }
+    }
+
+    // ── Load Today's Setup Results image (VIP only) ────────────────
+    async function loadTodaysSetupResults() {
+      const token = sessionStorage.getItem('vip_session_token');
+      if (!token) return;
+      try {
+        const res  = await fetch(`/api/todays-setup-results?token=${token}`);
+        const data = await res.json();
+        if (data.ok && data.setup && data.setup.image) {
+          document.getElementById('setupResultsPlaceholder').classList.add('hidden');
+          const img  = document.getElementById('todaysSetupResultsImage');
+          const dlBtn = document.getElementById('todaysSetupResultsDownload');
+          img.src = data.setup.image;
+          img.classList.remove('hidden');
+          dlBtn.href = data.setup.image;
+          dlBtn.download = data.setup.filename || 'todays-setup-results.png';
+          dlBtn.classList.remove('hidden');
+          feather.replace();
+        }
+      } catch (err) { console.error('Failed to load setup results:', err); }
     }
   </script>
 </body>

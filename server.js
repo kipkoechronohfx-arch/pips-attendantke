@@ -46,6 +46,7 @@ const VIP_DOCS_DIR = path.join(DATA_DIR, 'vip_documents');
 const CONFIG_FILE  = path.join(DATA_DIR, 'config.json');
 const PAYMENTS_FILE= path.join(DATA_DIR, 'payments.json');
 const TODAYS_SETUP_FILE = path.join(DATA_DIR, 'todays_setup.json');
+const TODAYS_SETUP_RESULTS_FILE = path.join(DATA_DIR, 'todays_setup_results.json');
 
 // Ensure local fallback folders exist
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
@@ -87,6 +88,7 @@ const getPaymentsColl = () => db.collection('payments');
 const getConfigsColl = () => db.collection('config');
 const getDocsColl = () => db.collection('vip_documents');
 const getSetupColl = () => db.collection('todays_setup');
+const getSetupResultsColl = () => db.collection('todays_setup_results');
 const getPerformanceColl = () => db.collection('performance_logs');
 const getPushSubsColl = () => db.collection('push_subscriptions');
 
@@ -182,6 +184,22 @@ async function runMigrations() {
       fs.renameSync(TODAYS_SETUP_FILE, TODAYS_SETUP_FILE + '.migrated');
     } catch (err) {
       console.error('[Migration Error] Today\'s setup migration failed:', err.message);
+    }
+  }
+
+  // 5b. Migrate Today's Setup Results
+  const localSetupResults = readRawJSON(TODAYS_SETUP_RESULTS_FILE);
+  if (localSetupResults && localSetupResults.image) {
+    try {
+      await getSetupResultsColl().updateOne(
+        { type: 'todays_setup_results' },
+        { $set: { type: 'todays_setup_results', ...localSetupResults } },
+        { upsert: true }
+      );
+      console.log("[Migration] Today's setup results image successfully migrated.");
+      fs.renameSync(TODAYS_SETUP_RESULTS_FILE, TODAYS_SETUP_RESULTS_FILE + '.migrated');
+    } catch (err) {
+      console.error('[Migration Error] Today\'s setup results migration failed:', err.message);
     }
   }
 
@@ -450,6 +468,50 @@ async function saveTodaysSetup(setupData) {
     }
   }
   writeJSON(TODAYS_SETUP_FILE, setupData);
+}
+
+async function getTodaysSetupResults() {
+  let setup = null;
+  if (db) {
+    try {
+      setup = await getSetupResultsColl().findOne({ type: 'todays_setup_results' });
+    } catch (err) {
+      console.error('[DB Setup Results Find Error]', err.message);
+    }
+  } else {
+    setup = readJSON(TODAYS_SETUP_RESULTS_FILE);
+  }
+  return setup;
+}
+
+async function getAdminTodaysSetupResults() {
+  let setup = null;
+  if (db) {
+    try {
+      setup = await getSetupResultsColl().findOne({ type: 'todays_setup_results' });
+    } catch (err) {
+      console.error('[DB Setup Results Find Error]', err.message);
+    }
+  } else {
+    setup = readJSON(TODAYS_SETUP_RESULTS_FILE);
+  }
+  return setup;
+}
+
+async function saveTodaysSetupResults(setupData) {
+  if (db) {
+    try {
+      await getSetupResultsColl().updateOne(
+        { type: 'todays_setup_results' },
+        { $set: { type: 'todays_setup_results', ...setupData } },
+        { upsert: true }
+      );
+      return;
+    } catch (err) {
+      console.error('[DB Setup Results Save Error]', err.message);
+    }
+  }
+  writeJSON(TODAYS_SETUP_RESULTS_FILE, setupData);
 }
 
 async function getVipDocuments() {
@@ -931,6 +993,66 @@ app.delete('/api/todays-setup', validateAdminKey, async (req, res) => {
     }
   } catch(e) {}
   res.json({ ok: true, message: "Today's setup removed successfully!" });
+});
+
+// ── GET /api/todays-setup-results (VIP ONLY) ──────────────────
+app.get('/api/todays-setup-results', validateVipSession, async (req, res) => {
+  const setup = await getTodaysSetupResults();
+  if (setup && setup.image) {
+    res.json({ ok: true, setup });
+  } else {
+    res.json({ ok: false, error: 'No setup results available for today yet.' });
+  }
+});
+
+// ── ADMIN: GET TODAY'S SETUP RESULTS ──────────────────────────
+app.get('/api/admin/todays-setup-results', validateAdminKey, async (req, res) => {
+  try {
+    const setup = await getAdminTodaysSetupResults();
+    if (setup && setup.image) {
+      res.json({ ok: true, setup });
+    } else {
+      res.json({ ok: false, error: 'No setup results available.' });
+    }
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── ADMIN: UPLOAD TODAY'S SETUP RESULTS ───────────────────────
+app.post('/api/upload-todays-setup-results', validateAdminKey, async (req, res) => {
+  const { image, filename } = req.body;
+  
+  if (!image || !image.startsWith('data:image/')) {
+    return res.status(400).json({ ok: false, error: 'Invalid image format. Must be an image.' });
+  }
+
+  const setupData = {
+    image,
+    filename: filename || 'todays-setup-results.png',
+    timestamp: new Date().toISOString()
+  };
+
+  await saveTodaysSetupResults(setupData);
+  res.json({ ok: true, message: "Today's setup results updated successfully!" });
+});
+
+// ── ADMIN: DELETE TODAY'S SETUP RESULTS ───────────────────────
+app.delete('/api/todays-setup-results', validateAdminKey, async (req, res) => {
+  if (db) {
+    try {
+      await getSetupResultsColl().deleteOne({ type: 'todays_setup_results' });
+    } catch (err) {
+      return res.status(500).json({ ok: false, error: err.message });
+    }
+  }
+  // Local fallback wipe
+  try {
+    if (fs.existsSync(TODAYS_SETUP_RESULTS_FILE)) {
+      fs.unlinkSync(TODAYS_SETUP_RESULTS_FILE);
+    }
+  } catch(e) {}
+  res.json({ ok: true, message: "Today's setup results removed successfully!" });
 });
 
 // ── POST /api/payhero-webhook ─────────────────────────────────
