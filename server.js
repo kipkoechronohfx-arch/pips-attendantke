@@ -17,6 +17,7 @@ const express = require('express');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const fetch = require('node-fetch');
+const FormData = require('form-data');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -787,15 +788,18 @@ app.post('/api/broadcast', async (req, res) => {
   try {
     if (imageBase64) {
       // 1. Send photo with caption
+      const form = new FormData();
+      form.append('chat_id', chatId);
+      const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+      form.append('photo', Buffer.from(base64Data, 'base64'), { filename: 'image.png' });
+      if (text) {
+        form.append('caption', text);
+        form.append('parse_mode', 'Markdown');
+      }
+
       const photoRes = await fetch(`${TG_BASE}/sendPhoto`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: chatId,
-          photo: imageBase64,
-          caption: text || '',
-          parse_mode: 'Markdown',
-        }),
+        body: form,
       });
       const photoData = await photoRes.json();
 
