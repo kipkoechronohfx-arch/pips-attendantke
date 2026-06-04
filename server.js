@@ -1221,7 +1221,7 @@ app.get('/api/redirect-vip-telegram', (req, res) => {
     return res.status(401).send('Token verification failed.');
   }
 
-  res.redirect('https://t.me/pipsattendant');
+  res.redirect('https://t.me/pips_attendant');
 });
 
 // ── POST /api/subscribe ───────────────────────────────────────
