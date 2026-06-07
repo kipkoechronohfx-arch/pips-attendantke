@@ -66,70 +66,82 @@
   color: #f59e0b;
 }
 
-/* --- LIGHT MODE OVERRIDES --- */
-body.light-mode {
-  background-color: #f3f4f6 !important;
-  color: #111827 !important;
-  background-image: none !important;
+/* --- DARK NAVY MODE OVERRIDES --- */
+body.dark-navy-mode {
+  background-color: #0b1120 !important; /* Deep dark navy */
+  color: #f8fafc !important;
 }
 
-body.light-mode .text-white {
-  color: #111827 !important;
+/* Hide the golden background images and glows */
+body.dark-navy-mode .fixed.inset-0.z-0 {
+  display: none !important;
 }
 
-body.light-mode .text-gray-400 {
-  color: #4b5563 !important;
+/* Add a subtle dark navy gradient background instead */
+body.dark-navy-mode::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(circle at top right, rgba(14, 165, 233, 0.1), transparent 40%),
+              radial-gradient(circle at bottom left, rgba(56, 189, 248, 0.05), transparent 40%);
+  pointer-events: none;
 }
 
-body.light-mode .bg-dark-navy {
-  background-color: #ffffff !important;
+body.dark-navy-mode .glass-card,
+body.dark-navy-mode .link-card {
+  background: rgba(30, 41, 59, 0.6) !important; /* Slate 800 */
+  border-color: rgba(56, 189, 248, 0.2) !important;
+  box-shadow: 0 8px 32px 0 rgba(0,0,0,0.5) !important;
 }
 
-body.light-mode .border-white\/10,
-body.light-mode .border-white\/20,
-body.light-mode .border-white\/5 {
-  border-color: rgba(0, 0, 0, 0.1) !important;
-}
-
-body.light-mode .glass-card,
-body.light-mode .link-card {
-  background: rgba(255, 255, 255, 0.8) !important;
-  border-color: rgba(0, 0, 0, 0.1) !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
-}
-
-body.light-mode .link-card:hover {
+body.dark-navy-mode .link-card:hover {
   transform: scale(1.02) translateX(5px);
-  background: #ffffff !important;
-  border-color: rgba(245, 158, 11, 0.5) !important;
-  box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.2), 0 4px 6px -2px rgba(217, 119, 6, 0.1) !important;
+  background: rgba(30, 41, 59, 0.9) !important;
+  border-color: rgba(56, 189, 248, 0.6) !important;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.2) !important;
 }
 
-body.light-mode input,
-body.light-mode textarea {
-  background-color: #ffffff !important;
-  color: #111827 !important;
-  border-color: #d1d5db !important;
+/* Shift amber/gold accents to cyan/sky blue accents for the Navy theme */
+body.dark-navy-mode .text-amber-400,
+body.dark-navy-mode .text-amber-500,
+body.dark-navy-mode .text-yellow-300 {
+  color: #38bdf8 !important; /* Sky 400 */
 }
 
-body.light-mode .bg-\[\#17212b\],
-body.light-mode .bg-\[\#0e1621\] {
-  background-color: #f9fafb !important;
+body.dark-navy-mode .bg-amber-400,
+body.dark-navy-mode .bg-amber-500,
+body.dark-navy-mode .bg-yellow-300 {
+  background-color: #38bdf8 !important;
 }
 
-body.light-mode .tg-bubble {
-  background-color: #ffffff !important;
-  border: 1px solid #e5e7eb;
+body.dark-navy-mode .from-amber-400,
+body.dark-navy-mode .from-amber-500 {
+  --tw-gradient-from: #0ea5e9 !important; /* Sky 500 */
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(14, 165, 233, 0));
 }
 
-body.light-mode .text-sky-400 {
-  color: #0284c7 !important;
+body.dark-navy-mode .to-amber-400,
+body.dark-navy-mode .to-yellow-300 {
+  --tw-gradient-to: #38bdf8 !important;
 }
 
-body.light-mode .text-neon-purple {
-  color: #9333ea !important;
+body.dark-navy-mode .border-amber-400\/20,
+body.dark-navy-mode .border-amber-500\/30 {
+  border-color: rgba(56, 189, 248, 0.3) !important;
 }
 
-body.light-mode .text-neon-blue {
-  color: #d97706 !important;
+body.dark-navy-mode .bg-amber-500\/10,
+body.dark-navy-mode .bg-amber-500\/20 {
+  background-color: rgba(56, 189, 248, 0.15) !important;
+}
+
+body.dark-navy-mode input,
+body.dark-navy-mode textarea {
+  background-color: rgba(15, 23, 42, 0.8) !important;
+  border-color: rgba(56, 189, 248, 0.3) !important;
+}
+
+body.dark-navy-mode .selection\:bg-amber-400\/20 *::selection {
+  background-color: rgba(56, 189, 248, 0.3) !important;
 }
