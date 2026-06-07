@@ -176,6 +176,52 @@
         </button>
       </div>
 
+      <!-- ⏱ Live Signal Countdown Timer -->
+      <div id="countdownSection" class="mb-6 hidden">
+        <div class="glass-card border border-amber-400/30 rounded-2xl p-5 relative overflow-hidden">
+          <!-- Glow bg -->
+          <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(ellipse at center, rgba(251,191,36,0.06) 0%, transparent 70%);"></div>
+
+          <div class="flex items-center justify-between mb-4 relative">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-amber-500/20 rounded-lg">
+                <i data-feather="clock" class="w-5 h-5 text-amber-400"></i>
+              </div>
+              <div>
+                <h3 class="text-white font-bold text-sm">⏱ Next Signal Entry</h3>
+                <p id="countdownLabel" class="text-gray-400 text-[11px]">Counting down to entry...</p>
+              </div>
+            </div>
+            <span id="countdownBadge" class="px-3 py-1 bg-amber-500/20 text-amber-400 text-xs font-bold rounded-full border border-amber-500/30 animate-pulse">LIVE</span>
+          </div>
+
+          <!-- Countdown Digits -->
+          <div id="countdownDisplay" class="flex items-center justify-center gap-3 py-2">
+            <div class="flex flex-col items-center">
+              <span id="cdHours" class="text-4xl font-black text-amber-400 font-mono tabular-nums tracking-tight">--</span>
+              <span class="text-[9px] text-gray-500 uppercase tracking-widest mt-1">Hours</span>
+            </div>
+            <span class="text-3xl font-black text-amber-400/40 mb-4">:</span>
+            <div class="flex flex-col items-center">
+              <span id="cdMinutes" class="text-4xl font-black text-amber-400 font-mono tabular-nums tracking-tight">--</span>
+              <span class="text-[9px] text-gray-500 uppercase tracking-widest mt-1">Minutes</span>
+            </div>
+            <span class="text-3xl font-black text-amber-400/40 mb-4">:</span>
+            <div class="flex flex-col items-center">
+              <span id="cdSeconds" class="text-4xl font-black text-amber-400 font-mono tabular-nums tracking-tight">--</span>
+              <span class="text-[9px] text-gray-500 uppercase tracking-widest mt-1">Seconds</span>
+            </div>
+          </div>
+
+          <!-- Entry reached state (hidden by default) -->
+          <div id="countdownFired" class="hidden text-center py-4">
+            <div class="text-3xl mb-2">🚀</div>
+            <p class="text-emerald-400 font-bold text-lg">Entry Time!</p>
+            <p class="text-gray-400 text-xs mt-1">Check the signal details and prepare your trade.</p>
+          </div>
+        </div>
+      </div>
+
       <!-- VIP Signals Card (Disabled until updated with a different link) -->
       <div class="mb-8 select-none">
         <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400/50 mb-3">⭐ VIP Signals (Disabled)</h3>
@@ -640,6 +686,50 @@
     }
 
     let pollingInterval;
+    let countdownInterval;
+
+    // --- LIVE COUNTDOWN TIMER ---
+    function startCountdown(entryTime) {
+      const section   = document.getElementById('countdownSection');
+      const display   = document.getElementById('countdownDisplay');
+      const fired     = document.getElementById('countdownFired');
+      const label     = document.getElementById('countdownLabel');
+      const badge     = document.getElementById('countdownBadge');
+      const hEl       = document.getElementById('cdHours');
+      const mEl       = document.getElementById('cdMinutes');
+      const sEl       = document.getElementById('cdSeconds');
+
+      if (!entryTime) { section.classList.add('hidden'); return; }
+
+      section.classList.remove('hidden');
+      const target = Number(entryTime);
+
+      // Format the label with local time
+      label.textContent = `Entry at ${new Date(target).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
+      if (countdownInterval) clearInterval(countdownInterval);
+
+      function tick() {
+        const diff = target - Date.now();
+        if (diff <= 0) {
+          clearInterval(countdownInterval);
+          display.classList.add('hidden');
+          fired.classList.remove('hidden');
+          badge.textContent = 'NOW';
+          badge.classList.remove('animate-pulse', 'bg-amber-500/20', 'text-amber-400', 'border-amber-500/30');
+          badge.classList.add('bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/30');
+          return;
+        }
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        hEl.textContent = String(h).padStart(2, '0');
+        mEl.textContent = String(m).padStart(2, '0');
+        sEl.textContent = String(s).padStart(2, '0');
+      }
+      tick();
+      countdownInterval = setInterval(tick, 1000);
+    }
 
     // --- THEME TOGGLE ---
     function initTheme() {
@@ -684,16 +774,22 @@
       try {
         const res  = await fetch(`/api/todays-setup?token=${token}`);
         const data = await res.json();
-        if (data.ok && data.setup.image) {
-          document.getElementById('setupPlaceholder').classList.add('hidden');
-          const img  = document.getElementById('todaysSetupImage');
-          const dlBtn = document.getElementById('todaysSetupDownload');
-          img.src = data.setup.image;
-          img.classList.remove('hidden');
-          dlBtn.href = data.setup.image;
-          dlBtn.download = data.setup.filename || 'todays-setup.png';
-          dlBtn.classList.remove('hidden');
-          feather.replace();
+        if (data.ok && data.setup) {
+          // Start countdown if entryTime is set and in the future
+          if (data.setup.entryTime) {
+            startCountdown(data.setup.entryTime);
+          }
+          if (data.setup.image) {
+            document.getElementById('setupPlaceholder').classList.add('hidden');
+            const img  = document.getElementById('todaysSetupImage');
+            const dlBtn = document.getElementById('todaysSetupDownload');
+            img.src = data.setup.image;
+            img.classList.remove('hidden');
+            dlBtn.href = data.setup.image;
+            dlBtn.download = data.setup.filename || 'todays-setup.png';
+            dlBtn.classList.remove('hidden');
+            feather.replace();
+          }
         }
       } catch (err) { console.error('Failed to load setup:', err); }
     }

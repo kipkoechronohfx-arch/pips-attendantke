@@ -267,6 +267,13 @@
             </div>
           </div>
 
+          <div>
+            <label class="block text-[11px] font-semibold text-amber-400 mb-1">⏱ Expected Entry Time (Optional)</label>
+            <input type="datetime-local" id="entryTime" oninput="updateLivePreview()"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-amber-500/20 text-white text-sm focus:border-amber-400/60 focus:outline-none transition" />
+            <p class="text-[10px] text-gray-500 mt-1">VIP members will see a live countdown to this time on the premium page.</p>
+          </div>
+
           <div class="grid grid-cols-3 gap-4">
             <div>
               <label class="block text-[11px] font-semibold text-gray-400 mb-1 text-emerald-400">Take Profit 1 (TP1)</label>
@@ -1382,11 +1389,13 @@
       const imageInput = document.getElementById('chartImage');
       const file = imageInput.files ? imageInput.files[0] : null;
       
+      const entryTime = document.getElementById('entryTime').value;
       const payload = {
         token: token,
         chatId: chat,
         text: messageText,
-        type: 'signal'
+        type: 'signal',
+        entryTime: entryTime ? new Date(entryTime).getTime() : null
       };
 
       try {
@@ -1427,6 +1436,7 @@
           document.getElementById('tp2').value = '';
           document.getElementById('tp3').value = '';
           document.getElementById('notes').value = '';
+          document.getElementById('entryTime').value = '';
           clearImage();
           updateLivePreview();
         } else {
@@ -2038,13 +2048,16 @@
         reader.onloadend = async () => {
           const base64Image = reader.result;
           
+          const entryTimeVal = document.getElementById('entryTime') ? document.getElementById('entryTime').value : null;
+          const entryTimeMs = entryTimeVal ? new Date(entryTimeVal).getTime() : null;
+
           const res = await fetch('/api/upload-todays-setup', {
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',
               'x-admin-key': adminKey 
             },
-            body: JSON.stringify({ image: base64Image, filename: file.name })
+            body: JSON.stringify({ image: base64Image, filename: file.name, entryTime: entryTimeMs })
           });
           
           const data = await res.json();

@@ -915,7 +915,8 @@ app.post('/api/broadcast', async (req, res) => {
 
     // 4. Log signal history using Adapter
     try {
-      await addSignal({ id: Date.now(), type, text: text || '', sentAt: now() });
+      const entryTime = req.body.entryTime || null;
+      await addSignal({ id: Date.now(), type, text: text || '', sentAt: now(), entryTime });
     } catch (logErr) {
       console.warn('[warning] Failed to log signal:', logErr.message);
     }
@@ -1010,7 +1011,7 @@ app.post('/api/pay-vip', async (req, res) => {
 // ── GET /api/todays-setup (VIP ONLY) ──────────────────────────
 app.get('/api/todays-setup', validateVipSession, async (req, res) => {
   const setup = await getTodaysSetup();
-  if (setup && setup.image) {
+  if (setup) {
     res.json({ ok: true, setup });
   } else {
     res.json({ ok: false, error: 'No setup available for today yet.' });
@@ -1033,16 +1034,17 @@ app.get('/api/admin/todays-setup', validateAdminKey, async (req, res) => {
 
 // ── ADMIN: UPLOAD TODAY'S SETUP ───────────────────────────────
 app.post('/api/upload-todays-setup', validateAdminKey, async (req, res) => {
-  const { image, filename } = req.body;
+  const { image, filename, entryTime } = req.body;
   
-  if (!image || !image.startsWith('data:image/')) {
+  if (image && !image.startsWith('data:image/')) {
     return res.status(400).json({ ok: false, error: 'Invalid image format. Must be an image.' });
   }
 
   const setupData = {
-    image,
+    image: image || null,
     filename: filename || 'todays-setup.png',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    entryTime: entryTime || null
   };
 
   await saveTodaysSetup(setupData);
