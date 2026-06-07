@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signal History | Pips_attendant</title>
+  <meta name="description" content="View historical trading signals and performance results from Pips_attendant.">
+  <link rel="icon" type="image/png" href="avatar.png">
+  
+  <meta name="theme-color" content="#0d0800">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'neon-blue': '#f59e0b',
+            'neon-purple': '#d97706',
+            'dark-navy': '#0d0800',
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/feather-icons"></script>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { background-color: #0d0800; font-family: 'Inter', sans-serif; }
+    .glass-card {
+      backdrop-filter: blur(16px);
+      background: rgba(255,255,255,0.03);
+      border-color: rgba(255,255,255,0.08);
+      box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37);
+    }
+  </style>
+</head>
+<body class="text-white min-h-screen relative overflow-x-hidden selection:bg-amber-400/20">
+
+  <!-- Dubai Golden Background Image -->
+  <div class="fixed inset-0 z-0 pointer-events-none" style="
+    background-image: url('dubai_bg.png');
+    background-size: cover;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    opacity: 0.38;
+  "></div>
+
+  <!-- Dark golden base overlay -->
+  <div class="fixed inset-0 z-0 pointer-events-none" style="background: linear-gradient(180deg, rgba(13,8,0,0.82) 0%, rgba(13,8,0,0.5) 40%, rgba(13,8,0,0.45) 70%, rgba(13,8,0,0.9) 100%);"></div>
+
+  <!-- Background Glow -->
+  <div class="fixed inset-0 z-0 pointer-events-none opacity-70">
+    <div class="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full mix-blend-screen animate-pulse" style="background: radial-gradient(circle, rgba(245,158,11,0.28) 0%, transparent 70%); filter: blur(120px);"></div>
+    <div class="absolute bottom-[-10%] left-[-10%] w-[55%] h-[50%] rounded-full mix-blend-screen animate-pulse" style="background: radial-gradient(circle, rgba(217,119,6,0.22) 0%, transparent 70%); filter: blur(100px); animation-delay: 1.5s"></div>
+  </div>
+
+  <main class="container mx-auto px-4 py-12 max-w-3xl relative z-10">
+    
+    <!-- Back Button -->
+    <div class="mb-8">
+      <a href="index.html" class="inline-flex items-center gap-2 text-gray-400 hover:text-amber-400 transition text-sm font-medium">
+        <i data-feather="arrow-left" class="w-4 h-4"></i>
+        Back to Home
+      </a>
+    </div>
+
+    <!-- Header -->
+    <div class="text-center mb-10">
+      <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-tr from-amber-500 to-yellow-300 text-4xl mb-5 shadow-[0_0_30px_rgba(251,191,36,0.3)]">📜</div>
+      <h1 class="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 mb-3">Signal History</h1>
+      <p class="text-gray-400 text-sm max-w-md mx-auto">Review our past performance and setups. Total transparency on every trade we take.</p>
+    </div>
+
+    <!-- Signal List -->
+    <div id="historyContainer" class="space-y-4">
+      <div class="text-center py-10 text-gray-500">
+        <i data-feather="loader" class="w-8 h-8 mx-auto animate-spin mb-4 text-amber-500/50"></i>
+        <p>Loading historical signals...</p>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    feather.replace();
+
+    async function loadHistory() {
+      const container = document.getElementById('historyContainer');
+      try {
+        const res = await fetch('/api/signals/history');
+        const data = await res.json();
+        
+        if (data.ok && data.signals.length > 0) {
+          container.innerHTML = '';
+          data.signals.forEach(signal => {
+            const date = new Date(signal.timestamp).toLocaleString();
+            let statusBadge = '';
+            
+            // Pending countdown logic handled later, for history we mostly care if it's active/pending
+            let statusColor = 'text-cyan-400 bg-cyan-500/10 border-cyan-400/20';
+            let statusText = 'PENDING';
+            let pipsText = '';
+
+            // Using standard type matching if available, otherwise fallback
+            if (signal.type && signal.type.toLowerCase() === 'active') {
+              statusColor = 'text-amber-400 bg-amber-500/10 border-amber-400/20';
+              statusText = 'ACTIVE';
+            } else if (signal.type && signal.type.toLowerCase() === 'win') {
+              statusColor = 'text-emerald-400 bg-emerald-500/10 border-emerald-400/20';
+              statusText = 'WIN';
+              pipsText = `<span class="text-emerald-400 font-bold ml-2">+${\u007Bsignal.pips || 0\u007D} Pips</span>`;
+            } else if (signal.type && signal.type.toLowerCase() === 'loss') {
+              statusColor = 'text-rose-400 bg-rose-500/10 border-rose-400/20';
+              statusText = 'LOSS';
+              pipsText = `<span class="text-rose-400 font-bold ml-2">-${\u007Bsignal.pips || 0\u007D} Pips</span>`;
+            }
+
+            container.innerHTML += `
+              <div class="glass-card border border-amber-400/20 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <div class="flex items-center gap-3 mb-2">
+                    <span class="text-white font-bold text-lg">${\u007Bsignal.pair || 'XAUUSD'\u007D}</span>
+                    <span class="px-2.5 py-1 text-[10px] font-bold rounded uppercase border ${\u007BstatusColor\u007D}">${\u007BstatusText\u007D}</span>
+                    ${\u007BpipsText\u007D}
+                  </div>
+                  <p class="text-gray-400 text-sm font-mono bg-black/40 px-3 py-1.5 rounded-lg inline-block border border-white/5">
+                    Entry: ${\u007Bsignal.entry || '-'\u007D} | TP: ${\u007Bsignal.tp || '-'\u007D} | SL: ${\u007Bsignal.sl || '-'\u007D}
+                  </p>
+                </div>
+                <div class="text-right flex flex-row md:flex-col justify-between items-center md:items-end">
+                  <span class="text-gray-500 text-xs">${\u007Bdate\u007D}</span>
+                </div>
+              </div>
+            `;
+          });
+        } else {
+          container.innerHTML = `
+            <div class="glass-card border border-amber-400/20 rounded-2xl p-10 text-center text-gray-500">
+              <i data-feather="inbox" class="w-10 h-10 mx-auto mb-3 opacity-50"></i>
+              <p>No historical signals found yet.</p>
+            </div>
+          `;
+        }
+        feather.replace();
+      } catch (err) {
+        container.innerHTML = '<p class="text-center text-rose-400 py-10">Error loading history.</p>';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadHistory);
+  </script>
+</body>
+</html>

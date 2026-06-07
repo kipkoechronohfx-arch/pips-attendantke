@@ -9,23 +9,24 @@ document.addEventListener('keydown', (event) => {
   }
 });
 
-// --- THEME LOGIC ---
+// --- THEME TOGGLE (Gold Dubai vs Clean Dark Navy) ---
 function initTheme() {
-  if (localStorage.getItem('theme') === 'light') {
-    document.body.classList.add('light-mode');
+  const savedTheme = localStorage.getItem('theme');
+  // Default is 'gold' (the Dubai theme). If they saved 'dark-navy', apply it.
+  if (savedTheme === 'dark-navy') {
+    document.body.classList.add('dark-navy-mode');
     const icon = document.getElementById('themeIcon');
     if (icon) icon.setAttribute('data-feather', 'moon');
   }
-  // Re-replace feather icons since we might have changed the DOM
   feather.replace();
 }
 
 function toggleTheme() {
-  const isLight = document.body.classList.toggle('light-mode');
-  localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  const isDarkNavy = document.body.classList.toggle('dark-navy-mode');
+  localStorage.setItem('theme', isDarkNavy ? 'dark-navy' : 'gold');
   const icon = document.getElementById('themeIcon');
   if (icon) {
-    icon.setAttribute('data-feather', isLight ? 'moon' : 'sun');
+    icon.setAttribute('data-feather', isDarkNavy ? 'moon' : 'sun');
     feather.replace();
   }
 }
@@ -129,3 +130,41 @@ function applySlide() {
 
 // Auto-scroll every 4 seconds
 setInterval(() => slideTestimonial(1), 4000);
+
+// --- WHATSAPP BROADCAST ---
+async function subscribeWhatsApp(e) {
+  e.preventDefault();
+  const phoneInput = document.getElementById('waPhone');
+  const btn = document.getElementById('waBtn');
+  const status = document.getElementById('waStatus');
+  const phone = phoneInput.value.trim();
+
+  if (!phone) return;
+
+  btn.disabled = true;
+  btn.innerHTML = '<i data-feather="loader" class="w-4 h-4 animate-spin inline"></i> Processing...';
+  feather.replace();
+
+  try {
+    const res = await fetch('/api/whatsapp-subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      status.className = 'text-emerald-400 text-xs mt-2';
+      status.innerText = '✅ ' + data.message;
+      phoneInput.value = '';
+    } else {
+      status.className = 'text-rose-400 text-xs mt-2';
+      status.innerText = '❌ ' + data.error;
+    }
+  } catch (err) {
+    status.className = 'text-rose-400 text-xs mt-2';
+    status.innerText = '❌ Connection error.';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Join Broadcast';
+  }
+}

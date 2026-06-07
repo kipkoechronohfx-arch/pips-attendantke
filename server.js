@@ -23,6 +23,8 @@ const path = require('path');
 const crypto = require('crypto');
 const { MongoClient } = require('mongodb');
 const webpush = require('web-push');
+const cron = require('node-cron');
+const TelegramBot = require('node-telegram-bot-api');
 
 if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(
@@ -48,6 +50,8 @@ const CONFIG_FILE  = path.join(DATA_DIR, 'config.json');
 const PAYMENTS_FILE= path.join(DATA_DIR, 'payments.json');
 const TODAYS_SETUP_FILE = path.join(DATA_DIR, 'todays_setup.json');
 const TODAYS_SETUP_RESULTS_FILE = path.join(DATA_DIR, 'todays_setup_results.json');
+const WHATSAPP_FILE = path.join(DATA_DIR, 'whatsapp.json');
+const CHAT_FILE = path.join(DATA_DIR, 'chat.json');
 
 // Ensure local fallback folders exist
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
@@ -92,7 +96,8 @@ const getSetupColl = () => db.collection('todays_setup');
 const getSetupResultsColl = () => db.collection('todays_setup_results');
 const getPerformanceColl = () => db.collection('performance_logs');
 const getPushSubsColl = () => db.collection('push_subscriptions');
-
+const getWhatsappColl = () => db.collection('whatsapp_subscribers');
+const getChatColl = () => db.collection('chat_messages');
 // ── One-Time Auto-Migration Script ───────────────────────────
 async function runMigrations() {
   console.log('[Migration] Checking for local data to migrate to MongoDB Atlas...');
@@ -380,6 +385,62 @@ async function getSubscriberByTelegram(telegram) {
   }
   const subscribers = readJSON(SUBS_FILE);
   return subscribers.find(s => s.telegram === telegram);
+}
+
+async function addWhatsApp(phone) {
+  if (db) {
+    try {
+      await getWhatsappColl().updateOne({ phone }, { $set: { phone, joinedAt: Date.now() } }, { upsert: true });
+      return;
+    } catch (err) {
+      console.error('[DB WhatsApp Save Error]', err.message);
+    }
+  }
+  const list = readJSON(WHATSAPP_FILE);
+  if (!list.find(w => w.phone === phone)) {
+    list.push({ phone, joinedAt: Date.now() });
+    writeJSON(WHATSAPP_FILE, list);
+  }
+}
+
+async function getWhatsAppList() {
+  if (db) {
+    try {
+      return await getWhatsappColl().find({}).toArray();
+    } catch (err) {
+      console.error('[DB WhatsApp Get Error]', err.message);
+    }
+  }
+  return readJSON(WHATSAPP_FILE);
+}
+
+async function addChatMessage(msg) {
+  const message = { ...msg, timestamp: Date.now() };
+  if (db) {
+    try {
+      await getChatColl().insertOne(message);
+      return message;
+    } catch (err) {
+      console.error('[DB Chat Save Error]', err.message);
+    }
+  }
+  const list = readJSON(CHAT_FILE);
+  list.push(message);
+  // Keep only last 100 messages
+  if (list.length > 100) list.shift();
+  writeJSON(CHAT_FILE, list);
+  return message;
+}
+
+async function getChatMessages() {
+  if (db) {
+    try {
+      return await getChatColl().find({}).sort({ timestamp: -1 }).limit(100).toArray();
+    } catch (err) {
+      console.error('[DB Chat Get Error]', err.message);
+    }
+  }
+  return readJSON(CHAT_FILE).reverse();
 }
 
 async function getPayment(ref) {
@@ -1258,6 +1319,58 @@ app.post('/api/subscribe', async (req, res) => {
   }
 });
 
+// ── NEW: WhatsApp Endpoints ───────────────────────────────────
+app.post('/api/whatsapp-subscribe', async (req, res) => {
+  const { phone } = req.body;
+  if (!phone) return res.status(400).json({ ok: false, error: 'Phone number required' });
+  try {
+    await addWhatsApp(phone);
+    res.json({ ok: true, message: 'Added to WhatsApp broadcast!' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+app.get('/api/whatsapp-list', validateAdminKey, async (req, res) => {
+  try {
+    const list = await getWhatsAppList();
+    res.json({ ok: true, count: list.length, subscribers: list });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── NEW: VIP Chat Endpoints ───────────────────────────────────
+app.get('/api/chat/messages', validateVipSession, async (req, res) => {
+  try {
+    const msgs = await getChatMessages();
+    res.json({ ok: true, messages: msgs });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+app.post('/api/chat/message', validateVipSession, async (req, res) => {
+  const { author, text } = req.body;
+  if (!text) return res.status(400).json({ ok: false, error: 'Message required' });
+  try {
+    const msg = await addChatMessage({ author: author || 'VIP Member', text });
+    res.json({ ok: true, message: msg });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── NEW: Signal History Endpoint ───────────────────────────────
+app.get('/api/signals/history', async (req, res) => {
+  try {
+    const signals = await getSignals();
+    // Return all signals, sorted newest first
+    res.json({ ok: true, count: signals.length, signals: signals.sort((a,b) => b.timestamp - a.timestamp) });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
 // ── GET /api/subscribers ──────────────────────────────────────
 app.get('/api/subscribers', validateAdminKey, async (req, res) => {
   try {
@@ -1361,6 +1474,65 @@ app.post('/api/live', async (req, res) => {
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
+
+// ── Initialization: Telegram Bot & Cron ────────────────────────
+let bot;
+if (process.env.TELEGRAM_BOT_TOKEN) {
+  try {
+    bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
+    bot.onText(/\/stats/, async (msg) => {
+      const chatId = msg.chat.id;
+      try {
+        const logs = await getPerformanceLogs();
+        let pipsGained = 0, pipsLost = 0;
+        let wins = 0, losses = 0;
+        logs.forEach(log => {
+          if (log.type === 'win') { wins++; pipsGained += (log.pips || 0); }
+          else if (log.type === 'loss') { losses++; pipsLost += (log.pips || 0); }
+        });
+        const totalPips = pipsGained + pipsLost;
+        const winRate = totalPips > 0 ? Math.round((pipsGained / totalPips) * 100) : 0;
+        const netPips = pipsGained - pipsLost;
+        const text = `📊 *Pips Attendant Stats*\n\nWin Rate (Pips): ${winRate}%\nNet Pips: ${netPips > 0 ? '+'+netPips : netPips}\nTotal Trades: ${wins + losses}\n\n[Visit Dashboard](https://pips-attendant.onrender.com)`;
+        bot.sendMessage(chatId, text, { parse_mode: 'Markdown', disable_web_page_preview: true });
+      } catch (err) {
+        bot.sendMessage(chatId, 'Could not fetch stats at this time.');
+      }
+    });
+    console.log('[Telegram Bot] Initialized and polling for commands.');
+  } catch (err) {
+    console.error('[Telegram Bot] Error starting polling:', err.message);
+  }
+}
+
+// Weekly report (Sunday at 23:59 EAT, Server is presumably UTC so 20:59 UTC)
+cron.schedule('59 20 * * 0', async () => {
+  if (!process.env.TELEGRAM_BOT_TOKEN || !process.env.TELEGRAM_CHAT_ID) return;
+  console.log('[Cron] Running weekly performance report...');
+  try {
+    const logs = await getPerformanceLogs();
+    const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const weeklyLogs = logs.filter(l => l.timestamp >= oneWeekAgo);
+    let pipsGained = 0, pipsLost = 0;
+    let wins = 0, losses = 0;
+    weeklyLogs.forEach(l => {
+      if (l.type === 'win') { wins++; pipsGained += (l.pips || 0); }
+      else if (l.type === 'loss') { losses++; pipsLost += (l.pips || 0); }
+    });
+    const totalPips = pipsGained + pipsLost;
+    const winRate = totalPips > 0 ? Math.round((pipsGained / totalPips) * 100) : 0;
+    const netPips = pipsGained - pipsLost;
+    const msg = `🏆 *Weekly Performance Report* 🏆\n\nTrades this week: ${wins + losses}\nWin Rate (Pips): ${winRate}%\nNet Pips Gained: ${netPips > 0 ? '+'+netPips : netPips} pips\n\nLet's crush the coming week! 🚀`;
+    const TG_BASE = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}`;
+    await fetch(`${TG_BASE}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: process.env.TELEGRAM_CHAT_ID, text: msg, parse_mode: 'Markdown' })
+    });
+  } catch (err) {
+    console.error('[Cron] Weekly report failed:', err.message);
+  }
+}, { timezone: "Africa/Nairobi" }); // Use EAT directly instead of manual UTC calculation if node-cron supports it
 
 // ── Start ────────────────────────────────────────────────────
 app.listen(PORT, () => {

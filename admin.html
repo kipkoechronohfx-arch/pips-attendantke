@@ -981,6 +981,35 @@
             </div>
           </div>
 
+          <!-- WhatsApp Broadcast List Card -->
+          <div class="glass-card rounded-2xl p-6 border border-white/10 flex flex-col min-h-[300px]">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <span class="block text-xs font-bold uppercase tracking-wider text-emerald-400">WhatsApp Broadcast List</span>
+                <p class="text-[10px] text-gray-500">Users who joined via the free broadcast form</p>
+              </div>
+              <button type="button" onclick="fetchWhatsAppList()" class="px-3.5 py-1.5 rounded-lg text-xs font-bold border border-white/10 hover:border-emerald-400/50 hover:bg-emerald-400/10 text-gray-400 hover:text-emerald-400 transition cursor-pointer flex items-center gap-1.5">
+                <i data-feather="refresh-cw" class="w-3 h-3"></i> Refresh
+              </button>
+            </div>
+            
+            <div class="flex-1 overflow-x-auto max-h-[250px] scrollbar-thin">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="border-b border-white/10 text-gray-400 font-semibold">
+                    <th class="py-2.5 px-3">Phone Number</th>
+                    <th class="py-2.5 px-3 text-right">Joined</th>
+                  </tr>
+                </thead>
+                <tbody id="whatsappListBody">
+                  <tr>
+                    <td colspan="2" class="py-8 text-center text-gray-500">Enter your Admin Key in credentials setup to view WhatsApp list.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
           <!-- Dynamic Password Configuration Card -->
           <div class="glass-card rounded-2xl p-6 border border-white/10">
             <span class="block text-xs font-bold uppercase tracking-wider text-amber-400 mb-2">Configure VIP Password</span>
@@ -1117,6 +1146,7 @@
         
         // Load VIP dynamic metrics
         fetchSubscribers();
+        fetchWhatsAppList();
         fetchVIPDocuments();
         fetchTodaysSetup();
         fetchTodaysSetupResults();
@@ -1878,43 +1908,74 @@
 
     // --- VIP SUBSCRIBERS LOGIC ---
     async function fetchSubscribers() {
-      const adminKey = localStorage.getItem('pa_admin_key');
-      const tbody = document.getElementById('subscriberListBody');
+      const adminKey = document.getElementById('adminKeyInput').value.trim();
       if (!adminKey) return;
-
+      const tbody = document.getElementById('subscriberListBody');
+      tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center"><i data-feather="loader" class="w-4 h-4 animate-spin mx-auto text-amber-400"></i></td></tr>';
+      feather.replace();
       try {
         const res = await fetch('/api/subscribers', {
           headers: { 'x-admin-key': adminKey }
         });
         const data = await res.json();
-        
         if (data.ok) {
           if (data.subscribers.length === 0) {
             tbody.innerHTML = '<tr><td colspan="4" class="py-8 text-center text-gray-500">No subscribers found yet.</td></tr>';
-            return;
+          } else {
+            // Sort newest first
+            data.subscribers.sort((a,b) => (b.joinedAt || 0) - (a.joinedAt || 0));
+            tbody.innerHTML = data.subscribers.map(sub => {
+              const dateStr = sub.joinedAt ? new Date(sub.joinedAt).toLocaleString() : '-';
+              return `
+                <tr class="border-b border-white/5 hover:bg-white/5 transition">
+                  <td class="py-3 px-3 font-medium text-white">${sub.name || '-'}</td>
+                  <td class="py-3 px-3 text-sky-400 font-mono">${sub.telegram || '-'}</td>
+                  <td class="py-3 px-3 text-gray-300 font-mono">${sub.email || '-'}</td>
+                  <td class="py-3 px-3 text-right text-gray-500 font-mono">${dateStr}</td>
+                </tr>
+              `;
+            }).join('');
           }
-          
-          tbody.innerHTML = data.subscribers.map(sub => {
-            const date = new Date(sub.joinedAt).toLocaleDateString(undefined, {
-              month: 'short',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            });
-            return `
-              <tr class="border-b border-white/5 hover:bg-white/2 transition">
-                <td class="py-3 px-3 font-semibold text-white">${sub.name || 'Anonymous'}</td>
-                <td class="py-3 px-3 text-sky-400 font-mono">${sub.telegram ? '@' + sub.telegram.replace('@', '') : '-'}</td>
-                <td class="py-3 px-3 text-gray-300 font-mono">${sub.email || '-'}</td>
-                <td class="py-3 px-3 text-right text-gray-400 font-mono">${date}</td>
-              </tr>
-            `;
-          }).join('');
         } else {
-          tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-rose-400">Error: ${data.error || 'Failed to fetch'}</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-rose-400">Error: ${data.error}</td></tr>`;
         }
       } catch (err) {
-        tbody.innerHTML = '<tr><td colspan="4" class="py-8 text-center text-rose-400">Network Error. Check console.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-rose-400">Connection error.</td></tr>';
+      }
+    }
+
+    async function fetchWhatsAppList() {
+      const adminKey = document.getElementById('adminKeyInput').value.trim();
+      if (!adminKey) return;
+      const tbody = document.getElementById('whatsappListBody');
+      if(!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="2" class="py-4 text-center"><i data-feather="loader" class="w-4 h-4 animate-spin mx-auto text-emerald-400"></i></td></tr>';
+      feather.replace();
+      try {
+        const res = await fetch('/api/whatsapp-list', {
+          headers: { 'x-admin-key': adminKey }
+        });
+        const data = await res.json();
+        if (data.ok) {
+          if (data.subscribers.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="2" class="py-8 text-center text-gray-500">No WhatsApp subscribers yet.</td></tr>';
+          } else {
+            data.subscribers.sort((a,b) => (b.joinedAt || 0) - (a.joinedAt || 0));
+            tbody.innerHTML = data.subscribers.map(sub => {
+              const dateStr = sub.joinedAt ? new Date(sub.joinedAt).toLocaleString() : '-';
+              return `
+                <tr class="border-b border-white/5 hover:bg-white/5 transition">
+                  <td class="py-3 px-3 font-medium text-emerald-400 font-mono">${sub.phone || '-'}</td>
+                  <td class="py-3 px-3 text-right text-gray-500 font-mono">${dateStr}</td>
+                </tr>
+              `;
+            }).join('');
+          }
+        } else {
+          tbody.innerHTML = `<tr><td colspan="2" class="py-4 text-center text-rose-400">Error: ${data.error}</td></tr>`;
+        }
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="2" class="py-4 text-center text-rose-400">Connection error.</td></tr>';
       }
     }
 
