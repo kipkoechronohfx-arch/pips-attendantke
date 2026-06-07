@@ -1475,35 +1475,83 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// ── Initialization: Telegram Bot & Cron ────────────────────────
+// ── Initialization: Telegram Bot (Webhook Mode) ─────────────────
 let bot;
-if (process.env.TELEGRAM_BOT_TOKEN) {
-  try {
-    bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
-    bot.onText(/\/stats/, async (msg) => {
-      const chatId = msg.chat.id;
-      try {
-        const logs = await getPerformanceLogs();
-        let pipsGained = 0, pipsLost = 0;
-        let wins = 0, losses = 0;
-        logs.forEach(log => {
-          if (log.type === 'win') { wins++; pipsGained += (log.pips || 0); }
-          else if (log.type === 'loss') { losses++; pipsLost += (log.pips || 0); }
-        });
-        const totalPips = pipsGained + pipsLost;
-        const winRate = totalPips > 0 ? Math.round((pipsGained / totalPips) * 100) : 0;
-        const netPips = pipsGained - pipsLost;
-        const text = `📊 *Pips Attendant Stats*\n\nWin Rate (Pips): ${winRate}%\nNet Pips: ${netPips > 0 ? '+'+netPips : netPips}\nTotal Trades: ${wins + losses}\n\n[Visit Dashboard](https://pips-attendant.onrender.com)`;
-        bot.sendMessage(chatId, text, { parse_mode: 'Markdown', disable_web_page_preview: true });
-      } catch (err) {
-        bot.sendMessage(chatId, 'Could not fetch stats at this time.');
-      }
-    });
-    console.log('[Telegram Bot] Initialized and polling for commands.');
-  } catch (err) {
-    console.error('[Telegram Bot] Error starting polling:', err.message);
+
+async function handleTelegramUpdate(update) {
+  if (!update.message) return;
+  const msg = update.message;
+  const chatId = msg.chat.id;
+  const text = msg.text || '';
+
+  if (text.startsWith('/stats')) {
+    try {
+      const logs = await getPerformanceLogs();
+      let pipsGained = 0, pipsLost = 0;
+      let wins = 0, losses = 0;
+      logs.forEach(log => {
+        if (log.type === 'win') { wins++; pipsGained += (log.pips || 0); }
+        else if (log.type === 'loss') { losses++; pipsLost += (log.pips || 0); }
+      });
+      const totalPips = pipsGained + pipsLost;
+      const winRate = totalPips > 0 ? Math.round((pipsGained / totalPips) * 100) : 0;
+      const netPips = pipsGained - pipsLost;
+      const replyText = `📊 *Pips Attendant Stats*\n\nWin Rate (Pips): ${winRate}%\nNet Pips: ${netPips > 0 ? '+'+netPips : netPips}\nTotal Trades: ${wins + losses}\n\n[Visit Dashboard](https://pips-attendantke.onrender.com)`;
+      await sendTelegramMessage(chatId, replyText);
+    } catch (err) {
+      await sendTelegramMessage(chatId, 'Could not fetch stats at this time.');
+    }
+  } else if (text.startsWith('/start')) {
+    await sendTelegramMessage(chatId, '👋 Welcome to *Pips Attendant Bot*!\n\nCommands:\n/stats — View trading stats', { parse_mode: 'Markdown' });
   }
 }
+
+async function sendTelegramMessage(chatId, text, opts = {}) {
+  const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+  if (!TOKEN) return;
+  await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'Markdown', disable_web_page_preview: true, ...opts })
+  });
+}
+
+// Webhook endpoint — Telegram sends updates here
+app.post('/telegram-webhook', express.json(), async (req, res) => {
+  res.sendStatus(200); // always respond immediately
+  try {
+    await handleTelegramUpdate(req.body);
+  } catch (err) {
+    console.error('[Telegram Webhook] Error handling update:', err.message);
+  }
+});
+
+// Register webhook with Telegram on startup
+async function registerTelegramWebhook() {
+  const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+  const BASE_URL = process.env.RENDER_EXTERNAL_URL || process.env.APP_URL;
+  if (!TOKEN || !BASE_URL) {
+    console.warn('[Telegram Bot] No token or URL set — skipping webhook registration.');
+    return;
+  }
+  const webhookUrl = `${BASE_URL}/telegram-webhook`;
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${TOKEN}/setWebhook`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: webhookUrl, drop_pending_updates: true })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      console.log(`[Telegram Bot] Webhook registered: ${webhookUrl}`);
+    } else {
+      console.error('[Telegram Bot] Webhook registration failed:', data.description);
+    }
+  } catch (err) {
+    console.error('[Telegram Bot] Failed to register webhook:', err.message);
+  }
+}
+
 
 // Weekly report (Sunday at 23:59 EAT, Server is presumably UTC so 20:59 UTC)
 cron.schedule('59 20 * * 0', async () => {
@@ -1542,4 +1590,6 @@ app.listen(PORT, () => {
   ║   Running on http://localhost:${PORT}   ║
   ╚═══════════════════════════════════════╝
   `);
+  // Register Telegram webhook after server is listening
+  registerTelegramWebhook();
 });
