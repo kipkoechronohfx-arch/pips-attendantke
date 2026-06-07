@@ -67,12 +67,25 @@
     }
   </style>
 </head>
-<body class="text-white min-h-screen relative overflow-x-hidden pt-6 pb-12 selection:bg-neon-purple/30">
+<body class="text-white min-h-screen relative overflow-x-hidden pt-6 pb-12 selection:bg-amber-400/30" style="background-color: #0d0800;">
+
+  <!-- Dubai Golden Background Image -->
+  <div class="fixed inset-0 z-0 pointer-events-none" style="
+    background-image: url('dubai_bg.png');
+    background-size: cover;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    opacity: 0.38;
+  "></div>
+
+  <!-- Dark golden base overlay -->
+  <div class="fixed inset-0 z-0 pointer-events-none" style="background: linear-gradient(180deg, rgba(13,8,0,0.82) 0%, rgba(13,8,0,0.5) 40%, rgba(13,8,0,0.45) 70%, rgba(13,8,0,0.9) 100%);"></div>
 
   <!-- Background Glow Effects -->
-  <div class="fixed inset-0 z-0 pointer-events-none opacity-40">
-    <div class="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-neon-purple/20 blur-[120px] rounded-full mix-blend-screen"></div>
-    <div class="absolute bottom-[-10%] left-[-10%] w-[50%] h-[40%] bg-neon-blue/20 blur-[120px] rounded-full mix-blend-screen"></div>
+  <div class="fixed inset-0 z-0 pointer-events-none opacity-70">
+    <div class="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full mix-blend-screen animate-pulse duration-1000" style="background: radial-gradient(circle, rgba(245,158,11,0.28) 0%, transparent 70%); filter: blur(120px);"></div>
+    <div class="absolute bottom-[-10%] left-[-10%] w-[55%] h-[50%] rounded-full mix-blend-screen animate-pulse duration-1000" style="background: radial-gradient(circle, rgba(217,119,6,0.22) 0%, transparent 70%); filter: blur(100px); animation-delay: 1.5s"></div>
+    <div class="absolute top-[40%] left-[35%] w-[30%] h-[25%] rounded-full mix-blend-screen" style="background: radial-gradient(circle, rgba(251,191,36,0.12) 0%, transparent 70%); filter: blur(80px);"></div>
   </div>
 
   <main class="container mx-auto px-4 max-w-5xl relative z-10">
