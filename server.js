@@ -1368,7 +1368,7 @@ app.get('/api/signals/history', async (req, res) => {
   try {
     const signals = await getSignals();
     // Return all signals, sorted newest first
-    res.json({ ok: true, count: signals.length, signals: signals.sort((a,b) => b.timestamp - a.timestamp) });
+    res.json({ ok: true, count: signals.length, signals: signals.sort((a,b) => b.sentAt - a.sentAt) });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
