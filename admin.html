@@ -435,6 +435,30 @@
               <button type="button" onclick="applyEngagementTemplate('sunday_open')" class="eng-btn py-3 rounded-xl border border-cyan-400/20 bg-cyan-400/5 hover:bg-cyan-400/10 hover:border-cyan-400/50 text-cyan-400 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
                 <span class="text-xl">🔔</span><span>Sunday Open</span>
               </button>
+              <button type="button" onclick="applyEngagementTemplate('news_warning')" class="eng-btn py-3 rounded-xl border border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/10 hover:border-rose-500/50 text-rose-400 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
+                <span class="text-xl">⚠️</span><span>News Alert</span>
+              </button>
+              <button type="button" onclick="applyEngagementTemplate('mid_week')" class="eng-btn py-3 rounded-xl border border-amber-400/20 bg-amber-400/5 hover:bg-amber-400/10 hover:border-amber-400/50 text-amber-300 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
+                <span class="text-xl">🐪</span><span>Mid-Week</span>
+              </button>
+              <button type="button" onclick="applyEngagementTemplate('vip_promo')" class="eng-btn py-3 rounded-xl border border-amber-500/20 bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/50 text-amber-400 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
+                <span class="text-xl">👑</span><span>VIP Promo</span>
+              </button>
+              <button type="button" onclick="applyEngagementTemplate('weekly_recap')" class="eng-btn py-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 hover:border-emerald-500/50 text-emerald-400 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
+                <span class="text-xl">📊</span><span>Weekly Recap</span>
+              </button>
+              <button type="button" onclick="applyEngagementTemplate('risk_mgmt')" class="eng-btn py-3 rounded-xl border border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/10 hover:border-blue-500/50 text-blue-400 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
+                <span class="text-xl">🛡️</span><span>Risk Mgmt</span>
+              </button>
+              <button type="button" onclick="applyEngagementTemplate('broker_promo')" class="eng-btn py-3 rounded-xl border border-indigo-400/20 bg-indigo-400/5 hover:bg-indigo-400/10 hover:border-indigo-400/50 text-indigo-300 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
+                <span class="text-xl">🏦</span><span>Fund Account</span>
+              </button>
+              <button type="button" onclick="applyEngagementTemplate('free_signal')" class="eng-btn py-3 rounded-xl border border-emerald-400/20 bg-emerald-400/5 hover:bg-emerald-400/10 hover:border-emerald-400/50 text-emerald-300 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
+                <span class="text-xl">🎁</span><span>Free Signal</span>
+              </button>
+              <button type="button" onclick="applyEngagementTemplate('motivation')" class="eng-btn py-3 rounded-xl border border-orange-500/20 bg-orange-500/5 hover:bg-orange-500/10 hover:border-orange-500/50 text-orange-400 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
+                <span class="text-xl">🔥</span><span>Motivation</span>
+              </button>
               <button type="button" onclick="applyEngagementTemplate('custom')" class="eng-btn py-3 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 hover:border-white/30 text-gray-400 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
                 <span class="text-xl">✍️</span><span>Custom</span>
               </button>
@@ -1434,6 +1458,14 @@
       weekend: "😎 *Weekend Recap*\n\nGreat week of trading! Take some time to review your trades, rest up, and enjoy the weekend with family. We go hard again on Monday! 🏆🥂",
       friday_close: "🛑 *Market is Closing!*\n\nThe markets are closing soon for the weekend. Make sure to manage any open positions, secure your profits, and avoid holding unnecessary risk over the weekend. 📉🔒\n\nHave a great weekend! 🍻",
       sunday_open: "🔔 *Market Opens Tomorrow!*\n\nGet ready! The markets are opening tomorrow for a brand new trading week. Time to review your charts, plan your setups, and get in the zone. 🚀📈\n\nWho's ready for Monday?",
+      news_warning: "⚠️ *HIGH IMPACT NEWS ALERT!* ⚠️\n\nWe have major economic news dropping shortly. Expect high volatility! If you're in active trades, consider securing profits or moving stops to breakeven. Stay safe! 🛡️📊",
+      mid_week: "🐪 *Mid-Week Check-in!*\n\nWe are halfway through the trading week. How is everyone's week going so far? Remember to stick to your trading plan and not force any setups. Patience pays! 💎🙌",
+      vip_promo: "👑 *VIP Exclusive Win!* 👑\n\nOur VIP members caught this massive move early! If you're tired of missing out and want real-time signals and premium support, it's time to upgrade. 🚀💸\n\nDM me to join the VIP Inner Circle today!",
+      weekly_recap: "📊 *Weekly Recap Time!*\n\nWhat a phenomenal week of trading! We bagged some massive pips together. Let's tally up the wins and review the lessons from any losses. Consistent growth is the goal! 🏆📈\n\nHow many pips did you catch this week?",
+      risk_mgmt: "🛡️ *Risk Management Check!*\n\nA quick reminder: Protect your capital first, make money second. Never risk more than 1-2% on a single trade. A winning strategy is nothing without proper risk management. Keep your discipline! 🧠💯",
+      broker_promo: "🏦 *Ready for the New Week?*\n\nMake sure your trading accounts are fully funded and ready to catch the next wave of setups! If you're looking for tight spreads and fast execution, check out our recommended broker link in the bio. Let's get these pips! 💸⚡",
+      free_signal: "🎁 *Free Signal Teaser!*\n\nI'm watching a high-probability setup forming right now... I might drop this one for free for the public channel! 👀 Drop a 🔥 if you want me to share it!",
+      motivation: "🔥 *Daily Motivation*\n\nTrading is 20% strategy and 80% psychology. Don't let one bad trade ruin your day, and don't let one good trade inflate your ego. Stay humble, stay focused, and trust the process! 🦅📈",
       custom: ""
     };
 
