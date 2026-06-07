@@ -740,8 +740,11 @@
       try {
         const res = await fetch('/api/chat/message', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token, text, author: localStorage.getItem('pa_vip_user_name') || 'VIP Member' })
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-vip-token': token
+          },
+          body: JSON.stringify({ text, author: localStorage.getItem('pa_vip_user_name') || 'VIP Member' })
         });
         const data = await res.json();
         if (data.ok) {
