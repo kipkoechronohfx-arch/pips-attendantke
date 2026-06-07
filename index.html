@@ -10,7 +10,7 @@
   
   <!-- PWA & Mobile Meta Tags -->
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0a0f1c">
+  <meta name="theme-color" content="#12080f">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PipsAttendant">
@@ -20,9 +20,9 @@
   <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
   <style type="text/tailwindcss">
     @theme {
-      --color-dark-navy: #0a0f1c;
-      --color-neon-blue: #00f0ff;
-      --color-neon-purple: #b026ff;
+      --color-dark-navy: #12080f;
+      --color-neon-blue: #f43f5e;
+      --color-neon-purple: #f59e0b;
       --font-inter: "Inter", "Poppins", sans-serif;
     }
   </style>
@@ -66,9 +66,10 @@
   <canvas id="bgCanvas" class="fixed inset-0 z-0 pointer-events-none opacity-30"></canvas>
 
   <!-- Background Glow Effects -->
-  <div class="fixed inset-0 z-0 pointer-events-none opacity-50">
-    <div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-neon-purple/20 blur-[120px] rounded-full mix-blend-screen animate-pulse duration-1000"></div>
-    <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[40%] bg-neon-blue/20 blur-[120px] rounded-full mix-blend-screen animate-pulse duration-1000" style="animation-delay: 1s"></div>
+  <div class="fixed inset-0 z-0 pointer-events-none opacity-60">
+    <div class="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full mix-blend-screen animate-pulse duration-1000" style="background: radial-gradient(circle, rgba(244,63,94,0.25) 0%, transparent 70%); filter: blur(100px);"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[60%] h-[50%] rounded-full mix-blend-screen animate-pulse duration-1000" style="background: radial-gradient(circle, rgba(245,158,11,0.25) 0%, transparent 70%); filter: blur(100px); animation-delay: 1.2s"></div>
+    <div class="absolute top-[40%] right-[20%] w-[30%] h-[30%] rounded-full mix-blend-screen" style="background: radial-gradient(circle, rgba(251,113,133,0.12) 0%, transparent 70%); filter: blur(80px);"></div>
   </div>
 
   <!-- Theme Toggle Button -->
@@ -493,7 +494,7 @@
             vx: (Math.random() - 0.5) * 0.15,
             r: Math.random() * 1.2 + 0.3,
             alpha: Math.random() * 0.5 + 0.2,
-            color: Math.random() > 0.5 ? '#00f0ff' : '#b026ff'
+            color: Math.random() > 0.5 ? '#f43f5e' : '#f59e0b'
           });
         }
       }
@@ -525,7 +526,7 @@
             close: Math.random() * 10 + 4,
             high: Math.random() * 12 + 6,
             low: Math.random() * 12 + 6,
-            color: Math.random() > 0.5 ? '#00f0ff' : '#b026ff',
+            color: Math.random() > 0.5 ? '#f43f5e' : '#f59e0b',
             vy: (Math.random() - 0.5) * 0.15
           });
         }
