@@ -761,9 +761,9 @@
         document.getElementById('contentPanel').classList.remove('hidden');
         updateDownloadLinks();
         loadTodaysSetup();
-        loadTodaysSetup();
         loadTodaysSetupResults();
         loadChatMessages();
+        loadCountdownFromSignals();
       }
     });
 
@@ -775,10 +775,6 @@
         const res  = await fetch(`/api/todays-setup?token=${token}`);
         const data = await res.json();
         if (data.ok && data.setup) {
-          // Start countdown if entryTime is set and in the future
-          if (data.setup.entryTime) {
-            startCountdown(data.setup.entryTime);
-          }
           if (data.setup.image) {
             document.getElementById('setupPlaceholder').classList.add('hidden');
             const img  = document.getElementById('todaysSetupImage');
@@ -792,6 +788,27 @@
           }
         }
       } catch (err) { console.error('Failed to load setup:', err); }
+    }
+
+    // ── Load Countdown from Latest Signal ──────────────────────────
+    async function loadCountdownFromSignals() {
+      try {
+        const res = await fetch('/api/signals/history');
+        const data = await res.json();
+        if (data.ok && data.signals && data.signals.length > 0) {
+          // Find the most recent signal with a future entry time
+          const now = Date.now();
+          const futureSignals = data.signals
+            .filter(s => s.entryTime && s.entryTime > now)
+            .sort((a, b) => a.entryTime - b.entryTime);
+          
+          if (futureSignals.length > 0) {
+            startCountdown(futureSignals[0].entryTime);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load signal countdown:', err);
+      }
     }
 
     // ── Load Today's Setup Results image (VIP only) ────────────────
