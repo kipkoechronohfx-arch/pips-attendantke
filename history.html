@@ -57,12 +57,15 @@
 
   <main class="container mx-auto px-4 py-12 max-w-3xl relative z-10">
     
-    <!-- Back Button -->
-    <div class="mb-8">
+    <!-- Header Nav -->
+    <div class="mb-8 flex justify-between items-center">
       <a href="index.html" class="inline-flex items-center gap-2 text-gray-400 hover:text-amber-400 transition text-sm font-medium">
         <i data-feather="arrow-left" class="w-4 h-4"></i>
         Back to Home
       </a>
+      <button onclick="toggleTheme()" class="flex items-center justify-center w-8 h-8 rounded-full bg-white/5 border border-white/10 hover:border-amber-400/50 hover:bg-amber-400/10 hover:text-amber-400 text-gray-400 transition duration-300 cursor-pointer" title="Toggle Theme">
+        <i id="themeIcon" data-feather="sun" class="w-4 h-4"></i>
+      </button>
     </div>
 
     <!-- Header -->
@@ -84,6 +87,26 @@
 
   <script>
     feather.replace();
+
+    // --- THEME TOGGLE ---
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark-navy') {
+        document.body.classList.add('dark-navy-mode');
+        const icon = document.getElementById('themeIcon');
+        if (icon) icon.setAttribute('data-feather', 'moon');
+      }
+    }
+
+    function toggleTheme() {
+      const isDarkNavy = document.body.classList.toggle('dark-navy-mode');
+      localStorage.setItem('theme', isDarkNavy ? 'dark-navy' : 'gold');
+      const icon = document.getElementById('themeIcon');
+      if (icon) {
+        icon.setAttribute('data-feather', isDarkNavy ? 'moon' : 'sun');
+        feather.replace();
+      }
+    }
 
     async function loadHistory() {
       const container = document.getElementById('historyContainer');
@@ -148,7 +171,10 @@
       }
     }
 
-    document.addEventListener('DOMContentLoaded', loadHistory);
+    document.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      loadHistory();
+    });
   </script>
 </body>
 </html>
