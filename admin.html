@@ -1908,7 +1908,7 @@
 
     // --- VIP SUBSCRIBERS LOGIC ---
     async function fetchSubscribers() {
-      const adminKey = document.getElementById('adminKeyInput').value.trim();
+      const adminKey = localStorage.getItem('pa_admin_key');
       if (!adminKey) return;
       const tbody = document.getElementById('subscriberListBody');
       tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center"><i data-feather="loader" class="w-4 h-4 animate-spin mx-auto text-amber-400"></i></td></tr>';
@@ -1945,7 +1945,7 @@
     }
 
     async function fetchWhatsAppList() {
-      const adminKey = document.getElementById('adminKeyInput').value.trim();
+      const adminKey = localStorage.getItem('pa_admin_key');
       if (!adminKey) return;
       const tbody = document.getElementById('whatsappListBody');
       if(!tbody) return;
