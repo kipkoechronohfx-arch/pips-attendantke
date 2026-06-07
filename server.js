@@ -721,12 +721,19 @@ app.get('/api/performance/stats', async (req, res) => {
   try {
     const logs = await getPerformanceColl().find({}).toArray();
     let totalPips = 0;
-    let wins = 0;
+    let pipsGained = 0;
+    let pipsLost = 0;
     logs.forEach(log => {
-      totalPips += Number(log.pips) || 0;
-      if (log.result === 'Win') wins++;
+      const p = Number(log.pips) || 0;
+      totalPips += p; // net pips overall
+      if (log.result === 'Win') {
+        pipsGained += Math.abs(p);
+      } else if (log.result === 'Loss') {
+        pipsLost += Math.abs(p);
+      }
     });
-    const winRate = logs.length > 0 ? Math.round((wins / logs.length) * 100) : 0;
+    const totalPipMovement = pipsGained + pipsLost;
+    const winRate = totalPipMovement > 0 ? Math.round((pipsGained / totalPipMovement) * 100) : 0;
     res.json({ ok: true, totalTrades: logs.length, totalPips, winRate, recent: logs.slice(-5).reverse() });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
