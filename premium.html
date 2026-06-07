@@ -767,7 +767,6 @@
       }
     });
 
-    // ── Load Today's Setup image (VIP only) ────────────────────
     async function loadTodaysSetup() {
       const token = sessionStorage.getItem('vip_session_token');
       if (!token) return;
@@ -775,6 +774,11 @@
         const res  = await fetch(`/api/todays-setup?token=${token}`);
         const data = await res.json();
         if (data.ok && data.setup) {
+          // If the setup has a future entry time, start the countdown
+          if (data.setup.entryTime && data.setup.entryTime > Date.now()) {
+            startCountdown(data.setup.entryTime);
+          }
+
           if (data.setup.image) {
             document.getElementById('setupPlaceholder').classList.add('hidden');
             const img  = document.getElementById('todaysSetupImage');
