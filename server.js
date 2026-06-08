@@ -854,63 +854,69 @@ app.post('/api/broadcast', async (req, res) => {
   const TG_BASE = `https://api.telegram.org/bot${token}`;
 
   try {
-    if (imageBase64) {
-      // 1. Send photo with caption
-      // Extract actual MIME type from data URL (e.g. image/jpeg, image/png)
-      const mimeMatch = imageBase64.match(/^data:(image\/[\w+.-]+);base64,/);
-      const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
-      const ext = mimeType.split('/')[1].replace('+xml', '');
-      const base64Data = imageBase64.replace(/^data:image\/[\w+.-]+;base64,/, '');
-      const imgBuffer = Buffer.from(base64Data, 'base64');
+    let telegramError = null;
+    try {
+      if (imageBase64) {
+        // 1. Send photo with caption
+        // Extract actual MIME type from data URL (e.g. image/jpeg, image/png)
+        const mimeMatch = imageBase64.match(/^data:(image\/[\w+.-]+);base64,/);
+        const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+        const ext = mimeType.split('/')[1].replace('+xml', '');
+        const base64Data = imageBase64.replace(/^data:image\/[\w+.-]+;base64,/, '');
+        const imgBuffer = Buffer.from(base64Data, 'base64');
 
-      const form = new FormData();
-      form.append('chat_id', chatId);
-      form.append('photo', imgBuffer, {
-        filename: `image.${ext}`,
-        contentType: mimeType,
-        knownLength: imgBuffer.length,
-      });
-      if (text) {
-        form.append('caption', text);
-        form.append('parse_mode', 'Markdown');
+        const form = new FormData();
+        form.append('chat_id', chatId);
+        form.append('photo', imgBuffer, {
+          filename: `image.${ext}`,
+          contentType: mimeType,
+          knownLength: imgBuffer.length,
+        });
+        if (text) {
+          form.append('caption', text);
+          form.append('parse_mode', 'Markdown');
+        }
+
+        const photoRes = await fetch(`${TG_BASE}/sendPhoto`, {
+          method: 'POST',
+          body: form,
+          headers: form.getHeaders(),
+        });
+        const photoData = await photoRes.json();
+
+        if (!photoData.ok) {
+          console.error('[Telegram sendPhoto Error]', JSON.stringify(photoData));
+          throw new Error(`Telegram image send failed: ${photoData.description || 'Unknown error'}`);
+        }
+      } else if (text) {
+        // 2. Text-only broadcast
+        const msgRes = await fetch(`${TG_BASE}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: chatId,
+            text,
+            parse_mode: 'Markdown',
+            disable_web_page_preview: false,
+          }),
+        });
+        const msgData = await msgRes.json();
+        if (!msgData.ok) throw new Error(msgData.description);
       }
 
-      const photoRes = await fetch(`${TG_BASE}/sendPhoto`, {
-        method: 'POST',
-        body: form,
-        headers: form.getHeaders(),
-      });
-      const photoData = await photoRes.json();
-
-      if (!photoData.ok) {
-        console.error('[Telegram sendPhoto Error]', JSON.stringify(photoData));
-        throw new Error(`Telegram image send failed: ${photoData.description || 'Unknown error'}`);
+      if (stickerId) {
+        // 3. Send sticker
+        const stickerRes = await fetch(`${TG_BASE}/sendSticker`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: chatId, sticker: stickerId }),
+        });
+        const stickerData = await stickerRes.json();
+        if (!stickerData.ok) throw new Error(stickerData.description);
       }
-    } else if (text) {
-      // 2. Text-only broadcast
-      const msgRes = await fetch(`${TG_BASE}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text,
-          parse_mode: 'Markdown',
-          disable_web_page_preview: false,
-        }),
-      });
-      const msgData = await msgRes.json();
-      if (!msgData.ok) throw new Error(msgData.description);
-    }
-
-    if (stickerId) {
-      // 3. Send sticker
-      const stickerRes = await fetch(`${TG_BASE}/sendSticker`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: chatId, sticker: stickerId }),
-      });
-      const stickerData = await stickerRes.json();
-      if (!stickerData.ok) throw new Error(stickerData.description);
+    } catch (tgErr) {
+      console.warn('[Telegram Broadcast Warning]', tgErr.message);
+      telegramError = tgErr.message;
     }
 
     // 4. Log signal history using Adapter
@@ -947,7 +953,7 @@ app.post('/api/broadcast', async (req, res) => {
       }
     }
 
-    res.json({ ok: true, message: 'Broadcast sent and logged.' });
+    res.json({ ok: true, message: 'Broadcast processed' + (telegramError ? ` (Telegram failed: ${telegramError})` : '.') });
   } catch (err) {
     console.error('[broadcast error]', err.message);
     res.status(500).json({ ok: false, error: err.message });
