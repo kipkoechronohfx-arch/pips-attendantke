@@ -67,7 +67,90 @@
     ::-webkit-scrollbar-thumb:hover {
       background: rgba(0, 240, 255, 0.3);
     }
+    /* Flatpickr Custom Dark Theme */
+    .flatpickr-calendar {
+      background: #16102a !important;
+      border: 1px solid rgba(251,191,36,0.25) !important;
+      border-radius: 16px !important;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.7) !important;
+      font-family: inherit !important;
+      overflow: hidden;
+    }
+    .flatpickr-months {
+      background: #1e1535 !important;
+      border-radius: 16px 16px 0 0 !important;
+      padding: 6px 0 !important;
+    }
+    .flatpickr-month { color: #fbbf24 !important; fill: #fbbf24 !important; }
+    .flatpickr-current-month { color: #fbbf24 !important; font-size: 1rem !important; }
+    .flatpickr-current-month .flatpickr-monthDropdown-months { color: #fbbf24 !important; background: transparent !important; }
+    .flatpickr-current-month input.cur-year { color: #fbbf24 !important; }
+    .flatpickr-prev-month svg, .flatpickr-next-month svg { fill: #fbbf24 !important; }
+    .flatpickr-prev-month:hover svg, .flatpickr-next-month:hover svg { fill: #f59e0b !important; }
+    .flatpickr-weekdays { background: #1e1535 !important; }
+    .flatpickr-weekday { color: rgba(251,191,36,0.5) !important; font-weight: 600 !important; font-size: 11px !important; }
+    .flatpickr-day {
+      color: #d1d5db !important;
+      border-radius: 10px !important;
+    }
+    .flatpickr-day:hover {
+      background: rgba(251,191,36,0.15) !important;
+      border-color: rgba(251,191,36,0.3) !important;
+      color: #fbbf24 !important;
+    }
+    .flatpickr-day.selected, .flatpickr-day.selected:hover {
+      background: #fbbf24 !important;
+      border-color: #fbbf24 !important;
+      color: #000 !important;
+      font-weight: 700 !important;
+    }
+    .flatpickr-day.today {
+      border-color: rgba(251,191,36,0.5) !important;
+      color: #fbbf24 !important;
+    }
+    .flatpickr-day.flatpickr-disabled, .flatpickr-day.prevMonthDay, .flatpickr-day.nextMonthDay {
+      color: rgba(255,255,255,0.15) !important;
+    }
+    .flatpickr-time {
+      background: #1e1535 !important;
+      border-top: 1px solid rgba(251,191,36,0.15) !important;
+    }
+    .flatpickr-time input, .flatpickr-time .flatpickr-am-pm {
+      color: #fbbf24 !important;
+      font-size: 1.2rem !important;
+      font-weight: 700 !important;
+      background: transparent !important;
+    }
+    .flatpickr-time input:hover, .flatpickr-time .flatpickr-am-pm:hover,
+    .flatpickr-time input:focus, .flatpickr-time .flatpickr-am-pm:focus {
+      background: rgba(251,191,36,0.1) !important;
+      color: #f59e0b !important;
+    }
+    .numInputWrapper:hover, .numInputWrapper span:hover { background: rgba(251,191,36,0.08) !important; }
+    .numInputWrapper span.arrowUp::after { border-bottom-color: #fbbf24 !important; }
+    .numInputWrapper span.arrowDown::after { border-top-color: #fbbf24 !important; }
+    .flatpickr-time .flatpickr-time-separator { color: #fbbf24 !important; }
+    /* Custom styled trigger input */
+    .entry-time-trigger {
+      cursor: pointer;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(251,191,36,0.2);
+      border-radius: 12px;
+      padding: 10px 14px;
+      color: white;
+      font-size: 0.875rem;
+      width: 100%;
+      transition: border-color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .entry-time-trigger:hover { border-color: rgba(251,191,36,0.5); }
+    .entry-time-trigger.has-value { border-color: rgba(251,191,36,0.6); color: #fbbf24; }
   </style>
+  <!-- Flatpickr Datetime Picker -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 <body class="text-white min-h-screen relative overflow-x-hidden pt-6 pb-12 selection:bg-amber-400/30" style="background-color: #0d0800;">
 
@@ -269,8 +352,16 @@
 
           <div>
             <label class="block text-[11px] font-semibold text-amber-400 mb-1">⏱ Expected Entry Time (Optional)</label>
-            <input type="datetime-local" id="entryTime" oninput="updateLivePreview()"
-              class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-amber-500/20 text-white text-sm focus:border-amber-400/60 focus:outline-none transition" />
+            <!-- Hidden actual input for form submission -->
+            <input type="hidden" id="entryTime" />
+            <!-- Visual Flatpickr trigger -->
+            <button type="button" id="entryTimeTrigger" class="entry-time-trigger" onclick="entryTimePicker.open()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.6;flex-shrink:0"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              <span id="entryTimeDisplay">Pick date &amp; time...</span>
+              <svg id="entryTimeClear" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-auto hidden" onclick="clearEntryTime(event)" style="opacity:0.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <!-- Hidden input that Flatpickr actually attaches to -->
+            <input type="text" id="entryTimeFlatpickr" class="hidden" />
             <p class="text-[10px] text-gray-500 mt-1">VIP members will see a live countdown to this time on the premium page.</p>
           </div>
 
@@ -1436,7 +1527,12 @@
           document.getElementById('tp2').value = '';
           document.getElementById('tp3').value = '';
           document.getElementById('notes').value = '';
+          // Reset Flatpickr entry time picker
+          if (entryTimePicker) entryTimePicker.clear();
           document.getElementById('entryTime').value = '';
+          document.getElementById('entryTimeDisplay').textContent = 'Pick date & time...';
+          document.getElementById('entryTimeTrigger').classList.remove('has-value');
+          document.getElementById('entryTimeClear').classList.add('hidden');
           clearImage();
           updateLivePreview();
         } else {
@@ -2395,6 +2491,54 @@
       } catch (err) {
         feedback.innerHTML = '<span class="text-rose-400">Network error. Password not updated.</span>';
       }
+    }
+
+    // ── Flatpickr Entry Time Picker ─────────────────────────────
+    let entryTimePicker;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      entryTimePicker = flatpickr('#entryTimeFlatpickr', {
+        enableTime: true,
+        dateFormat: 'Y-m-d H:i',
+        time_24hr: false,
+        minuteIncrement: 5,
+        minDate: 'today',
+        disableMobile: false,
+        onChange: function(selectedDates, dateStr) {
+          if (selectedDates.length > 0) {
+            const d = selectedDates[0];
+            const display = document.getElementById('entryTimeDisplay');
+            const trigger = document.getElementById('entryTimeTrigger');
+            const clearBtn = document.getElementById('entryTimeClear');
+            const hidden = document.getElementById('entryTime');
+
+            // Format nicely: e.g. "Mon, Jun 9 · 2:30 PM"
+            const formatted = d.toLocaleString([], {
+              weekday: 'short', month: 'short', day: 'numeric',
+              hour: '2-digit', minute: '2-digit'
+            });
+            display.textContent = formatted;
+            trigger.classList.add('has-value');
+            clearBtn.classList.remove('hidden');
+
+            // Store as datetime-local compatible string for the form
+            const pad = n => String(n).padStart(2, '0');
+            const localStr = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            hidden.value = localStr;
+            updateLivePreview();
+          }
+        }
+      });
+    });
+
+    function clearEntryTime(e) {
+      e.stopPropagation();
+      entryTimePicker.clear();
+      document.getElementById('entryTimeDisplay').textContent = 'Pick date & time...';
+      document.getElementById('entryTimeTrigger').classList.remove('has-value');
+      document.getElementById('entryTimeClear').classList.add('hidden');
+      document.getElementById('entryTime').value = '';
+      updateLivePreview();
     }
   </script>
 </body>
