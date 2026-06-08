@@ -318,12 +318,13 @@ async function saveAppConfig(config) {
 }
 
 async function getSignals(limit) {
+  const safeLimit = Number.isInteger(limit) && limit > 0 ? limit : 0; // 0 = no limit in MongoDB
   if (db) {
     try {
       return await getSignalsColl()
         .find({})
         .sort({ sentAt: -1 })
-        .limit(limit)
+        .limit(safeLimit)
         .toArray();
     } catch (err) {
       console.error('[DB Signals Error]', err.message);
@@ -331,7 +332,7 @@ async function getSignals(limit) {
   }
   // Fallback
   const signals = readJSON(SIGNALS_FILE);
-  return signals.slice(0, limit);
+  return safeLimit > 0 ? signals.slice(0, safeLimit) : signals;
 }
 
 async function addSignal(signal) {
@@ -1372,9 +1373,14 @@ app.post('/api/chat/message', validateVipSession, async (req, res) => {
 // ── NEW: Signal History Endpoint ───────────────────────────────
 app.get('/api/signals/history', async (req, res) => {
   try {
-    const signals = await getSignals();
-    // Return all signals, sorted newest first
-    res.json({ ok: true, count: signals.length, signals: signals.sort((a,b) => b.sentAt - a.sentAt) });
+    const signals = await getSignals(100); // fetch up to 100 most recent signals
+    // Sort newest first (compare timestamps numerically)
+    signals.sort((a, b) => {
+      const ta = typeof a.sentAt === 'string' ? new Date(a.sentAt).getTime() : Number(a.sentAt);
+      const tb = typeof b.sentAt === 'string' ? new Date(b.sentAt).getTime() : Number(b.sentAt);
+      return tb - ta;
+    });
+    res.json({ ok: true, count: signals.length, signals });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
