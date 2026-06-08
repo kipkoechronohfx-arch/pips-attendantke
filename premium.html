@@ -701,8 +701,15 @@
 
       if (!entryTime) { section.classList.add('hidden'); return; }
 
-      section.classList.remove('hidden');
       const target = Number(entryTime);
+
+      // If entry time is already more than 1 hour in the past, hide the section entirely
+      if (Date.now() - target > 60 * 60 * 1000) {
+        section.classList.add('hidden');
+        return;
+      }
+
+      section.classList.remove('hidden');
 
       // Format the label with local time
       label.textContent = `Entry at ${new Date(target).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
@@ -718,6 +725,12 @@
           badge.textContent = 'NOW';
           badge.classList.remove('animate-pulse', 'bg-amber-500/20', 'text-amber-400', 'border-amber-500/30');
           badge.classList.add('bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/30');
+          // Auto-hide the section 30 seconds after the countdown fires
+          setTimeout(() => {
+            section.style.transition = 'opacity 1s ease';
+            section.style.opacity = '0';
+            setTimeout(() => section.classList.add('hidden'), 1000);
+          }, 30000);
           return;
         }
         const h = Math.floor(diff / 3600000);
