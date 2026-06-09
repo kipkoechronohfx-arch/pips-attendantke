@@ -111,64 +111,144 @@
     async function loadHistory() {
       const container = document.getElementById('historyContainer');
       try {
-        const res = await fetch('/api/signals/history');
-        const data = await res.json();
-        
-        if (data.ok && data.signals.length > 0) {
-          container.innerHTML = '';
-          data.signals.forEach(signal => {
-            const date = new Date(signal.timestamp).toLocaleString();
-            let statusBadge = '';
-            
-            // Pending countdown logic handled later, for history we mostly care if it's active/pending
-            let statusColor = 'text-cyan-400 bg-cyan-500/10 border-cyan-400/20';
-            let statusText = 'PENDING';
-            let pipsText = '';
+        // Fetch both signals and logged trade results in parallel
+        const [sigRes, perfRes] = await Promise.all([
+          fetch('/api/signals/history').then(r => r.json()).catch(() => ({ ok: false, signals: [] })),
+          fetch('/api/performance/all').then(r => r.json()).catch(() => ({ ok: false, logs: [] }))
+        ]);
 
-            // Using standard type matching if available, otherwise fallback
-            if (signal.type && signal.type.toLowerCase() === 'active') {
-              statusColor = 'text-amber-400 bg-amber-500/10 border-amber-400/20';
-              statusText = 'ACTIVE';
-            } else if (signal.type && signal.type.toLowerCase() === 'win') {
-              statusColor = 'text-emerald-400 bg-emerald-500/10 border-emerald-400/20';
-              statusText = 'WIN';
-              pipsText = `<span class="text-emerald-400 font-bold ml-2">+${\u007Bsignal.pips || 0\u007D} Pips</span>`;
-            } else if (signal.type && signal.type.toLowerCase() === 'loss') {
-              statusColor = 'text-rose-400 bg-rose-500/10 border-rose-400/20';
-              statusText = 'LOSS';
-              pipsText = `<span class="text-rose-400 font-bold ml-2">-${\u007Bsignal.pips || 0\u007D} Pips</span>`;
-            }
+        const signals = (sigRes.ok && sigRes.signals) ? sigRes.signals : [];
+        const perfLogs = (perfRes.ok && perfRes.logs) ? perfRes.logs : [];
 
-            container.innerHTML += `
-              <div class="glass-card border border-amber-400/20 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <div class="flex items-center gap-3 mb-2">
-                    <span class="text-white font-bold text-lg">${\u007Bsignal.pair || 'XAUUSD'\u007D}</span>
-                    <span class="px-2.5 py-1 text-[10px] font-bold rounded uppercase border ${\u007BstatusColor\u007D}">${\u007BstatusText\u007D}</span>
-                    ${\u007BpipsText\u007D}
-                  </div>
-                  <p class="text-gray-400 text-sm font-mono bg-black/40 px-3 py-1.5 rounded-lg inline-block border border-white/5">
-                    Entry: ${\u007Bsignal.entry || '-'\u007D} | TP: ${\u007Bsignal.tp || '-'\u007D} | SL: ${\u007Bsignal.sl || '-'\u007D}
-                  </p>
-                </div>
-                <div class="text-right flex flex-row md:flex-col justify-between items-center md:items-end">
-                  <span class="text-gray-500 text-xs">${\u007Bdate\u007D}</span>
-                </div>
-              </div>
-            `;
+        // Build unified list
+        const items = [];
+
+        // Add broadcast signals
+        signals.forEach(s => {
+          items.push({
+            _kind: 'signal',
+            timestamp: s.sentAt ? new Date(s.sentAt).getTime() : (s.id || 0),
+            text: s.text || '',
+            type: s.type || 'signal',
+            pair: extractPair(s.text),
+            entry: extractField(s.text, 'Entry'),
+            tp: extractField(s.text, 'TP') || extractField(s.text, 'Take Profit'),
+            sl: extractField(s.text, 'SL') || extractField(s.text, 'Stop Loss'),
           });
-        } else {
+        });
+
+        // Add performance (win/loss) logs
+        perfLogs.forEach(log => {
+          items.push({
+            _kind: 'trade',
+            timestamp: log.date ? new Date(log.date).getTime() : 0,
+            pair: log.asset || 'XAUUSD',
+            type: log.type || '',
+            result: log.result || '',
+            pips: log.pips || 0,
+          });
+        });
+
+        // Sort newest first
+        items.sort((a, b) => b.timestamp - a.timestamp);
+
+        if (items.length === 0) {
           container.innerHTML = `
             <div class="glass-card border border-amber-400/20 rounded-2xl p-10 text-center text-gray-500">
               <i data-feather="inbox" class="w-10 h-10 mx-auto mb-3 opacity-50"></i>
-              <p>No historical signals found yet.</p>
+              <p class="font-semibold mb-1">No history yet.</p>
+              <p class="text-xs">Past signals and trade results will appear here once posted.</p>
             </div>
           `;
+          feather.replace();
+          return;
         }
+
+        container.innerHTML = '';
+
+        items.forEach(item => {
+          const date = new Date(item.timestamp).toLocaleString([], {
+            weekday: 'short', month: 'short', day: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+          });
+
+          if (item._kind === 'trade') {
+            // WIN / LOSS card
+            const isWin = item.result === 'Win';
+            const statusColor = isWin
+              ? 'text-emerald-400 bg-emerald-500/10 border-emerald-400/30'
+              : 'text-rose-400 bg-rose-500/10 border-rose-400/30';
+            const pipsColor = isWin ? 'text-emerald-400' : 'text-rose-400';
+            const pipsSign  = isWin ? '+' : '-';
+            const icon      = isWin ? '✅' : '❌';
+
+            container.innerHTML += `
+              <div class="glass-card border border-amber-400/10 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-amber-400/30 transition">
+                <div class="flex items-start gap-4">
+                  <div class="text-2xl mt-0.5">${icon}</div>
+                  <div>
+                    <div class="flex items-center gap-3 mb-1 flex-wrap">
+                      <span class="text-white font-bold text-lg">${item.pair}</span>
+                      ${item.type ? `<span class="text-[10px] text-gray-400 bg-white/5 border border-white/10 px-2 py-0.5 rounded uppercase">${item.type}</span>` : ''}
+                      <span class="px-2.5 py-1 text-[10px] font-bold rounded uppercase border ${statusColor}">${item.result}</span>
+                    </div>
+                    <p class="${pipsColor} font-bold text-lg">${pipsSign}${Math.abs(item.pips)} Pips</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span class="text-gray-500 text-xs">${date}</span>
+                </div>
+              </div>
+            `;
+          } else {
+            // SIGNAL broadcast card
+            const previewText = item.text
+              ? item.text.replace(/\*/g, '').replace(/_/g, '').substring(0, 120) + (item.text.length > 120 ? '…' : '')
+              : 'Signal broadcast';
+
+            container.innerHTML += `
+              <div class="glass-card border border-amber-400/10 rounded-2xl p-5 flex flex-col md:flex-row md:items-start justify-between gap-4 hover:border-amber-400/30 transition">
+                <div class="flex items-start gap-4 flex-1 min-w-0">
+                  <div class="text-2xl mt-0.5">📡</div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-3 mb-2 flex-wrap">
+                      <span class="text-white font-bold text-base">${item.pair || 'Signal'}</span>
+                      <span class="px-2.5 py-1 text-[10px] font-bold rounded uppercase border text-cyan-400 bg-cyan-500/10 border-cyan-400/20">BROADCAST</span>
+                    </div>
+                    ${(item.entry || item.tp || item.sl) ? `
+                    <p class="text-gray-400 text-sm font-mono bg-black/30 px-3 py-1.5 rounded-lg inline-block border border-white/5 mb-2">
+                      ${item.entry ? `Entry: ${item.entry}` : ''} ${item.tp ? `| TP: ${item.tp}` : ''} ${item.sl ? `| SL: ${item.sl}` : ''}
+                    </p>` : ''}
+                    <p class="text-gray-500 text-xs leading-relaxed truncate">${previewText}</p>
+                  </div>
+                </div>
+                <div class="text-right flex-shrink-0">
+                  <span class="text-gray-500 text-xs">${date}</span>
+                </div>
+              </div>
+            `;
+          }
+        });
+
         feather.replace();
       } catch (err) {
-        container.innerHTML = '<p class="text-center text-rose-400 py-10">Error loading history.</p>';
+        container.innerHTML = '<p class="text-center text-rose-400 py-10">Error loading history. Please try again.</p>';
       }
+    }
+
+    // Helper: extract currency pair from signal text
+    function extractPair(text) {
+      if (!text) return 'SIGNAL';
+      const match = text.match(/\b(XAUUSD|EURUSD|GBPUSD|USDJPY|USDCHF|AUDUSD|NZDUSD|USDCAD|GBPJPY|EURJPY|BTCUSD|US30|NAS100|[A-Z]{6})\b/i);
+      return match ? match[1].toUpperCase() : 'SIGNAL';
+    }
+
+    // Helper: extract a labelled field value from signal text
+    function extractField(text, label) {
+      if (!text) return null;
+      const regex = new RegExp(`${label}[:\\s]+([\\d.]+)`, 'i');
+      const match = text.match(regex);
+      return match ? match[1] : null;
     }
 
     document.addEventListener('DOMContentLoaded', () => {

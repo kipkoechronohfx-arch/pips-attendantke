@@ -802,6 +802,19 @@ app.get('/api/performance/stats', async (req, res) => {
   }
 });
 
+// ── GET /api/performance/all ────────────────────────────────
+app.get('/api/performance/all', async (req, res) => {
+  try {
+    let logs = [];
+    if (db) {
+      logs = await getPerformanceColl().find({}).sort({ date: -1 }).toArray();
+    }
+    res.json({ ok: true, count: logs.length, logs });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // ── POST /api/performance ───────────────────────────────────
 app.post('/api/performance', validateAdminKey, async (req, res) => {
   if (!db) return res.status(500).json({ ok: false, error: 'Database not connected' });
