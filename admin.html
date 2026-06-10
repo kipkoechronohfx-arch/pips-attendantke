@@ -1159,6 +1159,60 @@
 
       </div>
     </div>
+
+    <!-- ₿ CRYPTO PAYMENT REQUESTS PANEL -->
+    <div id="cryptoRequestsPanel" class="hidden mt-12 mb-12">
+      <div class="flex items-center gap-4 mb-6">
+        <div class="flex-1 h-px bg-white/10"></div>
+        <div class="flex items-center gap-2 px-4 py-2 rounded-full border border-amber-400/30 bg-amber-400/5">
+          <span class="text-amber-400 text-lg">₿</span>
+          <span class="text-amber-400 text-xs font-bold tracking-[0.2em] uppercase">Crypto Payment Requests</span>
+        </div>
+        <div class="flex-1 h-px bg-white/10"></div>
+      </div>
+
+      <div class="glass-card rounded-2xl border border-white/10 overflow-hidden">
+        <!-- Header -->
+        <div class="p-5 border-b border-white/5 flex items-center justify-between">
+          <div>
+            <h3 class="text-white font-bold text-base">USDT Payment Requests</h3>
+            <p class="text-gray-400 text-xs mt-0.5">Review, approve, or reject incoming crypto VIP payments</p>
+          </div>
+          <button onclick="fetchCryptoRequests()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-400/10 border border-amber-400/20 text-amber-400 text-xs font-bold hover:bg-amber-400/20 transition cursor-pointer">
+            <i data-feather="refresh-cw" class="w-3.5 h-3.5"></i> Refresh
+          </button>
+        </div>
+
+        <!-- Requests Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs text-left">
+            <thead class="text-gray-500 uppercase tracking-wider border-b border-white/5 bg-white/2">
+              <tr>
+                <th class="py-3 px-4">Submitted</th>
+                <th class="py-3 px-4">Network</th>
+                <th class="py-3 px-4">TX Hash</th>
+                <th class="py-3 px-4">Contact</th>
+                <th class="py-3 px-4">Status</th>
+                <th class="py-3 px-4">Access Code</th>
+                <th class="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="cryptoRequestsBody">
+              <tr>
+                <td colspan="7" class="py-8 text-center text-gray-500">Click Refresh to load crypto requests.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Footer note -->
+        <div class="p-4 border-t border-white/5 flex items-start gap-2">
+          <i data-feather="info" class="w-3.5 h-3.5 text-amber-400/60 flex-shrink-0 mt-0.5"></i>
+          <p class="text-gray-500 text-[10px]">After approving, an access code is automatically generated and shown. <strong class="text-amber-400">Manually send the code</strong> to the subscriber via their provided Telegram/email.</p>
+        </div>
+      </div>
+    </div>
+
   </main>
 
   <!-- Success Toast Modal -->
@@ -1240,6 +1294,7 @@
         document.getElementById('livePanel').classList.remove('hidden');
         document.getElementById('perfPanel').classList.remove('hidden');
         document.getElementById('vipPanel').classList.remove('hidden');
+        document.getElementById('cryptoRequestsPanel').classList.remove('hidden');
         document.getElementById('statusSection').classList.remove('hidden');
         updateLivePreview();
         updateEngPreview();
@@ -1251,6 +1306,7 @@
         fetchVIPDocuments();
         fetchTodaysSetup();
         fetchTodaysSetupResults();
+        fetchCryptoRequests();
       } else {
         document.getElementById('setupPanel').classList.remove('hidden');
         document.getElementById('dashboardPanel').classList.add('hidden');
@@ -1258,6 +1314,7 @@
         document.getElementById('livePanel').classList.add('hidden');
         document.getElementById('perfPanel').classList.add('hidden');
         document.getElementById('vipPanel').classList.add('hidden');
+        document.getElementById('cryptoRequestsPanel').classList.add('hidden');
         document.getElementById('statusSection').classList.add('hidden');
         
         // Pre-fill inputs if credentials exist in localStorage
@@ -2540,6 +2597,103 @@
       document.getElementById('entryTime').value = '';
       updateLivePreview();
     }
+
+    // ── Crypto Payment Requests Management ──────────────────────
+    async function fetchCryptoRequests() {
+      const adminKey = localStorage.getItem('pa_admin_key');
+      if (!adminKey) return;
+      const tbody = document.getElementById('cryptoRequestsBody');
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="7" class="py-6 text-center"><i data-feather="loader" class="w-4 h-4 animate-spin mx-auto text-amber-400"></i></td></tr>';
+      feather.replace();
+
+      try {
+        const res = await fetch('/api/admin/crypto-requests', {
+          headers: { 'x-admin-key': adminKey }
+        });
+        const data = await res.json();
+
+        if (!data.ok || data.requests.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" class="py-10 text-center text-gray-500">${data.ok ? 'No crypto payment requests yet.' : 'Error: ' + data.error}</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = data.requests.map(req => {
+          const date = new Date(req.submittedAt).toLocaleString();
+          const shortTx = req.txHash ? req.txHash.slice(0, 12) + '…' + req.txHash.slice(-6) : '—';
+          const statusColor = req.status === 'Approved' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
+                            : req.status === 'Rejected' ? 'text-rose-400 bg-rose-500/10 border-rose-500/20'
+                            : 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+
+          const actionBtns = req.status === 'Pending'
+            ? `<div class="flex gap-2 justify-end">
+                <button onclick="approveCryptoRequest('${req.id || req._id}')" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25 transition cursor-pointer">✅ Approve</button>
+                <button onclick="rejectCryptoRequest('${req.id || req._id}')" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 transition cursor-pointer">✗ Reject</button>
+               </div>`
+            : `<span class="text-gray-600 text-[10px]">${req.status}</span>`;
+
+          return `<tr class="border-b border-white/5 hover:bg-white/3 transition">
+            <td class="py-3 px-4 text-gray-400 font-mono text-[10px] whitespace-nowrap">${date}</td>
+            <td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/10 border border-amber-400/20 text-amber-400">${req.network || 'TRC20'}</span></td>
+            <td class="py-3 px-4 font-mono text-[10px] text-gray-300" title="${req.txHash}">${shortTx}</td>
+            <td class="py-3 px-4 text-sky-400 text-[10px]">${req.contactInfo || '—'}</td>
+            <td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${statusColor}">${req.status}</span></td>
+            <td class="py-3 px-4 font-mono text-amber-400 text-[10px] font-bold">${req.accessCode || '—'}</td>
+            <td class="py-3 px-4">${actionBtns}</td>
+          </tr>`;
+        }).join('');
+        feather.replace();
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="7" class="py-6 text-center text-rose-400">Connection error loading requests.</td></tr>';
+      }
+    }
+
+    async function approveCryptoRequest(requestId) {
+      const adminKey = localStorage.getItem('pa_admin_key');
+      if (!adminKey || !confirm('Approve this crypto payment and generate an access code?')) return;
+
+      try {
+        const res = await fetch('/api/admin/approve-crypto-request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+          body: JSON.stringify({ requestId })
+        });
+        const data = await res.json();
+
+        if (data.ok) {
+          const expires = new Date(data.accessCodeExpiry).toLocaleDateString('en-KE');
+          alert(`✅ APPROVED!\n\nAccess Code: ${data.accessCode}\nExpires: ${expires}\nSend to: ${data.contactInfo}\n\n⚠️ Copy this code now and send it to the subscriber manually.`);
+          fetchCryptoRequests(); // Refresh list
+        } else {
+          alert('❌ Error: ' + (data.error || 'Approval failed.'));
+        }
+      } catch (err) {
+        alert('❌ Network error. Please try again.');
+      }
+    }
+
+    async function rejectCryptoRequest(requestId) {
+      const adminKey = localStorage.getItem('pa_admin_key');
+      if (!adminKey || !confirm('Reject this crypto payment request?')) return;
+
+      try {
+        const res = await fetch('/api/admin/reject-crypto-request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+          body: JSON.stringify({ requestId })
+        });
+        const data = await res.json();
+
+        if (data.ok) {
+          fetchCryptoRequests();
+        } else {
+          alert('❌ Error: ' + (data.error || 'Rejection failed.'));
+        }
+      } catch (err) {
+        alert('❌ Network error.');
+      }
+    }
   </script>
+
 </body>
 </html>

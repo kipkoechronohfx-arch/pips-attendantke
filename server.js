@@ -98,6 +98,7 @@ const getPerformanceColl = () => db.collection('performance_logs');
 const getPushSubsColl = () => db.collection('push_subscriptions');
 const getWhatsappColl = () => db.collection('whatsapp_subscribers');
 const getChatColl = () => db.collection('chat_messages');
+const getCryptoRequestsColl = () => db.collection('crypto_payment_requests');
 // ── One-Time Auto-Migration Script ───────────────────────────
 async function runMigrations() {
   console.log('[Migration] Checking for local data to migrate to MongoDB Atlas...');
@@ -853,6 +854,19 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: now(), service: 'pips-attendant-api', dbConnected: !!db });
 });
 
+// ── GET /api/crypto-wallets ───────────────────────────────────
+// Returns USDT wallet addresses from environment variables (safe - no secrets)
+app.get('/api/crypto-wallets', (req, res) => {
+  res.json({
+    ok: true,
+    wallets: {
+      TRC20: process.env.USDT_WALLET_TRC20 || '',
+      BEP20: process.env.USDT_WALLET_BEP20 || '',
+      ERC20: process.env.USDT_WALLET_ERC20 || ''
+    }
+  });
+});
+
 // ── POST /api/broadcast ──────────────────────────────────────
 app.post('/api/broadcast', async (req, res) => {
   const { token, chatId } = getCredentials(req.body);
@@ -1497,7 +1511,167 @@ app.post('/api/live', async (req, res) => {
   );
 });
 
+// ── Crypto Payment Request DB Helpers ─────────────────────────
+const CRYPTO_FILE = path.join(DATA_DIR, 'crypto_requests.json');
+
+async function getCryptoRequests() {
+  if (db) {
+    try {
+      return await getCryptoRequestsColl().find({}).sort({ submittedAt: -1 }).toArray();
+    } catch (err) {
+      console.error('[DB Crypto Get Error]', err.message);
+    }
+  }
+  return readJSON(CRYPTO_FILE);
+}
+
+async function saveCryptoRequest(request) {
+  if (db) {
+    try {
+      await getCryptoRequestsColl().insertOne(request);
+      return;
+    } catch (err) {
+      console.error('[DB Crypto Save Error]', err.message);
+    }
+  }
+  const list = readJSON(CRYPTO_FILE);
+  list.push(request);
+  writeJSON(CRYPTO_FILE, list);
+}
+
+async function updateCryptoRequest(id, updates) {
+  if (db) {
+    try {
+      const { ObjectId } = require('mongodb');
+      await getCryptoRequestsColl().updateOne(
+        { _id: new ObjectId(id) },
+        { $set: updates }
+      );
+      return true;
+    } catch (err) {
+      console.error('[DB Crypto Update Error]', err.message);
+      return false;
+    }
+  }
+  // Local file fallback
+  const list = readJSON(CRYPTO_FILE);
+  const idx = list.findIndex(r => r.id === id);
+  if (idx === -1) return false;
+  list[idx] = { ...list[idx], ...updates };
+  writeJSON(CRYPTO_FILE, list);
+  return true;
+}
+
+// ── POST /api/crypto-payment-request ─────────────────────────
+// User submits their USDT TX hash + contact info for admin approval
+app.post('/api/crypto-payment-request', async (req, res) => {
+  const { txHash, contactInfo, network } = req.body;
+
+  if (!txHash || !txHash.trim()) {
+    return res.status(400).json({ ok: false, error: 'Transaction hash is required.' });
+  }
+  if (!contactInfo || !contactInfo.trim()) {
+    return res.status(400).json({ ok: false, error: 'Contact info (Telegram/email) is required.' });
+  }
+
+  // Basic TX hash format validation (hex, 64 chars for most blockchains)
+  const cleanHash = txHash.trim();
+
+  const request = {
+    id: `CRYPTO_${Date.now()}_${Math.floor(Math.random() * 10000)}`,
+    txHash: cleanHash,
+    network: network || 'TRC20',
+    contactInfo: contactInfo.trim(),
+    status: 'Pending',
+    submittedAt: new Date().toISOString(),
+    amount: '$50 USDT'
+  };
+
+  try {
+    await saveCryptoRequest(request);
+    console.log(`[Crypto] New payment request from ${contactInfo}: TX ${cleanHash}`);
+    res.json({ ok: true, message: 'Payment request submitted! We will verify and issue your access code within 24 hours.', requestId: request.id });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: 'Failed to save request. Please try again.' });
+  }
+});
+
+// ── GET /api/admin/crypto-requests ───────────────────────────
+app.get('/api/admin/crypto-requests', validateAdminKey, async (req, res) => {
+  try {
+    const requests = await getCryptoRequests();
+    res.json({ ok: true, count: requests.length, requests });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── POST /api/admin/approve-crypto-request ───────────────────
+// Admin approves a crypto request and generates an access code
+app.post('/api/admin/approve-crypto-request', validateAdminKey, async (req, res) => {
+  const { requestId } = req.body;
+  if (!requestId) return res.status(400).json({ ok: false, error: 'Request ID required.' });
+
+  try {
+    const requests = await getCryptoRequests();
+    const found = requests.find(r => r.id === requestId || r._id?.toString() === requestId);
+    if (!found) return res.status(404).json({ ok: false, error: 'Request not found.' });
+
+    // Generate unique access code
+    const accessCode = generateAccessCode();
+    const accessCodeExpiry = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days
+
+    // Save to payments collection (same as M-Pesa) so the access code works via existing verify-access-code endpoint
+    const ref = found.id || found._id?.toString();
+    await savePayment(`CRYPTO_${ref}`, {
+      status: 'Success',
+      method: 'crypto',
+      txHash: found.txHash,
+      network: found.network,
+      contactInfo: found.contactInfo,
+      accessCode,
+      accessCodeExpiry,
+      approvedAt: new Date().toISOString(),
+      timestamp: new Date().toISOString()
+    });
+
+    // Mark the crypto request as approved
+    const idStr = found._id?.toString() || found.id;
+    await updateCryptoRequest(idStr, { status: 'Approved', accessCode, accessCodeExpiry, approvedAt: new Date().toISOString() });
+
+    res.json({
+      ok: true,
+      accessCode,
+      accessCodeExpiry,
+      contactInfo: found.contactInfo,
+      message: `Access code generated: ${accessCode}. Please share with: ${found.contactInfo}`
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── POST /api/admin/reject-crypto-request ────────────────────
+app.post('/api/admin/reject-crypto-request', validateAdminKey, async (req, res) => {
+  const { requestId } = req.body;
+  if (!requestId) return res.status(400).json({ ok: false, error: 'Request ID required.' });
+
+  try {
+    const requests = await getCryptoRequests();
+    const found = requests.find(r => r.id === requestId || r._id?.toString() === requestId);
+    if (!found) return res.status(404).json({ ok: false, error: 'Request not found.' });
+
+    const idStr = found._id?.toString() || found.id;
+    await updateCryptoRequest(idStr, { status: 'Rejected', rejectedAt: new Date().toISOString() });
+
+    res.json({ ok: true, message: 'Request rejected.' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // ── Serve index.html for any unknown routes (SPA fallback) ───
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });

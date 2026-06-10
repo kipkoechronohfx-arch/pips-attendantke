@@ -95,7 +95,21 @@
 
     <!-- GATE PANEL -->
     <div id="gatePanel">
-      <div class="glass-card border border-emerald-400/20 rounded-2xl p-8 max-w-sm mx-auto">
+
+      <!-- Payment Method Tabs -->
+      <div class="flex gap-2 max-w-sm mx-auto mb-4">
+        <button id="tabMpesa" onclick="switchPayTab('mpesa')"
+          class="flex-1 py-2.5 rounded-xl text-xs font-bold border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 transition duration-200 cursor-pointer">
+          📱 M-Pesa
+        </button>
+        <button id="tabCrypto" onclick="switchPayTab('crypto')"
+          class="flex-1 py-2.5 rounded-xl text-xs font-bold border border-amber-500/20 bg-white/5 text-gray-400 hover:border-amber-500/40 hover:text-amber-400 transition duration-200 cursor-pointer">
+          ₿ Crypto (USDT)
+        </button>
+      </div>
+
+      <!-- M-Pesa Panel -->
+      <div id="mpesaPanel" class="glass-card border border-emerald-400/20 rounded-2xl p-8 max-w-sm mx-auto">
         <div class="flex items-center gap-2 mb-6">
           <i data-feather="smartphone" class="w-5 h-5 text-emerald-400"></i>
           <h2 class="text-white font-bold text-lg">VIP Access (M-Pesa)</h2>
@@ -135,6 +149,124 @@
           </button>
         </div>
       </div>
+
+      <!-- Crypto Panel (hidden by default) -->
+      <div id="cryptoPanel" class="hidden max-w-sm mx-auto">
+
+        <!-- Crypto Card -->
+        <div class="glass-card border border-amber-400/25 rounded-2xl p-6 relative overflow-hidden" style="box-shadow: 0 0 30px rgba(251,191,36,0.08);">
+          <!-- Subtle glow bg -->
+          <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(ellipse at top right, rgba(251,191,36,0.06) 0%, transparent 70%);"></div>
+
+          <div class="relative">
+            <!-- Header -->
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style="background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.08)); border: 1px solid rgba(251,191,36,0.3);">₿</div>
+              <div>
+                <h2 class="text-white font-bold text-base leading-tight">Pay with Crypto</h2>
+                <p class="text-amber-400/70 text-[11px] font-medium">USDT — 30-day VIP Access</p>
+              </div>
+              <div class="ml-auto text-right">
+                <p class="text-2xl font-black text-amber-400">$50</p>
+                <p class="text-gray-500 text-[10px]">USDT</p>
+              </div>
+            </div>
+
+            <!-- Network Selector -->
+            <div class="mb-4">
+              <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2">Select Network</label>
+              <div class="flex gap-2">
+                <button id="netTRC20" onclick="selectNetwork('TRC20')"
+                  class="flex-1 py-2 rounded-lg text-xs font-bold border border-amber-400/40 bg-amber-400/10 text-amber-400 transition cursor-pointer">
+                  TRC20 (TRON)
+                </button>
+                <button id="netBEP20" onclick="selectNetwork('BEP20')"
+                  class="flex-1 py-2 rounded-lg text-xs font-bold border border-white/10 bg-white/5 text-gray-400 hover:border-amber-400/30 hover:text-amber-300 transition cursor-pointer">
+                  BEP20 (BSC)
+                </button>
+                <button id="netERC20" onclick="selectNetwork('ERC20')"
+                  class="flex-1 py-2 rounded-lg text-xs font-bold border border-white/10 bg-white/5 text-gray-400 hover:border-amber-400/30 hover:text-amber-300 transition cursor-pointer">
+                  ERC20 (ETH)
+                </button>
+              </div>
+            </div>
+
+            <!-- Wallet Address Box -->
+            <div class="mb-1">
+              <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2">Send to This Address</label>
+              <div class="relative bg-black/50 border border-amber-400/20 rounded-xl p-3.5 flex items-center gap-3" style="box-shadow: inset 0 0 12px rgba(251,191,36,0.03);">
+                <!-- Wallet Icon -->
+                <div class="w-8 h-8 rounded-lg bg-amber-400/10 flex items-center justify-center flex-shrink-0">
+                  <i data-feather="credit-card" class="w-4 h-4 text-amber-400"></i>
+                </div>
+                <p id="cryptoWalletAddress" class="text-amber-300 font-mono text-[11px] leading-snug break-all flex-1 select-all">TF3xCKAFGBJKvxPtAqHqF5oQ7Lm2PzYsVN</p>
+                <button onclick="copyCryptoAddress()" id="copyAddrBtn" class="flex-shrink-0 p-1.5 rounded-lg bg-amber-400/10 border border-amber-400/20 hover:bg-amber-400/20 transition cursor-pointer" title="Copy Address">
+                  <i data-feather="copy" class="w-3.5 h-3.5 text-amber-400"></i>
+                </button>
+              </div>
+              <p id="cryptoNetworkNote" class="text-gray-500 text-[10px] mt-1.5 text-center">⚠️ Only send USDT on the <span class="text-amber-400 font-bold">TRC20 (TRON)</span> network to this address</p>
+            </div>
+
+            <!-- Warning Banner -->
+            <div class="my-4 px-3.5 py-2.5 rounded-xl bg-rose-500/8 border border-rose-500/20 flex items-start gap-2.5">
+              <i data-feather="alert-triangle" class="w-3.5 h-3.5 text-rose-400 flex-shrink-0 mt-0.5"></i>
+              <p class="text-gray-400 text-[10px] leading-relaxed">Sending on the wrong network will result in <strong class="text-rose-400">permanent loss of funds</strong>. Double-check before sending!</p>
+            </div>
+
+            <!-- Steps -->
+            <div class="mb-5 space-y-2">
+              <p class="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-2.5">How it works</p>
+              <div class="flex items-start gap-2.5">
+                <span class="w-5 h-5 rounded-full bg-amber-400/20 text-amber-400 text-[10px] font-black flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
+                <p class="text-gray-400 text-[11px]">Send exactly <strong class="text-white">$50 USDT</strong> to the address above on your chosen network</p>
+              </div>
+              <div class="flex items-start gap-2.5">
+                <span class="w-5 h-5 rounded-full bg-amber-400/20 text-amber-400 text-[10px] font-black flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
+                <p class="text-gray-400 text-[11px]">Copy your transaction hash (TX ID) from your wallet</p>
+              </div>
+              <div class="flex items-start gap-2.5">
+                <span class="w-5 h-5 rounded-full bg-amber-400/20 text-amber-400 text-[10px] font-black flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
+                <p class="text-gray-400 text-[11px]">Submit the TX hash below — we'll verify and send your access code within <strong class="text-emerald-400">24 hours</strong></p>
+              </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="border-t border-white/5 mb-4"></div>
+
+            <!-- Submission Form -->
+            <p class="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-3">Submit Your Payment Proof</p>
+            <div class="space-y-3">
+              <div>
+                <label class="block text-[10px] text-gray-500 mb-1">Transaction Hash (TX ID)</label>
+                <input type="text" id="cryptoTxHash" placeholder="e.g. 0xabc123..." 
+                  class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-amber-400/50 focus:outline-none transition font-mono"
+                  autocomplete="off" spellcheck="false" />
+              </div>
+              <div>
+                <label class="block text-[10px] text-gray-500 mb-1">Your Telegram username or Email (to receive code)</label>
+                <input type="text" id="cryptoContact" placeholder="e.g. @yourname or you@email.com"
+                  class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-amber-400/50 focus:outline-none transition" />
+              </div>
+              <div id="cryptoFormError" class="text-rose-400 text-[11px] min-h-[14px]"></div>
+              <button id="cryptoSubmitBtn" onclick="submitCryptoPayment()"
+                class="w-full py-3.5 rounded-xl font-bold text-sm text-dark-navy hover:brightness-110 active:scale-95 transition duration-300 cursor-pointer"
+                style="background: linear-gradient(135deg, #fbbf24, #f59e0b); box-shadow: 0 0 20px rgba(251,191,36,0.25);">
+                Submit Payment Proof ✅
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Already have code link -->
+        <div class="mt-4 text-center">
+          <p class="text-gray-500 text-[11px] mb-2">Already have a unique access code?</p>
+          <button onclick="switchPayTab('mpesa'); togglePasswordForm();" class="inline-flex items-center gap-2 text-amber-400 text-xs font-bold hover:underline cursor-pointer bg-transparent border-none">
+            <i data-feather="key" class="w-3.5 h-3.5"></i>
+            Enter Access Code
+          </button>
+        </div>
+      </div>
+
     </div>
 
     <!-- SAVE CODE PANEL (Hidden by default, shown after successful payment) -->
@@ -480,6 +612,156 @@
     let pollInterval;
     let currentAccessCode = '';
     let currentSessionToken = '';
+    let selectedNetwork = 'TRC20';
+
+    // ── Crypto Wallet Addresses per network ───────────────────
+    // Fallback defaults — overridden by server on load
+    const cryptoWallets = {
+      TRC20: '',
+      BEP20: '',
+      ERC20: ''
+    };
+
+    // Fetch wallet addresses from server (populated from env vars)
+    async function loadCryptoWallets() {
+      try {
+        const res = await fetch('/api/crypto-wallets');
+        const data = await res.json();
+        if (data.ok && data.wallets) {
+          Object.assign(cryptoWallets, data.wallets);
+          // Update displayed address for currently selected network
+          const addrEl = document.getElementById('cryptoWalletAddress');
+          if (addrEl && cryptoWallets[selectedNetwork]) {
+            addrEl.textContent = cryptoWallets[selectedNetwork];
+          }
+        }
+      } catch (e) { /* silently fail, fallback addresses remain */ }
+    }
+
+    const networkNames = {
+      TRC20: 'TRC20 (TRON)',
+      BEP20: 'BEP20 (BSC)',
+      ERC20: 'ERC20 (ETH)'
+    };
+
+    // ── Payment Tab Switching ──────────────────────────────────
+    function switchPayTab(tab) {
+      const mpesaPanel = document.getElementById('mpesaPanel');
+      const cryptoPanel = document.getElementById('cryptoPanel');
+      const tabMpesa = document.getElementById('tabMpesa');
+      const tabCrypto = document.getElementById('tabCrypto');
+
+      if (tab === 'mpesa') {
+        mpesaPanel.classList.remove('hidden');
+        cryptoPanel.classList.add('hidden');
+        tabMpesa.className = 'flex-1 py-2.5 rounded-xl text-xs font-bold border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 transition duration-200 cursor-pointer';
+        tabCrypto.className = 'flex-1 py-2.5 rounded-xl text-xs font-bold border border-amber-500/20 bg-white/5 text-gray-400 hover:border-amber-500/40 hover:text-amber-400 transition duration-200 cursor-pointer';
+      } else {
+        mpesaPanel.classList.add('hidden');
+        cryptoPanel.classList.remove('hidden');
+        tabCrypto.className = 'flex-1 py-2.5 rounded-xl text-xs font-bold border border-amber-500/40 bg-amber-500/10 text-amber-400 transition duration-200 cursor-pointer';
+        tabMpesa.className = 'flex-1 py-2.5 rounded-xl text-xs font-bold border border-emerald-500/20 bg-white/5 text-gray-400 hover:border-emerald-500/40 hover:text-emerald-400 transition duration-200 cursor-pointer';
+        feather.replace();
+      }
+    }
+
+    // ── Crypto Network Selection ───────────────────────────────
+    function selectNetwork(net) {
+      selectedNetwork = net;
+      const networks = ['TRC20', 'BEP20', 'ERC20'];
+      networks.forEach(n => {
+        const btn = document.getElementById(`net${n}`);
+        if (!btn) return;
+        if (n === net) {
+          btn.className = 'flex-1 py-2 rounded-lg text-xs font-bold border border-amber-400/40 bg-amber-400/10 text-amber-400 transition cursor-pointer';
+        } else {
+          btn.className = 'flex-1 py-2 rounded-lg text-xs font-bold border border-white/10 bg-white/5 text-gray-400 hover:border-amber-400/30 hover:text-amber-300 transition cursor-pointer';
+        }
+      });
+      // Update wallet address display
+      const addrEl = document.getElementById('cryptoWalletAddress');
+      if (addrEl) addrEl.textContent = cryptoWallets[net] || '—';
+      // Update warning note
+      const noteEl = document.getElementById('cryptoNetworkNote');
+      if (noteEl) noteEl.innerHTML = `⚠️ Only send USDT on the <span class="text-amber-400 font-bold">${networkNames[net]}</span> network to this address`;
+    }
+
+    // ── Copy Crypto Wallet Address ─────────────────────────────
+    function copyCryptoAddress() {
+      const address = cryptoWallets[selectedNetwork];
+      if (!address) return;
+      navigator.clipboard.writeText(address).then(() => {
+        const btn = document.getElementById('copyAddrBtn');
+        if (btn) {
+          btn.innerHTML = '<i data-feather="check" class="w-3.5 h-3.5 text-emerald-400"></i>';
+          feather.replace();
+          setTimeout(() => {
+            btn.innerHTML = '<i data-feather="copy" class="w-3.5 h-3.5 text-amber-400"></i>';
+            feather.replace();
+          }, 2000);
+        }
+      }).catch(() => {
+        // Fallback
+        const el = document.getElementById('cryptoWalletAddress');
+        const range = document.createRange();
+        range.selectNode(el);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        document.execCommand('copy');
+        window.getSelection().removeAllRanges();
+      });
+    }
+
+    // ── Submit Crypto Payment Proof ────────────────────────────
+    async function submitCryptoPayment() {
+      const txHash = document.getElementById('cryptoTxHash').value.trim();
+      const contact = document.getElementById('cryptoContact').value.trim();
+      const errorEl = document.getElementById('cryptoFormError');
+      const btn = document.getElementById('cryptoSubmitBtn');
+
+      errorEl.textContent = '';
+
+      if (!txHash) { errorEl.textContent = '❌ Please enter your transaction hash.'; return; }
+      if (txHash.length < 10) { errorEl.textContent = '❌ Transaction hash looks too short. Double check.'; return; }
+      if (!contact) { errorEl.textContent = '❌ Please enter your Telegram or email to receive the code.'; return; }
+
+      const origText = btn.textContent;
+      btn.textContent = '⏳ Submitting...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/crypto-payment-request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ txHash, contactInfo: contact, network: selectedNetwork })
+        });
+        const data = await res.json();
+
+        if (data.ok) {
+          // Show success state
+          errorEl.className = 'text-emerald-400 text-[11px] min-h-[14px]';
+          errorEl.innerHTML = '✅ Submitted successfully! We\'ll verify and send your access code within 24 hours.';
+          btn.textContent = '✅ Submitted!';
+          btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+          document.getElementById('cryptoTxHash').value = '';
+          document.getElementById('cryptoContact').value = '';
+        } else {
+          errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
+          errorEl.textContent = `❌ ${data.error || 'Submission failed. Please try again.'}`;
+          btn.textContent = origText;
+          btn.disabled = false;
+        }
+      } catch {
+        errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
+        errorEl.textContent = '❌ Network error. Please try again.';
+        btn.textContent = origText;
+        btn.disabled = false;
+      }
+    }
+
+    function togglePasswordForm() {
+      document.getElementById('passwordForm').classList.toggle('hidden');
+    }
 
     // ── Update download & Telegram links with session token ────
     function updateDownloadLinks() {
@@ -488,13 +770,9 @@
       document.querySelectorAll('a[data-filename]').forEach(link => {
         link.href = `/api/download-vip?file=${encodeURIComponent(link.getAttribute('data-filename'))}&token=${encodeURIComponent(token)}`;
       });
-      // const tgLink = document.getElementById('vipTelegramLink');
-      // if (tgLink) tgLink.href = `/api/redirect-vip-telegram?token=${encodeURIComponent(token)}`;
     }
 
-    function togglePasswordForm() {
-      document.getElementById('passwordForm').classList.toggle('hidden');
-    }
+
 
     // ── Show "Save Your Code" panel after payment ──────────────
     function showSaveCodePanel(accessCode, sessionToken, expiryTimestamp) {
@@ -922,6 +1200,9 @@
         loadChatMessages();
       }
     }, 5000);
+
+    // Initialize data on page load
+    loadCryptoWallets();
   </script>
 </body>
 </html>
