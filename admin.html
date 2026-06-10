@@ -1756,12 +1756,22 @@
 
     async function sendEngagement() {
       const token = localStorage.getItem('pa_bot_token');
-      const chat = localStorage.getItem('pa_chat_id');
+      const generalChat = localStorage.getItem('pa_chat_id');
+      const vipChat = localStorage.getItem('pa_vip_chat_id');
+      
+      const targetSelection = document.querySelector('input[name="targetChannel"]:checked');
+      const isVip = targetSelection && targetSelection.value === 'vip';
+      const chat = isVip ? vipChat : generalChat;
+
       const btn = event.currentTarget;
       const feedbackMsg = document.getElementById('engFeedback');
       
-      if (!token || !chat) {
+      if (!token || !generalChat) {
         feedbackMsg.innerHTML = '<span class="text-rose-400">Error: Missing credentials in Setup.</span>';
+        return;
+      }
+      if (isVip && !chat) {
+        feedbackMsg.innerHTML = '<span class="text-rose-400">Error: VIP Channel Chat ID missing in Setup.</span>';
         return;
       }
 
@@ -1895,12 +1905,22 @@
 
     async function sendLiveSession() {
       const token = localStorage.getItem('pa_bot_token');
-      const chat = localStorage.getItem('pa_chat_id');
+      const generalChat = localStorage.getItem('pa_chat_id');
+      const vipChat = localStorage.getItem('pa_vip_chat_id');
+      
+      const targetSelection = document.querySelector('input[name="targetChannel"]:checked');
+      const isVip = targetSelection && targetSelection.value === 'vip';
+      const chat = isVip ? vipChat : generalChat;
+
       const btn = event.currentTarget;
       const feedbackMsg = document.getElementById('liveFeedback');
       
-      if (!token || !chat) {
+      if (!token || !generalChat) {
         feedbackMsg.innerHTML = '<span class="text-rose-400">Error: Missing credentials in Setup.</span>';
+        return;
+      }
+      if (isVip && !chat) {
+        feedbackMsg.innerHTML = '<span class="text-rose-400">Error: VIP Channel Chat ID missing in Setup.</span>';
         return;
       }
 
