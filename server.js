@@ -1652,7 +1652,9 @@ app.post('/api/admin/approve-crypto-request', validateAdminKey, async (req, res)
             auth: {
               user: process.env.SMTP_USER,
               pass: process.env.SMTP_PASS
-            }
+            },
+            // Force IPv4 to prevent ENETUNREACH IPv6 errors on Render
+            family: 4
           });
 
           const expiryDate = new Date(accessCodeExpiry).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
