@@ -25,6 +25,7 @@ const { MongoClient } = require('mongodb');
 const webpush = require('web-push');
 const cron = require('node-cron');
 const TelegramBot = require('node-telegram-bot-api');
+const nodemailer = require('nodemailer');
 
 if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(
@@ -1639,12 +1640,59 @@ app.post('/api/admin/approve-crypto-request', validateAdminKey, async (req, res)
     const idStr = found._id?.toString() || found.id;
     await updateCryptoRequest(idStr, { status: 'Approved', accessCode, accessCodeExpiry, approvedAt: new Date().toISOString() });
 
+    let emailSent = false;
+    // If the contact info looks like an email address, try sending the code via email
+    if (found.contactInfo && found.contactInfo.includes('@') && !found.contactInfo.startsWith('@')) {
+      if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+        try {
+          const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: process.env.SMTP_PORT || 465,
+            secure: process.env.SMTP_PORT == 465, // true for 465, false for other ports
+            auth: {
+              user: process.env.SMTP_USER,
+              pass: process.env.SMTP_PASS
+            }
+          });
+
+          const expiryDate = new Date(accessCodeExpiry).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+          const mailOptions = {
+            from: `"Pips_attendant VIP" <${process.env.SMTP_USER}>`,
+            to: found.contactInfo,
+            subject: '✅ Your VIP Access Code - Pips_attendant',
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0f1c; color: #ffffff; padding: 30px; border-radius: 12px; border: 1px solid #f59e0b;">
+                <h2 style="color: #f59e0b; text-align: center;">Payment Approved!</h2>
+                <p>Hello,</p>
+                <p>Your crypto payment for Pips_attendant VIP has been successfully verified. Welcome to the club!</p>
+                <div style="background: rgba(245, 158, 11, 0.1); padding: 20px; text-align: center; border-radius: 8px; margin: 25px 0; border: 1px dashed #f59e0b;">
+                  <p style="margin: 0; color: #a1a1aa; font-size: 12px; text-transform: uppercase;">Your Unique Access Code</p>
+                  <p style="margin: 10px 0 0 0; font-size: 28px; font-weight: bold; color: #f59e0b; letter-spacing: 2px;">${accessCode}</p>
+                </div>
+                <p style="color: #10b981; font-weight: bold; text-align: center;">⏱ Expires on: ${expiryDate}</p>
+                <p>Keep this code safe, as you will need it to log in to the VIP portal.</p>
+                <p>Best regards,<br>The Pips_attendant Team</p>
+              </div>
+            `
+          };
+
+          await transporter.sendMail(mailOptions);
+          emailSent = true;
+          console.log(`[Email] Successfully sent access code to ${found.contactInfo}`);
+        } catch (mailErr) {
+          console.error('[Email Error] Failed to send code via email:', mailErr.message);
+        }
+      }
+    }
+
     res.json({
       ok: true,
       accessCode,
       accessCodeExpiry,
       contactInfo: found.contactInfo,
-      message: `Access code generated: ${accessCode}. Please share with: ${found.contactInfo}`
+      message: emailSent 
+        ? `Access code generated and EMAILED to ${found.contactInfo}` 
+        : `Access code generated: ${accessCode}. Please share with: ${found.contactInfo}`
     });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
