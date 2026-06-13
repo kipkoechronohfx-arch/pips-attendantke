@@ -235,26 +235,6 @@
           </button>
         </div>
 
-        <div class="mt-6 pt-5 border-t border-white/5 text-center">
-          <p class="text-gray-500 text-[11px] mb-2">Have a legacy access code?</p>
-          <button onclick="togglePasswordForm()" class="inline-flex items-center gap-2 text-amber-400 text-xs font-bold hover:underline cursor-pointer bg-transparent border-none">
-            <i data-feather="key" class="w-3.5 h-3.5"></i>
-            Redeem Access Code
-          </button>
-        </div>
-
-        <!-- Hidden Code Form -->
-        <div class="space-y-4 hidden mt-4 pt-4 border-t border-white/5" id="passwordForm">
-          <div>
-            <input type="text" id="vipPassword" placeholder="e.g. PIPS-AB3K7M"
-              class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition font-mono uppercase tracking-widest"
-              onkeydown="if(event.key==='Enter') redeemCode()" />
-          </div>
-          <div id="gateError" class="text-rose-400 text-xs min-h-[16px]"></div>
-          <button id="unlockBtn" onclick="redeemCode()" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r from-amber-500 to-yellow-400 text-dark-navy hover:brightness-110 hover:shadow-[0_0_20px_rgba(251,191,36,0.4)] active:scale-95 transition duration-300 cursor-pointer text-sm">
-            Redeem 🔓
-          </button>
-        </div>
       </div>
 
       <!-- Crypto Panel (hidden by default) -->
@@ -338,6 +318,11 @@
                 <input type="text" id="cryptoTxHash" placeholder="e.g. 0xabc123..." class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-amber-400/50 focus:outline-none transition font-mono" autocomplete="off" spellcheck="false" />
               </div>
 
+              <div>
+                <label class="block text-[10px] text-gray-500 mb-1">Telegram Username or Email</label>
+                <input type="text" id="cryptoContact" placeholder="Where should we send your code?" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-amber-400/50 focus:outline-none transition" />
+              </div>
+
               <div class="flex gap-2 mt-2">
                 <input type="text" id="cryptoPromo" placeholder="Promo Code (Optional)"
                   class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-amber-400/50 focus:outline-none transition font-mono uppercase tracking-wider" />
@@ -353,6 +338,28 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- Legacy Access Code Section (Shared) -->
+      <div class="mt-6 pt-5 border-t border-white/5 text-center">
+        <p class="text-gray-500 text-[11px] mb-2">Have a legacy access code?</p>
+        <button onclick="togglePasswordForm()" class="inline-flex items-center gap-2 text-amber-400 text-xs font-bold hover:underline cursor-pointer bg-transparent border-none">
+          <i data-feather="key" class="w-3.5 h-3.5"></i>
+          Redeem Access Code
+        </button>
+      </div>
+
+      <!-- Hidden Code Form -->
+      <div class="space-y-4 hidden mt-4 pt-4 border-t border-white/5" id="passwordForm">
+        <div>
+          <input type="text" id="vipPassword" placeholder="e.g. PIPS-AB3K7M"
+            class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition font-mono uppercase tracking-widest"
+            onkeydown="if(event.key==='Enter') redeemCode()" />
+        </div>
+        <div id="gateError" class="text-rose-400 text-xs min-h-[16px]"></div>
+        <button id="unlockBtn" onclick="redeemCode()" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r from-amber-500 to-yellow-400 text-dark-navy hover:brightness-110 hover:shadow-[0_0_20px_rgba(251,191,36,0.4)] active:scale-95 transition duration-300 cursor-pointer text-sm">
+          Redeem 🔓
+        </button>
       </div>
       
       <!-- Logout Button (When logged in but not VIP) -->
