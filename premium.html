@@ -393,13 +393,15 @@
     <div id="contentPanel" class="hidden">
       
       <!-- Welcome Banner -->
-      <div class="glass-card border border-amber-400/20 rounded-2xl p-5 mb-8 flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center text-2xl flex-shrink-0">🏆</div>
-        <div>
-          <h2 class="text-white font-bold" id="vipWelcomeText">Welcome, VIP Member!</h2>
-          <p class="text-gray-400 text-xs mt-0.5" id="vipExpiryText">You now have full access to all exclusive resources below.</p>
+      <div class="glass-card border border-amber-400/20 rounded-2xl p-5 mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <div class="flex items-center gap-4 w-full sm:w-auto">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center text-2xl flex-shrink-0">🏆</div>
+          <div class="flex-1">
+            <h2 class="text-white font-bold" id="vipWelcomeText">Welcome, VIP Member!</h2>
+            <p class="text-gray-400 text-xs mt-0.5" id="vipExpiryText">You now have full access to all exclusive resources below.</p>
+          </div>
         </div>
-        <div class="ml-auto flex items-center gap-3">
+        <div class="sm:ml-auto flex items-center gap-3 w-full sm:w-auto mt-3 sm:mt-0 justify-end">
           <button onclick="showMyAccountModal()" class="text-gray-400 hover:text-amber-400 transition cursor-pointer flex items-center gap-1 text-xs font-bold bg-white/5 border border-white/10 px-3 py-1.5 rounded-lg hover:border-amber-400/50">
             <i data-feather="user" class="w-3.5 h-3.5"></i> Account
           </button>
@@ -411,7 +413,7 @@
 
       <!-- MY ACCOUNT MODAL -->
       <div id="myAccountModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div class="glass-card rounded-2xl p-8 max-w-md w-full mx-4 border border-amber-400/20 transform scale-95 transition-transform duration-300">
+        <div class="glass-card rounded-2xl p-6 md:p-8 max-w-md w-full mx-4 border border-amber-400/20 transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto custom-scrollbar">
           <div class="flex justify-between items-center mb-6">
             <h2 class="text-xl font-bold text-white flex items-center gap-2">
               <i data-feather="user" class="w-5 h-5 text-amber-400"></i> My Account
