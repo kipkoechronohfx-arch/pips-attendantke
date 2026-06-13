@@ -184,11 +184,35 @@
 
       <!-- M-Pesa Panel -->
       <div id="mpesaPanel" class="glass-card border border-emerald-400/20 rounded-2xl p-8 max-w-sm mx-auto">
-        <div class="flex items-center gap-2 mb-6">
+        <div class="flex items-center gap-2 mb-5">
           <i data-feather="smartphone" class="w-5 h-5 text-emerald-400"></i>
           <h2 class="text-white font-bold text-lg">VIP Access (M-Pesa)</h2>
         </div>
-        <p class="text-gray-400 text-xs mb-5">Pay <strong class="text-emerald-400">KES 5,000</strong> via M-Pesa to unlock <strong>30-day VIP access</strong>. Enter your Safaricom number below.</p>
+
+        <!-- Plan Selector -->
+        <div class="mb-5">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">Choose Your Plan</p>
+          <div class="grid grid-cols-3 gap-2" id="mpesaPlanBtns">
+            <button onclick="selectMpesaPlan('1month')" id="mp-1month"
+              class="plan-btn-mpesa flex flex-col items-center py-3 px-1 rounded-xl border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 cursor-pointer transition text-center">
+              <span class="text-[10px] font-bold">1 Month</span>
+              <span class="text-base font-black mt-0.5">5,000</span>
+              <span class="text-[9px] text-gray-400">KES</span>
+            </button>
+            <button onclick="selectMpesaPlan('2months')" id="mp-2months"
+              class="plan-btn-mpesa flex flex-col items-center py-3 px-1 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:border-emerald-500/30 cursor-pointer transition text-center">
+              <span class="text-[10px] font-bold">2 Months</span>
+              <span class="text-base font-black mt-0.5">9,500</span>
+              <span class="text-[9px] text-gray-400">KES</span>
+            </button>
+            <button onclick="selectMpesaPlan('3months')" id="mp-3months"
+              class="plan-btn-mpesa flex flex-col items-center py-3 px-1 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:border-emerald-500/30 cursor-pointer transition text-center">
+              <span class="text-[10px] font-bold">3 Months</span>
+              <span class="text-base font-black mt-0.5">14,000</span>
+              <span class="text-[9px] text-gray-400">KES</span>
+            </button>
+          </div>
+        </div>
         
         <div class="space-y-4" id="mpesaForm">
           <div>
@@ -230,15 +254,37 @@
         <div class="glass-card border border-amber-400/25 rounded-2xl p-6 relative overflow-hidden" style="box-shadow: 0 0 30px rgba(251,191,36,0.08);">
           <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(ellipse at top right, rgba(251,191,36,0.06) 0%, transparent 70%);"></div>
           <div class="relative">
-            <div class="flex items-center gap-3 mb-5">
+            <div class="flex items-center gap-3 mb-4">
               <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style="background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.08)); border: 1px solid rgba(251,191,36,0.3);">₿</div>
               <div>
                 <h2 class="text-white font-bold text-base leading-tight">Pay with Crypto</h2>
-                <p class="text-amber-400/70 text-[11px] font-medium">USDT — 30-day VIP Access</p>
+                <p class="text-amber-400/70 text-[11px] font-medium">USDT — VIP Access</p>
               </div>
               <div class="ml-auto text-right">
-                <p class="text-2xl font-black text-amber-400">$50</p>
+                <p id="cryptoPriceDisplay" class="text-2xl font-black text-amber-400">$50</p>
                 <p class="text-gray-500 text-[10px]">USDT</p>
+              </div>
+            </div>
+
+            <!-- Crypto Plan Selector -->
+            <div class="mb-4">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">Choose Your Plan</p>
+              <div class="grid grid-cols-3 gap-2">
+                <button onclick="selectCryptoPlan('1month')" id="cp-1month"
+                  class="plan-btn-crypto flex flex-col items-center py-2.5 px-1 rounded-xl border border-amber-400/50 bg-amber-400/10 text-amber-400 cursor-pointer transition text-center">
+                  <span class="text-[10px] font-bold">1 Month</span>
+                  <span class="text-sm font-black mt-0.5">$50</span>
+                </button>
+                <button onclick="selectCryptoPlan('2months')" id="cp-2months"
+                  class="plan-btn-crypto flex flex-col items-center py-2.5 px-1 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:border-amber-400/30 cursor-pointer transition text-center">
+                  <span class="text-[10px] font-bold">2 Months</span>
+                  <span class="text-sm font-black mt-0.5">$95</span>
+                </button>
+                <button onclick="selectCryptoPlan('3months')" id="cp-3months"
+                  class="plan-btn-crypto flex flex-col items-center py-2.5 px-1 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:border-amber-400/30 cursor-pointer transition text-center">
+                  <span class="text-[10px] font-bold">3 Months</span>
+                  <span class="text-sm font-black mt-0.5">$140</span>
+                </button>
               </div>
             </div>
 
@@ -379,6 +425,35 @@
                   Change Password
                 </button>
               </form>
+            </div>
+
+            <div class="border-t border-white/5"></div>
+
+            <!-- Telegram Linking -->
+            <div>
+              <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Telegram Integration</h3>
+              <div id="telegramLinkStatus" class="text-gray-400 text-[11px] mb-3">Not linked yet</div>
+              <a id="telegramLinkBtn" href="#" target="_blank"
+                class="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl font-bold border border-sky-500/40 bg-sky-500/10 text-sky-400 hover:bg-sky-500 hover:text-white transition cursor-pointer text-xs">
+                <i data-feather="send" class="w-3.5 h-3.5"></i> Link Telegram Account
+              </a>
+              <p class="text-gray-600 text-[10px] mt-2 text-center">Required for auto-removal from VIP group on expiry.</p>
+            </div>
+
+            <div class="border-t border-white/5"></div>
+
+            <!-- Referral Program -->
+            <div>
+              <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Refer a Friend</h3>
+              <p class="text-gray-500 text-[10px] mb-3">When a friend subscribes using your link, you get <span class="text-amber-400 font-bold">5 bonus days</span> added to your VIP!</p>
+              <div class="flex items-center gap-2">
+                <input type="text" id="referralLinkInput" readonly
+                  class="flex-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-amber-300 text-[11px] font-mono focus:outline-none" />
+                <button onclick="copyReferralLink()" class="px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500/20 transition cursor-pointer">
+                  <i data-feather="copy" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+              <div id="referralCopyMsg" class="text-emerald-400 text-[10px] mt-1.5 min-h-[14px]"></div>
             </div>
           </div>
         </div>
@@ -684,16 +759,63 @@
   <script>
     feather.replace();
 
+    const TELEGRAM_BOT_USERNAME = window.__TELEGRAM_BOT_USERNAME__ || 'PipsAttendantBot';
+
     function showMyAccountModal() {
       const modal = document.getElementById('myAccountModal');
       modal.classList.remove('hidden');
       setTimeout(() => modal.classList.remove('opacity-0'), 10);
+
+      // Populate referral link with the user's ID
+      const token = sessionStorage.getItem('vip_session_token');
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[0]));
+          const userId = payload.id;
+          if (userId) {
+            const refLink = `${window.location.origin}${window.location.pathname}?ref=${userId}`;
+            const refInput = document.getElementById('referralLinkInput');
+            if (refInput) refInput.value = refLink;
+
+            // Build Telegram deep link for account linking
+            const tgLink = `https://t.me/${TELEGRAM_BOT_USERNAME}?start=${userId}`;
+            const tgBtn = document.getElementById('telegramLinkBtn');
+            if (tgBtn) tgBtn.href = tgLink;
+
+            // Check if already linked (user object stored after login)
+            const telegramId = window.__currentUser__?.telegramId;
+            const tgStatus = document.getElementById('telegramLinkStatus');
+            if (tgStatus) {
+              tgStatus.textContent = telegramId
+                ? `✅ Linked (TG ID: ${telegramId})`
+                : '⚠️ Not linked — click below to link.';
+              tgStatus.className = telegramId ? 'text-emerald-400 text-[11px] mb-3' : 'text-amber-400 text-[11px] mb-3';
+            }
+          }
+        } catch (e) { /* ignore */ }
+      }
+      feather.replace();
     }
 
     function closeMyAccountModal() {
       const modal = document.getElementById('myAccountModal');
       modal.classList.add('opacity-0');
       setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+
+    function copyReferralLink() {
+      const input = document.getElementById('referralLinkInput');
+      const msgEl = document.getElementById('referralCopyMsg');
+      if (!input || !input.value) return;
+      navigator.clipboard.writeText(input.value).then(() => {
+        msgEl.textContent = '✅ Referral link copied!';
+        setTimeout(() => { msgEl.textContent = ''; }, 3000);
+      }).catch(() => {
+        input.select();
+        document.execCommand('copy');
+        msgEl.textContent = '✅ Copied!';
+        setTimeout(() => { msgEl.textContent = ''; }, 3000);
+      });
     }
 
     async function handleUpdateProfile(e) {
@@ -778,7 +900,45 @@
     // ── File Management ────────────────────────────────────────
     let pollInterval;
     let selectedNetwork = 'TRC20';
+    let selectedMpesaPlan = '1month';
+    let selectedCryptoPlan = '1month';
     let authMode = 'login';
+
+    const PLAN_KES  = { '1month': 5000, '2months': 9500, '3months': 14000 };
+    const PLAN_USDT = { '1month': 50,   '2months': 95,   '3months': 140   };
+    const PLAN_DAYS = { '1month': 30,   '2months': 60,   '3months': 90    };
+
+    function selectMpesaPlan(plan) {
+      selectedMpesaPlan = plan;
+      ['1month','2months','3months'].forEach(p => {
+        const btn = document.getElementById(`mp-${p}`);
+        if (!btn) return;
+        if (p === plan) {
+          btn.className = 'plan-btn-mpesa flex flex-col items-center py-3 px-1 rounded-xl border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 cursor-pointer transition text-center';
+        } else {
+          btn.className = 'plan-btn-mpesa flex flex-col items-center py-3 px-1 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:border-emerald-500/30 cursor-pointer transition text-center';
+        }
+      });
+      const kes = PLAN_KES[plan];
+      const btn = document.getElementById('payBtn');
+      if (btn) btn.textContent = `Pay KES ${kes.toLocaleString()} via M-Pesa 💸`;
+    }
+
+    function selectCryptoPlan(plan) {
+      selectedCryptoPlan = plan;
+      ['1month','2months','3months'].forEach(p => {
+        const btn = document.getElementById(`cp-${p}`);
+        if (!btn) return;
+        if (p === plan) {
+          btn.className = 'plan-btn-crypto flex flex-col items-center py-2.5 px-1 rounded-xl border border-amber-400/50 bg-amber-400/10 text-amber-400 cursor-pointer transition text-center';
+        } else {
+          btn.className = 'plan-btn-crypto flex flex-col items-center py-2.5 px-1 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:border-amber-400/30 cursor-pointer transition text-center';
+        }
+      });
+      const usdt = PLAN_USDT[plan];
+      const priceEl = document.getElementById('cryptoPriceDisplay');
+      if (priceEl) priceEl.textContent = `$${usdt}`;
+    }
 
     // ── Crypto Wallet Addresses per network ───────────────────
     // Fallback defaults — overridden by server on load
@@ -903,7 +1063,7 @@
             'Content-Type': 'application/json',
             'x-vip-token': token || ''
           },
-          body: JSON.stringify({ txHash, contactInfo: contact, network: selectedNetwork })
+          body: JSON.stringify({ txHash, contactInfo: contact, network: selectedNetwork, plan: selectedCryptoPlan })
         });
         const data = await res.json();
 
@@ -982,7 +1142,7 @@
             'Content-Type': 'application/json',
             'x-vip-token': token || ''
           }, 
-          body: JSON.stringify({ phone }) 
+          body: JSON.stringify({ phone, plan: selectedMpesaPlan, amount: PLAN_KES[selectedMpesaPlan] }) 
         });
         const data = await res.json();
 
@@ -1093,7 +1253,9 @@
       }
 
       const endpoint = authMode === 'login' ? '/api/login' : '/api/register';
-      const body = authMode === 'login' ? { email, password } : { email, password, name };
+      // Pass referral code from URL if present during registration
+      const urlRef = new URLSearchParams(window.location.search).get('ref');
+      const body = authMode === 'login' ? { email, password } : { email, password, name, referralCode: urlRef || undefined };
       
       const origText = btn.innerHTML;
       btn.innerHTML = '<span class="animate-pulse">Processing...</span>';
@@ -1260,6 +1422,7 @@
         const data = await res.json();
 
         if (data.ok && data.user) {
+          window.__currentUser__ = data.user; // store globally for modals
           document.getElementById('authPanel').style.display = 'none';
           const now = Date.now();
           if (data.user.subscriptionExpiry && data.user.subscriptionExpiry > now) {

@@ -27,6 +27,19 @@ const webpush = require('web-push');
 const cron = require('node-cron');
 const TelegramBot = require('node-telegram-bot-api');
 const sgMail = require('@sendgrid/mail');
+const speakeasy = require('speakeasy');
+const QRCode = require('qrcode');
+
+// ── Subscription Plans ────────────────────────────────────────
+const PLANS = {
+  '1month':  { days: 30,  kesPrice: 5000,  usdtPrice: 50  },
+  '2months': { days: 60,  kesPrice: 9500,  usdtPrice: 95  },
+  '3months': { days: 90,  kesPrice: 14000, usdtPrice: 140 }
+};
+
+function getDaysForPlan(plan) {
+  return (PLANS[plan] || PLANS['1month']).days;
+}
 
 if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(
@@ -934,7 +947,7 @@ async function sendEmail(to, subject, htmlContent) {
 
 // ── User Authentication Endpoints ──────────────────────────────
 app.post('/api/register', authLimiter, async (req, res) => {
-  const { email, password, name } = req.body;
+  const { email, password, name, referralCode } = req.body;
   if (!email || !password) return res.status(400).json({ ok: false, error: 'Email and password required.' });
   
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
@@ -945,13 +958,22 @@ app.post('/api/register', authLimiter, async (req, res) => {
   const existingUser = await getUserByEmail(email);
   if (existingUser) return res.status(400).json({ ok: false, error: 'Email already registered.' });
 
+  // Validate referral code
+  let referredByUserId = null;
+  if (referralCode) {
+    const referrer = await getUserById(referralCode);
+    if (referrer) referredByUserId = referrer.id;
+  }
+
   const user = {
     id: `USER_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`,
     email: email.toLowerCase().trim(),
     name: name || '',
     passwordHash: hashPassword(password),
-    registeredAt: Date.now(),
-    subscriptionExpiry: null
+    registeredAt: new Date().toISOString(),
+    subscriptionExpiry: null,
+    referredBy: referredByUserId || null,
+    telegramId: null
   };
 
   await saveUser(user);
@@ -1537,28 +1559,37 @@ app.get('/api/check-payment/:ref', validateUserSession, async (req, res) => {
     if (!payment.processedForUser) {
       const user = await getUserById(req.user.id);
       if (user) {
-        user.subscriptionExpiry = Date.now() + 30 * 24 * 60 * 60 * 1000;
+        const days = getDaysForPlan(payment.plan || '1month');
+        const currentExpiry = user.subscriptionExpiry && user.subscriptionExpiry > Date.now() ? user.subscriptionExpiry : Date.now();
+        user.subscriptionExpiry = currentExpiry + days * 24 * 60 * 60 * 1000;
         await saveUser(user);
         
         payment.processedForUser = true;
         await savePayment(ref, payment);
-        console.log(`[Subscription] Granted 30 days VIP to user ${user.email} via ref ${ref}`);
+        console.log(`[Subscription] Granted ${days} days VIP to user ${user.email} via ref ${ref}`);
+
+        // Reward referrer with 5 bonus days
+        if (user.referredBy) {
+          const referrer = await getUserById(user.referredBy);
+          if (referrer && referrer.subscriptionExpiry) {
+            referrer.subscriptionExpiry += 5 * 24 * 60 * 60 * 1000;
+            await saveUser(referrer);
+            console.log(`[Referral] Gave 5 bonus days to referrer ${referrer.email}`);
+          }
+        }
 
         // Send Email Receipt
         await sendEmail(
           user.email,
           '✅ VIP Access Granted! - Pips_attendant',
-          `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0f1c; color: #ffffff; padding: 30px; border-radius: 12px; border: 1px solid #10b981;">
+          `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0f1c; color: #ffffff; padding: 30px; border-radius: 12px; border: 1px solid #10b981;">
             <h2 style="color: #10b981; text-align: center;">Payment Successful! 🎉</h2>
             <p>Hello ${user.name || 'Trader'},</p>
             <p>Your M-Pesa payment for <strong>Pips_attendant VIP</strong> has been successfully verified.</p>
-            <p>Your account has been granted <strong>30 Days of VIP Access!</strong></p>
+            <p>Your account has been granted <strong>${days} Days of VIP Access!</strong></p>
             <p>You can access the VIP portal anytime at <a href="${process.env.APP_URL || 'https://pipsattendant.com'}/premium.html" style="color: #10b981;">pipsattendant.com/premium.html</a>.</p>
-            <br>
-            <p>Best regards,<br><strong>The Pips_attendant Team</strong></p>
-          </div>
-          `
+            <br><p>Best regards,<br><strong>The Pips_attendant Team</strong></p>
+          </div>`
         );
       }
     }
@@ -1932,7 +1963,7 @@ async function updateCryptoRequest(id, updates) {
 // ── POST /api/crypto-payment-request ─────────────────────────
 // User submits their USDT TX hash + contact info for admin approval
 app.post('/api/crypto-payment-request', validateUserSession, async (req, res) => {
-  const { txHash, contactInfo, network } = req.body;
+  const { txHash, contactInfo, network, plan } = req.body;
 
   if (!txHash || !txHash.trim()) {
     return res.status(400).json({ ok: false, error: 'Transaction hash is required.' });
@@ -1941,8 +1972,8 @@ app.post('/api/crypto-payment-request', validateUserSession, async (req, res) =>
     return res.status(400).json({ ok: false, error: 'Contact info (Telegram/email) is required.' });
   }
 
-  // Basic TX hash format validation (hex, 64 chars for most blockchains)
   const cleanHash = txHash.trim();
+  const selectedPlan = PLANS[plan] || PLANS['1month'];
 
   const request = {
     id: `CRYPTO_${Date.now()}_${Math.floor(Math.random() * 10000)}`,
@@ -1951,7 +1982,8 @@ app.post('/api/crypto-payment-request', validateUserSession, async (req, res) =>
     contactInfo: contactInfo.trim(),
     status: 'Pending',
     submittedAt: new Date().toISOString(),
-    amount: '$50 USDT',
+    amount: `$${selectedPlan.usdtPrice} USDT`,
+    plan: plan || '1month',
     userId: req.user.id
   };
 
@@ -1985,60 +2017,59 @@ app.post('/api/admin/approve-crypto-request', validateAdminKey, async (req, res)
     const found = requests.find(r => r.id === requestId || r._id?.toString() === requestId);
     if (!found) return res.status(404).json({ ok: false, error: 'Request not found.' });
 
-    // Update user subscription directly instead of generating access code
     const userId = found.userId;
+    const days = getDaysForPlan(found.plan || '1month');
+
     if (userId) {
       const user = await getUserById(userId);
       if (user) {
-        user.subscriptionExpiry = Date.now() + 30 * 24 * 60 * 60 * 1000;
+        const currentExpiry = user.subscriptionExpiry && user.subscriptionExpiry > Date.now() ? user.subscriptionExpiry : Date.now();
+        user.subscriptionExpiry = currentExpiry + days * 24 * 60 * 60 * 1000;
         await saveUser(user);
+
+        // Reward referrer
+        if (user.referredBy) {
+          const referrer = await getUserById(user.referredBy);
+          if (referrer && referrer.subscriptionExpiry) {
+            referrer.subscriptionExpiry += 5 * 24 * 60 * 60 * 1000;
+            await saveUser(referrer);
+            console.log(`[Referral] Gave 5 bonus days to referrer ${referrer.email}`);
+          }
+        }
       }
     }
 
     const ref = found.id || found._id?.toString();
     await savePayment(`CRYPTO_${ref}`, {
-      status: 'Success',
-      method: 'crypto',
-      txHash: found.txHash,
-      network: found.network,
-      contactInfo: found.contactInfo,
-      userId: userId,
-      processedForUser: true,
-      approvedAt: new Date().toISOString(),
-      timestamp: new Date().toISOString()
+      status: 'Success', method: 'crypto', txHash: found.txHash, network: found.network,
+      contactInfo: found.contactInfo, userId, plan: found.plan || '1month',
+      processedForUser: true, approvedAt: new Date().toISOString(), timestamp: new Date().toISOString()
     });
 
-    // Mark the crypto request as approved
     const idStr = found._id?.toString() || found.id;
     await updateCryptoRequest(idStr, { status: 'Approved', approvedAt: new Date().toISOString() });
 
     let emailSent = false;
-    // If the contact info looks like an email address, send the VIP receipt via sendEmail
     if (found.contactInfo && found.contactInfo.includes('@') && !found.contactInfo.startsWith('@')) {
       await sendEmail(
-        found.contactInfo,
-        '✅ VIP Access Granted! - Pips_attendant',
-        `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0f1c; color: #ffffff; padding: 30px; border-radius: 12px; border: 1px solid #10b981;">
+        found.contactInfo, '✅ VIP Access Granted! - Pips_attendant',
+        `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0f1c; color: #ffffff; padding: 30px; border-radius: 12px; border: 1px solid #10b981;">
           <h2 style="color: #10b981; text-align: center;">Payment Approved! 🎉</h2>
           <p>Hello,</p>
           <p>Your crypto payment for <strong>Pips_attendant VIP</strong> has been successfully verified.</p>
-          <p>Your account has been granted <strong>30 Days of VIP Access!</strong></p>
+          <p>Your account has been granted <strong>${days} Days of VIP Access!</strong></p>
           <p>To access the VIP portal, simply log in with your email at <a href="${process.env.APP_URL || 'https://pipsattendant.com'}/premium.html" style="color: #f59e0b;">pipsattendant.com/premium.html</a>.</p>
-          <br>
-          <p>Best regards,<br><strong>The Pips_attendant Team</strong></p>
-        </div>
-        `
+          <br><p>Best regards,<br><strong>The Pips_attendant Team</strong></p>
+        </div>`
       );
       emailSent = true;
     }
 
     res.json({
-      ok: true,
-      contactInfo: found.contactInfo,
-      message: emailSent 
-        ? `VIP granted and receipt EMAILED to ${found.contactInfo}` 
-        : `VIP granted for user ${userId || 'unknown'}. Please notify: ${found.contactInfo}`
+      ok: true, contactInfo: found.contactInfo,
+      message: emailSent
+        ? `VIP granted (${days} days) and receipt EMAILED to ${found.contactInfo}`
+        : `VIP granted (${days} days) for user ${userId || 'unknown'}. Please notify: ${found.contactInfo}`
     });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -2062,6 +2093,40 @@ app.post('/api/admin/reject-crypto-request', validateAdminKey, async (req, res) 
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
+});
+
+// \u2500\u2500 GET /api/plans \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+app.get('/api/plans', (req, res) => {
+  res.json({ ok: true, plans: PLANS });
+});
+
+// \u2500\u2500 Admin 2FA \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+// GET /api/admin/2fa/setup — Generate new TOTP secret & QR code
+app.get('/api/admin/2fa/setup', validateAdminKey, async (req, res) => {
+  try {
+    const secret = speakeasy.generateSecret({
+      name: `Pips_attendant Admin (${req.headers['x-admin-key'].slice(0, 6)}...)`,
+      length: 20
+    });
+    const qrDataUrl = await QRCode.toDataURL(secret.otpauth_url);
+    res.json({ ok: true, secret: secret.base32, qrCode: qrDataUrl, otpauthUrl: secret.otpauth_url });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// POST /api/admin/2fa/verify — Verify a TOTP token against a secret
+app.post('/api/admin/2fa/verify', (req, res) => {
+  const { secret, token } = req.body;
+  if (!secret || !token) return res.status(400).json({ ok: false, error: 'Secret and token required.' });
+  const verified = speakeasy.totp.verify({
+    secret,
+    encoding: 'base32',
+    token: String(token).replace(/\s/g, ''),
+    window: 2
+  });
+  res.json({ ok: verified, error: verified ? null : 'Invalid or expired token.' });
 });
 
 app.get('/api/admin/system-status', validateAdminKey, async (req, res) => {
@@ -2153,7 +2218,19 @@ async function handleTelegramUpdate(update) {
       await sendTelegramMessage(chatId, 'Could not fetch stats at this time.');
     }
   } else if (text.startsWith('/start')) {
-    await sendTelegramMessage(chatId, '👋 Welcome to *Pips Attendant Bot*!\n\nCommands:\n/stats — View trading stats', { parse_mode: 'Markdown' });
+    // Check if user is linking their account via /start <userId>
+    const parts = text.trim().split(' ');
+    if (parts.length === 2) {
+      const userId = parts[1];
+      const user = await getUserById(userId);
+      if (user) {
+        user.telegramId = String(chatId);
+        await saveUser(user);
+        await sendTelegramMessage(chatId, `✅ *Account Linked!*\n\nYour Telegram is now linked to *${user.name || user.email}* on Pips Attendant.\n\nYou will be automatically removed from VIP when your subscription expires.`, { parse_mode: 'Markdown' });
+        return;
+      }
+    }
+    await sendTelegramMessage(chatId, '👋 Welcome to *Pips Attendant Bot*!\n\nCommands:\n/stats — View trading stats\n\nTo link your account, use the button in your Pips Attendant profile.', { parse_mode: 'Markdown' });
   }
 }
 
@@ -2203,6 +2280,47 @@ async function registerTelegramWebhook() {
   }
 }
 
+
+// ── Daily Auto-Kick Expired VIP Users ────────────────────────
+// Runs every day at 01:00 EAT
+cron.schedule('0 1 * * *', async () => {
+  const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+  const VIP_CHAT_ID = process.env.TELEGRAM_VIP_CHAT_ID || process.env.TELEGRAM_CHAT_ID;
+  if (!TOKEN || !VIP_CHAT_ID) return;
+
+  console.log('[Cron] Checking for expired VIP users to kick...');
+  try {
+    const users = await getUsers();
+    const now = Date.now();
+    let kickCount = 0;
+    for (const user of users) {
+      if (user.telegramId && user.subscriptionExpiry && user.subscriptionExpiry < now) {
+        try {
+          // Kick (ban then unban = kick without permanent ban)
+          await fetch(`https://api.telegram.org/bot${TOKEN}/banChatMember`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: VIP_CHAT_ID, user_id: user.telegramId, revoke_messages: false })
+          });
+          await fetch(`https://api.telegram.org/bot${TOKEN}/unbanChatMember`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: VIP_CHAT_ID, user_id: user.telegramId, only_if_banned: true })
+          });
+          console.log(`[Auto-Kick] Kicked ${user.email} (TG: ${user.telegramId}) from VIP group.`);
+          kickCount++;
+
+          // Notify the user via Telegram DM
+          await sendTelegramMessage(user.telegramId,
+            `⚠️ Your Pips Attendant VIP subscription has expired. You have been removed from the VIP group.\n\nRenew at: ${process.env.APP_URL || 'https://pips-attendantke.onrender.com'}/premium.html`);
+        } catch (e) {
+          console.warn(`[Auto-Kick] Failed to kick ${user.email}:`, e.message);
+        }
+      }
+    }
+    console.log(`[Cron] Auto-kick complete. Kicked ${kickCount} user(s).`);
+  } catch (err) {
+    console.error('[Cron] Auto-kick failed:', err.message);
+  }
+}, { timezone: 'Africa/Nairobi' });
 
 // Weekly report (Sunday at 23:59 EAT, Server is presumably UTC so 20:59 UTC)
 cron.schedule('59 20 * * 0', async () => {
