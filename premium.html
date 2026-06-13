@@ -890,6 +890,14 @@
       const errorEl = document.getElementById('authError');
       const btn = document.getElementById('authBtn');
       
+      if (authMode === 'register') {
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+        if (!passwordRegex.test(password)) {
+          errorEl.textContent = '❌ Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.';
+          return;
+        }
+      }
+
       const endpoint = authMode === 'login' ? '/api/login' : '/api/register';
       const body = authMode === 'login' ? { email, password } : { email, password, name };
       

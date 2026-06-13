@@ -905,6 +905,11 @@ app.post('/api/register', async (req, res) => {
   const { email, password, name } = req.body;
   if (!email || !password) return res.status(400).json({ ok: false, error: 'Email and password required.' });
   
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+  if (!passwordRegex.test(password)) {
+    return res.status(400).json({ ok: false, error: 'Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.' });
+  }
+
   const existingUser = await getUserByEmail(email);
   if (existingUser) return res.status(400).json({ ok: false, error: 'Email already registered.' });
 
