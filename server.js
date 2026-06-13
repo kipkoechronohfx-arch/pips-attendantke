@@ -15,6 +15,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const fetch = require('node-fetch');
 const FormData = require('form-data');
@@ -791,6 +792,9 @@ function checkOrCreateDummyFiles() {
 checkOrCreateDummyFiles();
 
 // ── Middlewares ──────────────────────────────────────────────
+app.use(helmet({
+  contentSecurityPolicy: false, // Disable CSP to avoid blocking inline scripts/styles for now
+}));
 app.use(cors());
 app.use(express.json({ limit: '15mb' })); // Allow larger payloads for base64 PDF uploads
 
@@ -799,6 +803,12 @@ const vipAuthLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 10, // Limit each IP to 10 password attempts per window
   message: { ok: false, error: 'Too many password attempts. Try again in 15 minutes.' }
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 15, // Limit each IP to 15 login/register attempts per window
+  message: { ok: false, error: 'Too many authentication attempts. Try again in 15 minutes.' }
 });
 
 // Block access to sensitive server files
@@ -896,12 +906,34 @@ function generateUserToken(user) {
   return `${payload}.${hmac}`;
 }
 
+// ── Email Integration ──────────────────────────────────────────
+sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
+
+async function sendEmail(to, subject, htmlContent) {
+  if (!process.env.SENDGRID_API_KEY || !process.env.SENDGRID_FROM_EMAIL) {
+    console.log('\n========================================');
+    console.log(`[Email Simulation] To: ${to}\nSubject: ${subject}\nBody: ${htmlContent}`);
+    console.log('========================================\n');
+    return;
+  }
+  try {
+    await sgMail.send({
+      to,
+      from: process.env.SENDGRID_FROM_EMAIL,
+      subject,
+      html: htmlContent
+    });
+  } catch (error) {
+    console.error('[SendGrid Error]', error);
+  }
+}
+
 // ════════════════════════════════════════════════════════════
 //  ROUTES
 // ════════════════════════════════════════════════════════════
 
 // ── User Authentication Endpoints ──────────────────────────────
-app.post('/api/register', async (req, res) => {
+app.post('/api/register', authLimiter, async (req, res) => {
   const { email, password, name } = req.body;
   if (!email || !password) return res.status(400).json({ ok: false, error: 'Email and password required.' });
   
@@ -928,7 +960,7 @@ app.post('/api/register', async (req, res) => {
   res.json({ ok: true, sessionToken, user: { id: user.id, email: user.email, name: user.name, subscriptionExpiry: user.subscriptionExpiry } });
 });
 
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', authLimiter, async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ ok: false, error: 'Email and password required.' });
 
@@ -942,8 +974,107 @@ app.post('/api/login', async (req, res) => {
 });
 
 app.get('/api/me', validateUserSession, (req, res) => {
-  const user = req.user;
-  res.json({ ok: true, user: { id: user.id, email: user.email, name: user.name, subscriptionExpiry: user.subscriptionExpiry } });
+  res.json({
+    ok: true,
+    user: {
+      id: req.user.id,
+      email: req.user.email,
+      name: req.user.name,
+      subscriptionExpiry: req.user.subscriptionExpiry
+    }
+  });
+});
+
+// ── Password Reset Endpoints ─────────────────────────────────
+const resetTokens = new Map(); // Store as { email: { token, exp } }
+
+app.post('/api/forgot-password', authLimiter, async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ ok: false, error: 'Email required.' });
+
+  const user = await getUserByEmail(email);
+  if (!user) {
+    // Return OK even if user not found to prevent email enumeration
+    return res.json({ ok: true });
+  }
+
+  const token = crypto.randomBytes(32).toString('hex');
+  resetTokens.set(email.toLowerCase().trim(), {
+    token,
+    exp: Date.now() + 15 * 60 * 1000 // 15 minutes
+  });
+
+  const resetLink = `${process.env.APP_URL || 'http://localhost:' + PORT}/premium.html?resetToken=${token}&email=${encodeURIComponent(email)}`;
+  
+  await sendEmail(
+    user.email,
+    'Password Reset Request - Pips_attendant',
+    `<h3>Password Reset Request</h3>
+     <p>You requested a password reset. Click the link below to set a new password. This link expires in 15 minutes.</p>
+     <a href="${resetLink}">Reset Password</a>
+     <p>If you didn't request this, you can safely ignore this email.</p>`
+  );
+
+  res.json({ ok: true });
+});
+
+app.post('/api/reset-password', authLimiter, async (req, res) => {
+  const { email, token, newPassword } = req.body;
+  if (!email || !token || !newPassword) return res.status(400).json({ ok: false, error: 'Missing fields.' });
+
+  const resetData = resetTokens.get(email.toLowerCase().trim());
+  if (!resetData || resetData.token !== token || resetData.exp < Date.now()) {
+    return res.status(400).json({ ok: false, error: 'Invalid or expired reset token.' });
+  }
+
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+  if (!passwordRegex.test(newPassword)) {
+    return res.status(400).json({ ok: false, error: 'Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.' });
+  }
+
+  const user = await getUserByEmail(email);
+  if (!user) return res.status(400).json({ ok: false, error: 'User not found.' });
+
+  user.passwordHash = hashPassword(newPassword);
+  await saveUser(user);
+  resetTokens.delete(email.toLowerCase().trim());
+
+  res.json({ ok: true });
+});
+
+// ── Profile Management Endpoints ──────────────────────────────
+app.post('/api/change-password', validateUserSession, authLimiter, async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+  if (!oldPassword || !newPassword) return res.status(400).json({ ok: false, error: 'Missing fields.' });
+
+  const user = await getUserById(req.user.id);
+  if (!user) return res.status(404).json({ ok: false, error: 'User not found.' });
+
+  const expectedHash = hashPassword(oldPassword);
+  if (user.passwordHash !== expectedHash) {
+    return res.status(401).json({ ok: false, error: 'Incorrect old password.' });
+  }
+
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+  if (!passwordRegex.test(newPassword)) {
+    return res.status(400).json({ ok: false, error: 'Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.' });
+  }
+
+  user.passwordHash = hashPassword(newPassword);
+  await saveUser(user);
+  res.json({ ok: true, message: 'Password updated successfully.' });
+});
+
+app.post('/api/update-profile', validateUserSession, async (req, res) => {
+  const { name } = req.body;
+  if (!name || name.trim() === '') return res.status(400).json({ ok: false, error: 'Name cannot be empty.' });
+
+  const user = await getUserById(req.user.id);
+  if (!user) return res.status(404).json({ ok: false, error: 'User not found.' });
+
+  user.name = name.trim();
+  await saveUser(user);
+  res.json({ ok: true, message: 'Profile updated successfully.', name: user.name });
 });
 
 app.post('/api/redeem-code', validateUserSession, async (req, res) => {
@@ -1412,6 +1543,23 @@ app.get('/api/check-payment/:ref', validateUserSession, async (req, res) => {
         payment.processedForUser = true;
         await savePayment(ref, payment);
         console.log(`[Subscription] Granted 30 days VIP to user ${user.email} via ref ${ref}`);
+
+        // Send Email Receipt
+        await sendEmail(
+          user.email,
+          '✅ VIP Access Granted! - Pips_attendant',
+          `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0f1c; color: #ffffff; padding: 30px; border-radius: 12px; border: 1px solid #10b981;">
+            <h2 style="color: #10b981; text-align: center;">Payment Successful! 🎉</h2>
+            <p>Hello ${user.name || 'Trader'},</p>
+            <p>Your M-Pesa payment for <strong>Pips_attendant VIP</strong> has been successfully verified.</p>
+            <p>Your account has been granted <strong>30 Days of VIP Access!</strong></p>
+            <p>You can access the VIP portal anytime at <a href="${process.env.APP_URL || 'https://pipsattendant.com'}/premium.html" style="color: #10b981;">pipsattendant.com/premium.html</a>.</p>
+            <br>
+            <p>Best regards,<br><strong>The Pips_attendant Team</strong></p>
+          </div>
+          `
+        );
       }
     }
 
@@ -1865,52 +2013,32 @@ app.post('/api/admin/approve-crypto-request', validateAdminKey, async (req, res)
     await updateCryptoRequest(idStr, { status: 'Approved', approvedAt: new Date().toISOString() });
 
     let emailSent = false;
-    // If the contact info looks like an email address, send via SendGrid HTTP API
+    // If the contact info looks like an email address, send the VIP receipt via sendEmail
     if (found.contactInfo && found.contactInfo.includes('@') && !found.contactInfo.startsWith('@')) {
-      if (process.env.SENDGRID_API_KEY && process.env.SENDGRID_FROM_EMAIL) {
-        try {
-          sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-          const expiryDate = new Date(accessCodeExpiry).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-          const msg = {
-            to: found.contactInfo,
-            from: {
-              email: process.env.SENDGRID_FROM_EMAIL,
-              name: 'Pips_attendant VIP'
-            },
-            subject: '✅ Your VIP Access Code - Pips_attendant',
-            html: `
-              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0f1c; color: #ffffff; padding: 30px; border-radius: 12px; border: 1px solid #f59e0b;">
-                <h2 style="color: #f59e0b; text-align: center;">Payment Approved! 🎉</h2>
-                <p>Hello,</p>
-                <p>Your crypto payment for <strong>Pips_attendant VIP</strong> has been successfully verified. Welcome to the club!</p>
-                <div style="background: rgba(245, 158, 11, 0.08); padding: 20px; text-align: center; border-radius: 8px; margin: 25px 0; border: 1px dashed #f59e0b;">
-                  <p style="margin: 0; color: #a1a1aa; font-size: 12px; text-transform: uppercase; letter-spacing: 2px;">Your Unique Access Code</p>
-                  <p style="margin: 14px 0 0 0; font-size: 32px; font-weight: bold; color: #f59e0b; letter-spacing: 4px; font-family: monospace;">${accessCode}</p>
-                </div>
-                <p style="color: #10b981; font-weight: bold; text-align: center;">⏱ Valid Until: ${expiryDate}</p>
-                <p>To access the VIP portal, visit <a href="https://pipsattendant.com/premium.html" style="color: #f59e0b;">pipsattendant.com/premium.html</a>, click <strong>"Enter Access Code"</strong>, and enter the code above.</p>
-                <p style="color: #6b7280; font-size: 12px;">Keep this code safe — do not share it with anyone.</p>
-                <p>Best regards,<br><strong>The Pips_attendant Team</strong></p>
-              </div>
-            `
-          };
-          await sgMail.send(msg);
-          emailSent = true;
-          console.log(`[Email] SendGrid: Successfully sent access code to ${found.contactInfo}`);
-        } catch (mailErr) {
-          console.error('[Email Error] SendGrid failed:', mailErr.response?.body?.errors || mailErr.message);
-        }
-      }
+      await sendEmail(
+        found.contactInfo,
+        '✅ VIP Access Granted! - Pips_attendant',
+        `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0f1c; color: #ffffff; padding: 30px; border-radius: 12px; border: 1px solid #10b981;">
+          <h2 style="color: #10b981; text-align: center;">Payment Approved! 🎉</h2>
+          <p>Hello,</p>
+          <p>Your crypto payment for <strong>Pips_attendant VIP</strong> has been successfully verified.</p>
+          <p>Your account has been granted <strong>30 Days of VIP Access!</strong></p>
+          <p>To access the VIP portal, simply log in with your email at <a href="${process.env.APP_URL || 'https://pipsattendant.com'}/premium.html" style="color: #f59e0b;">pipsattendant.com/premium.html</a>.</p>
+          <br>
+          <p>Best regards,<br><strong>The Pips_attendant Team</strong></p>
+        </div>
+        `
+      );
+      emailSent = true;
     }
 
     res.json({
       ok: true,
-      accessCode,
-      accessCodeExpiry,
       contactInfo: found.contactInfo,
       message: emailSent 
-        ? `Access code generated and EMAILED to ${found.contactInfo}` 
-        : `Access code generated: ${accessCode}. Please share with: ${found.contactInfo}`
+        ? `VIP granted and receipt EMAILED to ${found.contactInfo}` 
+        : `VIP granted for user ${userId || 'unknown'}. Please notify: ${found.contactInfo}`
     });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
@@ -1931,6 +2059,62 @@ app.post('/api/admin/reject-crypto-request', validateAdminKey, async (req, res) 
     await updateCryptoRequest(idStr, { status: 'Rejected', rejectedAt: new Date().toISOString() });
 
     res.json({ ok: true, message: 'Request rejected.' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+app.get('/api/admin/system-status', validateAdminKey, async (req, res) => {
+  res.json({
+    ok: true,
+    status: {
+      mongodb: db ? 'connected' : 'disconnected',
+      fallbackMode: !db,
+      telegramBot: process.env.TELEGRAM_BOT_TOKEN ? 'configured' : 'missing',
+      telegramChatId: process.env.TELEGRAM_CHAT_ID ? 'configured' : 'missing',
+      pushNotifications: (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) ? 'configured' : 'missing'
+    }
+  });
+});
+
+// ── GET /api/admin/analytics ──────────────────────────────────
+app.get('/api/admin/analytics', validateAdminKey, async (req, res) => {
+  try {
+    const users = await getUsers();
+    const now = Date.now();
+    
+    let totalUsers = users.length;
+    let activeVIPs = 0;
+    
+    // Group users joined by day for the last 7 days
+    const last7Days = {};
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now - i * 24 * 60 * 60 * 1000);
+      const dateStr = d.toISOString().split('T')[0];
+      last7Days[dateStr] = 0;
+    }
+
+    users.forEach(user => {
+      if (user.subscriptionExpiry && user.subscriptionExpiry > now) {
+        activeVIPs++;
+      }
+      if (user.createdAt) {
+        const dateStr = user.createdAt.split('T')[0];
+        if (last7Days[dateStr] !== undefined) {
+          last7Days[dateStr]++;
+        }
+      }
+    });
+
+    res.json({
+      ok: true,
+      totalUsers,
+      activeVIPs,
+      chartData: {
+        labels: Object.keys(last7Days),
+        values: Object.values(last7Days)
+      }
+    });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }

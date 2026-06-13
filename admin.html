@@ -25,6 +25,9 @@
   <!-- Feather Icons -->
   <script src="https://unpkg.com/feather-icons"></script>
   
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <link rel="stylesheet" href="style.css">
 
   <style>
@@ -1215,6 +1218,40 @@
 
   </main>
 
+    <!-- 📈 ANALYTICS PANEL -->
+    <div id="analyticsPanel" class="hidden container mx-auto px-4 max-w-5xl mb-12">
+      <div class="flex items-center gap-4 mb-6">
+        <div class="flex-1 h-px bg-white/10"></div>
+        <div class="flex items-center gap-2 px-4 py-2 rounded-full border border-violet-500/30 bg-violet-500/5">
+          <span class="w-2 h-2 rounded-full bg-violet-500 animate-pulse"></span>
+          <span class="text-violet-400 text-xs font-bold tracking-[0.2em] uppercase">Platform Analytics</span>
+        </div>
+        <div class="flex-1 h-px bg-white/10"></div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div class="glass-card rounded-2xl p-6 border border-white/10 flex flex-col justify-center items-center">
+          <span class="text-gray-400 text-xs uppercase tracking-wider mb-2 font-semibold">Total Users</span>
+          <span id="statTotalUsers" class="text-4xl font-black text-white font-mono">--</span>
+        </div>
+        <div class="glass-card rounded-2xl p-6 border border-white/10 flex flex-col justify-center items-center">
+          <span class="text-amber-400/80 text-xs uppercase tracking-wider mb-2 font-semibold">Active VIPs</span>
+          <span id="statActiveVIPs" class="text-4xl font-black text-amber-400 font-mono">--</span>
+        </div>
+        <div class="glass-card rounded-2xl p-6 border border-white/10 flex flex-col justify-center items-center">
+          <span class="text-emerald-400/80 text-xs uppercase tracking-wider mb-2 font-semibold">VIP Conversion</span>
+          <span id="statConversionRate" class="text-4xl font-black text-emerald-400 font-mono">--</span>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-2xl p-6 border border-white/10">
+        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-6">User Registrations (Last 7 Days)</h3>
+        <div class="w-full h-64">
+          <canvas id="registrationsChart"></canvas>
+        </div>
+      </div>
+    </div>
+
     <!-- 👥 USER ACCOUNTS PANEL -->
     <div id="usersPanel" class="hidden container mx-auto px-4 max-w-5xl mb-12">
       <div class="flex items-center gap-4 mb-6">
@@ -1337,6 +1374,7 @@
         document.getElementById('perfPanel').classList.remove('hidden');
         document.getElementById('vipPanel').classList.remove('hidden');
         document.getElementById('cryptoRequestsPanel').classList.remove('hidden');
+        document.getElementById('analyticsPanel').classList.remove('hidden');
         document.getElementById('usersPanel').classList.remove('hidden');
         document.getElementById('statusSection').classList.remove('hidden');
         updateLivePreview();
@@ -1350,6 +1388,8 @@
         fetchTodaysSetup();
         fetchTodaysSetupResults();
         fetchCryptoRequests();
+        fetchUsers();
+        fetchAnalytics();
       } else {
         document.getElementById('setupPanel').classList.remove('hidden');
         document.getElementById('dashboardPanel').classList.add('hidden');
@@ -1358,6 +1398,8 @@
         document.getElementById('perfPanel').classList.add('hidden');
         document.getElementById('vipPanel').classList.add('hidden');
         document.getElementById('cryptoRequestsPanel').classList.add('hidden');
+        document.getElementById('analyticsPanel').classList.add('hidden');
+        document.getElementById('usersPanel').classList.add('hidden');
         document.getElementById('statusSection').classList.add('hidden');
         
         // Pre-fill inputs if credentials exist in localStorage
@@ -2796,7 +2838,80 @@
         tbody.innerHTML = '<tr><td colspan="4" class="py-6 text-center text-rose-400">Connection error loading users.</td></tr>';
       }
     }
+
+    // ── Analytics Management ──────────────────────────────
+    let regChartInstance = null;
+
+    async function fetchAnalytics() {
+      const adminKey = localStorage.getItem('pa_admin_key');
+      if (!adminKey) return;
+
+      try {
+        const res = await fetch('/api/admin/analytics', { headers: { 'x-admin-key': adminKey } });
+        const data = await res.json();
+        
+        if (data.ok) {
+          document.getElementById('statTotalUsers').textContent = data.totalUsers;
+          document.getElementById('statActiveVIPs').textContent = data.activeVIPs;
+          
+          const conversion = data.totalUsers > 0 ? Math.round((data.activeVIPs / data.totalUsers) * 100) : 0;
+          document.getElementById('statConversionRate').textContent = `${conversion}%`;
+
+          renderChart(data.chartData);
+        }
+      } catch (err) {
+        console.error('Failed to load analytics', err);
+      }
+    }
+
+    function renderChart(chartData) {
+      const ctx = document.getElementById('registrationsChart').getContext('2d');
+      if (regChartInstance) {
+        regChartInstance.destroy();
+      }
+
+      regChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: chartData.labels,
+          datasets: [{
+            label: 'New Users',
+            data: chartData.values,
+            borderColor: '#b026ff',
+            backgroundColor: 'rgba(176, 38, 255, 0.1)',
+            borderWidth: 2,
+            tension: 0.4,
+            fill: true,
+            pointBackgroundColor: '#b026ff',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: '#b026ff',
+            pointRadius: 4,
+            pointHoverRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
+              ticks: { stepSize: 1, color: '#9ca3af' }
+            },
+            x: {
+              grid: { display: false, drawBorder: false },
+              ticks: { color: '#9ca3af' }
+            }
+          }
+        }
+      });
+    }
   </script>
+
 
 </body>
 </html>

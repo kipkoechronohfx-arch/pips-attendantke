@@ -111,12 +111,58 @@
             <input type="email" id="authEmail" placeholder="you@email.com" required class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
           </div>
           <div>
-            <label class="block text-[10px] text-gray-500 mb-1">Password</label>
+            <div class="flex justify-between items-center mb-1">
+              <label class="block text-[10px] text-gray-500">Password</label>
+              <button type="button" id="forgotPasswordLink" onclick="showForgotPasswordModal()" class="text-[10px] text-amber-400 hover:underline bg-transparent border-none cursor-pointer">Forgot Password?</button>
+            </div>
             <input type="password" id="authPassword" placeholder="••••••••" required class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
           </div>
           <div id="authError" class="text-rose-400 text-[11px] min-h-[14px]"></div>
           <button type="submit" id="authBtn" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r from-amber-500 to-yellow-400 text-dark-navy hover:brightness-110 active:scale-95 transition duration-300 cursor-pointer text-sm shadow-[0_0_20px_rgba(251,191,36,0.3)]">
             Log In 🔓
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- FORGOT PASSWORD MODAL -->
+    <div id="forgotPasswordModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+      <div class="glass-card rounded-2xl p-8 max-w-sm w-full mx-4 border border-amber-400/20 transform scale-95 transition-transform duration-300">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-bold text-white">Reset Password</h2>
+          <button onclick="closeForgotPasswordModal()" class="text-gray-400 hover:text-white transition cursor-pointer">
+            <i data-feather="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+        <p class="text-xs text-gray-400 mb-6">Enter your registered email address and we will send you a reset link.</p>
+        <form id="forgotPasswordForm" onsubmit="handleForgotPassword(event)" class="space-y-4">
+          <div>
+            <label class="block text-[10px] text-gray-500 mb-1">Email Address</label>
+            <input type="email" id="forgotEmail" placeholder="you@email.com" required class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
+          </div>
+          <div id="forgotError" class="text-[11px] min-h-[14px]"></div>
+          <button type="submit" id="forgotBtn" class="w-full py-3 rounded-xl font-bold bg-amber-400 text-dark-navy hover:brightness-110 active:scale-95 transition duration-300 cursor-pointer text-sm">
+            Send Reset Link
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- RESET PASSWORD MODAL (Triggered by URL token) -->
+    <div id="resetPasswordModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+      <div class="glass-card rounded-2xl p-8 max-w-sm w-full mx-4 border border-emerald-400/20 transform scale-95 transition-transform duration-300">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-bold text-white">Set New Password</h2>
+        </div>
+        <p class="text-xs text-gray-400 mb-6">Enter a strong new password for your account.</p>
+        <form id="resetPasswordForm" onsubmit="handleResetPassword(event)" class="space-y-4">
+          <div>
+            <label class="block text-[10px] text-gray-500 mb-1">New Password</label>
+            <input type="password" id="newResetPassword" placeholder="••••••••" required class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-emerald-400/50 focus:outline-none transition" />
+          </div>
+          <div id="resetError" class="text-[11px] min-h-[14px]"></div>
+          <button type="submit" id="resetBtn" class="w-full py-3 rounded-xl font-bold bg-emerald-500 text-white hover:brightness-110 active:scale-95 transition duration-300 cursor-pointer text-sm">
+            Update Password
           </button>
         </form>
       </div>
@@ -273,12 +319,69 @@
       <div class="glass-card border border-amber-400/20 rounded-2xl p-5 mb-8 flex items-center gap-4">
         <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center text-2xl flex-shrink-0">🏆</div>
         <div>
-          <h2 class="text-white font-bold">Welcome, VIP Member!</h2>
-          <p class="text-gray-400 text-xs mt-0.5">You now have full access to all exclusive resources below.</p>
+          <h2 class="text-white font-bold" id="vipWelcomeText">Welcome, VIP Member!</h2>
+          <p class="text-gray-400 text-xs mt-0.5" id="vipExpiryText">You now have full access to all exclusive resources below.</p>
         </div>
-        <button onclick="lockVIP()" class="ml-auto text-gray-500 hover:text-rose-400 transition cursor-pointer" title="Lock & Log Out">
-          <i data-feather="log-out" class="w-4 h-4"></i>
-        </button>
+        <div class="ml-auto flex items-center gap-3">
+          <button onclick="showMyAccountModal()" class="text-gray-400 hover:text-amber-400 transition cursor-pointer flex items-center gap-1 text-xs font-bold bg-white/5 border border-white/10 px-3 py-1.5 rounded-lg hover:border-amber-400/50">
+            <i data-feather="user" class="w-3.5 h-3.5"></i> Account
+          </button>
+          <button onclick="logout()" class="text-gray-500 hover:text-rose-400 transition cursor-pointer bg-black/40 border border-white/5 px-2.5 py-1.5 rounded-lg hover:border-rose-400/30" title="Log Out">
+            <i data-feather="log-out" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- MY ACCOUNT MODAL -->
+      <div id="myAccountModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div class="glass-card rounded-2xl p-8 max-w-md w-full mx-4 border border-amber-400/20 transform scale-95 transition-transform duration-300">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold text-white flex items-center gap-2">
+              <i data-feather="user" class="w-5 h-5 text-amber-400"></i> My Account
+            </h2>
+            <button onclick="closeMyAccountModal()" class="text-gray-400 hover:text-white transition cursor-pointer">
+              <i data-feather="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+          
+          <div class="space-y-6">
+            <!-- Profile Update -->
+            <div>
+              <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Profile</h3>
+              <form id="updateProfileForm" onsubmit="handleUpdateProfile(event)" class="space-y-3">
+                <div>
+                  <label class="block text-[10px] text-gray-500 mb-1">Display Name</label>
+                  <input type="text" id="profileName" required class="w-full px-3 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
+                </div>
+                <div id="profileError" class="text-[11px] min-h-[14px]"></div>
+                <button type="submit" id="profileBtn" class="w-full py-2.5 rounded-xl font-bold border border-amber-500/40 bg-amber-500/10 text-amber-400 hover:bg-amber-500 hover:text-dark-navy transition cursor-pointer text-xs">
+                  Update Profile
+                </button>
+              </form>
+            </div>
+
+            <div class="border-t border-white/5"></div>
+
+            <!-- Change Password -->
+            <div>
+              <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Security</h3>
+              <form id="changePasswordForm" onsubmit="handleChangePassword(event)" class="space-y-3">
+                <div>
+                  <label class="block text-[10px] text-gray-500 mb-1">Current Password</label>
+                  <input type="password" id="oldPassword" required class="w-full px-3 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
+                </div>
+                <div>
+                  <label class="block text-[10px] text-gray-500 mb-1">New Password</label>
+                  <input type="password" id="newPassword" required class="w-full px-3 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
+                </div>
+                <div id="changePwError" class="text-[11px] min-h-[14px]"></div>
+                <button type="submit" id="changePwBtn" class="w-full py-2.5 rounded-xl font-bold border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-white transition cursor-pointer text-xs">
+                  Change Password
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- ⏱ Live Signal Countdown Timer -->
@@ -581,7 +684,98 @@
   <script>
     feather.replace();
 
-    // ── State Variables ────────────────────────────────────────
+    function showMyAccountModal() {
+      const modal = document.getElementById('myAccountModal');
+      modal.classList.remove('hidden');
+      setTimeout(() => modal.classList.remove('opacity-0'), 10);
+    }
+
+    function closeMyAccountModal() {
+      const modal = document.getElementById('myAccountModal');
+      modal.classList.add('opacity-0');
+      setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+
+    async function handleUpdateProfile(e) {
+      e.preventDefault();
+      const name = document.getElementById('profileName').value.trim();
+      const errorEl = document.getElementById('profileError');
+      const btn = document.getElementById('profileBtn');
+      const token = sessionStorage.getItem('vip_session_token');
+
+      const origText = btn.innerHTML;
+      btn.innerHTML = '<span class="animate-pulse">Updating...</span>';
+      btn.disabled = true;
+      errorEl.textContent = '';
+      errorEl.className = 'text-[11px] min-h-[14px]';
+
+      try {
+        const res = await fetch('/api/update-profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-vip-token': token },
+          body: JSON.stringify({ name })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          errorEl.className = 'text-emerald-400 text-[11px] min-h-[14px]';
+          errorEl.textContent = '✅ Profile updated!';
+          document.getElementById('vipWelcomeText').textContent = `Welcome, ${data.name}!`;
+          localStorage.setItem('pa_vip_user_name', data.name);
+          setTimeout(() => { errorEl.textContent = ''; }, 3000);
+        } else {
+          errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
+          errorEl.textContent = `❌ ${data.error}`;
+        }
+      } catch (err) {
+        errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
+        errorEl.textContent = '❌ Server error.';
+      } finally {
+        btn.innerHTML = origText;
+        btn.disabled = false;
+      }
+    }
+
+    async function handleChangePassword(e) {
+      e.preventDefault();
+      const oldPassword = document.getElementById('oldPassword').value;
+      const newPassword = document.getElementById('newPassword').value;
+      const errorEl = document.getElementById('changePwError');
+      const btn = document.getElementById('changePwBtn');
+      const token = sessionStorage.getItem('vip_session_token');
+
+      const origText = btn.innerHTML;
+      btn.innerHTML = '<span class="animate-pulse">Changing...</span>';
+      btn.disabled = true;
+      errorEl.textContent = '';
+      errorEl.className = 'text-[11px] min-h-[14px]';
+
+      try {
+        const res = await fetch('/api/change-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-vip-token': token },
+          body: JSON.stringify({ oldPassword, newPassword })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          errorEl.className = 'text-emerald-400 text-[11px] min-h-[14px]';
+          errorEl.textContent = '✅ Password changed successfully!';
+          document.getElementById('oldPassword').value = '';
+          document.getElementById('newPassword').value = '';
+          setTimeout(() => { errorEl.textContent = ''; }, 3000);
+        } else {
+          errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
+          errorEl.textContent = `❌ ${data.error}`;
+        }
+      } catch (err) {
+        errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
+        errorEl.textContent = '❌ Server error.';
+      } finally {
+        btn.innerHTML = origText;
+        btn.disabled = false;
+      }
+    }
+
+    // ── File Management ────────────────────────────────────────
     let pollInterval;
     let selectedNetwork = 'TRC20';
     let authMode = 'login';
@@ -929,6 +1123,96 @@
       }
     }
 
+    function showForgotPasswordModal() {
+      const modal = document.getElementById('forgotPasswordModal');
+      modal.classList.remove('hidden');
+      setTimeout(() => modal.classList.remove('opacity-0'), 10);
+    }
+
+    function closeForgotPasswordModal() {
+      const modal = document.getElementById('forgotPasswordModal');
+      modal.classList.add('opacity-0');
+      setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+
+    async function handleForgotPassword(e) {
+      e.preventDefault();
+      const email = document.getElementById('forgotEmail').value.trim();
+      const errorEl = document.getElementById('forgotError');
+      const btn = document.getElementById('forgotBtn');
+
+      const origText = btn.innerHTML;
+      btn.innerHTML = '<span class="animate-pulse">Sending...</span>';
+      btn.disabled = true;
+      errorEl.textContent = '';
+      errorEl.className = 'text-[11px] min-h-[14px]';
+
+      try {
+        const res = await fetch('/api/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          errorEl.className = 'text-emerald-400 text-[11px] min-h-[14px]';
+          errorEl.textContent = '✅ If that email is registered, a reset link has been sent.';
+          setTimeout(closeForgotPasswordModal, 3000);
+        } else {
+          errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
+          errorEl.textContent = `❌ ${data.error || 'Failed to send reset link.'}`;
+        }
+      } catch (err) {
+        errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
+        errorEl.textContent = '❌ Server error.';
+      } finally {
+        btn.innerHTML = origText;
+        btn.disabled = false;
+      }
+    }
+
+    async function handleResetPassword(e) {
+      e.preventDefault();
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('resetToken');
+      const email = urlParams.get('email');
+      const newPassword = document.getElementById('newResetPassword').value;
+      const errorEl = document.getElementById('resetError');
+      const btn = document.getElementById('resetBtn');
+
+      const origText = btn.innerHTML;
+      btn.innerHTML = '<span class="animate-pulse">Updating...</span>';
+      btn.disabled = true;
+      errorEl.className = 'text-[11px] min-h-[14px]';
+      errorEl.textContent = '';
+
+      try {
+        const res = await fetch('/api/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, token, newPassword })
+        });
+        const data = await res.json();
+        
+        if (data.ok) {
+          errorEl.className = 'text-emerald-400 text-[11px] min-h-[14px]';
+          errorEl.textContent = '✅ Password updated successfully! Redirecting to login...';
+          setTimeout(() => {
+            window.location.href = window.location.pathname; // Remove query params
+          }, 2000);
+        } else {
+          errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
+          errorEl.textContent = `❌ ${data.error || 'Failed to reset password.'}`;
+        }
+      } catch (err) {
+        errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
+        errorEl.textContent = '❌ Server error.';
+      } finally {
+        btn.innerHTML = origText;
+        btn.disabled = false;
+      }
+    }
+
     async function redeemCode() {
       const code = document.getElementById('vipPassword').value.trim();
       const error = document.getElementById('gateError');
@@ -982,6 +1266,11 @@
             // VIP access granted
             document.getElementById('paymentPanel').style.display = 'none';
             document.getElementById('contentPanel').classList.remove('hidden');
+            
+            document.getElementById('vipWelcomeText').textContent = `Welcome, ${data.user.name || 'VIP Member'}!`;
+            const daysLeft = Math.ceil((data.user.subscriptionExpiry - now) / (1000 * 60 * 60 * 24));
+            document.getElementById('vipExpiryText').textContent = `VIP Access: ${daysLeft} days remaining.`;
+            document.getElementById('profileName').value = data.user.name || '';
             updateDownloadLinks();
             loadTodaysSetup();
             loadTodaysSetupResults();
@@ -1089,8 +1378,16 @@
       }
     }
 
-    // ── Check Access on load ───────────
-    document.addEventListener('DOMContentLoaded', () => {
+    // INITIALIZATION
+    window.addEventListener('DOMContentLoaded', () => {
+      // Check for reset password token
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('resetToken')) {
+        const resetModal = document.getElementById('resetPasswordModal');
+        resetModal.classList.remove('hidden');
+        setTimeout(() => resetModal.classList.remove('opacity-0'), 10);
+      }
+
       feather.replace();
       initTheme();
       checkUserAccess();
