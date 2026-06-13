@@ -1735,8 +1735,8 @@ app.get('/api/download-vip', async (req, res) => {
   }
 });
 
-// ── GET /api/redirect-vip-telegram ────────────────────────────
-app.get('/api/redirect-vip-telegram', (req, res) => {
+// ── GET /api/telegram/generate-invite ────────────────────────────
+app.get('/api/telegram/generate-invite', async (req, res) => {
   const { token } = req.query;
   if (!token) return res.status(400).send('Missing session token.');
 
@@ -1751,7 +1751,35 @@ app.get('/api/redirect-vip-telegram', (req, res) => {
     return res.status(401).send('Token verification failed.');
   }
 
-  res.redirect('https://t.me/pips_attendant');
+  const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+  const VIP_CHAT_ID = process.env.TELEGRAM_VIP_CHAT_ID || process.env.TELEGRAM_CHAT_ID;
+
+  if (!TOKEN || !VIP_CHAT_ID) {
+    return res.status(500).send('Telegram Bot is not fully configured by Admin yet.');
+  }
+
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${TOKEN}/createChatInviteLink`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: VIP_CHAT_ID,
+        member_limit: 1, // Only 1 person can use this specific link
+        creates_join_request: false
+      })
+    });
+    
+    const data = await response.json();
+    if (data.ok && data.result.invite_link) {
+      res.redirect(data.result.invite_link);
+    } else {
+      console.error('[Telegram] Failed to create invite link:', data);
+      res.status(500).send('Failed to generate invite link. Ensure bot is an Admin in the VIP group with "Invite Users" permission.');
+    }
+  } catch (err) {
+    console.error('[Telegram] Error creating invite link:', err);
+    res.status(500).send('Error communicating with Telegram.');
+  }
 });
 
 // ── POST /api/subscribe ───────────────────────────────────────
