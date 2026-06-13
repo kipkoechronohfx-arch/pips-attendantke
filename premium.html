@@ -522,6 +522,29 @@
         </div>
       </div>
 
+      <!-- TELEGRAM BLOCKER -->
+      <div id="telegramBlocker" class="hidden mb-10">
+        <div class="glass-card border border-rose-500/30 rounded-2xl p-8 text-center max-w-lg mx-auto relative overflow-hidden">
+          <div class="absolute inset-0 bg-rose-500/5"></div>
+          <div class="relative z-10">
+            <div class="w-16 h-16 rounded-full bg-rose-500/20 border border-rose-500/40 flex items-center justify-center mx-auto mb-4 animate-pulse">
+              <i data-feather="alert-triangle" class="w-8 h-8 text-rose-400"></i>
+            </div>
+            <h2 class="text-white font-bold text-xl mb-2">Telegram Link Required</h2>
+            <p class="text-gray-400 text-sm mb-6">To access the VIP signals, community chat, and premium resources, you must link your Telegram account.</p>
+            
+            <a id="blockerTelegramLinkBtn" href="#" target="_blank"
+               class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold bg-sky-500 hover:bg-sky-400 text-white transition shadow-[0_0_20px_rgba(14,165,233,0.3)] mb-4">
+              <i data-feather="send" class="w-4 h-4"></i> Link Telegram Account
+            </a>
+            
+            <p class="text-[10px] text-gray-500">After linking your account via the bot, refresh this page.</p>
+            <button onclick="window.location.reload()" class="mt-4 text-xs text-amber-400 hover:underline cursor-pointer">I have linked my account (Refresh)</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="vipMainContent">
       <!-- ⏱ Live Signal Countdown Timer -->
       <div id="countdownSection" class="mb-6 hidden">
         <div class="glass-card border border-amber-400/30 rounded-2xl p-5 relative overflow-hidden">
@@ -815,6 +838,7 @@
 
       <!-- Footer Note -->
       <p class="text-gray-600 text-[10px] text-center">These resources are exclusively for Pips_attendant VIP members. Do not distribute.</p>
+      </div> <!-- End vipMainContent -->
     </div>
 
   </main>
@@ -1611,6 +1635,20 @@
             // VIP access granted
             document.getElementById('paymentPanel').style.display = 'none';
             document.getElementById('contentPanel').classList.remove('hidden');
+            
+            // Show Telegram Blocker if telegramId is not linked
+            if (!data.user.telegramId) {
+              document.getElementById('telegramBlocker').classList.remove('hidden');
+              document.getElementById('vipMainContent').classList.add('hidden');
+              
+              // Build link for the blocker button
+              const tgBtn = document.getElementById('blockerTelegramLinkBtn');
+              const botUser = window.__TELEGRAM_BOT_USERNAME__ || 'PipsAttendantBot';
+              if (tgBtn) tgBtn.href = `https://t.me/${botUser}?start=${data.user.id}`;
+            } else {
+              document.getElementById('telegramBlocker').classList.add('hidden');
+              document.getElementById('vipMainContent').classList.remove('hidden');
+            }
             
             document.getElementById('vipWelcomeText').textContent = `Welcome, ${data.user.name || 'VIP Member'}!`;
             const daysLeft = Math.ceil((data.user.subscriptionExpiry - now) / (1000 * 60 * 60 * 24));
