@@ -116,6 +116,8 @@ const getWhatsappColl = () => db.collection('whatsapp_subscribers');
 const getChatColl = () => db.collection('chat_messages');
 const getCryptoRequestsColl = () => db.collection('crypto_payment_requests');
 const getUsersColl = () => db.collection('users');
+const getPromosColl = () => db.collection('promo_codes');
+const getTicketsColl = () => db.collection('support_tickets');
 // ── One-Time Auto-Migration Script ───────────────────────────
 async function runMigrations() {
   console.log('[Migration] Checking for local data to migrate to MongoDB Atlas...');
@@ -979,6 +981,23 @@ app.post('/api/register', authLimiter, async (req, res) => {
   await saveUser(user);
   const sessionToken = generateUserToken(user);
   
+  // Send Welcome Email asynchronously
+  try {
+    const welcomeHtml = `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+        <h2 style="color: #fbbf24;">Welcome to Pips Attendant VIP! 🚀</h2>
+        <p>Hi ${user.name || 'Trader'},</p>
+        <p>Your account has been successfully created. We are thrilled to have you on board!</p>
+        <p>To get started, please log in and select a subscription plan. Once subscribed, you will receive exclusive access to our VIP Telegram signals.</p>
+        <p>Happy Trading!</p>
+        <p>- The Pips Attendant Team</p>
+      </div>
+    `;
+    sendEmail(user.email, 'Welcome to Pips Attendant VIP! 🚀', welcomeHtml).catch(console.error);
+  } catch (err) {
+    console.error('[Email] Failed to send welcome email', err);
+  }
+
   res.json({ ok: true, sessionToken, user: { id: user.id, email: user.email, name: user.name, subscriptionExpiry: user.subscriptionExpiry } });
 });
 
@@ -1350,12 +1369,28 @@ app.get('/api/signals', async (req, res) => {
 
 // ── POST /api/pay-vip ─────────────────────────────────────────
 app.post('/api/pay-vip', validateUserSession, async (req, res) => {
-  const { phone } = req.body;
+  const { phone, plan, promoCode } = req.body;
   const { PAYHERO_API_USER, PAYHERO_API_PASS, PAYHERO_CHANNEL_ID } = process.env;
 
   if (!phone) return res.status(400).json({ ok: false, error: 'Phone number is required.' });
   if (!PAYHERO_API_USER || !PAYHERO_API_PASS || !PAYHERO_CHANNEL_ID) {
     return res.status(500).json({ ok: false, error: 'Payment gateway not configured.' });
+  }
+
+  // Calculate dynamic amount based on plan
+  let finalAmount = PLANS[plan] ? PLANS[plan].kesPrice : PLANS['1month'].kesPrice;
+  const selectedPlan = plan || '1month';
+
+  // Apply Promo Code if valid
+  if (promoCode) {
+    if (promoCode.toUpperCase() === 'COMEBACK10') {
+      finalAmount = Math.floor(finalAmount * 0.90);
+    } else if (db) {
+      const promo = await getPromosColl().findOne({ code: promoCode.toUpperCase(), active: true });
+      if (promo) {
+        finalAmount = Math.floor(finalAmount * (1 - (promo.discountPercentage / 100)));
+      }
+    }
   }
 
   const ref = `VIP_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
@@ -1373,7 +1408,7 @@ app.post('/api/pay-vip', validateUserSession, async (req, res) => {
         'Authorization': `Basic ${auth}`
       },
       body: JSON.stringify({
-        amount: 5000,
+        amount: finalAmount,
         phone_number: phone,
         channel_id: PAYHERO_CHANNEL_ID,
         provider: 'm-pesa',
@@ -1384,7 +1419,7 @@ app.post('/api/pay-vip', validateUserSession, async (req, res) => {
 
     const data = await response.json();
     if (data.success || response.ok) {
-      await savePayment(ref, { status: 'Pending', phone, userId: req.user.id, timestamp: now() });
+      await savePayment(ref, { status: 'Pending', phone, userId: req.user.id, plan: selectedPlan, timestamp: new Date().toISOString() });
       res.json({ ok: true, reference: ref, message: 'Check your phone for the M-Pesa PIN prompt.' });
     } else {
       throw new Error(data.message || 'Payment initiation failed');
@@ -1963,7 +1998,7 @@ async function updateCryptoRequest(id, updates) {
 // ── POST /api/crypto-payment-request ─────────────────────────
 // User submits their USDT TX hash + contact info for admin approval
 app.post('/api/crypto-payment-request', validateUserSession, async (req, res) => {
-  const { txHash, contactInfo, network, plan } = req.body;
+  const { txHash, contactInfo, network, plan, promoCode } = req.body;
 
   if (!txHash || !txHash.trim()) {
     return res.status(400).json({ ok: false, error: 'Transaction hash is required.' });
@@ -1974,6 +2009,19 @@ app.post('/api/crypto-payment-request', validateUserSession, async (req, res) =>
 
   const cleanHash = txHash.trim();
   const selectedPlan = PLANS[plan] || PLANS['1month'];
+  let finalUsdt = selectedPlan.usdtPrice;
+
+  // Apply Promo Code if valid
+  if (promoCode) {
+    if (promoCode.toUpperCase() === 'COMEBACK10') {
+      finalUsdt = Math.floor(finalUsdt * 0.90);
+    } else if (db) {
+      const promo = await getPromosColl().findOne({ code: promoCode.toUpperCase(), active: true });
+      if (promo) {
+        finalUsdt = Math.floor(finalUsdt * (1 - (promo.discountPercentage / 100)));
+      }
+    }
+  }
 
   const request = {
     id: `CRYPTO_${Date.now()}_${Math.floor(Math.random() * 10000)}`,
@@ -1982,7 +2030,7 @@ app.post('/api/crypto-payment-request', validateUserSession, async (req, res) =>
     contactInfo: contactInfo.trim(),
     status: 'Pending',
     submittedAt: new Date().toISOString(),
-    amount: `$${selectedPlan.usdtPrice} USDT`,
+    amount: `$${finalUsdt} USDT`,
     plan: plan || '1month',
     userId: req.user.id
   };
@@ -2141,6 +2189,122 @@ app.get('/api/admin/system-status', validateAdminKey, async (req, res) => {
     }
   });
 });
+// ── Promo Codes API ──────────────────────────────────────────────
+async function getPromos() {
+  if (db) return await getPromosColl().find({}).toArray();
+  return []; // Fallback empty if no DB
+}
+
+app.post('/api/admin/promos', validateAdminKey, async (req, res) => {
+  const { code, discountPercentage } = req.body;
+  if (!code || !discountPercentage) return res.status(400).json({ ok: false, error: 'Missing fields' });
+  if (db) {
+    await getPromosColl().updateOne(
+      { code: code.toUpperCase() },
+      { $set: { code: code.toUpperCase(), discountPercentage: Number(discountPercentage), active: true, createdAt: Date.now() } },
+      { upsert: true }
+    );
+  }
+  res.json({ ok: true });
+});
+
+app.get('/api/admin/promos', validateAdminKey, async (req, res) => {
+  const promos = await getPromos();
+  res.json({ ok: true, promos });
+});
+
+app.delete('/api/admin/promos/:code', validateAdminKey, async (req, res) => {
+  if (db) await getPromosColl().deleteOne({ code: req.params.code });
+  res.json({ ok: true });
+});
+
+app.get('/api/promos/validate/:code', async (req, res) => {
+  if (req.params.code.toUpperCase() === 'COMEBACK10') {
+    return res.json({ ok: true, discountPercentage: 10 });
+  }
+  if (!db) return res.status(404).json({ ok: false, error: 'Database offline' });
+  const promo = await getPromosColl().findOne({ code: req.params.code.toUpperCase(), active: true });
+  if (!promo) return res.status(404).json({ ok: false, error: 'Invalid or expired promo code.' });
+  res.json({ ok: true, discountPercentage: promo.discountPercentage });
+});
+
+// ── Support Tickets API ──────────────────────────────────────────
+async function getTickets() {
+  if (db) return await getTicketsColl().find({}).sort({ updatedAt: -1 }).toArray();
+  return [];
+}
+
+app.post('/api/tickets', validateUserSession, async (req, res) => {
+  const { subject, message } = req.body;
+  if (!subject || !message) return res.status(400).json({ ok: false, error: 'Missing fields' });
+
+  const { ObjectId } = require('mongodb');
+  const ticket = {
+    _id: new ObjectId(),
+    userId: req.user.id,
+    userEmail: req.user.email,
+    subject,
+    status: 'Open',
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    messages: [{ sender: 'User', text: message, timestamp: Date.now() }]
+  };
+
+  if (db) await getTicketsColl().insertOne(ticket);
+  res.json({ ok: true, ticket });
+});
+
+app.get('/api/tickets', validateUserSession, async (req, res) => {
+  const tickets = db ? await getTicketsColl().find({ userId: req.user.id }).sort({ updatedAt: -1 }).toArray() : [];
+  res.json({ ok: true, tickets });
+});
+
+app.post('/api/tickets/:id/reply', validateUserSession, async (req, res) => {
+  const { message } = req.body;
+  const { ObjectId } = require('mongodb');
+  if (db) {
+    await getTicketsColl().updateOne(
+      { _id: new ObjectId(req.params.id), userId: req.user.id },
+      { 
+        $push: { messages: { sender: 'User', text: message, timestamp: Date.now() } },
+        $set: { updatedAt: Date.now() }
+      }
+    );
+  }
+  res.json({ ok: true });
+});
+
+app.get('/api/admin/tickets', validateAdminKey, async (req, res) => {
+  const tickets = await getTickets();
+  res.json({ ok: true, tickets });
+});
+
+app.post('/api/admin/tickets/:id/reply', validateAdminKey, async (req, res) => {
+  const { message } = req.body;
+  const { ObjectId } = require('mongodb');
+  if (db) {
+    await getTicketsColl().updateOne(
+      { _id: new ObjectId(req.params.id) },
+      { 
+        $push: { messages: { sender: 'Admin', text: message, timestamp: Date.now() } },
+        $set: { status: 'Answered', updatedAt: Date.now() }
+      }
+    );
+  }
+  res.json({ ok: true });
+});
+
+app.post('/api/admin/tickets/:id/close', validateAdminKey, async (req, res) => {
+  const { ObjectId } = require('mongodb');
+  if (db) {
+    await getTicketsColl().updateOne(
+      { _id: new ObjectId(req.params.id) },
+      { $set: { status: 'Closed', updatedAt: Date.now() } }
+    );
+  }
+  res.json({ ok: true });
+});
+
 
 // ── GET /api/admin/analytics ──────────────────────────────────
 app.get('/api/admin/analytics', validateAdminKey, async (req, res) => {
@@ -2171,10 +2335,47 @@ app.get('/api/admin/analytics', validateAdminKey, async (req, res) => {
       }
     });
 
+    let totalKES = 0;
+    let totalUSDT = 0;
+    let mrrKES = 0;
+    let mrrUSDT = 0;
+
+    if (db) {
+      const mpesaPayments = await getPaymentsColl().find({ status: 'Success' }).toArray();
+      const cryptoPayments = await getCryptoRequestsColl().find({ status: 'Approved' }).toArray();
+      
+      mpesaPayments.forEach(p => {
+        const amount = Number(p.amount) || 0;
+        totalKES += amount;
+        // Simple MRR estimation based on plan
+        if (p.plan === '1month') mrrKES += amount;
+        if (p.plan === '2months') mrrKES += amount / 2;
+        if (p.plan === '3months') mrrKES += amount / 3;
+      });
+
+      cryptoPayments.forEach(p => {
+        // Since crypto amount isn't explicitly stored currently without the plan mapping, 
+        // we map it back from the plan
+        let amount = 0;
+        if (p.plan === '1month') amount = 50;
+        if (p.plan === '2months') amount = 95;
+        if (p.plan === '3months') amount = 140;
+        
+        totalUSDT += amount;
+        if (p.plan === '1month') mrrUSDT += amount;
+        if (p.plan === '2months') mrrUSDT += amount / 2;
+        if (p.plan === '3months') mrrUSDT += amount / 3;
+      });
+    }
+
     res.json({
       ok: true,
       totalUsers,
       activeVIPs,
+      totalKES,
+      totalUSDT,
+      mrrKES: Math.round(mrrKES),
+      mrrUSDT: Math.round(mrrUSDT),
       chartData: {
         labels: Object.keys(last7Days),
         values: Object.values(last7Days)
@@ -2294,7 +2495,29 @@ cron.schedule('0 1 * * *', async () => {
     const now = Date.now();
     let kickCount = 0;
     for (const user of users) {
-      if (user.telegramId && user.subscriptionExpiry && user.subscriptionExpiry < now) {
+      if (!user.subscriptionExpiry) continue;
+
+      const timeUntilExpiry = user.subscriptionExpiry - now;
+      const daysUntilExpiry = Math.ceil(timeUntilExpiry / (1000 * 60 * 60 * 24));
+
+      // 1. Send "Expiring Soon" Email (Exactly 3 days left)
+      if (daysUntilExpiry === 3) {
+        try {
+          const html = `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+              <h2 style="color: #fbbf24;">Your VIP Access is Expiring Soon! ⏰</h2>
+              <p>Hi ${user.name || 'Trader'},</p>
+              <p>Just a quick reminder that your VIP subscription will expire in exactly 3 days.</p>
+              <p>Don't miss out on upcoming signals! Log in and renew your plan to keep the profits rolling.</p>
+              <p>- The Pips Attendant Team</p>
+            </div>
+          `;
+          sendEmail(user.email, 'VIP Expiring Soon ⏰', html).catch(() => {});
+        } catch (e) {}
+      }
+
+      // 2. Auto-Kick Expired Users
+      if (user.telegramId && user.subscriptionExpiry < now) {
         try {
           // Kick (ban then unban = kick without permanent ban)
           await fetch(`https://api.telegram.org/bot${TOKEN}/banChatMember`, {
@@ -2315,8 +2538,24 @@ cron.schedule('0 1 * * *', async () => {
           console.warn(`[Auto-Kick] Failed to kick ${user.email}:`, e.message);
         }
       }
+
+      // 3. Win-Back Campaign (Exactly 7 days after expiry)
+      if (daysUntilExpiry === -7) {
+        try {
+          const html = `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+              <h2 style="color: #fbbf24;">We Miss You! Here's 10% Off 🎁</h2>
+              <p>Hi ${user.name || 'Trader'},</p>
+              <p>It's been a week since your VIP access expired. The markets have been crazy, and we want you back!</p>
+              <p>Use the promo code <strong>COMEBACK10</strong> at checkout to get 10% off your next subscription plan.</p>
+              <p>- The Pips Attendant Team</p>
+            </div>
+          `;
+          sendEmail(user.email, "We Miss You! Here's 10% Off 🎁", html).catch(() => {});
+        } catch (e) {}
+      }
     }
-    console.log(`[Cron] Auto-kick complete. Kicked ${kickCount} user(s).`);
+    console.log(`[Cron] Auto-kick and Drip Campaigns complete. Kicked ${kickCount} user(s).`);
   } catch (err) {
     console.error('[Cron] Auto-kick failed:', err.message);
   }

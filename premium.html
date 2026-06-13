@@ -220,6 +220,15 @@
               class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-emerald-400/50 focus:outline-none transition font-mono"
               onkeydown="if(event.key==='Enter') payMpesa()" />
           </div>
+          
+          <div class="flex gap-2">
+            <input type="text" id="mpesaPromo" placeholder="Promo Code (Optional)"
+              class="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-emerald-400/50 focus:outline-none transition font-mono uppercase tracking-wider" />
+            <button onclick="applyPromo('mpesa')" type="button" class="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-emerald-400 text-xs font-bold hover:bg-white/10 transition cursor-pointer">
+              Apply
+            </button>
+          </div>
+          
           <div id="mpesaError" class="text-rose-400 text-xs min-h-[16px]"></div>
           <button onclick="payMpesa()" id="payBtn" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r from-emerald-500 to-emerald-300 text-dark-navy hover:brightness-110 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] active:scale-95 transition duration-300 cursor-pointer text-sm">
             Pay KES 5,000 via M-Pesa 💸
@@ -328,6 +337,15 @@
                 <label class="block text-[10px] text-gray-500 mb-1">Transaction Hash (TX ID)</label>
                 <input type="text" id="cryptoTxHash" placeholder="e.g. 0xabc123..." class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-amber-400/50 focus:outline-none transition font-mono" autocomplete="off" spellcheck="false" />
               </div>
+
+              <div class="flex gap-2 mt-2">
+                <input type="text" id="cryptoPromo" placeholder="Promo Code (Optional)"
+                  class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-amber-400/50 focus:outline-none transition font-mono uppercase tracking-wider" />
+                <button onclick="applyPromo('crypto')" type="button" class="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-amber-400 text-xs font-bold hover:bg-white/10 transition cursor-pointer">
+                  Apply
+                </button>
+              </div>
+
               <div id="cryptoFormError" class="text-rose-400 text-[11px] min-h-[14px]"></div>
               <button id="cryptoSubmitBtn" onclick="submitCryptoPayment()" class="w-full py-3.5 rounded-xl font-bold text-sm text-dark-navy hover:brightness-110 active:scale-95 transition duration-300 cursor-pointer" style="background: linear-gradient(135deg, #fbbf24, #f59e0b); box-shadow: 0 0 20px rgba(251,191,36,0.25);">
                 Submit Payment Proof ✅
@@ -454,6 +472,36 @@
                 </button>
               </div>
               <div id="referralCopyMsg" class="text-emerald-400 text-[10px] mt-1.5 min-h-[14px]"></div>
+            </div>
+
+            <div class="border-t border-white/5"></div>
+
+            <!-- Support Tickets -->
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Support Tickets</h3>
+                <button onclick="openNewTicketForm()" class="flex items-center gap-1 text-[10px] text-neon-blue hover:underline cursor-pointer">
+                  <i data-feather="plus" class="w-3 h-3"></i> New Ticket
+                </button>
+              </div>
+
+              <!-- New Ticket Form (Hidden by default) -->
+              <div id="newTicketForm" class="hidden space-y-2 mb-3">
+                <input type="text" id="ticketSubject" placeholder="Subject"
+                  class="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-neon-blue/50 focus:outline-none transition" />
+                <textarea id="ticketMessage" placeholder="Describe your issue..." rows="3"
+                  class="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-neon-blue/50 focus:outline-none transition resize-none"></textarea>
+                <div class="flex gap-2">
+                  <button onclick="submitTicket()" class="flex-1 py-2 rounded-xl text-xs font-bold bg-neon-blue/10 border border-neon-blue/20 text-neon-blue hover:bg-neon-blue/20 transition cursor-pointer">Submit</button>
+                  <button onclick="document.getElementById('newTicketForm').classList.add('hidden')" class="px-4 py-2 rounded-xl text-xs text-gray-400 bg-white/5 border border-white/10 hover:border-rose-400/30 hover:text-rose-400 transition cursor-pointer">Cancel</button>
+                </div>
+                <div id="ticketSubmitMsg" class="text-xs min-h-[14px]"></div>
+              </div>
+
+              <!-- Ticket List -->
+              <div id="userTicketsList" class="space-y-2 max-h-[200px] overflow-y-auto">
+                <p class="text-gray-500 text-[10px] text-center py-2">Loading tickets...</p>
+              </div>
             </div>
           </div>
         </div>
@@ -794,6 +842,7 @@
           }
         } catch (e) { /* ignore */ }
       }
+      fetchUserTickets();
       feather.replace();
     }
 
@@ -816,6 +865,81 @@
         msgEl.textContent = '✅ Copied!';
         setTimeout(() => { msgEl.textContent = ''; }, 3000);
       });
+    }
+
+    function openNewTicketForm() {
+      const form = document.getElementById('newTicketForm');
+      if (form) {
+        form.classList.toggle('hidden');
+        const subjectEl = document.getElementById('ticketSubject');
+        if (subjectEl && !form.classList.contains('hidden')) subjectEl.focus();
+      }
+    }
+
+    async function submitTicket() {
+      const token = sessionStorage.getItem('vip_session_token');
+      const subject = document.getElementById('ticketSubject')?.value.trim();
+      const message = document.getElementById('ticketMessage')?.value.trim();
+      const msgEl = document.getElementById('ticketSubmitMsg');
+
+      if (!subject || !message) {
+        if (msgEl) { msgEl.className = 'text-rose-400 text-xs min-h-[14px]'; msgEl.textContent = '❌ Please fill in all fields.'; }
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/tickets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-vip-token': token || '' },
+          body: JSON.stringify({ subject, message })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          if (msgEl) { msgEl.className = 'text-emerald-400 text-xs min-h-[14px]'; msgEl.textContent = '✅ Ticket submitted! We\'ll reply soon.'; }
+          document.getElementById('ticketSubject').value = '';
+          document.getElementById('ticketMessage').value = '';
+          setTimeout(() => {
+            document.getElementById('newTicketForm').classList.add('hidden');
+            if (msgEl) msgEl.textContent = '';
+          }, 2500);
+          fetchUserTickets();
+        } else {
+          if (msgEl) { msgEl.className = 'text-rose-400 text-xs min-h-[14px]'; msgEl.textContent = `❌ ${data.error}`; }
+        }
+      } catch (err) {
+        if (msgEl) { msgEl.className = 'text-rose-400 text-xs min-h-[14px]'; msgEl.textContent = '❌ Server error. Please try again.'; }
+      }
+    }
+
+    async function fetchUserTickets() {
+      const token = sessionStorage.getItem('vip_session_token');
+      const container = document.getElementById('userTicketsList');
+      if (!container || !token) return;
+      try {
+        const res = await fetch('/api/tickets', { headers: { 'x-vip-token': token } });
+        const data = await res.json();
+        if (!data.ok || data.tickets.length === 0) {
+          container.innerHTML = '<p class="text-gray-500 text-[10px] text-center py-2">No tickets yet. Click "+ New Ticket" to open a support request.</p>';
+          return;
+        }
+        container.innerHTML = data.tickets.map(t => {
+          const statusColor = t.status === 'Open' ? 'text-rose-400'
+            : t.status === 'Answered' ? 'text-amber-400'
+            : 'text-gray-400';
+          const lastMsg = t.messages && t.messages.length > 0 ? t.messages[t.messages.length - 1] : null;
+          return `
+            <div class="rounded-xl border border-white/10 bg-white/5 p-3">
+              <div class="flex items-center justify-between gap-2 mb-1">
+                <p class="text-white text-xs font-semibold truncate flex-1">${t.subject}</p>
+                <span class="shrink-0 text-[9px] font-bold ${statusColor}">${t.status}</span>
+              </div>
+              ${lastMsg ? `<p class="text-gray-400 text-[10px] italic truncate">${lastMsg.sender}: ${lastMsg.text}</p>` : ''}
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        container.innerHTML = '<p class="text-rose-400 text-[10px] text-center py-2">Failed to load tickets.</p>';
+      }
     }
 
     async function handleUpdateProfile(e) {
@@ -1057,13 +1181,14 @@
 
       try {
         const token = sessionStorage.getItem('vip_session_token');
+        const promoCode = document.getElementById('cryptoPromo') ? document.getElementById('cryptoPromo').value.trim() : '';
         const res = await fetch('/api/crypto-payment-request', {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
             'x-vip-token': token || ''
           },
-          body: JSON.stringify({ txHash, contactInfo: contact, network: selectedNetwork, plan: selectedCryptoPlan })
+          body: JSON.stringify({ txHash, contactInfo: contact, network: selectedNetwork, plan: selectedCryptoPlan, promoCode })
         });
         const data = await res.json();
 
@@ -1136,13 +1261,14 @@
 
       try {
         const token = sessionStorage.getItem('vip_session_token');
+        const promoCode = document.getElementById('mpesaPromo') ? document.getElementById('mpesaPromo').value.trim() : '';
         const res  = await fetch('/api/pay-vip', { 
           method: 'POST', 
           headers: { 
             'Content-Type': 'application/json',
             'x-vip-token': token || ''
           }, 
-          body: JSON.stringify({ phone, plan: selectedMpesaPlan, amount: PLAN_KES[selectedMpesaPlan] }) 
+          body: JSON.stringify({ phone, plan: selectedMpesaPlan, amount: PLAN_KES[selectedMpesaPlan], promoCode }) 
         });
         const data = await res.json();
 
@@ -1163,6 +1289,47 @@
         error.textContent = '❌ Server error. Please try again later.';
         btn.innerHTML = originalText;
         btn.disabled = false;
+      }
+    }
+
+    async function applyPromo(type) {
+      const codeInput = document.getElementById(type + 'Promo');
+      if (!codeInput) return;
+      const code = codeInput.value.trim();
+      const errorEl = document.getElementById(type === 'mpesa' ? 'mpesaError' : 'cryptoFormError');
+      const btn = document.getElementById(type === 'mpesa' ? 'payBtn' : 'cryptoSubmitBtn');
+      
+      if (!code) {
+        errorEl.className = 'text-rose-400 text-xs min-h-[16px]';
+        errorEl.textContent = 'Please enter a promo code.';
+        return;
+      }
+
+      errorEl.textContent = 'Validating...';
+      try {
+        const res = await fetch(`/api/promos/validate/${code}`);
+        const data = await res.json();
+        
+        if (data.ok) {
+          errorEl.className = 'text-emerald-400 text-xs min-h-[16px]';
+          errorEl.textContent = `✅ Promo applied: ${data.discountPercentage}% off!`;
+          
+          if (type === 'mpesa') {
+            const baseAmount = PLAN_KES[selectedMpesaPlan];
+            const newAmount = Math.floor(baseAmount * (1 - (data.discountPercentage / 100)));
+            btn.innerHTML = `Pay KES ${newAmount.toLocaleString()} via M-Pesa 💸`;
+          } else {
+            const baseAmount = PLAN_USDT[selectedCryptoPlan];
+            const newAmount = Math.floor(baseAmount * (1 - (data.discountPercentage / 100)));
+            btn.innerHTML = `Submit Payment Proof ($${newAmount} USDT) ✅`;
+          }
+        } else {
+          errorEl.className = 'text-rose-400 text-xs min-h-[16px]';
+          errorEl.textContent = `❌ ${data.error}`;
+        }
+      } catch (err) {
+        errorEl.className = 'text-rose-400 text-xs min-h-[16px]';
+        errorEl.textContent = '❌ Failed to validate promo.';
       }
     }
 
