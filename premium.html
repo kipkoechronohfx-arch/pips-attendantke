@@ -362,9 +362,15 @@
         </button>
       </div>
       
-      <!-- Logout Button (When logged in but not VIP) -->
-      <div class="text-center mt-6">
-        <button onclick="logout()" class="text-gray-500 hover:text-rose-400 text-xs transition underline cursor-pointer">Log Out</button>
+      <!-- Account / Logout Footer -->
+      <div class="flex items-center justify-center gap-6 mt-8 border-t border-white/5 pt-6">
+        <button onclick="showMyAccountModal()" class="text-gray-400 hover:text-amber-400 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+          <i data-feather="user" class="w-3.5 h-3.5"></i> My Account
+        </button>
+        <div class="w-px h-4 bg-white/10"></div>
+        <button onclick="logout()" class="text-gray-500 hover:text-rose-400 text-xs font-bold transition cursor-pointer">
+          Log Out
+        </button>
       </div>
     </div>
 
