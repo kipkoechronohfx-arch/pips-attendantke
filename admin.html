@@ -2922,8 +2922,7 @@
         const data = await res.json();
 
         if (data.ok) {
-          const expires = new Date(data.accessCodeExpiry).toLocaleDateString('en-KE');
-          alert(`✅ APPROVED!\n\nAccess Code: ${data.accessCode}\nExpires: ${expires}\nSend to: ${data.contactInfo}\n\n⚠️ Copy this code now and send it to the subscriber manually.`);
+          alert(`✅ APPROVED!\n\n${data.message}`);
           fetchCryptoRequests(); // Refresh list
         } else {
           alert('❌ Error: ' + (data.error || 'Approval failed.'));
