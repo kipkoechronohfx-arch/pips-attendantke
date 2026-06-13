@@ -1805,6 +1805,31 @@ app.post('/api/subscribe', async (req, res) => {
   }
 });
 
+let cachedBotUsername = null;
+
+// ── GET /api/telegram/bot-username ────────────────────────────
+app.get('/api/telegram/bot-username', async (req, res) => {
+  if (cachedBotUsername) {
+    return res.json({ ok: true, username: cachedBotUsername });
+  }
+
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return res.json({ ok: true, username: 'PipsAttendantBot' });
+
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${token}/getMe`);
+    const data = await response.json();
+    if (data.ok && data.result.username) {
+      cachedBotUsername = data.result.username;
+      return res.json({ ok: true, username: cachedBotUsername });
+    }
+  } catch (e) {
+    console.error('[Telegram] Failed to fetch bot username:', e.message);
+  }
+
+  res.json({ ok: true, username: 'PipsAttendantBot' });
+});
+
 // ── NEW: WhatsApp Endpoints ───────────────────────────────────
 app.post('/api/whatsapp-subscribe', async (req, res) => {
   const { phone } = req.body;
