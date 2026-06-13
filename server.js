@@ -53,6 +53,7 @@ const TODAYS_SETUP_FILE = path.join(DATA_DIR, 'todays_setup.json');
 const TODAYS_SETUP_RESULTS_FILE = path.join(DATA_DIR, 'todays_setup_results.json');
 const WHATSAPP_FILE = path.join(DATA_DIR, 'whatsapp.json');
 const CHAT_FILE = path.join(DATA_DIR, 'chat.json');
+const USERS_FILE = path.join(DATA_DIR, 'users.json');
 
 // Ensure local fallback folders exist
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
@@ -100,6 +101,7 @@ const getPushSubsColl = () => db.collection('push_subscriptions');
 const getWhatsappColl = () => db.collection('whatsapp_subscribers');
 const getChatColl = () => db.collection('chat_messages');
 const getCryptoRequestsColl = () => db.collection('crypto_payment_requests');
+const getUsersColl = () => db.collection('users');
 // ── One-Time Auto-Migration Script ───────────────────────────
 async function runMigrations() {
   console.log('[Migration] Checking for local data to migrate to MongoDB Atlas...');
@@ -699,16 +701,74 @@ function validateAdminKey(req, res, next) {
   next();
 }
 
-function validateVipSession(req, res, next) {
+async function validateVipSession(req, res, next) {
   const token = req.headers['x-vip-token'] || req.query.token;
   if (!token) return res.status(401).json({ error: 'Missing token.' });
   try {
-    const [expires, hmac] = token.split('.');
-    if (Date.now() > Number(expires)) return res.status(401).json({ error: 'Token expired.' });
-    const expectedHmac = crypto.createHmac('sha256', serverSecret).update(String(expires)).digest('hex');
-    if (hmac !== expectedHmac) return res.status(401).json({ error: 'Invalid token.' });
+    const parts = token.split('.');
+    if (parts.length !== 2) return res.status(401).json({ error: 'Invalid token format.' });
+    
+    const [payloadStr, hmac] = parts;
+    const expectedHmacPayload = crypto.createHmac('sha256', serverSecret).update(payloadStr).digest('hex');
+    
+    let isUserToken = false;
+    let payload = null;
+    try {
+      const decoded = Buffer.from(payloadStr, 'base64').toString('utf8');
+      if (decoded.includes('"id"') && decoded.includes('"exp"')) {
+        payload = JSON.parse(decoded);
+        isUserToken = true;
+      }
+    } catch(e) {}
+
+    if (isUserToken) {
+      if (hmac !== expectedHmacPayload) return res.status(401).json({ error: 'Invalid token signature.' });
+      if (Date.now() > payload.exp) return res.status(401).json({ error: 'Token expired.' });
+      
+      const user = await getUserById(payload.id);
+      if (!user) return res.status(401).json({ error: 'User not found.' });
+      
+      if (!user.subscriptionExpiry || Date.now() > user.subscriptionExpiry) {
+        return res.status(403).json({ error: 'VIP Subscription required.' });
+      }
+      
+      req.user = user;
+      return next();
+    } else {
+      // Legacy token format (ExpiresTimestamp.hmac)
+      const expires = Number(parts[0]);
+      if (Date.now() > expires) return res.status(401).json({ error: 'Token expired.' });
+      const expectedHmacLegacy = crypto.createHmac('sha256', serverSecret).update(String(parts[0])).digest('hex');
+      if (parts[1] !== expectedHmacLegacy) return res.status(401).json({ error: 'Invalid token.' });
+      req.user = { isLegacyVip: true };
+      return next();
+    }
+  } catch (err) { return res.status(401).json({ error: 'Authentication failed.' }); }
+}
+
+async function validateUserSession(req, res, next) {
+  const token = req.headers['x-vip-token'] || req.query.token;
+  if (!token) return res.status(401).json({ ok: false, error: 'Missing token.' });
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 2) return res.status(401).json({ ok: false, error: 'Invalid token format.' });
+    
+    const [payloadStr, hmac] = parts;
+    const expectedHmacPayload = crypto.createHmac('sha256', serverSecret).update(payloadStr).digest('hex');
+    
+    if (hmac !== expectedHmacPayload) return res.status(401).json({ ok: false, error: 'Invalid token signature.' });
+    
+    const decoded = Buffer.from(payloadStr, 'base64').toString('utf8');
+    const payload = JSON.parse(decoded);
+    
+    if (Date.now() > payload.exp) return res.status(401).json({ ok: false, error: 'Token expired.' });
+    
+    const user = await getUserById(payload.id);
+    if (!user) return res.status(401).json({ ok: false, error: 'User not found.' });
+    
+    req.user = user;
     next();
-  } catch { return res.status(401).json({ error: 'Invalid token format.' }); }
+  } catch (err) { return res.status(401).json({ ok: false, error: 'Authentication failed.' }); }
 }
 
 // Ensure dummy files exist only inside local fallback so local devs get instant files
@@ -775,9 +835,143 @@ function generateAccessCode() {
   return code;
 }
 
+// ── NEW: User Accounts & Auth Helpers ─────────────────────────
+async function getUserByEmail(email) {
+  if (db) {
+    try { return await getUsersColl().findOne({ email: email.toLowerCase() }); }
+    catch (err) { console.error('[DB Get User Error]', err.message); }
+  }
+  const users = readJSON(USERS_FILE);
+  return users.find(u => u.email === email.toLowerCase()) || null;
+}
+
+async function getUserById(id) {
+  if (db) {
+    try { return await getUsersColl().findOne({ id }); }
+    catch (err) { console.error('[DB Get User By ID Error]', err.message); }
+  }
+  const users = readJSON(USERS_FILE);
+  return users.find(u => u.id === id) || null;
+}
+
+async function saveUser(user) {
+  if (db) {
+    try {
+      await getUsersColl().updateOne({ id: user.id }, { $set: user }, { upsert: true });
+      return;
+    } catch (err) { console.error('[DB Save User Error]', err.message); }
+  }
+  const users = readJSON(USERS_FILE);
+  const idx = users.findIndex(u => u.id === user.id);
+  if (idx > -1) users[idx] = user;
+  else users.push(user);
+  writeJSON(USERS_FILE, users);
+}
+
+async function getAllUsers() {
+  if (db) {
+    try { return await getUsersColl().find({}).toArray(); }
+    catch (err) { console.error('[DB Get Users Error]', err.message); }
+  }
+  return readJSON(USERS_FILE);
+}
+
+function hashPassword(password) {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const derivedKey = crypto.scryptSync(password, salt, 64).toString('hex');
+  return `${salt}:${derivedKey}`;
+}
+
+function verifyPassword(password, hash) {
+  const [salt, key] = hash.split(':');
+  const derivedKey = crypto.scryptSync(password, salt, 64).toString('hex');
+  return key === derivedKey;
+}
+
+function generateUserToken(user) {
+  const expires = Date.now() + 30 * 24 * 60 * 60 * 1000;
+  const payloadStr = JSON.stringify({ id: user.id, email: user.email, exp: expires });
+  const payload = Buffer.from(payloadStr).toString('base64');
+  const hmac = crypto.createHmac('sha256', serverSecret).update(payload).digest('hex');
+  return `${payload}.${hmac}`;
+}
+
 // ════════════════════════════════════════════════════════════
 //  ROUTES
 // ════════════════════════════════════════════════════════════
+
+// ── User Authentication Endpoints ──────────────────────────────
+app.post('/api/register', async (req, res) => {
+  const { email, password, name } = req.body;
+  if (!email || !password) return res.status(400).json({ ok: false, error: 'Email and password required.' });
+  
+  const existingUser = await getUserByEmail(email);
+  if (existingUser) return res.status(400).json({ ok: false, error: 'Email already registered.' });
+
+  const user = {
+    id: `USER_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`,
+    email: email.toLowerCase().trim(),
+    name: name || '',
+    passwordHash: hashPassword(password),
+    registeredAt: Date.now(),
+    subscriptionExpiry: null
+  };
+
+  await saveUser(user);
+  const sessionToken = generateUserToken(user);
+  
+  res.json({ ok: true, sessionToken, user: { id: user.id, email: user.email, name: user.name, subscriptionExpiry: user.subscriptionExpiry } });
+});
+
+app.post('/api/login', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) return res.status(400).json({ ok: false, error: 'Email and password required.' });
+
+  const user = await getUserByEmail(email);
+  if (!user || !verifyPassword(password, user.passwordHash)) {
+    return res.status(401).json({ ok: false, error: 'Invalid email or password.' });
+  }
+
+  const sessionToken = generateUserToken(user);
+  res.json({ ok: true, sessionToken, user: { id: user.id, email: user.email, name: user.name, subscriptionExpiry: user.subscriptionExpiry } });
+});
+
+app.get('/api/me', validateUserSession, (req, res) => {
+  const user = req.user;
+  res.json({ ok: true, user: { id: user.id, email: user.email, name: user.name, subscriptionExpiry: user.subscriptionExpiry } });
+});
+
+app.post('/api/redeem-code', validateUserSession, async (req, res) => {
+  const { code } = req.body;
+  if (!code) return res.status(400).json({ ok: false, error: 'No access code provided.' });
+
+  const cleanCode = code.toUpperCase().trim();
+  const payment = await getPaymentByAccessCode(cleanCode);
+
+  if (!payment) return res.status(401).json({ ok: false, error: 'Invalid access code.' });
+
+  // Determine how much time is left on the access code
+  const codeExpiry = payment.accessCodeExpiry;
+  if (!codeExpiry || Date.now() > codeExpiry) {
+    return res.status(400).json({ ok: false, error: 'Access code is expired.' });
+  }
+
+  // Extend user subscription
+  const user = req.user;
+  const currentExpiry = user.subscriptionExpiry && user.subscriptionExpiry > Date.now() ? user.subscriptionExpiry : Date.now();
+  // Add 30 days from now, or merge? Let's just add the remaining time of the access code, or a flat 30 days.
+  // Actually, just grant them the 30 days from now to be nice/simple.
+  user.subscriptionExpiry = Date.now() + 30 * 24 * 60 * 60 * 1000;
+  
+  await saveUser(user);
+  
+  // Invalidate the code so it can't be used by another user
+  payment.accessCodeExpiry = 0; 
+  await savePayment(payment.reference, payment);
+
+  res.json({ ok: true, message: 'Access code redeemed successfully!', user: { id: user.id, email: user.email, name: user.name, subscriptionExpiry: user.subscriptionExpiry } });
+});
+
 
 // ── GET /api/performance/stats ──────────────────────────────
 app.get('/api/performance/stats', async (req, res) => {
@@ -997,7 +1191,7 @@ app.get('/api/signals', async (req, res) => {
 });
 
 // ── POST /api/pay-vip ─────────────────────────────────────────
-app.post('/api/pay-vip', async (req, res) => {
+app.post('/api/pay-vip', validateUserSession, async (req, res) => {
   const { phone } = req.body;
   const { PAYHERO_API_USER, PAYHERO_API_PASS, PAYHERO_CHANNEL_ID } = process.env;
 
@@ -1032,7 +1226,7 @@ app.post('/api/pay-vip', async (req, res) => {
 
     const data = await response.json();
     if (data.success || response.ok) {
-      await savePayment(ref, { status: 'Pending', phone, timestamp: now() });
+      await savePayment(ref, { status: 'Pending', phone, userId: req.user.id, timestamp: now() });
       res.json({ ok: true, reference: ref, message: 'Check your phone for the M-Pesa PIN prompt.' });
     } else {
       throw new Error(data.message || 'Payment initiation failed');
@@ -1191,31 +1385,39 @@ app.post('/api/payhero-webhook', async (req, res) => {
 });
 
 // ── GET /api/check-payment/:ref ───────────────────────────────
-app.get('/api/check-payment/:ref', async (req, res) => {
+app.get('/api/check-payment/:ref', validateUserSession, async (req, res) => {
   const { ref } = req.params;
   const payment = await getPayment(ref);
 
   if (!payment) return res.status(404).json({ ok: false, error: 'Transaction not found.' });
 
+  // Ensure the user checking the payment is the one who initiated it
+  if (payment.userId && payment.userId !== req.user.id) {
+    return res.status(403).json({ ok: false, error: 'Unauthorized.' });
+  }
+
   if (payment.status === 'Success') {
-    // Generate unique subscriber access code on first successful payment check
-    if (!payment.accessCode) {
-      payment.accessCode = generateAccessCode();
-      payment.accessCodeExpiry = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days
-      await savePayment(ref, payment);
-      console.log(`[Access Code] Generated ${payment.accessCode} for ref ${ref} (expires ${new Date(payment.accessCodeExpiry).toLocaleDateString()})`);
+    // Extend user's subscription expiry if not already done for this payment
+    if (!payment.processedForUser) {
+      const user = await getUserById(req.user.id);
+      if (user) {
+        user.subscriptionExpiry = Date.now() + 30 * 24 * 60 * 60 * 1000;
+        await saveUser(user);
+        
+        payment.processedForUser = true;
+        await savePayment(ref, payment);
+        console.log(`[Subscription] Granted 30 days VIP to user ${user.email} via ref ${ref}`);
+      }
     }
 
-    const expires = Date.now() + 30 * 24 * 60 * 60 * 1000;
-    const hmac = crypto.createHmac('sha256', serverSecret).update(String(expires)).digest('hex');
-    const sessionToken = `${expires}.${hmac}`;
+    const user = await getUserById(req.user.id);
+    const sessionToken = generateUserToken(user);
 
     res.json({
       ok: true,
       status: 'Success',
       sessionToken,
-      accessCode: payment.accessCode,
-      accessCodeExpiry: payment.accessCodeExpiry
+      user: { id: user.id, email: user.email, name: user.name, subscriptionExpiry: user.subscriptionExpiry }
     });
   } else {
     res.json({ ok: true, status: payment.status });
@@ -1413,6 +1615,17 @@ app.get('/api/signals/history', async (req, res) => {
     res.status(500).json({ ok: false, error: err.message });
   }
 });
+// ── GET /api/admin/users ──────────────────────────────────────
+app.get('/api/admin/users', validateAdminKey, async (req, res) => {
+  try {
+    const users = await getAllUsers();
+    const safeUsers = users.map(u => ({ id: u.id, email: u.email, name: u.name, registeredAt: u.registeredAt, subscriptionExpiry: u.subscriptionExpiry }));
+    res.json({ ok: true, count: safeUsers.length, users: safeUsers });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // ── GET /api/subscribers ──────────────────────────────────────
 app.get('/api/subscribers', validateAdminKey, async (req, res) => {
   try {
@@ -1565,7 +1778,7 @@ async function updateCryptoRequest(id, updates) {
 
 // ── POST /api/crypto-payment-request ─────────────────────────
 // User submits their USDT TX hash + contact info for admin approval
-app.post('/api/crypto-payment-request', async (req, res) => {
+app.post('/api/crypto-payment-request', validateUserSession, async (req, res) => {
   const { txHash, contactInfo, network } = req.body;
 
   if (!txHash || !txHash.trim()) {
@@ -1585,7 +1798,8 @@ app.post('/api/crypto-payment-request', async (req, res) => {
     contactInfo: contactInfo.trim(),
     status: 'Pending',
     submittedAt: new Date().toISOString(),
-    amount: '$50 USDT'
+    amount: '$50 USDT',
+    userId: req.user.id
   };
 
   try {
@@ -1618,11 +1832,16 @@ app.post('/api/admin/approve-crypto-request', validateAdminKey, async (req, res)
     const found = requests.find(r => r.id === requestId || r._id?.toString() === requestId);
     if (!found) return res.status(404).json({ ok: false, error: 'Request not found.' });
 
-    // Generate unique access code
-    const accessCode = generateAccessCode();
-    const accessCodeExpiry = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days
+    // Update user subscription directly instead of generating access code
+    const userId = found.userId;
+    if (userId) {
+      const user = await getUserById(userId);
+      if (user) {
+        user.subscriptionExpiry = Date.now() + 30 * 24 * 60 * 60 * 1000;
+        await saveUser(user);
+      }
+    }
 
-    // Save to payments collection (same as M-Pesa) so the access code works via existing verify-access-code endpoint
     const ref = found.id || found._id?.toString();
     await savePayment(`CRYPTO_${ref}`, {
       status: 'Success',
@@ -1630,15 +1849,15 @@ app.post('/api/admin/approve-crypto-request', validateAdminKey, async (req, res)
       txHash: found.txHash,
       network: found.network,
       contactInfo: found.contactInfo,
-      accessCode,
-      accessCodeExpiry,
+      userId: userId,
+      processedForUser: true,
       approvedAt: new Date().toISOString(),
       timestamp: new Date().toISOString()
     });
 
     // Mark the crypto request as approved
     const idStr = found._id?.toString() || found.id;
-    await updateCryptoRequest(idStr, { status: 'Approved', accessCode, accessCodeExpiry, approvedAt: new Date().toISOString() });
+    await updateCryptoRequest(idStr, { status: 'Approved', approvedAt: new Date().toISOString() });
 
     let emailSent = false;
     // If the contact info looks like an email address, send via SendGrid HTTP API

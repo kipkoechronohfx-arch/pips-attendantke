@@ -93,9 +93,37 @@
       <p class="text-gray-400 text-sm max-w-sm mx-auto">Exclusive strategies, indicators, and guides reserved for Pips_attendant VIP members.</p>
     </div>
 
-    <!-- GATE PANEL -->
-    <div id="gatePanel">
+    <!-- AUTH PANEL -->
+    <div id="authPanel">
+      <div class="glass-card border border-amber-400/20 rounded-2xl p-8 max-w-sm mx-auto">
+        <div class="flex gap-2 mb-6">
+          <button id="tabLogin" onclick="switchAuthTab('login')" class="flex-1 py-2 rounded-xl text-xs font-bold border border-amber-500/40 bg-amber-500/10 text-amber-400 transition cursor-pointer">Login</button>
+          <button id="tabRegister" onclick="switchAuthTab('register')" class="flex-1 py-2 rounded-xl text-xs font-bold border border-white/5 bg-white/5 text-gray-400 hover:text-amber-400 transition cursor-pointer">Register</button>
+        </div>
 
+        <form id="authForm" onsubmit="handleAuth(event)" class="space-y-4">
+          <div id="nameFieldGroup" class="hidden">
+            <label class="block text-[10px] text-gray-500 mb-1">Full Name</label>
+            <input type="text" id="authName" placeholder="e.g. John Doe" class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
+          </div>
+          <div>
+            <label class="block text-[10px] text-gray-500 mb-1">Email Address</label>
+            <input type="email" id="authEmail" placeholder="you@email.com" required class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
+          </div>
+          <div>
+            <label class="block text-[10px] text-gray-500 mb-1">Password</label>
+            <input type="password" id="authPassword" placeholder="••••••••" required class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
+          </div>
+          <div id="authError" class="text-rose-400 text-[11px] min-h-[14px]"></div>
+          <button type="submit" id="authBtn" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r from-amber-500 to-yellow-400 text-dark-navy hover:brightness-110 active:scale-95 transition duration-300 cursor-pointer text-sm shadow-[0_0_20px_rgba(251,191,36,0.3)]">
+            Log In 🔓
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- PAYMENT PANEL -->
+    <div id="paymentPanel" class="hidden">
       <!-- Payment Method Tabs -->
       <div class="flex gap-2 max-w-sm mx-auto mb-4">
         <button id="tabMpesa" onclick="switchPayTab('mpesa')"
@@ -114,7 +142,7 @@
           <i data-feather="smartphone" class="w-5 h-5 text-emerald-400"></i>
           <h2 class="text-white font-bold text-lg">VIP Access (M-Pesa)</h2>
         </div>
-        <p class="text-gray-400 text-xs mb-5">Pay <strong class="text-emerald-400">KES 5,000</strong> via M-Pesa to unlock <strong>30-day VIP access</strong> to all exclusive resources. Enter your Safaricom number below.</p>
+        <p class="text-gray-400 text-xs mb-5">Pay <strong class="text-emerald-400">KES 5,000</strong> via M-Pesa to unlock <strong>30-day VIP access</strong>. Enter your Safaricom number below.</p>
         
         <div class="space-y-4" id="mpesaForm">
           <div>
@@ -129,10 +157,10 @@
         </div>
 
         <div class="mt-6 pt-5 border-t border-white/5 text-center">
-          <p class="text-gray-500 text-[11px] mb-2">Already have a unique access code?</p>
+          <p class="text-gray-500 text-[11px] mb-2">Have a legacy access code?</p>
           <button onclick="togglePasswordForm()" class="inline-flex items-center gap-2 text-amber-400 text-xs font-bold hover:underline cursor-pointer bg-transparent border-none">
             <i data-feather="key" class="w-3.5 h-3.5"></i>
-            Enter Access Code
+            Redeem Access Code
           </button>
         </div>
 
@@ -141,25 +169,21 @@
           <div>
             <input type="text" id="vipPassword" placeholder="e.g. PIPS-AB3K7M"
               class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition font-mono uppercase tracking-widest"
-              onkeydown="if(event.key==='Enter') checkPassword()" />
+              onkeydown="if(event.key==='Enter') redeemCode()" />
           </div>
           <div id="gateError" class="text-rose-400 text-xs min-h-[16px]"></div>
-          <button id="unlockBtn" onclick="checkPassword()" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r from-amber-500 to-yellow-400 text-dark-navy hover:brightness-110 hover:shadow-[0_0_20px_rgba(251,191,36,0.4)] active:scale-95 transition duration-300 cursor-pointer text-sm">
-            Unlock 🔓
+          <button id="unlockBtn" onclick="redeemCode()" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r from-amber-500 to-yellow-400 text-dark-navy hover:brightness-110 hover:shadow-[0_0_20px_rgba(251,191,36,0.4)] active:scale-95 transition duration-300 cursor-pointer text-sm">
+            Redeem 🔓
           </button>
         </div>
       </div>
 
       <!-- Crypto Panel (hidden by default) -->
       <div id="cryptoPanel" class="hidden max-w-sm mx-auto">
-
         <!-- Crypto Card -->
         <div class="glass-card border border-amber-400/25 rounded-2xl p-6 relative overflow-hidden" style="box-shadow: 0 0 30px rgba(251,191,36,0.08);">
-          <!-- Subtle glow bg -->
           <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(ellipse at top right, rgba(251,191,36,0.06) 0%, transparent 70%);"></div>
-
           <div class="relative">
-            <!-- Header -->
             <div class="flex items-center gap-3 mb-5">
               <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style="background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.08)); border: 1px solid rgba(251,191,36,0.3);">₿</div>
               <div>
@@ -176,18 +200,9 @@
             <div class="mb-4">
               <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2">Select Network</label>
               <div class="flex gap-2">
-                <button id="netTRC20" onclick="selectNetwork('TRC20')"
-                  class="flex-1 py-2 rounded-lg text-xs font-bold border border-amber-400/40 bg-amber-400/10 text-amber-400 transition cursor-pointer">
-                  TRC20 (TRON)
-                </button>
-                <button id="netBEP20" onclick="selectNetwork('BEP20')"
-                  class="flex-1 py-2 rounded-lg text-xs font-bold border border-white/10 bg-white/5 text-gray-400 hover:border-amber-400/30 hover:text-amber-300 transition cursor-pointer">
-                  BEP20 (BSC)
-                </button>
-                <button id="netERC20" onclick="selectNetwork('ERC20')"
-                  class="flex-1 py-2 rounded-lg text-xs font-bold border border-white/10 bg-white/5 text-gray-400 hover:border-amber-400/30 hover:text-amber-300 transition cursor-pointer">
-                  ERC20 (ETH)
-                </button>
+                <button id="netTRC20" onclick="selectNetwork('TRC20')" class="flex-1 py-2 rounded-lg text-xs font-bold border border-amber-400/40 bg-amber-400/10 text-amber-400 transition cursor-pointer">TRC20 (TRON)</button>
+                <button id="netBEP20" onclick="selectNetwork('BEP20')" class="flex-1 py-2 rounded-lg text-xs font-bold border border-white/10 bg-white/5 text-gray-400 hover:border-amber-400/30 hover:text-amber-300 transition cursor-pointer">BEP20 (BSC)</button>
+                <button id="netERC20" onclick="selectNetwork('ERC20')" class="flex-1 py-2 rounded-lg text-xs font-bold border border-white/10 bg-white/5 text-gray-400 hover:border-amber-400/30 hover:text-amber-300 transition cursor-pointer">ERC20 (ETH)</button>
               </div>
             </div>
 
@@ -195,7 +210,6 @@
             <div class="mb-1">
               <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2">Send to This Address</label>
               <div class="relative bg-black/50 border border-amber-400/20 rounded-xl p-3.5 flex items-center gap-3" style="box-shadow: inset 0 0 12px rgba(251,191,36,0.03);">
-                <!-- Wallet Icon -->
                 <div class="w-8 h-8 rounded-lg bg-amber-400/10 flex items-center justify-center flex-shrink-0">
                   <i data-feather="credit-card" class="w-4 h-4 text-amber-400"></i>
                 </div>
@@ -210,27 +224,9 @@
             <!-- Warning Banner -->
             <div class="my-4 px-3.5 py-2.5 rounded-xl bg-rose-500/8 border border-rose-500/20 flex items-start gap-2.5">
               <i data-feather="alert-triangle" class="w-3.5 h-3.5 text-rose-400 flex-shrink-0 mt-0.5"></i>
-              <p class="text-gray-400 text-[10px] leading-relaxed">Sending on the wrong network will result in <strong class="text-rose-400">permanent loss of funds</strong>. Double-check before sending!</p>
+              <p class="text-gray-400 text-[10px] leading-relaxed">Sending on the wrong network will result in <strong class="text-rose-400">permanent loss of funds</strong>.</p>
             </div>
 
-            <!-- Steps -->
-            <div class="mb-5 space-y-2">
-              <p class="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-2.5">How it works</p>
-              <div class="flex items-start gap-2.5">
-                <span class="w-5 h-5 rounded-full bg-amber-400/20 text-amber-400 text-[10px] font-black flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
-                <p class="text-gray-400 text-[11px]">Send exactly <strong class="text-white">$50 USDT</strong> to the address above on your chosen network</p>
-              </div>
-              <div class="flex items-start gap-2.5">
-                <span class="w-5 h-5 rounded-full bg-amber-400/20 text-amber-400 text-[10px] font-black flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
-                <p class="text-gray-400 text-[11px]">Copy your transaction hash (TX ID) from your wallet</p>
-              </div>
-              <div class="flex items-start gap-2.5">
-                <span class="w-5 h-5 rounded-full bg-amber-400/20 text-amber-400 text-[10px] font-black flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
-                <p class="text-gray-400 text-[11px]">Submit the TX hash below — we'll verify and send your access code within <strong class="text-emerald-400">24 hours</strong></p>
-              </div>
-            </div>
-
-            <!-- Divider -->
             <div class="border-t border-white/5 mb-4"></div>
 
             <!-- Submission Form -->
@@ -238,55 +234,32 @@
             <div class="space-y-3">
               <div>
                 <label class="block text-[10px] text-gray-500 mb-1">Transaction Hash (TX ID)</label>
-                <input type="text" id="cryptoTxHash" placeholder="e.g. 0xabc123..." 
-                  class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-amber-400/50 focus:outline-none transition font-mono"
-                  autocomplete="off" spellcheck="false" />
-              </div>
-              <div>
-                <label class="block text-[10px] text-gray-500 mb-1">Your Email Address (required for automated code delivery)</label>
-                <input type="email" id="cryptoContact" placeholder="e.g. you@email.com"
-                  class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-amber-400/50 focus:outline-none transition" />
+                <input type="text" id="cryptoTxHash" placeholder="e.g. 0xabc123..." class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-amber-400/50 focus:outline-none transition font-mono" autocomplete="off" spellcheck="false" />
               </div>
               <div id="cryptoFormError" class="text-rose-400 text-[11px] min-h-[14px]"></div>
-              <button id="cryptoSubmitBtn" onclick="submitCryptoPayment()"
-                class="w-full py-3.5 rounded-xl font-bold text-sm text-dark-navy hover:brightness-110 active:scale-95 transition duration-300 cursor-pointer"
-                style="background: linear-gradient(135deg, #fbbf24, #f59e0b); box-shadow: 0 0 20px rgba(251,191,36,0.25);">
+              <button id="cryptoSubmitBtn" onclick="submitCryptoPayment()" class="w-full py-3.5 rounded-xl font-bold text-sm text-dark-navy hover:brightness-110 active:scale-95 transition duration-300 cursor-pointer" style="background: linear-gradient(135deg, #fbbf24, #f59e0b); box-shadow: 0 0 20px rgba(251,191,36,0.25);">
                 Submit Payment Proof ✅
               </button>
             </div>
           </div>
         </div>
-
-        <!-- Already have code link -->
-        <div class="mt-4 text-center">
-          <p class="text-gray-500 text-[11px] mb-2">Already have a unique access code?</p>
-          <button onclick="switchPayTab('mpesa'); togglePasswordForm();" class="inline-flex items-center gap-2 text-amber-400 text-xs font-bold hover:underline cursor-pointer bg-transparent border-none">
-            <i data-feather="key" class="w-3.5 h-3.5"></i>
-            Enter Access Code
-          </button>
-        </div>
       </div>
-
+      
+      <!-- Logout Button (When logged in but not VIP) -->
+      <div class="text-center mt-6">
+        <button onclick="logout()" class="text-gray-500 hover:text-rose-400 text-xs transition underline cursor-pointer">Log Out</button>
+      </div>
     </div>
 
-    <!-- SAVE CODE PANEL (Hidden by default, shown after successful payment) -->
+    <!-- SUCCESS PANEL -->
     <div id="saveCodePanel" class="hidden">
       <div class="glass-card border border-emerald-400/30 rounded-2xl p-8 max-w-md mx-auto text-center">
         <div class="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-5 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
           <i data-feather="check" class="w-8 h-8 text-emerald-400"></i>
         </div>
-        <h2 class="text-white font-bold text-xl mb-2">Payment Successful!</h2>
-        <p class="text-gray-400 text-sm mb-6">Here is your unique access code. <strong class="text-amber-400 block mt-1">Please save it securely!</strong> You will need this code to log in next time.</p>
-        
-        <div class="bg-black/50 border border-white/10 rounded-xl p-4 flex items-center justify-between mb-4">
-          <span id="displayedAccessCode" class="text-amber-400 font-mono text-xl tracking-widest font-bold drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]"></span>
-          <button id="copyCodeBtn" onclick="copyAccessCode()" class="text-gray-400 hover:text-white transition flex items-center gap-1.5 text-xs bg-white/5 px-3 py-2 rounded-lg border border-white/10 hover:border-white/30 cursor-pointer">
-            <i data-feather="copy" class="w-3.5 h-3.5"></i> Copy
-          </button>
-        </div>
-        
-        <p id="codeExpiryText" class="text-emerald-400/80 text-xs font-medium mb-8 bg-emerald-500/10 inline-block px-3 py-1.5 rounded-full border border-emerald-500/20">⏱ Expires in 30 days</p>
-        
+        <h2 class="text-white font-bold text-xl mb-2">Subscription Activated!</h2>
+        <p class="text-gray-400 text-sm mb-6">Your VIP subscription has been successfully activated.</p>
+        <p id="codeExpiryText" class="text-emerald-400/80 text-xs font-medium mb-8 bg-emerald-500/10 inline-block px-3 py-1.5 rounded-full border border-emerald-500/20">⏱ Valid for 30 days</p>
         <button onclick="enterVIPFromSavePanel()" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r from-emerald-500 to-emerald-300 text-dark-navy hover:brightness-110 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] active:scale-95 transition duration-300 cursor-pointer">
           Enter VIP Area Now 🔓
         </button>
@@ -610,9 +583,8 @@
 
     // ── State Variables ────────────────────────────────────────
     let pollInterval;
-    let currentAccessCode = '';
-    let currentSessionToken = '';
     let selectedNetwork = 'TRC20';
+    let authMode = 'login';
 
     // ── Crypto Wallet Addresses per network ───────────────────
     // Fallback defaults — overridden by server on load
@@ -730,9 +702,13 @@
       btn.disabled = true;
 
       try {
+        const token = sessionStorage.getItem('vip_session_token');
         const res = await fetch('/api/crypto-payment-request', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-vip-token': token || ''
+          },
           body: JSON.stringify({ txHash, contactInfo: contact, network: selectedNetwork })
         });
         const data = await res.json();
@@ -774,49 +750,15 @@
 
 
 
-    // ── Show "Save Your Code" panel after payment ──────────────
-    function showSaveCodePanel(accessCode, sessionToken, expiryTimestamp) {
-      currentAccessCode  = accessCode;
-      currentSessionToken = sessionToken;
-
-      document.getElementById('displayedAccessCode').textContent = accessCode;
-
-      if (expiryTimestamp) {
-        const d = new Date(expiryTimestamp).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-        document.getElementById('codeExpiryText').textContent = `⏱ Expires on ${d}`;
-      }
-
-      document.getElementById('gatePanel').style.display = 'none';
+    // ── Show "Success" panel after payment ──────────────
+    function showSuccessPanel() {
+      document.getElementById('paymentPanel').style.display = 'none';
       document.getElementById('saveCodePanel').classList.remove('hidden');
       feather.replace();
     }
 
-    // ── Copy unique access code to clipboard ───────────────────
-    function copyAccessCode() {
-      if (!currentAccessCode) return;
-      navigator.clipboard.writeText(currentAccessCode).then(() => {
-        const btn = document.getElementById('copyCodeBtn');
-        btn.innerHTML = '<i data-feather="check" class="w-3.5 h-3.5"></i> Copied!';
-        feather.replace();
-        setTimeout(() => {
-          btn.innerHTML = '<i data-feather="copy" class="w-3.5 h-3.5"></i> Copy';
-          feather.replace();
-        }, 2500);
-      }).catch(() => {
-        // Fallback for older browsers
-        const el = document.getElementById('displayedAccessCode');
-        const range = document.createRange();
-        range.selectNode(el);
-        window.getSelection().removeAllRanges();
-        window.getSelection().addRange(range);
-        document.execCommand('copy');
-        window.getSelection().removeAllRanges();
-      });
-    }
-
-    // ── Transition from Save Code panel → VIP Content ─────────
+    // ── Transition from Success panel → VIP Content ─────────
     function enterVIPFromSavePanel() {
-      sessionStorage.setItem('vip_session_token', currentSessionToken);
       document.getElementById('saveCodePanel').classList.add('hidden');
       document.getElementById('contentPanel').classList.remove('hidden');
       updateDownloadLinks();
@@ -839,7 +781,15 @@
       btn.disabled = true;
 
       try {
-        const res  = await fetch('/api/pay-vip', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone }) });
+        const token = sessionStorage.getItem('vip_session_token');
+        const res  = await fetch('/api/pay-vip', { 
+          method: 'POST', 
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-vip-token': token || ''
+          }, 
+          body: JSON.stringify({ phone }) 
+        });
         const data = await res.json();
 
         if (data.ok) {
@@ -877,27 +827,25 @@
         }
 
         try {
-          const res  = await fetch(`/api/check-payment/${ref}`);
+          const token = sessionStorage.getItem('vip_session_token');
+          const res  = await fetch(`/api/check-payment/${ref}`, {
+            headers: { 'x-vip-token': token || '' }
+          });
           const data = await res.json();
 
           if (data.ok && data.status === 'Success') {
             clearInterval(pollInterval);
             btn.innerHTML = originalText;
             btn.disabled  = false;
-
-            if (data.accessCode) {
-              // Show the "Save Your Unique Code" panel
-              showSaveCodePanel(data.accessCode, data.sessionToken, data.accessCodeExpiry);
-            } else {
-              // Fallback: grant access directly
-              sessionStorage.setItem('vip_session_token', data.sessionToken);
-              updateDownloadLinks();
-              loadTodaysSetup();
-              loadTodaysSetupResults();
-              document.getElementById('gatePanel').style.display = 'none';
-              document.getElementById('contentPanel').classList.remove('hidden');
-              feather.replace();
+            
+            if (data.sessionToken) {
+               sessionStorage.setItem('vip_session_token', data.sessionToken);
             }
+            if (data.user) {
+               localStorage.setItem('pa_vip_user_name', data.user.name || 'VIP Member');
+            }
+
+            showSuccessPanel();
 
           } else if (data.ok && data.status === 'Failed') {
             clearInterval(pollInterval);
@@ -910,57 +858,148 @@
       }, 3000);
     }
 
-    // ── Access Code / Admin Password Login ────────────────────
-    async function checkPassword() {
-      const raw   = document.getElementById('vipPassword').value.trim();
-      const error = document.getElementById('gateError');
-      const btn   = document.getElementById('unlockBtn');
+    // ── User Authentication ────────────────────────────────────
+    function switchAuthTab(mode) {
+      authMode = mode;
+      const btnLogin = document.getElementById('tabLogin');
+      const btnRegister = document.getElementById('tabRegister');
+      const nameGroup = document.getElementById('nameFieldGroup');
+      const btnSubmit = document.getElementById('authBtn');
+      const errorEl = document.getElementById('authError');
+      
+      errorEl.textContent = '';
 
-      if (!raw) return;
-
-      // Auto-detect: subscriber codes start with PIPS-, otherwise treat as admin password
-      const isAccessCode = raw.toUpperCase().startsWith('PIPS-');
-      const endpoint     = isAccessCode ? '/api/verify-access-code' : '/api/verify-vip';
-      const body         = isAccessCode ? { code: raw } : { password: raw };
-
-      const originalText = btn ? btn.innerHTML : 'Unlock 🔓';
-      if (btn) { btn.innerHTML = '<span class="animate-pulse">Verifying...</span>'; btn.disabled = true; }
-
-      try {
-        const res  = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-        const data = await res.json();
-
-        if (data.ok) {
-          sessionStorage.setItem('vip_session_token', data.sessionToken);
-          updateDownloadLinks();
-          loadTodaysSetup();
-          loadTodaysSetupResults();
-          document.getElementById('gatePanel').style.display = 'none';
-          document.getElementById('contentPanel').classList.remove('hidden');
-          feather.replace();
-        } else {
-          error.textContent = `❌ ${data.error || 'Invalid code or password.'}`;
-          document.getElementById('vipPassword').value = '';
-          setTimeout(() => { error.textContent = ''; }, 5000);
-        }
-      } catch {
-        error.textContent = '❌ Server error or connection timeout.';
-        setTimeout(() => { error.textContent = ''; }, 5000);
-      } finally {
-        if (btn) { btn.innerHTML = originalText; btn.disabled = false; }
+      if (mode === 'login') {
+        btnLogin.className = 'flex-1 py-2 rounded-xl text-xs font-bold border border-amber-500/40 bg-amber-500/10 text-amber-400 transition cursor-pointer';
+        btnRegister.className = 'flex-1 py-2 rounded-xl text-xs font-bold border border-white/5 bg-white/5 text-gray-400 hover:text-amber-400 transition cursor-pointer';
+        nameGroup.classList.add('hidden');
+        btnSubmit.innerHTML = 'Log In 🔓';
+      } else {
+        btnRegister.className = 'flex-1 py-2 rounded-xl text-xs font-bold border border-amber-500/40 bg-amber-500/10 text-amber-400 transition cursor-pointer';
+        btnLogin.className = 'flex-1 py-2 rounded-xl text-xs font-bold border border-white/5 bg-white/5 text-gray-400 hover:text-amber-400 transition cursor-pointer';
+        nameGroup.classList.remove('hidden');
+        btnSubmit.innerHTML = 'Create Account 🚀';
       }
     }
 
-    // ── Lock / Log Out ─────────────────────────────────────────
-    function lockVIP() {
+    async function handleAuth(e) {
+      e.preventDefault();
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value;
+      const name = document.getElementById('authName').value.trim();
+      const errorEl = document.getElementById('authError');
+      const btn = document.getElementById('authBtn');
+      
+      const endpoint = authMode === 'login' ? '/api/login' : '/api/register';
+      const body = authMode === 'login' ? { email, password } : { email, password, name };
+      
+      const origText = btn.innerHTML;
+      btn.innerHTML = '<span class="animate-pulse">Processing...</span>';
+      btn.disabled = true;
+      errorEl.textContent = '';
+      
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        
+        if (data.ok) {
+          sessionStorage.setItem('vip_session_token', data.sessionToken);
+          localStorage.setItem('pa_vip_user_name', data.user.name || email.split('@')[0]);
+          checkUserAccess();
+        } else {
+          errorEl.textContent = `❌ ${data.error || 'Authentication failed'}`;
+        }
+      } catch (err) {
+        errorEl.textContent = '❌ Server error. Please try again.';
+      } finally {
+        btn.innerHTML = origText;
+        btn.disabled = false;
+      }
+    }
+
+    async function redeemCode() {
+      const code = document.getElementById('vipPassword').value.trim();
+      const error = document.getElementById('gateError');
+      const btn = document.getElementById('unlockBtn');
+      
+      if (!code) return;
+      const token = sessionStorage.getItem('vip_session_token');
+      if (!token) return;
+
+      const origText = btn.innerHTML;
+      btn.innerHTML = '<span class="animate-pulse">Verifying...</span>';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/redeem-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-vip-token': token },
+          body: JSON.stringify({ code })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          checkUserAccess();
+        } else {
+          error.textContent = `❌ ${data.error || 'Invalid code'}`;
+        }
+      } catch (err) {
+        error.textContent = '❌ Server error';
+      } finally {
+        btn.innerHTML = origText;
+        btn.disabled = false;
+      }
+    }
+
+    async function checkUserAccess() {
+      const token = sessionStorage.getItem('vip_session_token');
+      if (!token) {
+        document.getElementById('authPanel').style.display = 'block';
+        document.getElementById('paymentPanel').style.display = 'none';
+        document.getElementById('contentPanel').classList.add('hidden');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/me', { headers: { 'x-vip-token': token } });
+        const data = await res.json();
+
+        if (data.ok && data.user) {
+          document.getElementById('authPanel').style.display = 'none';
+          const now = Date.now();
+          if (data.user.subscriptionExpiry && data.user.subscriptionExpiry > now) {
+            // VIP access granted
+            document.getElementById('paymentPanel').style.display = 'none';
+            document.getElementById('contentPanel').classList.remove('hidden');
+            updateDownloadLinks();
+            loadTodaysSetup();
+            loadTodaysSetupResults();
+            loadChatMessages();
+            loadCountdownFromSignals();
+            feather.replace();
+          } else {
+            // VIP expired or no VIP
+            document.getElementById('contentPanel').classList.add('hidden');
+            document.getElementById('paymentPanel').style.display = 'block';
+          }
+        } else {
+          logout();
+        }
+      } catch (e) {
+        // Fallback or offline, just stay where we are or logout
+      }
+    }
+
+    function logout() {
       sessionStorage.removeItem('vip_session_token');
-      document.getElementById('gatePanel').style.display = '';
-      document.getElementById('saveCodePanel').classList.add('hidden');
-      document.getElementById('contentPanel').classList.add('hidden');
-      document.getElementById('vipPassword').value = '';
-      document.querySelectorAll('a[data-filename]').forEach(l => { l.href = '#'; });
-      const tgLink = document.getElementById('vipTelegramLink');
-      if (tgLink) tgLink.removeAttribute('href');
+      window.location.reload();
+    }
+
+    function lockVIP() {
+      logout();
     }
 
     let pollingInterval;
@@ -1042,20 +1081,11 @@
       }
     }
 
-    // ── Auto-login on page load if token still valid ───────────
+    // ── Check Access on load ───────────
     document.addEventListener('DOMContentLoaded', () => {
       feather.replace();
       initTheme();
-      const token = sessionStorage.getItem('vip_session_token');
-      if (token) {
-        document.getElementById('gatePanel').style.display = 'none';
-        document.getElementById('contentPanel').classList.remove('hidden');
-        updateDownloadLinks();
-        loadTodaysSetup();
-        loadTodaysSetupResults();
-        loadChatMessages();
-        loadCountdownFromSignals();
-      }
+      checkUserAccess();
     });
 
     async function loadTodaysSetup() {

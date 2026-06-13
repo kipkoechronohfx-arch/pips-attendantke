@@ -1215,6 +1215,48 @@
 
   </main>
 
+    <!-- 👥 USER ACCOUNTS PANEL -->
+    <div id="usersPanel" class="hidden container mx-auto px-4 max-w-5xl mb-12">
+      <div class="flex items-center gap-4 mb-6">
+        <div class="flex-1 h-px bg-white/10"></div>
+        <div class="flex items-center gap-2 px-4 py-2 rounded-full border border-neon-blue/30 bg-neon-blue/5">
+          <span class="w-2 h-2 rounded-full bg-neon-blue animate-pulse"></span>
+          <span class="text-neon-blue text-xs font-bold tracking-[0.2em] uppercase">User Accounts</span>
+        </div>
+        <div class="flex-1 h-px bg-white/10"></div>
+      </div>
+
+      <div class="glass-card rounded-2xl p-6 border border-white/10 flex flex-col min-h-[350px]">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <span class="block text-xs font-bold uppercase tracking-wider text-neon-blue">Registered Users</span>
+            <p class="text-[10px] text-gray-500">Users who created an account with email & password.</p>
+          </div>
+          <button type="button" onclick="fetchUsers()" class="px-3.5 py-1.5 rounded-lg text-xs font-bold border border-white/10 hover:border-neon-blue/50 hover:bg-neon-blue/10 text-gray-400 hover:text-neon-blue transition cursor-pointer flex items-center gap-1.5">
+            <i data-feather="refresh-cw" class="w-3 h-3"></i> Refresh
+          </button>
+        </div>
+        
+        <div class="flex-1 overflow-x-auto max-h-[320px] scrollbar-thin">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="border-b border-white/10 text-gray-400 font-semibold">
+                <th class="py-2.5 px-3">Name</th>
+                <th class="py-2.5 px-3">Email</th>
+                <th class="py-2.5 px-3">Joined</th>
+                <th class="py-2.5 px-3 text-right">VIP Status</th>
+              </tr>
+            </thead>
+            <tbody id="userListBody">
+              <tr>
+                <td colspan="4" class="py-8 text-center text-gray-500">Enter your Admin Key in credentials setup to view users.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   <!-- Success Toast Modal -->
   <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
     <div class="flex items-center gap-3 px-5 py-4 rounded-xl glass-card border border-emerald-500/30 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
@@ -1295,6 +1337,7 @@
         document.getElementById('perfPanel').classList.remove('hidden');
         document.getElementById('vipPanel').classList.remove('hidden');
         document.getElementById('cryptoRequestsPanel').classList.remove('hidden');
+        document.getElementById('usersPanel').classList.remove('hidden');
         document.getElementById('statusSection').classList.remove('hidden');
         updateLivePreview();
         updateEngPreview();
@@ -2711,6 +2754,46 @@
         }
       } catch (err) {
         alert('❌ Network error.');
+      }
+    }
+    // ── Registered Users Management ──────────────────────
+    async function fetchUsers() {
+      const adminKey = localStorage.getItem('pa_admin_key');
+      if (!adminKey) return;
+      const tbody = document.getElementById('userListBody');
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="4" class="py-6 text-center"><i data-feather="loader" class="w-4 h-4 animate-spin mx-auto text-neon-blue"></i></td></tr>';
+      feather.replace();
+
+      try {
+        const res = await fetch('/api/admin/users', {
+          headers: { 'x-admin-key': adminKey }
+        });
+        const data = await res.json();
+
+        if (!data.ok || data.users.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4" class="py-10 text-center text-gray-500">${data.ok ? 'No registered users yet.' : 'Error: ' + data.error}</td></tr>`;
+          return;
+        }
+
+        const now = Date.now();
+        tbody.innerHTML = data.users.map(u => {
+          const date = new Date(u.registeredAt).toLocaleDateString();
+          const isVip = u.subscriptionExpiry && u.subscriptionExpiry > now;
+          const statusSpan = isVip ? 
+            `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/10 border border-amber-400/20 text-amber-400">VIP</span>` :
+            `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-500/10 border border-gray-500/20 text-gray-400">Free</span>`;
+          
+          return `<tr class="border-b border-white/5 hover:bg-white/3 transition">
+            <td class="py-3 px-3 text-white text-xs">${u.name || '—'}</td>
+            <td class="py-3 px-3 text-gray-400 text-xs">${u.email}</td>
+            <td class="py-3 px-3 text-gray-500 font-mono text-[10px]">${date}</td>
+            <td class="py-3 px-3 text-right">${statusSpan}</td>
+          </tr>`;
+        }).join('');
+        feather.replace();
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="4" class="py-6 text-center text-rose-400">Connection error loading users.</td></tr>';
       }
     }
   </script>
