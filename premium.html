@@ -110,12 +110,17 @@
             <label class="block text-[10px] text-gray-500 mb-1">Email Address</label>
             <input type="email" id="authEmail" placeholder="you@email.com" required class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
           </div>
-          <div>
+          <div class="relative">
             <div class="flex justify-between items-center mb-1">
               <label class="block text-[10px] text-gray-500">Password</label>
               <button type="button" id="forgotPasswordLink" onclick="showForgotPasswordModal()" class="text-[10px] text-amber-400 hover:underline bg-transparent border-none cursor-pointer">Forgot Password?</button>
             </div>
-            <input type="password" id="authPassword" placeholder="••••••••" required class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
+            <div class="relative">
+              <input type="password" id="authPassword" placeholder="••••••••" required class="w-full px-4 py-3 pr-10 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
+              <button type="button" onclick="togglePasswordVisibility('authPassword', 'authPwIcon')" class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-amber-400 transition cursor-pointer">
+                <i data-feather="eye" id="authPwIcon" class="w-4 h-4"></i>
+              </button>
+            </div>
           </div>
           <div id="authError" class="text-rose-400 text-[11px] min-h-[14px]"></div>
           <button type="submit" id="authBtn" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r from-amber-500 to-yellow-400 text-dark-navy hover:brightness-110 active:scale-95 transition duration-300 cursor-pointer text-sm shadow-[0_0_20px_rgba(251,191,36,0.3)]">
@@ -158,7 +163,12 @@
         <form id="resetPasswordForm" onsubmit="handleResetPassword(event)" class="space-y-4">
           <div>
             <label class="block text-[10px] text-gray-500 mb-1">New Password</label>
-            <input type="password" id="newResetPassword" placeholder="••••••••" required class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-emerald-400/50 focus:outline-none transition" />
+            <div class="relative">
+              <input type="password" id="newResetPassword" placeholder="••••••••" required class="w-full px-4 py-3 pr-10 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-emerald-400/50 focus:outline-none transition" />
+              <button type="button" onclick="togglePasswordVisibility('newResetPassword', 'resetPwIcon')" class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-emerald-400 transition cursor-pointer">
+                <i data-feather="eye" id="resetPwIcon" class="w-4 h-4"></i>
+              </button>
+            </div>
           </div>
           <div id="resetError" class="text-[11px] min-h-[14px]"></div>
           <button type="submit" id="resetBtn" class="w-full py-3 rounded-xl font-bold bg-emerald-500 text-white hover:brightness-110 active:scale-95 transition duration-300 cursor-pointer text-sm">
@@ -447,11 +457,21 @@
               <form id="changePasswordForm" onsubmit="handleChangePassword(event)" class="space-y-3">
                 <div>
                   <label class="block text-[10px] text-gray-500 mb-1">Current Password</label>
-                  <input type="password" id="oldPassword" required class="w-full px-3 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
+                  <div class="relative">
+                    <input type="password" id="oldPassword" required class="w-full px-3 py-2.5 pr-10 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
+                    <button type="button" onclick="togglePasswordVisibility('oldPassword', 'oldPwIcon')" class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-amber-400 transition cursor-pointer">
+                      <i data-feather="eye" id="oldPwIcon" class="w-4 h-4"></i>
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <label class="block text-[10px] text-gray-500 mb-1">New Password</label>
-                  <input type="password" id="newPassword" required class="w-full px-3 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
+                  <div class="relative">
+                    <input type="password" id="newPassword" required class="w-full px-3 py-2.5 pr-10 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
+                    <button type="button" onclick="togglePasswordVisibility('newPassword', 'newPwIcon')" class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-amber-400 transition cursor-pointer">
+                      <i data-feather="eye" id="newPwIcon" class="w-4 h-4"></i>
+                    </button>
+                  </div>
                 </div>
                 <div id="changePwError" class="text-[11px] min-h-[14px]"></div>
                 <button type="submit" id="changePwBtn" class="w-full py-2.5 rounded-xl font-bold border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-white transition cursor-pointer text-xs">
@@ -1612,6 +1632,19 @@
         btn.innerHTML = origText;
         btn.disabled = false;
       }
+    }
+
+    function togglePasswordVisibility(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.setAttribute('data-feather', 'eye-off');
+      } else {
+        input.type = 'password';
+        icon.setAttribute('data-feather', 'eye');
+      }
+      feather.replace();
     }
 
     async function checkUserAccess() {
