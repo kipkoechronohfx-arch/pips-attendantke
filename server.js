@@ -712,7 +712,7 @@ function validateAdminKey(req, res, next) {
   const key = req.headers['x-admin-key'];
   const expectedKey = process.env.ADMIN_KEY || 'pips-admin-2026';
   if (key !== expectedKey) {
-    return res.status(403).json({ ok: false, error: 'Forbidden. Invalid admin key.' });
+    return res.status(403).json({ ok: false, error: 'Unauthorized Access.' });
   }
   next();
 }
