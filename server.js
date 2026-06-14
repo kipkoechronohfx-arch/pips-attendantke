@@ -2214,11 +2214,78 @@ app.get('/api/plans', (req, res) => {
   res.json({ ok: true, plans: PLANS });
 });
 
-// \u2500\u2500 Admin 2FA \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// ── Admin 2FA & Login ────────────────────────────────────────
+
+// Helpers for 2FA Secret
+async function getAdmin2FASecret() {
+  if (db) {
+    const conf = await getConfigsColl().findOne({ type: 'app_config' });
+    if (conf && conf.admin2FASecret) return conf.admin2FASecret;
+  } else {
+    try {
+      if (fs.existsSync(CONFIG_FILE)) {
+        const config = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+        if (config.admin2FASecret) return config.admin2FASecret;
+      }
+    } catch (e) {}
+  }
+  return process.env.ADMIN_2FA_SECRET || null;
+}
+
+async function saveAdmin2FASecret(secret) {
+  if (db) {
+    await getConfigsColl().updateOne(
+      { type: 'app_config' },
+      { $set: { admin2FASecret: secret } },
+      { upsert: true }
+    );
+  } else {
+    let config = {};
+    try {
+      if (fs.existsSync(CONFIG_FILE)) config = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+    } catch (e) {}
+    config.admin2FASecret = secret;
+    fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
+  }
+}
+
+// POST /api/admin/login — Verify Admin Key + 2FA
+app.post('/api/admin/login', validateAdminKey, async (req, res) => {
+  try {
+    const { totpToken } = req.body;
+    const currentSecret = await getAdmin2FASecret();
+    if (!currentSecret) {
+      return res.json({ ok: false, requiresSetup: true });
+    }
+    if (!totpToken) {
+      return res.status(400).json({ ok: false, error: '2FA code required.' });
+    }
+    const verified = speakeasy.totp.verify({
+      secret: currentSecret,
+      encoding: 'base32',
+      token: String(totpToken).replace(/\s/g, ''),
+      window: 2
+    });
+    if (!verified) {
+      return res.status(401).json({ ok: false, error: 'Invalid 2FA code.' });
+    }
+    const payloadStr = JSON.stringify({ role: 'admin', exp: Date.now() + 24 * 60 * 60 * 1000 });
+    const payloadBase64 = Buffer.from(payloadStr).toString('base64');
+    const hmac = crypto.createHmac('sha256', serverSecret).update(payloadBase64).digest('hex');
+    const adminSessionToken = `${payloadBase64}.${hmac}`;
+    res.json({ ok: true, adminToken: adminSessionToken });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
 
 // GET /api/admin/2fa/setup — Generate new TOTP secret & QR code
-app.get('/api/admin/2fa/setup', validateAdminSession, async (req, res) => {
+app.get('/api/admin/2fa/setup', validateAdminKey, async (req, res) => {
   try {
+    const existing = await getAdmin2FASecret();
+    if (existing) {
+      return res.status(400).json({ ok: false, error: '2FA is already configured.' });
+    }
     const secret = speakeasy.generateSecret({
       name: `Pips_attendant Admin (${req.headers['x-admin-key'].slice(0, 6)}...)`,
       length: 20
@@ -2230,8 +2297,8 @@ app.get('/api/admin/2fa/setup', validateAdminSession, async (req, res) => {
   }
 });
 
-// POST /api/admin/2fa/verify — Verify a TOTP token against a secret
-app.post('/api/admin/2fa/verify', (req, res) => {
+// POST /api/admin/2fa/verify-setup — Confirm setup and save secret
+app.post('/api/admin/2fa/verify-setup', validateAdminKey, async (req, res) => {
   const { secret, token } = req.body;
   if (!secret || !token) return res.status(400).json({ ok: false, error: 'Secret and token required.' });
   const verified = speakeasy.totp.verify({
@@ -2240,7 +2307,16 @@ app.post('/api/admin/2fa/verify', (req, res) => {
     token: String(token).replace(/\s/g, ''),
     window: 2
   });
-  res.json({ ok: verified, error: verified ? null : 'Invalid or expired token.' });
+  if (verified) {
+    await saveAdmin2FASecret(secret);
+    const payloadStr = JSON.stringify({ role: 'admin', exp: Date.now() + 24 * 60 * 60 * 1000 });
+    const payloadBase64 = Buffer.from(payloadStr).toString('base64');
+    const hmac = crypto.createHmac('sha256', serverSecret).update(payloadBase64).digest('hex');
+    const adminSessionToken = `${payloadBase64}.${hmac}`;
+    res.json({ ok: true, adminToken: adminSessionToken });
+  } else {
+    res.json({ ok: false, error: 'Invalid token.' });
+  }
 });
 
 app.get('/api/admin/system-status', validateAdminSession, async (req, res) => {
