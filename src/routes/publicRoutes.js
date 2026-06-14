@@ -107,7 +107,7 @@ router.post('/broadcast', async (req, res) => {
     return res.status(400).json({ ok: false, error: 'Provide text, image, or sticker.' });
   }
 
-  const TG_BASE = `https://api.telegram.org/bot\${token}`;
+  const TG_BASE = `https://api.telegram.org/bot${token}`;
 
   try {
     let telegramError = null;
@@ -122,7 +122,7 @@ router.post('/broadcast', async (req, res) => {
         const form = new FormData();
         form.append('chat_id', chatId);
         form.append('photo', imgBuffer, {
-          filename: `image.\${ext}`,
+          filename: `image.${ext}`,
           contentType: mimeType,
           knownLength: imgBuffer.length,
         });
@@ -131,15 +131,15 @@ router.post('/broadcast', async (req, res) => {
           form.append('parse_mode', 'Markdown');
         }
 
-        const photoRes = await fetch(`\${TG_BASE}/sendPhoto`, {
+        const photoRes = await fetch(`${TG_BASE}/sendPhoto`, {
           method: 'POST',
           body: form,
           headers: form.getHeaders(),
         });
         const photoData = await photoRes.json();
-        if (!photoData.ok) throw new Error(`Telegram image send failed: \${photoData.description || 'Unknown error'}`);
+        if (!photoData.ok) throw new Error(`Telegram image send failed: ${photoData.description || 'Unknown error'}`);
       } else if (text) {
-        const msgRes = await fetch(`\${TG_BASE}/sendMessage`, {
+        const msgRes = await fetch(`${TG_BASE}/sendMessage`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'Markdown', disable_web_page_preview: false }),
@@ -149,7 +149,7 @@ router.post('/broadcast', async (req, res) => {
       }
 
       if (stickerId) {
-        const stickerRes = await fetch(`\${TG_BASE}/sendSticker`, {
+        const stickerRes = await fetch(`${TG_BASE}/sendSticker`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ chat_id: chatId, sticker: stickerId }),
@@ -184,7 +184,7 @@ router.post('/broadcast', async (req, res) => {
       await Promise.all(pushPromises);
     } catch (pushErr) {}
 
-    res.json({ ok: true, message: 'Broadcast processed' + (telegramError ? ` (Telegram failed: \${telegramError})` : '.') });
+    res.json({ ok: true, message: 'Broadcast processed' + (telegramError ? ` (Telegram failed: ${telegramError})` : '.') });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
@@ -258,7 +258,7 @@ router.get('/telegram/bot-username', async (req, res) => {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) return res.json({ ok: true, botUsername: null });
   try {
-    const response = await fetch(`https://api.telegram.org/bot\${token}/getMe`);
+    const response = await fetch(`https://api.telegram.org/bot${token}/getMe`);
     const data = await response.json();
     if (data.ok) res.json({ ok: true, botUsername: data.result.username });
     else res.json({ ok: true, botUsername: null });
@@ -272,7 +272,7 @@ router.get('/telegram/generate-invite', async (req, res) => {
   const VIP_CHAT_ID = process.env.TELEGRAM_VIP_CHAT_ID || process.env.TELEGRAM_CHAT_ID;
   if (!TOKEN || !VIP_CHAT_ID) return res.status(500).send('Telegram not configured.');
   try {
-    const response = await fetch(`https://api.telegram.org/bot\${TOKEN}/createChatInviteLink`, {
+    const response = await fetch(`https://api.telegram.org/bot${TOKEN}/createChatInviteLink`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

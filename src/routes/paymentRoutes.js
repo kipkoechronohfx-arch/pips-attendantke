@@ -40,19 +40,20 @@ router.post('/pay-vip', validateUserSession, async (req, res) => {
     }
   }
 
-  const ref = `VIP_\${Date.now()}_\${Math.floor(Math.random() * 1000)}`;
+  const ref = `VIP_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
 
   try {
-    const auth = Buffer.from(`\${PAYHERO_API_USER}:\${PAYHERO_API_PASS}`).toString('base64');
-    const host = req.get('host');
-    const protocol = host.includes('localhost') ? 'http' : 'https';
-    const callback_url = `\${protocol}://\${host}/api/payhero-webhook`;
+    const auth = Buffer.from(`${PAYHERO_API_USER}:${PAYHERO_API_PASS}`).toString('base64');
+    
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    const host = req.headers.host;
+    const callback_url = `${protocol}://${host}/api/payhero-webhook`;
 
     const response = await fetch('https://backend.payhero.co.ke/api/v2/payments', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Basic \${auth}`
+        'Authorization': `Basic ${auth}`
       },
       body: JSON.stringify({
         amount: finalAmount,
@@ -133,18 +134,20 @@ router.get('/check-payment/:ref', validateUserSession, async (req, res) => {
           }
         }
 
-        await sendEmail(
-          user.email,
-          '✅ VIP Access Granted! - Pips_attendant',
-          `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0f1c; color: #ffffff; padding: 30px; border-radius: 12px; border: 1px solid #10b981;">
+        if (user && user.email) {
+          const emailHtml = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb; padding: 20px; border-radius: 8px;">
             <h2 style="color: #10b981; text-align: center;">Payment Successful! 🎉</h2>
-            <p>Hello \${user.name || 'Trader'}</p>
-            <p>Your M-Pesa payment for <strong>Pips_attendant VIP</strong> has been successfully verified.</p>
-            <p>Your account has been granted <strong>\${days} Days of VIP Access!</strong></p>
-            <p>You can access the VIP portal anytime at <a href="\${process.env.APP_URL || 'https://pipsattendant.com'}/premium.html" style="color: #10b981;">pipsattendant.com/premium.html</a>.</p>
-            <br><p>Best regards,<br><strong>The Pips_attendant Team</strong></p>
-          </div>`
-        );
+            <p>Hello ${user.name || 'Trader'}</p>
+            <p>We have successfully received your payment of KES ${payment.amount}.</p>
+            <p>Your account has been granted <strong>${days} Days of VIP Access!</strong></p>
+            <p>You can access the VIP portal anytime at <a href="${process.env.APP_URL || 'https://pipsattendant.com'}/premium.html" style="color: #10b981;">pipsattendant.com/premium.html</a>.</p>
+            <br/>
+            <p>Happy Trading,<br/>Pips Attendant Team</p>
+            </div>
+          `;
+          await sendEmail(user.email, '✅ VIP Access Granted! - Pips_attendant', emailHtml);
+        }
       }
     }
 
@@ -172,14 +175,14 @@ router.post('/crypto-pay', validateUserSession, async (req, res) => {
     return res.status(400).json({ ok: false, error: 'Invalid transaction hash.' });
   }
   const request = {
-    id: `CRYPTO_REQ_\${Date.now()}`,
+    id: `CRYPTO_REQ_${Date.now()}`,
+    userId: req.user._id || req.user.id,
     txHash: cleanHash,
     network,
     contactInfo,
     status: 'Pending',
     timestamp: new Date().toISOString(),
     plan: plan || '1month',
-    userId: req.user._id || req.user.id
   };
   try {
     await db.saveCryptoRequest(request);
