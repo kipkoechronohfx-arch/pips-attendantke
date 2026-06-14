@@ -289,4 +289,53 @@ router.get('/telegram/generate-invite', async (req, res) => {
   }
 });
 
+// ── User-facing Support Tickets ────────────────────────────────
+const { validateUserSession } = require('../middleware/auth');
+const { ObjectId } = require('mongodb');
+
+router.post('/tickets', validateUserSession, async (req, res) => {
+  const { subject, message } = req.body;
+  if (!subject || !message) return res.status(400).json({ ok: false, error: 'Missing fields' });
+  const ticket = {
+    userId: req.user._id || req.user.id,
+    userEmail: req.user.email,
+    subject,
+    status: 'Open',
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    messages: [{ sender: 'User', text: message, timestamp: Date.now() }]
+  };
+  try {
+    const saved = await db.saveTicket(ticket);
+    res.json({ ok: true, ticket: saved });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/tickets', validateUserSession, async (req, res) => {
+  try {
+    const tickets = await db.getUserTickets(req.user.email);
+    res.json({ ok: true, tickets });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/tickets/:id/reply', validateUserSession, async (req, res) => {
+  const { message } = req.body;
+  if (!message) return res.status(400).json({ ok: false, error: 'Message required' });
+  try {
+    const allTickets = await db.getUserTickets(req.user.email);
+    const ticket = allTickets.find(t => t._id && t._id.toString() === req.params.id);
+    if (!ticket) return res.status(404).json({ ok: false, error: 'Ticket not found.' });
+    ticket.messages.push({ sender: 'User', text: message, timestamp: Date.now() });
+    ticket.updatedAt = Date.now();
+    await db.saveTicket(ticket);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;

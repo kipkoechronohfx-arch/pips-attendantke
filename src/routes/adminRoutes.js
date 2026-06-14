@@ -7,6 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const { validateAdminKey, validateAdminSession, JWT_SECRET } = require('../middleware/auth');
 const db = require('../services/db');
+const { sendEmail } = require('../services/emailService');
 
 const CONFIG_FILE = path.join(process.cwd(), 'data', 'config.json');
 
@@ -311,6 +312,64 @@ router.post('/tickets/:id/close', validateAdminSession, async (req, res) => {
     await db.saveTicket(ticket);
   }
   res.json({ ok: true });
+});
+
+// ── Analytics ────────────────────────────────────────────────
+router.get('/analytics', validateAdminSession, async (req, res) => {
+  try {
+    const users = await db.getUsers();
+    const now = Date.now();
+    let activeVIPs = 0;
+
+    const last7Days = {};
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now - i * 24 * 60 * 60 * 1000);
+      last7Days[d.toISOString().split('T')[0]] = 0;
+    }
+
+    users.forEach(user => {
+      if (user.subscriptionExpiry && user.subscriptionExpiry > now) activeVIPs++;
+      const dateStr = (user.registeredAt || '').split('T')[0];
+      if (last7Days[dateStr] !== undefined) last7Days[dateStr]++;
+    });
+
+    let totalKES = 0, totalUSDT = 0, mrrKES = 0, mrrUSDT = 0;
+    const payments = await db.getAllPayments();
+    const cryptoPayments = await db.getCryptoRequests();
+
+    payments.filter(p => p.status === 'Success').forEach(p => {
+      const amount = Number(p.amount) || 0;
+      totalKES += amount;
+      if (p.plan === '1month') mrrKES += amount;
+      if (p.plan === '2months') mrrKES += amount / 2;
+      if (p.plan === '3months') mrrKES += amount / 3;
+    });
+
+    cryptoPayments.filter(p => p.status === 'Approved').forEach(p => {
+      const usdtMap = { '1month': 50, '2months': 95, '3months': 140 };
+      const amount = usdtMap[p.plan] || 50;
+      totalUSDT += amount;
+      if (p.plan === '1month') mrrUSDT += amount;
+      if (p.plan === '2months') mrrUSDT += amount / 2;
+      if (p.plan === '3months') mrrUSDT += amount / 3;
+    });
+
+    res.json({
+      ok: true,
+      totalUsers: users.length,
+      activeVIPs,
+      totalKES,
+      totalUSDT,
+      mrrKES: Math.round(mrrKES),
+      mrrUSDT: Math.round(mrrUSDT),
+      chartData: {
+        labels: Object.keys(last7Days),
+        values: Object.values(last7Days)
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
 module.exports = router;

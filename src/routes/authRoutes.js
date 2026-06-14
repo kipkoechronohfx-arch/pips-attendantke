@@ -6,21 +6,7 @@ const crypto = require('crypto');
 const { authLimiter } = require('../middleware/rateLimiters');
 const { validateUserSession, JWT_SECRET } = require('../middleware/auth');
 const { getUserByEmail, getUserById, saveUser, getPaymentByAccessCode } = require('../services/db');
-
-// Add sendEmail placeholder since it was in server.js, in a real app this would be in services/email.js
-const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
-async function sendEmail(to, subject, htmlContent) {
-  if (!process.env.SENDGRID_API_KEY || !process.env.SENDGRID_FROM_EMAIL) {
-    console.log('\\n========================================');
-    console.log(`[Email Simulation] To: ${to}\\nSubject: ${subject}\\nBody: ${htmlContent}`);
-    console.log('========================================\\n');
-    return;
-  }
-  try {
-    await sgMail.send({ to, from: process.env.SENDGRID_FROM_EMAIL, subject, html: htmlContent });
-  } catch (error) { console.error('[SendGrid Error]', error); }
-}
+const { sendEmail } = require('../services/emailService');
 
 function hashPassword(password) {
   return bcrypt.hashSync(password, 10);

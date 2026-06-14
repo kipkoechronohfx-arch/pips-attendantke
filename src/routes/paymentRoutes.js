@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const db = require('../services/db');
 const { validateUserSession, JWT_SECRET } = require('../middleware/auth');
+const { sendEmail } = require('../services/emailService');
 
 const PLANS = {
   '1month':  { days: 30,  kesPrice: 5000,  usdtPrice: 50  },
@@ -14,16 +15,6 @@ const PLANS = {
 
 function getDaysForPlan(plan) {
   return (PLANS[plan] || PLANS['1month']).days;
-}
-
-// In a real app, this should be in an email service module
-const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
-async function sendEmail(to, subject, htmlContent) {
-  if (!process.env.SENDGRID_API_KEY || !process.env.SENDGRID_FROM_EMAIL) return;
-  try {
-    await sgMail.send({ to, from: process.env.SENDGRID_FROM_EMAIL, subject, html: htmlContent });
-  } catch (error) {}
 }
 
 router.post('/pay-vip', validateUserSession, async (req, res) => {

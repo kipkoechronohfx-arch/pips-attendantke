@@ -1,16 +1,9 @@
 const cron = require('node-cron');
 const db = require('./db');
 const { kickUserFromTelegram, sendTelegramMessage } = require('./telegramBot');
+const { sendEmail } = require('./emailService');
 
-const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
 
-async function sendEmail(to, subject, htmlContent) {
-  if (!process.env.SENDGRID_API_KEY || !process.env.SENDGRID_FROM_EMAIL) return;
-  try {
-    await sgMail.send({ to, from: process.env.SENDGRID_FROM_EMAIL, subject, html: htmlContent });
-  } catch (error) {}
-}
 
 function startCronJobs() {
   // ── Daily Auto-Kick Expired VIP Users ────────────────────────

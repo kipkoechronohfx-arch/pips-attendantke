@@ -433,6 +433,20 @@ async function savePayment(ref, paymentData) {
   writeJSON(PAYMENTS_FILE, payments);
 }
 
+async function getAllPayments() {
+  if (db) {
+    try {
+      return await getPaymentsColl().find({}).toArray();
+    } catch (err) {
+      console.error('[DB All Payments Error]', err.message);
+    }
+  }
+  const raw = readJSON(PAYMENTS_FILE);
+  // JSON file stores as object map: { ref: paymentObj }
+  if (Array.isArray(raw)) return raw;
+  return Object.values(raw);
+}
+
 async function getTodaysSetup() {
   let setup = null;
   if (db) {
@@ -786,7 +800,7 @@ module.exports = {
   getSubscribers, addSubscriber, getSubscriberByTelegram,
   addWhatsApp, getWhatsAppList,
   addChatMessage, getChatMessages,
-  getPayment, getPaymentByAccessCode, savePayment,
+  getPayment, getPaymentByAccessCode, savePayment, getAllPayments,
   getTodaysSetup, getAdminTodaysSetup, saveTodaysSetup,
   getTodaysSetupResults, getAdminTodaysSetupResults, saveTodaysSetupResults,
   getVipDocuments, getVipDocument, saveVipDocument, deleteVipDocument,
