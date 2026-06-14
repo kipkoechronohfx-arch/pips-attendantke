@@ -1737,21 +1737,7 @@ app.get('/api/download-vip', async (req, res) => {
 });
 
 // ── GET /api/telegram/generate-invite ────────────────────────────
-app.get('/api/telegram/generate-invite', async (req, res) => {
-  const { token } = req.query;
-  if (!token) return res.status(400).send('Missing session token.');
-
-  try {
-    const [expires, hmac] = token.split('.');
-    if (!expires || !hmac) return res.status(401).send('Invalid token format.');
-    if (Date.now() > Number(expires)) return res.status(401).send('Session expired. Please log in again.');
-
-    const expectedHmac = crypto.createHmac('sha256', serverSecret).update(String(expires)).digest('hex');
-    if (hmac !== expectedHmac) return res.status(401).send('Invalid token signature.');
-  } catch (err) {
-    return res.status(401).send('Token verification failed.');
-  }
-
+app.get('/api/telegram/generate-invite', validateUserSession, async (req, res) => {
   const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
   const VIP_CHAT_ID = process.env.TELEGRAM_VIP_CHAT_ID || process.env.TELEGRAM_CHAT_ID;
 
@@ -1765,16 +1751,16 @@ app.get('/api/telegram/generate-invite', async (req, res) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         chat_id: VIP_CHAT_ID,
-        member_limit: 1, // Only 1 person can use this specific link
+        member_limit: 1,
         creates_join_request: false
       })
     });
     
     const data = await response.json();
+    console.log('[Telegram] createChatInviteLink response:', JSON.stringify(data));
     if (data.ok && data.result.invite_link) {
       res.redirect(data.result.invite_link);
     } else {
-      console.error('[Telegram] Failed to create invite link:', data);
       res.status(500).send('Failed to generate invite link at this time. Please contact support.');
     }
   } catch (err) {
