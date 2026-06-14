@@ -1756,7 +1756,7 @@ app.get('/api/telegram/generate-invite', async (req, res) => {
   const VIP_CHAT_ID = process.env.TELEGRAM_VIP_CHAT_ID || process.env.TELEGRAM_CHAT_ID;
 
   if (!TOKEN || !VIP_CHAT_ID) {
-    return res.status(500).send('Telegram Bot is not fully configured by Admin yet.');
+    return res.status(500).send('Unable to generate invite link. Please contact support.');
   }
 
   try {
@@ -1775,7 +1775,7 @@ app.get('/api/telegram/generate-invite', async (req, res) => {
       res.redirect(data.result.invite_link);
     } else {
       console.error('[Telegram] Failed to create invite link:', data);
-      res.status(500).send('Failed to generate invite link. Ensure bot is an Admin in the VIP group with "Invite Users" permission.');
+      res.status(500).send('Failed to generate invite link at this time. Please contact support.');
     }
   } catch (err) {
     console.error('[Telegram] Error creating invite link:', err);
