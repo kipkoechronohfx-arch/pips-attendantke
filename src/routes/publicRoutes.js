@@ -291,7 +291,6 @@ router.get('/telegram/generate-invite', async (req, res) => {
 
 // ── User-facing Support Tickets ────────────────────────────────
 const { validateUserSession } = require('../middleware/auth');
-const { ObjectId } = require('mongodb');
 
 router.post('/tickets', validateUserSession, async (req, res) => {
   const { subject, message } = req.body;

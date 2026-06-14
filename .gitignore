@@ -1,13 +1,27 @@
-.env
+# Dependencies
 node_modules/
-data/subscribers.json
-data/payments.json
-data/todays_setup.json
-data/config.json
-data/signals.json
-data/config.json.migrated
-data/signals.json.migrated
-data/subscribers.json.migrated
-data/payments.json.migrated
-data/todays_setup.json.migrated
+
+# Environment secrets — NEVER commit these
+.env
+.env.local
+.env.production
+
+# Local data files (JSON fallbacks for when MongoDB is offline)
+data/*.json
+data/*.migrated
 data/vip_documents/
+
+# Migrated files
+*.migrated
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Build artifacts
+dist/
+build/

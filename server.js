@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const compression = require('compression');
+const morgan = require('morgan');
 const path = require('path');
 const db = require('./src/services/db');
 const { startCronJobs } = require('./src/services/cronJobs');
@@ -30,7 +32,7 @@ function validateEnv() {
   }
   const missingRec = RECOMMENDED_ENV.filter(k => !process.env[k]);
   if (missingRec.length) {
-    console.warn('\n⚠️  [Config Warning] Missing recommended environment variables (some features will be disabled):');
+    console.warn('\n⚠️  [Config Warning] Missing recommended env vars (some features disabled):');
     missingRec.forEach(k => console.warn('   - ' + k));
   }
   console.log('');
@@ -38,17 +40,37 @@ function validateEnv() {
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
-// Trust reverse proxy (e.g. Render, Heroku, Nginx) so rate limits use correct IP
+// Trust reverse proxy (Render, Heroku, Nginx) so rate limits use real IP
 app.set('trust proxy', 1);
 
 // ── Security Headers ───────────────────────────────────────────
 app.use(helmet({
-  contentSecurityPolicy: false, // Disabled to allow inline scripts in admin HTML pages
+  contentSecurityPolicy: false,  // Disabled to allow inline scripts in admin HTML pages
   crossOriginEmbedderPolicy: false
 }));
 
-app.use(cors());
+// ── CORS ────────────────────────────────────────────────────────
+const ALLOWED_ORIGINS = [
+  'https://pips-attendantke.onrender.com',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000'
+];
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, Postman)
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+    callback(new Error('CORS: Origin not allowed — ' + origin));
+  },
+  credentials: true
+}));
+
+// ── Response Compression ───────────────────────────────────────
+app.use(compression());
+
+// ── Request Logging ────────────────────────────────────────────
+app.use(morgan(IS_PRODUCTION ? 'combined' : 'dev'));
 
 // ── Static Files ───────────────────────────────────────────────
 app.use(express.static(path.join(__dirname)));
@@ -81,17 +103,36 @@ app.get('*', (req, res) => {
 });
 
 // ── Centralized Error Handler ─────────────────────────────────
-// Must be defined AFTER all routes (4 arguments = error middleware)
 app.use((err, req, res, next) => {
   console.error('[Unhandled Error]', err.stack || err.message);
   const status = err.status || err.statusCode || 500;
   res.status(status).json({
     ok: false,
-    error: process.env.NODE_ENV === 'production'
-      ? 'An unexpected error occurred.'
-      : (err.message || 'Internal Server Error')
+    error: IS_PRODUCTION ? 'An unexpected error occurred.' : (err.message || 'Internal Server Error')
   });
 });
+
+// ── Graceful Shutdown ──────────────────────────────────────────
+function shutdown(signal) {
+  console.log('\n[Server] ' + signal + ' received — shutting down gracefully...');
+  // Give in-flight requests 10s to complete, then force exit
+  const timeout = setTimeout(() => {
+    console.error('[Server] Forced shutdown after timeout.');
+    process.exit(1);
+  }, 10000);
+  timeout.unref(); // Don't block event loop
+  // Close DB client if exposed
+  if (db.closeDB) {
+    db.closeDB().then(() => {
+      console.log('[Server] MongoDB connection closed.');
+      process.exit(0);
+    }).catch(() => process.exit(0));
+  } else {
+    process.exit(0);
+  }
+}
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT',  () => shutdown('SIGINT'));
 
 // ── Application Startup ────────────────────────────────────────
 async function startServer() {

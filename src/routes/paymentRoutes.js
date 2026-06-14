@@ -183,6 +183,26 @@ router.post('/crypto-pay', validateUserSession, async (req, res) => {
   };
   try {
     await db.saveCryptoRequest(request);
+
+    // Send admin notification
+    const adminEmail = process.env.SENDGRID_FROM_EMAIL;
+    if (adminEmail) {
+      const emailHtml = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #fbbf24;">New Crypto Payment Request 💰</h2>
+          <p>A new crypto payment request has been submitted and requires approval.</p>
+          <ul>
+            <li><strong>Tx Hash:</strong> ${cleanHash}</li>
+            <li><strong>Network:</strong> ${network}</li>
+            <li><strong>Contact Info:</strong> ${contactInfo}</li>
+            <li><strong>Plan:</strong> ${request.plan}</li>
+          </ul>
+          <p>Log in to the Admin Panel to approve or reject this request.</p>
+        </div>
+      `;
+      sendEmail(adminEmail, 'Action Required: New Crypto Payment Request', emailHtml).catch(console.error);
+    }
+
     res.json({ ok: true, message: 'Payment request submitted! We will verify and issue your access within 24 hours.', requestId: request.id });
   } catch (err) {
     res.status(500).json({ ok: false, error: 'Failed to save request. Please try again.' });

@@ -35,12 +35,19 @@ async function connectDB() {
     console.log('\n========================================');
     console.log('  Connected successfully to MongoDB Atlas');
     console.log('========================================\n');
-    
     await runMigrations();
   } catch (err) {
     console.error('[MongoDB connection failed]', err.message);
     console.log('Retrying DB connection in 5 seconds...');
     setTimeout(connectDB, 5000);
+  }
+}
+
+async function closeDB() {
+  if (client) {
+    await client.close();
+    db = null;
+    client = null;
   }
 }
 
@@ -622,16 +629,24 @@ async function deleteVipDocument(filename) {
 }
 
 async function getUserById(id) {
+  if (!id) return null;
   if (db) {
     try {
       const { ObjectId } = require('mongodb');
-      return await getUsersColl().findOne({ _id: new ObjectId(id) });
+      // IDs can be either MongoDB ObjectIds or string-format (USER_xxx)
+      const isObjectId = /^[a-f\d]{24}$/i.test(String(id));
+      if (isObjectId) {
+        const user = await getUsersColl().findOne({ _id: new ObjectId(id) });
+        if (user) return user;
+      }
+      // Fallback: search by string id field (for legacy USER_xxx format)
+      return await getUsersColl().findOne({ id: String(id) }) || null;
     } catch (err) {
       console.error('[DB Get User By Id Error]', err.message);
     }
   }
   const users = readJSON(USERS_FILE);
-  return users.find(u => u._id === id);
+  return users.find(u => u._id === id || u.id === id) || null;
 }
 
 async function getUserByEmail(email) {
@@ -794,7 +809,7 @@ async function getUsers() {
 }
 
 module.exports = {
-  connectDB,
+  connectDB, closeDB,
   getAppConfig, saveAppConfig,
   getSignals, addSignal,
   getSubscribers, addSubscriber, getSubscriberByTelegram,
