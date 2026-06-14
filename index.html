@@ -55,7 +55,7 @@
   <!-- Custom Styles -->
   <link rel="stylesheet" href="style.css?v=3">
 </head>
-<body class="text-white font-inter relative overflow-x-hidden selection:bg-amber-400/30 min-h-screen pt-[46px]" style="background-color: #0d0800;">
+<body class="text-white font-inter relative overflow-x-hidden selection:bg-amber-400/30 min-h-screen pt-[46px] transition-colors duration-500" style="background-color: #0d0800;">
   
   <!-- Header Ticker -->
   <div class="fixed top-0 left-0 w-full z-[100]">
@@ -97,10 +97,10 @@
   <canvas id="bgCanvas" class="fixed inset-0 z-0 pointer-events-none opacity-25"></canvas>
 
   <!-- Background Glow Effects -->
-  <div class="fixed inset-0 z-0 pointer-events-none opacity-70">
-    <div class="absolute top-[-10%] left-[-10%] w-[70%] h-[60%] rounded-full mix-blend-screen animate-pulse duration-1000" style="background: radial-gradient(circle, rgba(245,158,11,0.3) 0%, transparent 70%); filter: blur(120px);"></div>
-    <div class="absolute bottom-[-10%] right-[-10%] w-[60%] h-[55%] rounded-full mix-blend-screen animate-pulse duration-1000" style="background: radial-gradient(circle, rgba(217,119,6,0.25) 0%, transparent 70%); filter: blur(100px); animation-delay: 1.5s"></div>
-    <div class="absolute top-[35%] left-[30%] w-[40%] h-[30%] rounded-full mix-blend-screen" style="background: radial-gradient(circle, rgba(251,191,36,0.15) 0%, transparent 70%); filter: blur(90px);"></div>
+  <div class="fixed inset-0 z-0 pointer-events-none opacity-70" style="will-change: transform, opacity;">
+    <div class="absolute top-[-10%] left-[-10%] w-[70%] h-[60%] rounded-full mix-blend-screen animate-pulse duration-1000" style="background: radial-gradient(circle, rgba(245,158,11,0.3) 0%, transparent 70%); filter: blur(120px); will-change: transform, opacity;"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[60%] h-[55%] rounded-full mix-blend-screen animate-pulse duration-1000" style="background: radial-gradient(circle, rgba(217,119,6,0.25) 0%, transparent 70%); filter: blur(100px); animation-delay: 1.5s; will-change: transform, opacity;"></div>
+    <div class="absolute top-[35%] left-[30%] w-[40%] h-[30%] rounded-full mix-blend-screen" style="background: radial-gradient(circle, rgba(251,191,36,0.15) 0%, transparent 70%); filter: blur(90px); will-change: transform, opacity;"></div>
   </div>
 
   <!-- Theme Toggle Button -->
@@ -118,7 +118,7 @@
       <div class="relative w-32 h-32 mb-6 transform transition-transform duration-500 hover:scale-105">
         <div class="absolute inset-0 rounded-full bg-gradient-to-tr from-neon-purple to-neon-blue animate-spin-slow opacity-75 blur-md"></div>
         <div class="absolute inset-1 rounded-full bg-dark-navy z-10 flex items-center justify-center overflow-hidden border-2 border-white/10">
-          <img src="avatar.png?v=2" alt="Pips_Attendant" class="w-full h-full object-cover" />
+          <img src="avatar.png?v=2" alt="Pips_Attendant" class="w-full h-full object-cover" width="128" height="128" />
         </div>
       </div>
       <h1 class="text-4xl md:text-5xl font-bold mb-3 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-gray-400">
@@ -171,9 +171,9 @@
       
 
       <!-- Link 1 (JustMarkets) -->
-      <a href="https://one.justmarkets.link/a/by21d0s1wd" target="_blank" class="link-card highlight-card group">
+      <a href="https://one.justmarkets.link/a/by21d0s1wd" target="_blank" class="link-card highlight-card group active:scale-95">
         <div class="link-icon overflow-hidden bg-white rounded-lg p-1">
-          <img src="justmarkets.png" alt="JustMarkets" class="w-full h-full object-contain" />
+          <img src="justmarkets.png" alt="JustMarkets" class="w-full h-full object-contain" width="40" height="40" loading="lazy" />
         </div>
         <div class="flex-1 text-left">
           <h3 class="text-lg font-semibold text-white tracking-wide group-hover:text-neon-blue transition-colors">JustMarkets</h3>
@@ -185,9 +185,9 @@
       </a>
 
       <!-- Link 2 (XM) -->
-      <a href="https://clicks.pipaffiliates.com/c?c=768946&l=en&p=1" target="_blank" class="link-card highlight-card group">
+      <a href="https://clicks.pipaffiliates.com/c?c=768946&l=en&p=1" target="_blank" class="link-card highlight-card group active:scale-95">
         <div class="link-icon overflow-hidden bg-black rounded-lg p-1">
-          <img src="xm.png" alt="XM" class="w-full h-full object-contain" />
+          <img src="xm.png" alt="XM" class="w-full h-full object-contain" width="40" height="40" loading="lazy" />
         </div>
         <div class="flex-1 text-left">
           <h3 class="text-lg font-semibold text-white tracking-wide group-hover:text-neon-blue transition-colors">XM</h3>
@@ -199,7 +199,7 @@
       </a>
 
       <!-- Link 3 -->
-      <a href="https://t.me/pips_attendant" target="_blank" class="link-card highlight-card group">
+      <a href="https://t.me/pips_attendant" target="_blank" class="link-card highlight-card group active:scale-95">
         <div class="link-icon highlight-icon">
           <i data-feather="send"></i>
         </div>
@@ -214,7 +214,7 @@
 
 
       <!-- Link 4 -->
-      <a href="https://instagram.com/pips_attendant" target="_blank" class="link-card normal-card group">
+      <a href="https://instagram.com/pips_attendant" target="_blank" class="link-card normal-card group active:scale-95">
         <div class="link-icon normal-icon">
           <i data-feather="instagram"></i>
         </div>
@@ -227,7 +227,7 @@
       </a>
 
       <!-- Link 5 -->
-      <a href="https://youtube.com/@pips_attendant" target="_blank" class="link-card normal-card group">
+      <a href="https://youtube.com/@pips_attendant" target="_blank" class="link-card normal-card group active:scale-95">
         <div class="link-icon normal-icon">
           <i data-feather="youtube"></i>
         </div>
@@ -240,7 +240,7 @@
       </a>
 
       <!-- Link 6 -->
-      <a href="https://twitter.com/pips_attendant" target="_blank" class="link-card normal-card group">
+      <a href="https://twitter.com/pips_attendant" target="_blank" class="link-card normal-card group active:scale-95">
         <div class="link-icon normal-icon">
           <i data-feather="twitter"></i>
         </div>
@@ -253,7 +253,7 @@
       </a>
 
       <!-- Link TikTok -->
-      <a href="https://tiktok.com/@pips_attendant" target="_blank" class="link-card normal-card group">
+      <a href="https://tiktok.com/@pips_attendant" target="_blank" class="link-card normal-card group active:scale-95">
         <div class="link-icon normal-icon">
           <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
              <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 2.22-1.15 4.35-2.9 5.61-1.61 1.16-3.7 1.53-5.61 1.09-2.06-.48-3.79-1.89-4.7-3.77-.85-1.74-.9-3.83-.24-5.62.6-1.62 1.94-2.96 3.6-3.5 1.58-.51 3.32-.4 4.86.06V14.8c-.89-.33-1.92-.3-2.76.13-.8.41-1.4 1.15-1.6 2.03-.22.95.03 1.99.68 2.69.64.69 1.63 1 2.58.89 1.1-.12 2.05-.88 2.45-1.9.15-.4.21-.83.21-1.25V.02h-3.08z"/>
@@ -265,7 +265,7 @@
       </a>
 
       <!-- VIP Premium Resources Link -->
-      <a href="premium.html" class="link-card highlight-card group" style="background: linear-gradient(135deg, rgba(251,191,36,0.1), rgba(176,38,255,0.07)); border-color: rgba(251,191,36,0.3); box-shadow: 0 0 12px rgba(251,191,36,0.2), 0 0 24px rgba(176, 38, 255, 0.1), inset 0 0 12px rgba(251,191,36,0.03);">
+      <a href="premium.html" class="link-card highlight-card group active:scale-95" style="background: linear-gradient(135deg, rgba(251,191,36,0.1), rgba(176,38,255,0.07)); border-color: rgba(251,191,36,0.3); box-shadow: 0 0 12px rgba(251,191,36,0.2), 0 0 24px rgba(176, 38, 255, 0.1), inset 0 0 12px rgba(251,191,36,0.03);">
         <div class="link-icon" style="background-color: rgba(251,191,36,0.1); color: #fbbf24;">
           <i data-feather="lock"></i>
         </div>
@@ -608,6 +608,7 @@
       }
 
       function animate() {
+        if (!isVisible) return;
         ctx.clearRect(0, 0, W, H);
 
         // Draw floating candles
@@ -633,6 +634,12 @@
 
         requestAnimationFrame(animate);
       }
+
+      let isVisible = true;
+      document.addEventListener('visibilitychange', () => {
+        isVisible = !document.hidden;
+        if (isVisible) animate();
+      });
 
       window.addEventListener('resize', () => { resize(); createParticles(); initCandles(); });
       resize();

@@ -1,6 +1,7 @@
 .glass-card {
   backdrop-filter: blur(10px);
   background: rgba(255, 255, 255, 0.03);
+  transition: all 0.5s ease;
 }
 
 @keyframes spin-slow {

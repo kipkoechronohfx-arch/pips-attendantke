@@ -111,10 +111,17 @@ async function subscribeToPush() {
 // --- TESTIMONIALS CAROUSEL ---
 let testimonialIndex = 0;
 const totalTestimonials = 5;
+let testimonialInterval;
+
+function startTestimonialInterval() {
+  if (testimonialInterval) clearInterval(testimonialInterval);
+  testimonialInterval = setInterval(() => slideTestimonial(1), 4000);
+}
 
 function slideTestimonial(direction) {
   testimonialIndex = (testimonialIndex + direction + totalTestimonials) % totalTestimonials;
   applySlide();
+  startTestimonialInterval();
 }
 
 function applySlide() {
@@ -129,7 +136,26 @@ function applySlide() {
 }
 
 // Auto-scroll every 4 seconds
-setInterval(() => slideTestimonial(1), 4000);
+startTestimonialInterval();
+
+// Add touch support for swiping
+window.addEventListener('DOMContentLoaded', () => {
+  const sliderContainer = document.getElementById('testimonialTrack');
+  if (sliderContainer) {
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    sliderContainer.addEventListener('touchstart', e => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+    
+    sliderContainer.addEventListener('touchend', e => {
+      touchEndX = e.changedTouches[0].screenX;
+      if (touchStartX - touchEndX > 50) slideTestimonial(1);
+      else if (touchEndX - touchStartX > 50) slideTestimonial(-1);
+    }, { passive: true });
+  }
+});
 
 // --- WHATSAPP BROADCAST ---
 async function subscribeWhatsApp(e) {
