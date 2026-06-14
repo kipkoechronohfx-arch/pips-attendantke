@@ -1855,7 +1855,7 @@ app.post('/api/whatsapp-subscribe', async (req, res) => {
   }
 });
 
-app.get('/api/whatsapp-list', validateAdminKey, async (req, res) => {
+app.get('/api/whatsapp-list', validateAdminSession, async (req, res) => {
   try {
     const list = await getWhatsAppList();
     res.json({ ok: true, count: list.length, subscribers: list });
@@ -1912,7 +1912,7 @@ app.get('/api/admin/users', validateAdminSession, async (req, res) => {
 });
 
 // ── GET /api/subscribers ──────────────────────────────────────
-app.get('/api/subscribers', validateAdminKey, async (req, res) => {
+app.get('/api/subscribers', validateAdminSession, async (req, res) => {
   try {
     const subscribers = await getSubscribers();
     res.json({ ok: true, count: subscribers.length, subscribers });
@@ -1922,7 +1922,7 @@ app.get('/api/subscribers', validateAdminKey, async (req, res) => {
 });
 
 // ── GET /api/vip-documents ────────────────────────────────────
-app.get('/api/vip-documents', validateAdminKey, async (req, res) => {
+app.get('/api/vip-documents', validateAdminSession, async (req, res) => {
   try {
     const documents = await getVipDocuments();
     res.json({ ok: true, documents });
@@ -1932,7 +1932,7 @@ app.get('/api/vip-documents', validateAdminKey, async (req, res) => {
 });
 
 // ── POST /api/upload-vip-document ─────────────────────────────
-app.post('/api/upload-vip-document', validateAdminKey, async (req, res) => {
+app.post('/api/upload-vip-document', validateAdminSession, async (req, res) => {
   const { filename, fileData } = req.body;
 
   if (!filename || !fileData) {
@@ -1952,7 +1952,7 @@ app.post('/api/upload-vip-document', validateAdminKey, async (req, res) => {
 });
 
 // ── DELETE /api/delete-vip-document/:filename ─────────────────
-app.delete('/api/delete-vip-document/:filename', validateAdminKey, async (req, res) => {
+app.delete('/api/delete-vip-document/:filename', validateAdminSession, async (req, res) => {
   const { filename } = req.params;
   if (!filename) return res.status(400).json({ ok: false, error: 'Missing filename.' });
 
@@ -1969,7 +1969,7 @@ app.delete('/api/delete-vip-document/:filename', validateAdminKey, async (req, r
 });
 
 // ── POST /api/update-vip-password ─────────────────────────────
-app.post('/api/update-vip-password', validateAdminKey, async (req, res) => {
+app.post('/api/update-vip-password', validateAdminSession, async (req, res) => {
   const { vipPassword } = req.body;
 
   if (!vipPassword || vipPassword.trim().length < 4) {

@@ -1531,7 +1531,7 @@
       const token = localStorage.getItem('pa_bot_token');
       const chat = localStorage.getItem('pa_chat_id');
       const vipChat = localStorage.getItem('pa_vip_chat_id');
-      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       
       if (adminToken && token && chat && adminKey) {
         document.getElementById('setupPanel').classList.add('hidden');
@@ -2339,7 +2339,7 @@
 
     async function logTradeResult() {
       const adminToken = localStorage.getItem('pa_admin_token');
-      if (!adminKey) return alert('Missing admin key!');
+      if (!adminToken) return;
       const btn = document.getElementById('logTradeBtn');
       const feedback = document.getElementById('logFeedback');
       
@@ -2392,7 +2392,7 @@
     // --- VIP SUBSCRIBERS LOGIC ---
     async function fetchSubscribers() {
       const adminToken = localStorage.getItem('pa_admin_token');
-      if (!adminKey) return;
+      if (!adminToken) return;
       const tbody = document.getElementById('subscriberListBody');
       tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center"><i data-feather="loader" class="w-4 h-4 animate-spin mx-auto text-amber-400"></i></td></tr>';
       feather.replace();
@@ -2429,7 +2429,7 @@
 
     async function fetchWhatsAppList() {
       const adminToken = localStorage.getItem('pa_admin_token');
-      if (!adminKey) return;
+      if (!adminToken) return;
       const tbody = document.getElementById('whatsappListBody');
       if(!tbody) return;
       tbody.innerHTML = '<tr><td colspan="2" class="py-4 text-center"><i data-feather="loader" class="w-4 h-4 animate-spin mx-auto text-emerald-400"></i></td></tr>';
@@ -2465,7 +2465,7 @@
     // VIP Documents & Setup Management
     async function fetchTodaysSetup() {
       const adminToken = localStorage.getItem('pa_admin_token');
-      if (!adminKey) return;
+      if (!adminToken) return;
 
       const label = document.getElementById('setupUploadLabel');
       const status = document.getElementById('setupUploadStatus');
@@ -2587,7 +2587,7 @@
 
     async function fetchTodaysSetupResults() {
       const adminToken = localStorage.getItem('pa_admin_token');
-      if (!adminKey) return;
+      if (!adminToken) return;
 
       const label = document.getElementById('setupResultsUploadLabel');
       const status = document.getElementById('setupResultsUploadStatus');
@@ -2705,7 +2705,7 @@
     async function fetchVIPDocuments() {
       const adminToken = localStorage.getItem('pa_admin_token');
       const container = document.getElementById('documentListContainer');
-      if (!adminKey) return;
+      if (!adminToken) return;
 
       try {
         const res = await fetch('/api/vip-documents', {
@@ -2918,7 +2918,7 @@
     // ── Crypto Payment Requests Management ──────────────────────
     async function fetchCryptoRequests() {
       const adminToken = localStorage.getItem('pa_admin_token');
-      if (!adminKey) return;
+      if (!adminToken) return;
       const tbody = document.getElementById('cryptoRequestsBody');
       if (!tbody) return;
       tbody.innerHTML = '<tr><td colspan="7" class="py-6 text-center"><i data-feather="loader" class="w-4 h-4 animate-spin mx-auto text-amber-400"></i></td></tr>';
@@ -3012,7 +3012,7 @@
     // ── Registered Users Management ──────────────────────
     async function fetchUsers() {
       const adminToken = localStorage.getItem('pa_admin_token');
-      if (!adminKey) return;
+      if (!adminToken) return;
       const tbody = document.getElementById('userListBody');
       if (!tbody) return;
       tbody.innerHTML = '<tr><td colspan="4" class="py-6 text-center"><i data-feather="loader" class="w-4 h-4 animate-spin mx-auto text-neon-blue"></i></td></tr>';
@@ -3043,7 +3043,7 @@
 
     async function fetchAnalytics() {
       const adminToken = localStorage.getItem('pa_admin_token');
-      if (!adminKey) return;
+      if (!adminToken) return;
 
       try {
         const res = await fetch('/api/admin/analytics', { headers: { 'x-admin-token': adminToken } });
@@ -3264,7 +3264,7 @@
     // ── Promo Codes ──────────────────────────────────────────────
     async function fetchPromos() {
       const adminToken = localStorage.getItem('pa_admin_token');
-      if (!adminKey) return;
+      if (!adminToken) return;
       const container = document.getElementById('promoListBody');
       if (!container) return;
       container.innerHTML = '<p class="text-gray-500 text-xs text-center py-4">Loading...</p>';
@@ -3338,7 +3338,7 @@
     // ── Support Tickets ──────────────────────────────────────────
     async function fetchAdminTickets() {
       const adminToken = localStorage.getItem('pa_admin_token');
-      if (!adminKey) return;
+      if (!adminToken) return;
       const container = document.getElementById('adminTicketsList');
       if (!container) return;
       container.innerHTML = '<p class="text-gray-500 text-xs text-center py-8">Loading tickets...</p>';
