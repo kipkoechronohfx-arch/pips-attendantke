@@ -1284,6 +1284,8 @@
       document.querySelectorAll('a[data-filename]').forEach(link => {
         link.href = `/api/download-vip?file=${encodeURIComponent(link.getAttribute('data-filename'))}&token=${encodeURIComponent(token)}`;
       });
+      const tgLink = document.getElementById('vipTelegramLink');
+      if (tgLink) tgLink.href = `/api/telegram/generate-invite?token=${encodeURIComponent(token)}`;
     }
 
 
