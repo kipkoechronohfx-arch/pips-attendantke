@@ -1527,12 +1527,13 @@
     }
 
     function checkCredentials() {
+      const adminToken = localStorage.getItem('pa_admin_token');
       const token = localStorage.getItem('pa_bot_token');
       const chat = localStorage.getItem('pa_chat_id');
       const vipChat = localStorage.getItem('pa_vip_chat_id');
-      const adminToken = localStorage.getItem('pa_admin_token');
+      const adminKey = localStorage.getItem('pa_admin_key');
       
-      if (token && chat && adminKey) {
+      if (adminToken && token && chat && adminKey) {
         document.getElementById('setupPanel').classList.add('hidden');
         document.getElementById('dashboardPanel').classList.remove('hidden');
         document.getElementById('engagementPanel').classList.remove('hidden');
@@ -1584,20 +1585,58 @@
       }
     }
 
-    function saveCredentials(e) {
+    async function saveCredentials(e) {
       e.preventDefault();
       const token = document.getElementById('botToken').value.trim();
       const chat = document.getElementById('chatId').value.trim();
       const vipChat = document.getElementById('vipChatId').value.trim();
       const adminKey = document.getElementById('adminKey').value.trim();
+      const totpToken = document.getElementById('totpToken')?.value.trim();
       
-      if (token && chat && adminKey) {
-        localStorage.setItem('pa_bot_token', token);
-        localStorage.setItem('pa_chat_id', chat);
-        if (vipChat) localStorage.setItem('pa_vip_chat_id', vipChat);
-        else localStorage.removeItem('pa_vip_chat_id');
-        localStorage.setItem('pa_admin_key', adminKey);
-        checkCredentials();
+      if (!token || !chat || !adminKey) {
+        if (typeof showToast !== 'undefined') showToast('Please fill all required fields.', 'error');
+        else alert('Please fill all required fields.');
+        return;
+      }
+
+      // Authenticate with backend
+      try {
+        const btn = e.target.querySelector('button[type="submit"]');
+        const origText = btn.innerHTML;
+        btn.innerHTML = '<i data-feather="loader" class="w-4 h-4 animate-spin mx-auto"></i>';
+        if(window.feather) feather.replace();
+
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+          body: JSON.stringify({ totpToken })
+        });
+        const data = await res.json();
+        
+        btn.innerHTML = origText;
+
+        if (data.requiresSetup) {
+          // First time setup required
+          localStorage.setItem('pa_admin_key', adminKey);
+          open2FASetup();
+          return;
+        }
+
+        if (data.ok && data.adminToken) {
+          localStorage.setItem('pa_bot_token', token);
+          localStorage.setItem('pa_chat_id', chat);
+          if (vipChat) localStorage.setItem('pa_vip_chat_id', vipChat);
+          else localStorage.removeItem('pa_vip_chat_id');
+          localStorage.setItem('pa_admin_key', adminKey);
+          localStorage.setItem('pa_admin_token', data.adminToken);
+          
+          if (typeof showToast !== 'undefined') showToast('Login successful!');
+          checkCredentials();
+        } else {
+          alert(data.error || 'Login failed.');
+        }
+      } catch (err) {
+        alert('Network error during login.');
       }
     }
 
@@ -1607,6 +1646,7 @@
         localStorage.removeItem('pa_chat_id');
         localStorage.removeItem('pa_vip_chat_id');
         localStorage.removeItem('pa_admin_key');
+        localStorage.removeItem('pa_admin_token');
         checkCredentials();
       }
     }
