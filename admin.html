@@ -1530,7 +1530,7 @@
       const token = localStorage.getItem('pa_bot_token');
       const chat = localStorage.getItem('pa_chat_id');
       const vipChat = localStorage.getItem('pa_vip_chat_id');
-      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       
       if (token && chat && adminKey) {
         document.getElementById('setupPanel').classList.add('hidden');
@@ -2298,7 +2298,7 @@
     }
 
     async function logTradeResult() {
-      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       if (!adminKey) return alert('Missing admin key!');
       const btn = document.getElementById('logTradeBtn');
       const feedback = document.getElementById('logFeedback');
@@ -2319,7 +2319,7 @@
       try {
         const res = await fetch('/api/performance', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+          headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
           body: JSON.stringify({ asset, type, result, pips })
         });
         const data = await res.json();
@@ -2351,14 +2351,14 @@
 
     // --- VIP SUBSCRIBERS LOGIC ---
     async function fetchSubscribers() {
-      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       if (!adminKey) return;
       const tbody = document.getElementById('subscriberListBody');
       tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center"><i data-feather="loader" class="w-4 h-4 animate-spin mx-auto text-amber-400"></i></td></tr>';
       feather.replace();
       try {
         const res = await fetch('/api/subscribers', {
-          headers: { 'x-admin-key': adminKey }
+          headers: { 'x-admin-token': adminToken }
         });
         const data = await res.json();
         if (data.ok) {
@@ -2388,7 +2388,7 @@
     }
 
     async function fetchWhatsAppList() {
-      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       if (!adminKey) return;
       const tbody = document.getElementById('whatsappListBody');
       if(!tbody) return;
@@ -2396,7 +2396,7 @@
       feather.replace();
       try {
         const res = await fetch('/api/whatsapp-list', {
-          headers: { 'x-admin-key': adminKey }
+          headers: { 'x-admin-token': adminToken }
         });
         const data = await res.json();
         if (data.ok) {
@@ -2424,7 +2424,7 @@
 
     // VIP Documents & Setup Management
     async function fetchTodaysSetup() {
-      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       if (!adminKey) return;
 
       const label = document.getElementById('setupUploadLabel');
@@ -2436,7 +2436,7 @@
 
       try {
         const res = await fetch('/api/admin/todays-setup', {
-          headers: { 'x-admin-key': adminKey }
+          headers: { 'x-admin-token': adminToken }
         });
         const data = await res.json();
         
@@ -2468,7 +2468,7 @@
 
       const label = document.getElementById('setupUploadLabel');
       const status = document.getElementById('setupUploadStatus');
-      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
 
       label.innerHTML = '<i data-feather="loader" class="w-4 h-4 animate-spin"></i> Uploading...';
       feather.replace();
@@ -2512,7 +2512,7 @@
 
     async function removeTodaysSetup() {
       if (!confirm('Are you sure you want to remove the current Today\'s Setup?')) return;
-      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       const status = document.getElementById('setupUploadStatus');
       const label = document.getElementById('setupUploadLabel');
       
@@ -2522,7 +2522,7 @@
       try {
         const res = await fetch('/api/todays-setup', {
           method: 'DELETE',
-          headers: { 'x-admin-key': adminKey }
+          headers: { 'x-admin-token': adminToken }
         });
         const data = await res.json();
         
@@ -2546,7 +2546,7 @@
     }
 
     async function fetchTodaysSetupResults() {
-      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       if (!adminKey) return;
 
       const label = document.getElementById('setupResultsUploadLabel');
@@ -2557,7 +2557,7 @@
 
       try {
         const res = await fetch('/api/admin/todays-setup-results', {
-          headers: { 'x-admin-key': adminKey }
+          headers: { 'x-admin-token': adminToken }
         });
         const data = await res.json();
         
@@ -2588,7 +2588,7 @@
 
       const label = document.getElementById('setupResultsUploadLabel');
       const status = document.getElementById('setupResultsUploadStatus');
-      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
 
       label.innerHTML = '<i data-feather="loader" class="w-4 h-4 animate-spin"></i> Uploading...';
       feather.replace();
@@ -2629,7 +2629,7 @@
 
     async function removeTodaysSetupResults() {
       if (!confirm('Are you sure you want to remove the current Today\'s Setup Results?')) return;
-      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       const status = document.getElementById('setupResultsUploadStatus');
       const label = document.getElementById('setupResultsUploadLabel');
       
@@ -2639,7 +2639,7 @@
       try {
         const res = await fetch('/api/todays-setup-results', {
           method: 'DELETE',
-          headers: { 'x-admin-key': adminKey }
+          headers: { 'x-admin-token': adminToken }
         });
         const data = await res.json();
         
@@ -2663,13 +2663,13 @@
     }
 
     async function fetchVIPDocuments() {
-      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       const container = document.getElementById('documentListContainer');
       if (!adminKey) return;
 
       try {
         const res = await fetch('/api/vip-documents', {
-          headers: { 'x-admin-key': adminKey }
+          headers: { 'x-admin-token': adminToken }
         });
         const data = await res.json();
 
@@ -2720,7 +2720,7 @@
     }
 
     async function uploadVipDocument() {
-      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       const btn = document.getElementById('uploadDocBtn');
       const feedback = document.getElementById('uploadFeedback');
       
@@ -2773,11 +2773,11 @@
     async function deleteVIPDocument(filename) {
       if (!confirm(`Are you sure you want to delete ${filename}?`)) return;
       
-      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       try {
         const res = await fetch(`/api/delete-vip-document/${encodeURIComponent(filename)}`, {
           method: 'DELETE',
-          headers: { 'x-admin-key': adminKey }
+          headers: { 'x-admin-token': adminToken }
         });
         const data = await res.json();
 
@@ -2793,7 +2793,7 @@
 
     // --- VIP PASSWORD LOGIC ---
     async function updateVipPassword() {
-      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       const newPass = document.getElementById('newVipPassword').value.trim();
       const feedback = document.getElementById('passwordFeedback');
 
@@ -2877,7 +2877,7 @@
 
     // ── Crypto Payment Requests Management ──────────────────────
     async function fetchCryptoRequests() {
-      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       if (!adminKey) return;
       const tbody = document.getElementById('cryptoRequestsBody');
       if (!tbody) return;
@@ -2886,7 +2886,7 @@
 
       try {
         const res = await fetch('/api/admin/crypto-requests', {
-          headers: { 'x-admin-key': adminKey }
+          headers: { 'x-admin-token': adminToken }
         });
         const data = await res.json();
 
@@ -2926,13 +2926,13 @@
     }
 
     async function approveCryptoRequest(requestId) {
-      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       if (!adminKey || !confirm('Approve this crypto payment and generate an access code?')) return;
 
       try {
         const res = await fetch('/api/admin/approve-crypto-request', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+          headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
           body: JSON.stringify({ requestId })
         });
         const data = await res.json();
@@ -2949,13 +2949,13 @@
     }
 
     async function rejectCryptoRequest(requestId) {
-      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       if (!adminKey || !confirm('Reject this crypto payment request?')) return;
 
       try {
         const res = await fetch('/api/admin/reject-crypto-request', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+          headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
           body: JSON.stringify({ requestId })
         });
         const data = await res.json();
@@ -2971,7 +2971,7 @@
     }
     // ── Registered Users Management ──────────────────────
     async function fetchUsers() {
-      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       if (!adminKey) return;
       const tbody = document.getElementById('userListBody');
       if (!tbody) return;
@@ -2980,7 +2980,7 @@
 
       try {
         const res = await fetch('/api/admin/users', {
-          headers: { 'x-admin-key': adminKey }
+          headers: { 'x-admin-token': adminToken }
         });
         const data = await res.json();
 
@@ -3002,11 +3002,11 @@
     let regChartInstance = null;
 
     async function fetchAnalytics() {
-      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       if (!adminKey) return;
 
       try {
-        const res = await fetch('/api/admin/analytics', { headers: { 'x-admin-key': adminKey } });
+        const res = await fetch('/api/admin/analytics', { headers: { 'x-admin-token': adminToken } });
         const data = await res.json();
         
         if (data.ok) {
@@ -3155,7 +3155,7 @@
       feather.replace();
 
       try {
-        const res = await fetch('/api/admin/2fa/setup', { headers: { 'x-admin-key': adminKey } });
+        const res = await fetch('/api/admin/2fa/setup', { headers: { 'x-admin-token': adminToken } });
         const data = await res.json();
         if (data.ok) {
           twoFASecret = data.secret;
@@ -3191,7 +3191,7 @@
       try {
         const res = await fetch('/api/admin/2fa/verify-setup', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+          headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
           body: JSON.stringify({ secret: twoFASecret, token })
         });
         const data = await res.json();
@@ -3223,13 +3223,13 @@
 
     // ── Promo Codes ──────────────────────────────────────────────
     async function fetchPromos() {
-      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       if (!adminKey) return;
       const container = document.getElementById('promoListBody');
       if (!container) return;
       container.innerHTML = '<p class="text-gray-500 text-xs text-center py-4">Loading...</p>';
       try {
-        const res = await fetch('/api/admin/promos', { headers: { 'x-admin-key': adminKey } });
+        const res = await fetch('/api/admin/promos', { headers: { 'x-admin-token': adminToken } });
         const data = await res.json();
         if (!data.ok || data.promos.length === 0) {
           container.innerHTML = '<p class="text-gray-500 text-xs text-center py-4">No promo codes yet.</p>';
@@ -3250,7 +3250,7 @@
     }
 
     async function createPromo() {
-      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       const code = document.getElementById('newPromoCode').value.trim();
       const discount = document.getElementById('newPromoDiscount').value.trim();
       const msgEl = document.getElementById('promoCreateMsg');
@@ -3264,7 +3264,7 @@
       try {
         const res = await fetch('/api/admin/promos', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+          headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
           body: JSON.stringify({ code, discountPercentage: Number(discount) })
         });
         const data = await res.json();
@@ -3285,10 +3285,10 @@
     }
 
     async function deletePromo(code) {
-      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       if (!confirm(`Delete promo code "${code}"?`)) return;
       try {
-        await fetch(`/api/admin/promos/${code}`, { method: 'DELETE', headers: { 'x-admin-key': adminKey } });
+        await fetch(`/api/admin/promos/${code}`, { method: 'DELETE', headers: { 'x-admin-token': adminToken } });
         fetchPromos();
       } catch (err) {
         alert('Failed to delete promo.');
@@ -3297,13 +3297,13 @@
 
     // ── Support Tickets ──────────────────────────────────────────
     async function fetchAdminTickets() {
-      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       if (!adminKey) return;
       const container = document.getElementById('adminTicketsList');
       if (!container) return;
       container.innerHTML = '<p class="text-gray-500 text-xs text-center py-8">Loading tickets...</p>';
       try {
-        const res = await fetch('/api/admin/tickets', { headers: { 'x-admin-key': adminKey } });
+        const res = await fetch('/api/admin/tickets', { headers: { 'x-admin-token': adminToken } });
         const data = await res.json();
         if (!data.ok || data.tickets.length === 0) {
           container.innerHTML = '<p class="text-gray-500 text-xs text-center py-8">No support tickets yet. 🎉</p>';
@@ -3338,14 +3338,14 @@
     }
 
     async function replyToTicket(id) {
-      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       const input = document.getElementById(`reply-input-${id}`);
       const message = input ? input.value.trim() : '';
       if (!message) return;
       try {
         const res = await fetch(`/api/admin/tickets/${id}/reply`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+          headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
           body: JSON.stringify({ message })
         });
         const data = await res.json();
@@ -3359,12 +3359,12 @@
     }
 
     async function closeTicket(id) {
-      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       if (!confirm('Mark this ticket as Closed?')) return;
       try {
         await fetch(`/api/admin/tickets/${id}/close`, {
           method: 'POST',
-          headers: { 'x-admin-key': adminKey }
+          headers: { 'x-admin-token': adminToken }
         });
         fetchAdminTickets();
       } catch (err) {
