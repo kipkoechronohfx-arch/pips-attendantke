@@ -1736,44 +1736,6 @@ app.get('/api/download-vip', async (req, res) => {
   }
 });
 
-// ── GET /api/admin/telegram-test (diagnostic) ────────────────────
-app.get('/api/admin/telegram-test', validateAdminKey, async (req, res) => {
-  const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-  const VIP_CHAT_ID = process.env.TELEGRAM_VIP_CHAT_ID || process.env.TELEGRAM_CHAT_ID;
-
-  const result = { TOKEN_SET: !!TOKEN, VIP_CHAT_ID_USED: VIP_CHAT_ID || 'NOT SET' };
-
-  if (!TOKEN) return res.json({ ...result, error: 'TELEGRAM_BOT_TOKEN not set' });
-
-  // Check who the bot is
-  try {
-    const meRes = await fetch(`https://api.telegram.org/bot${TOKEN}/getMe`);
-    result.botInfo = (await meRes.json());
-  } catch (e) { result.botInfo = { error: e.message }; }
-
-  if (!VIP_CHAT_ID) return res.json({ ...result, error: 'No chat ID set' });
-
-  // Try to get chat info
-  try {
-    const chatRes = await fetch(`https://api.telegram.org/bot${TOKEN}/getChat`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: VIP_CHAT_ID })
-    });
-    result.chatInfo = (await chatRes.json());
-  } catch (e) { result.chatInfo = { error: e.message }; }
-
-  // Try to create the invite link
-  try {
-    const invRes = await fetch(`https://api.telegram.org/bot${TOKEN}/createChatInviteLink`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: VIP_CHAT_ID, member_limit: 1 })
-    });
-    result.inviteResult = (await invRes.json());
-  } catch (e) { result.inviteResult = { error: e.message }; }
-
-  res.json(result);
-});
-
 // ── GET /api/telegram/generate-invite ────────────────────────────
 app.get('/api/telegram/generate-invite', validateUserSession, async (req, res) => {
   const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
