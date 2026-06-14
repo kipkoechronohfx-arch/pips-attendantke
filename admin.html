@@ -258,6 +258,14 @@
               </button>
             </div>
             <p class="text-[10px] text-gray-500 mt-1">This is the <span class="text-amber-400 font-bold">ADMIN_KEY</span> value set in your server's environment variables (.env file).</p>
+          
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-amber-400 mb-1.5">2FA Code</label>
+            <input type="text" id="totpToken" placeholder="6-digit authenticator code"
+              class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/60 focus:outline-none focus:shadow-[0_0_10px_rgba(251,191,36,0.25)] transition duration-200 tracking-widest" maxlength="6" />
+            <p class="text-[10px] text-gray-500 mt-1">Leave blank if setting up for the first time.</p>
+          </div>
+
           </div>
 
           <button type="submit" class="w-full py-3.5 rounded-xl font-bold text-sm bg-gradient-to-r from-neon-purple to-neon-blue hover:brightness-110 active:scale-98 transition duration-200 shadow-lg cursor-pointer">
@@ -3178,18 +3186,31 @@
         msgEl.textContent = '❌ Please enter the 6-digit code.';
         return;
       }
+      
+      const adminKey = document.getElementById('adminKey')?.value.trim() || localStorage.getItem('pa_admin_key');
       try {
-        const res = await fetch('/api/admin/2fa/verify', {
+        const res = await fetch('/api/admin/2fa/verify-setup', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
           body: JSON.stringify({ secret: twoFASecret, token })
         });
         const data = await res.json();
         if (data.ok) {
-          localStorage.setItem('pa_2fa_secret', twoFASecret);
           msgEl.className = 'text-emerald-400 text-[11px] min-h-[14px] mb-3 text-center';
-          msgEl.textContent = '✅ 2FA verified! Save your secret key somewhere safe.';
-          setTimeout(() => { document.getElementById('twoFAModal').classList.add('hidden'); }, 2500);
+          msgEl.textContent = '✅ Setup successful!';
+          
+          localStorage.setItem('pa_admin_token', data.adminToken);
+          const formToken = document.getElementById('botToken')?.value.trim();
+          const chat = document.getElementById('chatId')?.value.trim();
+          const vipChat = document.getElementById('vipChatId')?.value.trim();
+          if (formToken && chat && adminKey) {
+            localStorage.setItem('pa_bot_token', formToken);
+            localStorage.setItem('pa_chat_id', chat);
+            if(vipChat) localStorage.setItem('pa_vip_chat_id', vipChat);
+            localStorage.setItem('pa_admin_key', adminKey);
+          }
+          
+          setTimeout(() => { document.getElementById('twoFAModal').classList.add('hidden'); checkCredentials(); }, 1500);
         } else {
           msgEl.className = 'text-rose-400 text-[11px] min-h-[14px] mb-3 text-center';
           msgEl.textContent = '❌ Invalid code. Please try again.';

@@ -717,6 +717,32 @@ function validateAdminKey(req, res, next) {
   next();
 }
 
+
+function validateAdminSession(req, res, next) {
+  const token = req.headers['x-admin-token'];
+  if (!token) return res.status(401).json({ ok: false, error: 'Missing admin session token.' });
+  
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 2) return res.status(401).json({ ok: false, error: 'Invalid token format.' });
+    
+    const [payloadStr, hmac] = parts;
+    const serverSecret = process.env.SERVER_SECRET || 'pips-attendant-local-secret-key-2026';
+    const expectedHmac = require('crypto').createHmac('sha256', serverSecret).update(payloadStr).digest('hex');
+    
+    if (hmac !== expectedHmac) return res.status(401).json({ ok: false, error: 'Invalid token signature.' });
+    
+    const payload = JSON.parse(Buffer.from(payloadStr, 'base64').toString('utf8'));
+    if (payload.role !== 'admin') return res.status(403).json({ ok: false, error: 'Unauthorized role.' });
+    if (payload.exp && Date.now() > payload.exp) return res.status(401).json({ ok: false, error: 'Session expired. Please log in again.' });
+    
+    next();
+  } catch (err) {
+    return res.status(401).json({ ok: false, error: 'Invalid token.' });
+  }
+}
+
+
 async function validateVipSession(req, res, next) {
   const token = req.headers['x-vip-token'] || req.query.token;
   if (!token) return res.status(401).json({ error: 'Missing token.' });
@@ -1442,7 +1468,7 @@ app.get('/api/todays-setup', validateVipSession, async (req, res) => {
 });
 
 // ── ADMIN: GET TODAY'S SETUP ───────────────────────────────────
-app.get('/api/admin/todays-setup', validateAdminKey, async (req, res) => {
+app.get('/api/admin/todays-setup', validateAdminSession, async (req, res) => {
   try {
     const setup = await getAdminTodaysSetup();
     if (setup && setup.image) {
@@ -1503,7 +1529,7 @@ app.get('/api/todays-setup-results', validateVipSession, async (req, res) => {
 });
 
 // ── ADMIN: GET TODAY'S SETUP RESULTS ──────────────────────────
-app.get('/api/admin/todays-setup-results', validateAdminKey, async (req, res) => {
+app.get('/api/admin/todays-setup-results', validateAdminSession, async (req, res) => {
   try {
     const setup = await getAdminTodaysSetupResults();
     if (setup && setup.image) {
@@ -1875,7 +1901,7 @@ app.get('/api/signals/history', async (req, res) => {
   }
 });
 // ── GET /api/admin/users ──────────────────────────────────────
-app.get('/api/admin/users', validateAdminKey, async (req, res) => {
+app.get('/api/admin/users', validateAdminSession, async (req, res) => {
   try {
     const users = await getAllUsers();
     const safeUsers = users.map(u => ({ id: u.id, email: u.email, name: u.name, registeredAt: u.registeredAt, subscriptionExpiry: u.subscriptionExpiry }));
@@ -2085,7 +2111,7 @@ app.post('/api/crypto-payment-request', validateUserSession, async (req, res) =>
 });
 
 // ── GET /api/admin/crypto-requests ───────────────────────────
-app.get('/api/admin/crypto-requests', validateAdminKey, async (req, res) => {
+app.get('/api/admin/crypto-requests', validateAdminSession, async (req, res) => {
   try {
     const requests = await getCryptoRequests();
     res.json({ ok: true, count: requests.length, requests });
@@ -2096,7 +2122,7 @@ app.get('/api/admin/crypto-requests', validateAdminKey, async (req, res) => {
 
 // ── POST /api/admin/approve-crypto-request ───────────────────
 // Admin approves a crypto request and generates an access code
-app.post('/api/admin/approve-crypto-request', validateAdminKey, async (req, res) => {
+app.post('/api/admin/approve-crypto-request', validateAdminSession, async (req, res) => {
   const { requestId } = req.body;
   if (!requestId) return res.status(400).json({ ok: false, error: 'Request ID required.' });
 
@@ -2165,7 +2191,7 @@ app.post('/api/admin/approve-crypto-request', validateAdminKey, async (req, res)
 });
 
 // ── POST /api/admin/reject-crypto-request ────────────────────
-app.post('/api/admin/reject-crypto-request', validateAdminKey, async (req, res) => {
+app.post('/api/admin/reject-crypto-request', validateAdminSession, async (req, res) => {
   const { requestId } = req.body;
   if (!requestId) return res.status(400).json({ ok: false, error: 'Request ID required.' });
 
@@ -2191,7 +2217,7 @@ app.get('/api/plans', (req, res) => {
 // \u2500\u2500 Admin 2FA \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
 // GET /api/admin/2fa/setup — Generate new TOTP secret & QR code
-app.get('/api/admin/2fa/setup', validateAdminKey, async (req, res) => {
+app.get('/api/admin/2fa/setup', validateAdminSession, async (req, res) => {
   try {
     const secret = speakeasy.generateSecret({
       name: `Pips_attendant Admin (${req.headers['x-admin-key'].slice(0, 6)}...)`,
@@ -2217,7 +2243,7 @@ app.post('/api/admin/2fa/verify', (req, res) => {
   res.json({ ok: verified, error: verified ? null : 'Invalid or expired token.' });
 });
 
-app.get('/api/admin/system-status', validateAdminKey, async (req, res) => {
+app.get('/api/admin/system-status', validateAdminSession, async (req, res) => {
   res.json({
     ok: true,
     status: {
@@ -2235,7 +2261,7 @@ async function getPromos() {
   return []; // Fallback empty if no DB
 }
 
-app.post('/api/admin/promos', validateAdminKey, async (req, res) => {
+app.post('/api/admin/promos', validateAdminSession, async (req, res) => {
   const { code, discountPercentage } = req.body;
   if (!code || !discountPercentage) return res.status(400).json({ ok: false, error: 'Missing fields' });
   if (db) {
@@ -2248,12 +2274,12 @@ app.post('/api/admin/promos', validateAdminKey, async (req, res) => {
   res.json({ ok: true });
 });
 
-app.get('/api/admin/promos', validateAdminKey, async (req, res) => {
+app.get('/api/admin/promos', validateAdminSession, async (req, res) => {
   const promos = await getPromos();
   res.json({ ok: true, promos });
 });
 
-app.delete('/api/admin/promos/:code', validateAdminKey, async (req, res) => {
+app.delete('/api/admin/promos/:code', validateAdminSession, async (req, res) => {
   if (db) await getPromosColl().deleteOne({ code: req.params.code });
   res.json({ ok: true });
 });
@@ -2314,12 +2340,12 @@ app.post('/api/tickets/:id/reply', validateUserSession, async (req, res) => {
   res.json({ ok: true });
 });
 
-app.get('/api/admin/tickets', validateAdminKey, async (req, res) => {
+app.get('/api/admin/tickets', validateAdminSession, async (req, res) => {
   const tickets = await getTickets();
   res.json({ ok: true, tickets });
 });
 
-app.post('/api/admin/tickets/:id/reply', validateAdminKey, async (req, res) => {
+app.post('/api/admin/tickets/:id/reply', validateAdminSession, async (req, res) => {
   const { message } = req.body;
   const { ObjectId } = require('mongodb');
   if (db) {
@@ -2334,7 +2360,7 @@ app.post('/api/admin/tickets/:id/reply', validateAdminKey, async (req, res) => {
   res.json({ ok: true });
 });
 
-app.post('/api/admin/tickets/:id/close', validateAdminKey, async (req, res) => {
+app.post('/api/admin/tickets/:id/close', validateAdminSession, async (req, res) => {
   const { ObjectId } = require('mongodb');
   if (db) {
     await getTicketsColl().updateOne(
@@ -2347,7 +2373,7 @@ app.post('/api/admin/tickets/:id/close', validateAdminKey, async (req, res) => {
 
 
 // ── GET /api/admin/analytics ──────────────────────────────────
-app.get('/api/admin/analytics', validateAdminKey, async (req, res) => {
+app.get('/api/admin/analytics', validateAdminSession, async (req, res) => {
   try {
     const users = await getUsers();
     const now = Date.now();
