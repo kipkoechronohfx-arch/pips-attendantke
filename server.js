@@ -998,7 +998,7 @@ app.post('/api/register', authLimiter, async (req, res) => {
     console.error('[Email] Failed to send welcome email', err);
   }
 
-  res.json({ ok: true, sessionToken, user: { id: user.id, email: user.email, name: user.name, subscriptionExpiry: user.subscriptionExpiry } });
+  res.json({ ok: true, sessionToken, user: { id: user.id, email: user.email, name: user.name, subscriptionExpiry: user.subscriptionExpiry, telegramId: user.telegramId } });
 });
 
 app.post('/api/login', authLimiter, async (req, res) => {
@@ -1011,7 +1011,7 @@ app.post('/api/login', authLimiter, async (req, res) => {
   }
 
   const sessionToken = generateUserToken(user);
-  res.json({ ok: true, sessionToken, user: { id: user.id, email: user.email, name: user.name, subscriptionExpiry: user.subscriptionExpiry } });
+  res.json({ ok: true, sessionToken, user: { id: user.id, email: user.email, name: user.name, subscriptionExpiry: user.subscriptionExpiry, telegramId: user.telegramId } });
 });
 
 app.get('/api/me', validateUserSession, (req, res) => {
@@ -1021,7 +1021,8 @@ app.get('/api/me', validateUserSession, (req, res) => {
       id: req.user.id,
       email: req.user.email,
       name: req.user.name,
-      subscriptionExpiry: req.user.subscriptionExpiry
+      subscriptionExpiry: req.user.subscriptionExpiry,
+      telegramId: req.user.telegramId
     }
   });
 });
