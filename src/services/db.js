@@ -36,6 +36,7 @@ async function connectDB() {
     console.log('  Connected successfully to MongoDB Atlas');
     console.log('========================================\n');
     await runMigrations();
+    await ensureIndexes();
   } catch (err) {
     console.error('[MongoDB connection failed]', err.message);
     console.log('Retrying DB connection in 5 seconds...');
@@ -48,6 +49,23 @@ async function closeDB() {
     await client.close();
     db = null;
     client = null;
+  }
+}
+
+async function ensureIndexes() {
+  if (!db) return;
+  try {
+    console.log('[Database] Ensuring indexes...');
+    await getUsersColl().createIndex({ email: 1 }, { unique: true, sparse: true });
+    await getUsersColl().createIndex({ id: 1 }, { unique: true, sparse: true });
+    await getSubsColl().createIndex({ telegram: 1 }, { unique: true, sparse: true });
+    await getPaymentsColl().createIndex({ reference: 1 }, { unique: true, sparse: true });
+    await getPaymentsColl().createIndex({ accessCode: 1 }, { sparse: true });
+    await getTicketsColl().createIndex({ userEmail: 1 });
+    await getChatColl().createIndex({ timestamp: -1 });
+    console.log('[Database] Indexes ensured successfully.');
+  } catch (err) {
+    console.error('[Database Warning] Failed to create indexes:', err.message);
   }
 }
 

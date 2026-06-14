@@ -30,6 +30,7 @@
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/feather-icons"></script>
+  <script src="/socket.io/socket.io.js"></script>
   <link rel="stylesheet" href="style.css">
   <style>
     body { background-color: #0d0800; font-family: 'Inter', sans-serif; }
@@ -1649,6 +1650,37 @@
       feather.replace();
     }
 
+    // -- Socket.io initialization --
+    let socket = null;
+    function initSocket(token) {
+      if (socket) return; // already connected
+      socket = io({ auth: { token } });
+
+      socket.on('newMessage', (msg) => {
+        const chatContainer = document.getElementById('chatMessages');
+        // Remove 'No messages yet' if present
+        if (chatContainer.innerHTML.includes('No messages yet')) {
+          chatContainer.innerHTML = '';
+        }
+        
+        const timeStr = new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const isSelf = msg.author === (localStorage.getItem('pa_vip_user_name') || 'VIP Member');
+        
+        const msgHtml = `
+          <div class="flex flex-col ${isSelf ? 'items-end' : 'items-start'} w-full mt-2">
+            <span class="text-[10px] text-gray-500 mb-1 ml-1">${msg.author} • ${timeStr}</span>
+            <div class="max-w-[80%] rounded-2xl px-4 py-2 text-sm ${isSelf ? 'bg-amber-500/20 border border-amber-500/30 text-amber-50' : 'bg-white/10 border border-white/5 text-gray-200'}">
+              ${msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
+            </div>
+          </div>
+        `;
+        chatContainer.insertAdjacentHTML('beforeend', msgHtml);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      });
+      
+      socket.on('error', (err) => console.error('Socket error:', err));
+    }
+
     async function checkUserAccess() {
       // Fetch dynamic Telegram bot username
       try {
@@ -1703,6 +1735,7 @@
             loadTodaysSetup();
             loadTodaysSetupResults();
             loadChatMessages();
+            initSocket(token); // Init real-time chat
             loadCountdownFromSignals();
             feather.replace();
           } else {
@@ -1720,6 +1753,7 @@
 
     function logout() {
       sessionStorage.removeItem('vip_session_token');
+      if (socket) socket.disconnect();
       window.location.reload();
     }
 
@@ -1924,7 +1958,7 @@
     async function sendChatMessage(e) {
       e.preventDefault();
       const token = sessionStorage.getItem('vip_session_token');
-      if (!token) return;
+      if (!token || !socket) return;
       
       const input = document.getElementById('chatInput');
       const btn = document.getElementById('chatBtn');
@@ -1934,35 +1968,17 @@
       input.disabled = true;
       btn.disabled = true;
 
-      try {
-        const res = await fetch('/api/chat/message', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'x-vip-token': token
-          },
-          body: JSON.stringify({ text, author: localStorage.getItem('pa_vip_user_name') || 'VIP Member' })
-        });
-        const data = await res.json();
-        if (data.ok) {
-          input.value = '';
-          await loadChatMessages();
-        }
-      } catch (err) {
-        alert('Failed to send message.');
-      } finally {
-        input.disabled = false;
-        btn.disabled = false;
-        input.focus();
-      }
+      // Send via WebSocket instead of HTTP POST
+      socket.emit('sendMessage', {
+        text,
+        author: localStorage.getItem('pa_vip_user_name') || 'VIP Member'
+      });
+      
+      input.value = '';
+      input.disabled = false;
+      btn.disabled = false;
+      input.focus();
     }
-
-    // Auto-refresh chat every 5 seconds
-    setInterval(() => {
-      if(sessionStorage.getItem('vip_session_token')) {
-        loadChatMessages();
-      }
-    }, 5000);
 
     // Initialize data on page load
     loadCryptoWallets();

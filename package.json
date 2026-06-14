@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "test": "jest --detectOpenHandles --forceExit"
   },
   "dependencies": {
     "@sendgrid/mail": "^8.1.6",
@@ -24,6 +25,7 @@
     "node-fetch": "^2.7.0",
     "nodemailer": "^8.0.11",
     "qrcode": "^1.5.4",
+    "socket.io": "^4.8.3",
     "speakeasy": "^2.0.0",
     "web-push": "^3.6.7"
   },

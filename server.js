@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const http = require('http');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
@@ -8,6 +9,7 @@ const path = require('path');
 const db = require('./src/services/db');
 const { startCronJobs } = require('./src/services/cronJobs');
 const { registerTelegramWebhook, handleTelegramUpdate } = require('./src/services/telegramBot');
+const { initializeSocket } = require('./src/services/socketService');
 
 const authRoutes = require('./src/routes/authRoutes');
 const adminRoutes = require('./src/routes/adminRoutes');
@@ -135,12 +137,15 @@ process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT',  () => shutdown('SIGINT'));
 
 // ── Application Startup ────────────────────────────────────────
+const server = http.createServer(app);
+initializeSocket(server);
+
 async function startServer() {
   validateEnv();
   await db.connectDB();
   startCronJobs();
 
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     console.log(`
     ╔═══════════════════════════════════════╗
     ║   Pips_attendant API Server           ║
