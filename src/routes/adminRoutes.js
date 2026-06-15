@@ -314,6 +314,38 @@ router.post('/tickets/:id/close', validateAdminSession, async (req, res) => {
   res.json({ ok: true });
 });
 
+// ── Broadcast to Tickets ───────────────────────────────────────────
+router.post('/broadcast-to-tickets', validateAdminSession, async (req, res) => {
+  const { message } = req.body;
+  if (!message || !message.trim()) {
+    return res.status(400).json({ ok: false, error: 'Message is required.' });
+  }
+  try {
+    const tickets = await db.getTickets();
+    const openTickets = tickets.filter(t => t.status === 'Open' || t.status === 'Answered');
+
+    for (const ticket of openTickets) {
+      if (!ticket.messages) ticket.messages = [];
+      ticket.messages.push({
+        sender: 'Admin',
+        text: `📣 Admin Broadcast:\n\n${message.trim()}`,
+        timestamp: Date.now(),
+        isBroadcast: true
+      });
+      ticket.updatedAt = Date.now();
+      await db.saveTicket(ticket);
+    }
+
+    res.json({
+      ok: true,
+      count: openTickets.length,
+      message: `Broadcast posted to ${openTickets.length} ticket(s).`
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // ── Analytics ────────────────────────────────────────────────
 router.get('/analytics', validateAdminSession, async (req, res) => {
   try {
