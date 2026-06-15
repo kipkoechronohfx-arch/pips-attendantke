@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trading Journal | Pips_attendant</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    @theme {
+      --color-dark-navy: #0d0800;
+      --color-neon-blue: #f59e0b;
+      --color-neon-purple: #d97706;
+      --font-inter: "Inter", "Poppins", sans-serif;
+    }
+  </style>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/feather-icons"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-dark-navy text-white font-inter min-h-screen relative selection:bg-amber-400/20 selection:text-amber-400 overflow-x-hidden">
+
+  <!-- Background Effects -->
+  <div class="fixed inset-0 z-0">
+    <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]"></div>
+    <div class="absolute top-0 right-0 w-96 h-96 bg-sky-500/10 rounded-full blur-[100px]"></div>
+    <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[120px]"></div>
+  </div>
+
+  <canvas id="bgCanvas" class="fixed inset-0 z-0 pointer-events-none opacity-40"></canvas>
+
+  <!-- Navigation -->
+  <nav class="relative z-10 w-full p-6 flex justify-between items-center max-w-4xl mx-auto">
+    <a href="index.html" class="flex items-center gap-2 text-gray-400 hover:text-white transition group">
+      <i data-feather="arrow-left" class="w-5 h-5 group-hover:-translate-x-1 transition"></i>
+      <span class="text-sm font-bold">Back to Home</span>
+    </a>
+    <div class="flex items-center gap-2">
+      <i data-feather="book-open" class="w-5 h-5 text-sky-400"></i>
+      <span class="text-sky-400 font-bold tracking-wider text-sm uppercase">VIP Utility</span>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="relative z-10 flex flex-col items-center w-full px-6 pt-4 pb-20 max-w-4xl mx-auto">
+    
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <h1 class="text-3xl md:text-4xl font-black tracking-tight mb-2 drop-shadow-md">
+        Private Trading <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-400">Journal</span>
+      </h1>
+      <p class="text-gray-400 max-w-lg mx-auto text-xs leading-relaxed">
+        Track your performance securely. All data is saved instantly to your local browser storage—100% private.
+      </p>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="w-full grid grid-cols-3 gap-4 mb-8">
+      <div class="glass-card p-4 rounded-2xl border border-white/10 text-center flex flex-col items-center justify-center">
+        <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Win Rate</span>
+        <span id="statWinRate" class="text-2xl font-black text-sky-400">0%</span>
+      </div>
+      <div class="glass-card p-4 rounded-2xl border border-white/10 text-center flex flex-col items-center justify-center">
+        <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Total Trades</span>
+        <span id="statTotal" class="text-2xl font-black text-white">0</span>
+      </div>
+      <div class="glass-card p-4 rounded-2xl border border-white/10 text-center flex flex-col items-center justify-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-t from-emerald-500/10 to-transparent"></div>
+        <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1 relative z-10">Net Profit ($)</span>
+        <span id="statProfit" class="text-2xl font-black text-emerald-400 relative z-10">$0.00</span>
+      </div>
+    </div>
+
+    <!-- Add Trade Form -->
+    <div class="w-full glass-card p-6 rounded-3xl border border-sky-400/30 mb-8 shadow-[0_0_20px_rgba(56,189,248,0.1)]">
+      <h3 class="text-sm font-bold text-white mb-4 flex items-center gap-2">
+        <i data-feather="plus-circle" class="w-4 h-4 text-sky-400"></i> Log New Trade
+      </h3>
+      <form id="tradeForm" class="grid grid-cols-2 md:grid-cols-6 gap-3">
+        
+        <div class="col-span-2 md:col-span-1">
+          <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-wider">Asset</label>
+          <input type="text" id="tAsset" placeholder="EURUSD" required class="w-full px-3 py-2 rounded-lg bg-black/50 border border-white/10 text-white text-xs focus:border-sky-400/50 outline-none uppercase" />
+        </div>
+
+        <div class="col-span-2 md:col-span-1">
+          <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-wider">Type</label>
+          <select id="tType" class="w-full px-3 py-2 rounded-lg bg-black/50 border border-white/10 text-white text-xs focus:border-sky-400/50 outline-none cursor-pointer">
+            <option value="BUY">BUY</option>
+            <option value="SELL">SELL</option>
+          </select>
+        </div>
+
+        <div class="col-span-1 md:col-span-1">
+          <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-wider">Entry</label>
+          <input type="number" id="tEntry" step="any" required class="w-full px-3 py-2 rounded-lg bg-black/50 border border-white/10 text-white text-xs focus:border-sky-400/50 outline-none" />
+        </div>
+
+        <div class="col-span-1 md:col-span-1">
+          <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-wider">Exit</label>
+          <input type="number" id="tExit" step="any" required class="w-full px-3 py-2 rounded-lg bg-black/50 border border-white/10 text-white text-xs focus:border-sky-400/50 outline-none" />
+        </div>
+
+        <div class="col-span-2 md:col-span-1">
+          <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-wider">P/L ($)</label>
+          <input type="number" id="tPL" step="any" placeholder="e.g. 50 or -20" required class="w-full px-3 py-2 rounded-lg bg-black/50 border border-white/10 text-white text-xs focus:border-sky-400/50 outline-none" />
+        </div>
+
+        <div class="col-span-2 md:col-span-1 flex items-end">
+          <button type="submit" class="w-full py-2 rounded-lg font-bold bg-sky-500 text-dark-navy hover:bg-sky-400 transition text-xs cursor-pointer shadow-[0_0_10px_rgba(56,189,248,0.3)]">Save Trade</button>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Trades Table -->
+    <div class="w-full glass-card rounded-3xl border border-white/10 overflow-hidden">
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left border-collapse min-w-[600px]">
+          <thead>
+            <tr class="bg-white/5 border-b border-white/10 text-[10px] uppercase tracking-wider text-gray-400">
+              <th class="p-4 font-bold">Date</th>
+              <th class="p-4 font-bold">Asset</th>
+              <th class="p-4 font-bold">Type</th>
+              <th class="p-4 font-bold">Entry</th>
+              <th class="p-4 font-bold">Exit</th>
+              <th class="p-4 font-bold text-right">Net P/L</th>
+              <th class="p-4 font-bold text-center">Action</th>
+            </tr>
+          </thead>
+          <tbody id="tradesList" class="text-sm divide-y divide-white/5">
+            <!-- Trades will be injected here -->
+          </tbody>
+        </table>
+      </div>
+      <!-- Empty State -->
+      <div id="emptyState" class="hidden flex-col items-center justify-center py-12 text-gray-500">
+        <i data-feather="inbox" class="w-10 h-10 mb-2 opacity-50"></i>
+        <p class="text-xs">No trades logged yet.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    feather.replace();
+    
+    // Background Canvas
+    (function() {
+      const canvas = document.getElementById('bgCanvas');
+      if(!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let W, H, particles;
+      function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+      function createParticles() {
+        particles = [];
+        const count = Math.floor((W * H) / 18000);
+        for (let i = 0; i < count; i++) {
+          particles.push({
+            x: Math.random() * W, y: Math.random() * H,
+            vy: -(Math.random() * 0.3 + 0.1), vx: (Math.random() - 0.5) * 0.15,
+            r: Math.random() * 1.2 + 0.3, alpha: Math.random() * 0.5 + 0.2,
+          });
+        }
+      }
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+        particles.forEach(p => {
+          p.x += p.vx; p.y += p.vy;
+          if (p.y < -10) { p.y = H + 10; p.x = Math.random() * W; }
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(56, 189, 248, ${p.alpha})`; // Sky blue particles
+          ctx.fill();
+        });
+        requestAnimationFrame(draw);
+      }
+      window.addEventListener('resize', () => { resize(); createParticles(); });
+      resize(); createParticles(); draw();
+      
+      // Init theme
+      if (localStorage.getItem('theme') === 'dark-navy') {
+        document.body.classList.add('dark-navy-mode');
+      }
+    })();
+
+    // --- JOURNAL LOGIC ---
+    let trades = JSON.parse(localStorage.getItem('pipsJournal')) || [];
+
+    const form = document.getElementById('tradeForm');
+    const tbody = document.getElementById('tradesList');
+    const emptyState = document.getElementById('emptyState');
+    
+    function saveTrades() {
+      localStorage.setItem('pipsJournal', JSON.stringify(trades));
+    }
+
+    function renderTrades() {
+      tbody.innerHTML = '';
+      if (trades.length === 0) {
+        emptyState.classList.remove('hidden');
+        emptyState.classList.add('flex');
+      } else {
+        emptyState.classList.add('hidden');
+        emptyState.classList.remove('flex');
+        
+        let wins = 0;
+        let totalPL = 0;
+
+        trades.slice().reverse().forEach((trade, index) => {
+          const actualIndex = trades.length - 1 - index; // because of reverse
+          const isWin = trade.pl > 0;
+          if (isWin) wins++;
+          totalPL += trade.pl;
+
+          const tr = document.createElement('tr');
+          tr.className = "hover:bg-white/5 transition-colors group";
+          
+          const plClass = isWin ? 'text-emerald-400' : 'text-rose-400';
+          const plSign = isWin ? '+' : '';
+
+          tr.innerHTML = `
+            <td class="p-4 text-xs text-gray-400">${new Date(trade.date).toLocaleDateString()}</td>
+            <td class="p-4 font-bold tracking-wider">${trade.asset}</td>
+            <td class="p-4">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${trade.type === 'BUY' ? 'bg-sky-500/20 text-sky-400' : 'bg-rose-500/20 text-rose-400'}">${trade.type}</span>
+            </td>
+            <td class="p-4 text-gray-300">${trade.entry}</td>
+            <td class="p-4 text-gray-300">${trade.exit}</td>
+            <td class="p-4 text-right font-bold ${plClass}">${plSign}$${trade.pl.toFixed(2)}</td>
+            <td class="p-4 text-center">
+              <button onclick="deleteTrade(${actualIndex})" class="text-gray-500 hover:text-rose-400 transition cursor-pointer p-1">
+                <i data-feather="trash-2" class="w-4 h-4"></i>
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        // Update Stats
+        const winRate = trades.length > 0 ? Math.round((wins / trades.length) * 100) : 0;
+        document.getElementById('statWinRate').innerText = winRate + '%';
+        document.getElementById('statTotal').innerText = trades.length;
+        
+        const plEl = document.getElementById('statProfit');
+        plEl.innerText = (totalPL >= 0 ? '+$' : '-$') + Math.abs(totalPL).toFixed(2);
+        plEl.className = `text-2xl font-black relative z-10 ${totalPL >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+      }
+      feather.replace();
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const newTrade = {
+        date: Date.now(),
+        asset: document.getElementById('tAsset').value.toUpperCase(),
+        type: document.getElementById('tType').value,
+        entry: parseFloat(document.getElementById('tEntry').value),
+        exit: parseFloat(document.getElementById('tExit').value),
+        pl: parseFloat(document.getElementById('tPL').value)
+      };
+
+      trades.push(newTrade);
+      saveTrades();
+      renderTrades();
+      form.reset();
+    });
+
+    window.deleteTrade = function(index) {
+      if(confirm('Delete this trade?')) {
+        trades.splice(index, 1);
+        saveTrades();
+        renderTrades();
+      }
+    };
+
+    // Initial render
+    renderTrades();
+
+  </script>
+</body>
+</html>

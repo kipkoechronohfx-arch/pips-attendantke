@@ -249,6 +249,18 @@
           </div>
 
           <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-indigo-400 mb-1.5">Discord Webhook URL (Optional)</label>
+            <div class="relative">
+              <input type="password" id="discordWebhook" placeholder="https://discord.com/api/webhooks/..."
+                class="w-full px-4 py-3 pr-10 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-indigo-400/60 focus:outline-none focus:shadow-[0_0_10px_rgba(99,102,241,0.25)] transition duration-200" />
+              <button type="button" onclick="togglePasswordVisibility('discordWebhook', 'discordWebhookIcon')" class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-indigo-400 transition cursor-pointer">
+                <i data-feather="eye" id="discordWebhookIcon" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <p class="text-[10px] text-gray-500 mt-1">Used to automatically mirror signals to your Discord server.</p>
+          </div>
+
+          <div>
             <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">Admin Access Key</label>
             <div class="relative">
               <input type="password" id="adminKey" required placeholder="Enter your ADMIN_KEY from .env"
@@ -469,6 +481,9 @@
             </button>
             <button type="button" onclick="shareSignalToLinkedIn()" title="Copy & open LinkedIn" class="py-2.5 px-3 rounded-xl font-bold border border-indigo-500/30 bg-indigo-500/5 hover:bg-indigo-500/15 hover:border-indigo-500/50 active:scale-95 text-indigo-400 hover:text-white transition duration-200 flex items-center justify-center gap-1.5 cursor-pointer text-xs">
               <span>💼</span><span>LinkedIn</span>
+            </button>
+            <button type="button" onclick="shareSignalToDiscord()" title="Mirror to Discord Webhook" class="py-2.5 px-3 rounded-xl font-bold border border-violet-500/30 bg-violet-500/5 hover:bg-violet-500/15 hover:border-violet-500/50 active:scale-95 text-violet-400 hover:text-white transition duration-200 flex items-center justify-center gap-1.5 cursor-pointer text-xs">
+              <span>🎮</span><span>Discord</span>
             </button>
           </div>
         </div>
@@ -717,6 +732,9 @@
             <button type="button" onclick="shareEngToLinkedIn()" title="Copy & open LinkedIn" class="py-2.5 px-3 rounded-xl font-bold border border-indigo-500/30 bg-indigo-500/5 hover:bg-indigo-500/15 hover:border-indigo-500/50 active:scale-95 text-indigo-400 hover:text-white transition duration-200 flex items-center justify-center gap-1.5 cursor-pointer text-xs">
               <span>💼</span><span>LinkedIn</span>
             </button>
+            <button type="button" onclick="shareEngToDiscord()" title="Mirror to Discord Webhook" class="py-2.5 px-3 rounded-xl font-bold border border-violet-500/30 bg-violet-500/5 hover:bg-violet-500/15 hover:border-violet-500/50 active:scale-95 text-violet-400 hover:text-white transition duration-200 flex items-center justify-center gap-1.5 cursor-pointer text-xs">
+              <span>🎮</span><span>Discord</span>
+            </button>
           </div>
           <div id="engFeedback" class="text-xs font-semibold min-h-[16px]"></div>
         </div>
@@ -863,6 +881,9 @@
             </button>
             <button type="button" onclick="shareLiveToLinkedIn()" title="Copy & open LinkedIn" class="py-2.5 px-3 rounded-xl font-bold border border-indigo-500/30 bg-indigo-500/5 hover:bg-indigo-500/15 hover:border-indigo-500/50 active:scale-95 text-indigo-400 hover:text-white transition duration-200 flex items-center justify-center gap-1.5 cursor-pointer text-xs">
               <span>💼</span><span>LinkedIn</span>
+            </button>
+            <button type="button" onclick="shareLiveToDiscord()" title="Mirror to Discord Webhook" class="py-2.5 px-3 rounded-xl font-bold border border-violet-500/30 bg-violet-500/5 hover:bg-violet-500/15 hover:border-violet-500/50 active:scale-95 text-violet-400 hover:text-white transition duration-200 flex items-center justify-center gap-1.5 cursor-pointer text-xs">
+              <span>🎮</span><span>Discord</span>
             </button>
           </div>
           <div id="liveFeedback" class="text-xs font-semibold min-h-[16px]"></div>
@@ -1030,6 +1051,9 @@
             </button>
             <button type="button" onclick="sharePerfToLinkedIn()" title="Copy & open LinkedIn" class="py-2.5 px-3 rounded-xl font-bold border border-indigo-500/30 bg-indigo-500/5 hover:bg-indigo-500/15 hover:border-indigo-500/50 active:scale-95 text-indigo-400 hover:text-white transition duration-200 flex items-center justify-center gap-1.5 cursor-pointer text-xs">
               <span>💼</span><span>LinkedIn</span>
+            </button>
+            <button type="button" onclick="sharePerfToDiscord()" title="Mirror to Discord Webhook" class="py-2.5 px-3 rounded-xl font-bold border border-violet-500/30 bg-violet-500/5 hover:bg-violet-500/15 hover:border-violet-500/50 active:scale-95 text-violet-400 hover:text-white transition duration-200 flex items-center justify-center gap-1.5 cursor-pointer text-xs">
+              <span>🎮</span><span>Discord</span>
             </button>
           </div>
           <div id="perfFeedback" class="text-xs font-semibold min-h-[16px]"></div>
@@ -1678,6 +1702,7 @@
       const token = document.getElementById('botToken').value.trim();
       const chat = document.getElementById('chatId').value.trim();
       const vipChat = document.getElementById('vipChatId').value.trim();
+      const discordWebhook = document.getElementById('discordWebhook')?.value.trim();
       const adminKey = document.getElementById('adminKey').value.trim();
       const totpToken = document.getElementById('totpToken')?.value.trim();
       
@@ -1715,6 +1740,8 @@
           localStorage.setItem('pa_chat_id', chat);
           if (vipChat) localStorage.setItem('pa_vip_chat_id', vipChat);
           else localStorage.removeItem('pa_vip_chat_id');
+          if (discordWebhook) localStorage.setItem('pa_discord_webhook', discordWebhook);
+          else localStorage.removeItem('pa_discord_webhook');
           localStorage.setItem('pa_admin_key', adminKey);
           localStorage.setItem('pa_admin_token', data.adminToken);
           
@@ -1733,6 +1760,7 @@
         localStorage.removeItem('pa_bot_token');
         localStorage.removeItem('pa_chat_id');
         localStorage.removeItem('pa_vip_chat_id');
+        localStorage.removeItem('pa_discord_webhook');
         localStorage.removeItem('pa_admin_key');
         localStorage.removeItem('pa_admin_token');
         checkCredentials();
@@ -3622,6 +3650,7 @@
     function shareSignalToInstagram()   { shareToInstagram(buildTelegramMessageText()); }
     function shareSignalToTikTok()      { shareToTikTok(buildTelegramMessageText()); }
     function shareSignalToLinkedIn()    { shareToLinkedIn(buildTelegramMessageText()); }
+    function shareSignalToDiscord()     { shareToDiscord(buildTelegramMessageText()); }
 
     // Community Engagement wrappers
     function broadcastEngToTickets() { broadcastToTickets(document.getElementById('engMessage').value); }
@@ -3630,6 +3659,7 @@
     function shareEngToInstagram()   { shareToInstagram(document.getElementById('engMessage').value); }
     function shareEngToTikTok()      { shareToTikTok(document.getElementById('engMessage').value); }
     function shareEngToLinkedIn()    { shareToLinkedIn(document.getElementById('engMessage').value); }
+    function shareEngToDiscord()     { shareToDiscord(document.getElementById('engMessage').value); }
 
     // Live Sessions wrappers
     function broadcastLiveToTickets() { broadcastToTickets(document.getElementById('liveMessage').value); }
@@ -3638,6 +3668,7 @@
     function shareLiveToInstagram()   { shareToInstagram(document.getElementById('liveMessage').value); }
     function shareLiveToTikTok()      { shareToTikTok(document.getElementById('liveMessage').value); }
     function shareLiveToLinkedIn()    { shareToLinkedIn(document.getElementById('liveMessage').value); }
+    function shareLiveToDiscord()     { shareToDiscord(document.getElementById('liveMessage').value); }
 
     // Performance Tracker wrappers
     function _getPerfText() {
@@ -3656,6 +3687,39 @@
     function sharePerfToInstagram()   { shareToInstagram(_getPerfText()); }
     function sharePerfToTikTok()      { shareToTikTok(_getPerfText()); }
     function sharePerfToLinkedIn()    { shareToLinkedIn(_getPerfText()); }
+    function sharePerfToDiscord()     { shareToDiscord(_getPerfText()); }
+
+    // --- DISCORD WEBHOOK MIRRORING ---
+    async function shareToDiscord(text) {
+      const webhookUrl = localStorage.getItem('pa_discord_webhook');
+      if (!webhookUrl || !webhookUrl.startsWith('https://discord.com/api/webhooks/')) {
+        showSocialToast('🎮 No Discord Webhook saved. Add it in Setup Credentials.', '#7c3aed');
+        return;
+      }
+      if (!text || !text.trim()) {
+        showSocialToast('⚠️ Nothing to send to Discord.', '#fbbf24');
+        return;
+      }
+
+      showSocialToast('🎮 Sending to Discord...', '#7c3aed');
+
+      try {
+        // Discord webhooks use a { content: "..." } payload
+        const res = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: text })
+        });
+
+        if (res.ok) {
+          showSocialToast('🎮 Successfully mirrored to Discord!', '#22c55e');
+        } else {
+          showSocialToast('❌ Discord rejected the message. Check your Webhook URL.', '#f87171');
+        }
+      } catch (err) {
+        showSocialToast('❌ Could not reach Discord. Check your connection.', '#f87171');
+      }
+    }
 
   </script>
 

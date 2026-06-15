@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prop Firm Passing | Pips_attendant</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    @theme {
+      --color-dark-navy: #0d0800;
+      --color-neon-blue: #f59e0b;
+      --color-neon-purple: #d97706;
+      --font-inter: "Inter", "Poppins", sans-serif;
+    }
+  </style>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/feather-icons"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-dark-navy text-white font-inter min-h-screen relative selection:bg-amber-400/20 selection:text-amber-400 overflow-x-hidden">
+
+  <!-- Background Effects -->
+  <div class="fixed inset-0 z-0">
+    <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]"></div>
+    <div class="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-[100px]"></div>
+    <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-yellow-500/5 rounded-full blur-[120px]"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-4xl max-h-4xl bg-amber-400/5 rounded-full blur-[150px]"></div>
+  </div>
+
+  <canvas id="bgCanvas" class="fixed inset-0 z-0 pointer-events-none opacity-40"></canvas>
+
+  <!-- Navigation -->
+  <nav class="relative z-10 w-full p-6 flex justify-between items-center max-w-3xl mx-auto">
+    <a href="index.html" class="flex items-center gap-2 text-gray-400 hover:text-white transition group">
+      <i data-feather="arrow-left" class="w-5 h-5 group-hover:-translate-x-1 transition"></i>
+      <span class="text-sm font-bold">Back to Home</span>
+    </a>
+    <div class="flex items-center gap-2">
+      <i data-feather="shield" class="w-5 h-5 text-amber-400"></i>
+      <span class="text-amber-400 font-bold tracking-wider text-sm uppercase">Verified Service</span>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="relative z-10 flex flex-col items-center w-full px-6 pt-4 pb-20 max-w-3xl mx-auto">
+    
+    <!-- Header -->
+    <div class="text-center mb-12">
+      <div class="inline-flex items-center justify-center p-4 rounded-full bg-amber-400/10 border border-amber-400/20 mb-6 shadow-[0_0_30px_rgba(245,158,11,0.2)]">
+        <i data-feather="award" class="w-10 h-10 text-amber-400"></i>
+      </div>
+      <h1 class="text-4xl md:text-5xl font-black tracking-tight mb-4 drop-shadow-md">
+        Get Your <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-200">Prop Firm</span> Funded
+      </h1>
+      <p class="text-gray-400 max-w-lg mx-auto text-sm leading-relaxed">
+        Stop failing challenges. Let a verified professional trade your FTMO or FundedNext account and pass the evaluation for you. 100% manual trading, strict risk management.
+      </p>
+    </div>
+
+    <!-- How It Works -->
+    <div class="w-full grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+      <div class="glass-card p-6 rounded-2xl border border-white/10 text-center">
+        <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center mx-auto mb-4 text-amber-400 font-bold">1</div>
+        <h3 class="text-white font-bold mb-2">Purchase Challenge</h3>
+        <p class="text-xs text-gray-400">Buy your evaluation account from any major prop firm.</p>
+      </div>
+      <div class="glass-card p-6 rounded-2xl border border-amber-400/30 text-center shadow-[0_0_20px_rgba(245,158,11,0.1)] relative transform md:-translate-y-2">
+        <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-yellow-400 text-dark-navy text-[9px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Crucial Step</div>
+        <div class="w-10 h-10 rounded-full bg-amber-400/20 flex items-center justify-center mx-auto mb-4 text-amber-400 font-bold border border-amber-400/50">2</div>
+        <h3 class="text-white font-bold mb-2">Send Credentials</h3>
+        <p class="text-xs text-gray-400">Securely provide us with your MT4/MT5 login details.</p>
+      </div>
+      <div class="glass-card p-6 rounded-2xl border border-white/10 text-center">
+        <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center mx-auto mb-4 text-amber-400 font-bold">3</div>
+        <h3 class="text-white font-bold mb-2">Get Funded</h3>
+        <p class="text-xs text-gray-400">We pass Phase 1 & 2. You receive your live funded account.</p>
+      </div>
+    </div>
+
+    <!-- Pricing Tiers -->
+    <div class="w-full mb-16">
+      <h2 class="text-2xl font-bold text-center mb-8">Management Fees</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- $10k-$50k -->
+        <div class="glass-card p-8 rounded-3xl border border-white/10 relative overflow-hidden group hover:border-amber-400/50 transition duration-300">
+          <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition">
+            <i data-feather="trending-up" class="w-24 h-24 text-amber-400"></i>
+          </div>
+          <h3 class="text-gray-400 uppercase tracking-widest text-xs font-bold mb-2">$10k - $50k Challenge</h3>
+          <div class="text-4xl font-black text-white mb-6">$250 <span class="text-sm text-gray-500 font-normal">flat fee</span></div>
+          <ul class="space-y-3 mb-8 text-sm text-gray-300">
+            <li class="flex items-center gap-2"><i data-feather="check" class="w-4 h-4 text-emerald-400"></i> Phase 1 & 2 Included</li>
+            <li class="flex items-center gap-2"><i data-feather="check" class="w-4 h-4 text-emerald-400"></i> Strict 1% Max Risk</li>
+            <li class="flex items-center gap-2"><i data-feather="check" class="w-4 h-4 text-emerald-400"></i> 100% Manual Trading</li>
+            <li class="flex items-center gap-2"><i data-feather="check" class="w-4 h-4 text-emerald-400"></i> 15-30 Days Est. Completion</li>
+          </ul>
+          <a href="https://t.me/pips_attendant" target="_blank" class="block w-full py-4 text-center rounded-xl bg-white/5 border border-white/10 hover:bg-amber-400 hover:text-dark-navy hover:border-amber-400 transition font-bold">Start $50k Passing</a>
+        </div>
+
+        <!-- $100k-$200k -->
+        <div class="glass-card p-8 rounded-3xl border border-amber-400/50 relative overflow-hidden group shadow-[0_0_30px_rgba(245,158,11,0.15)]">
+          <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition">
+            <i data-feather="briefcase" class="w-24 h-24 text-amber-400"></i>
+          </div>
+          <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-yellow-200"></div>
+          <h3 class="text-amber-400 uppercase tracking-widest text-xs font-bold mb-2">Premium $100k+ Challenge</h3>
+          <div class="text-4xl font-black text-white mb-6">$500 <span class="text-sm text-gray-500 font-normal">flat fee</span></div>
+          <ul class="space-y-3 mb-8 text-sm text-gray-300">
+            <li class="flex items-center gap-2"><i data-feather="check" class="w-4 h-4 text-emerald-400"></i> Phase 1 & 2 Included</li>
+            <li class="flex items-center gap-2"><i data-feather="check" class="w-4 h-4 text-emerald-400"></i> Strict 1% Max Risk</li>
+            <li class="flex items-center gap-2"><i data-feather="check" class="w-4 h-4 text-emerald-400"></i> Priority Trade Allocation</li>
+            <li class="flex items-center gap-2"><i data-feather="check" class="w-4 h-4 text-emerald-400"></i> Priority Telegram Support</li>
+          </ul>
+          <a href="https://t.me/pips_attendant" target="_blank" class="block w-full py-4 text-center rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-dark-navy font-bold shadow-lg hover:shadow-[0_0_20px_rgba(245,158,11,0.4)] hover:brightness-110 active:scale-95 transition">Start $100k+ Passing</a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="w-full glass-card p-8 rounded-3xl border border-white/10 mb-8">
+      <h2 class="text-xl font-bold mb-6 text-center">Frequently Asked Questions</h2>
+      <div class="space-y-6">
+        <div>
+          <h4 class="text-amber-400 font-bold text-sm mb-1">What if you fail the challenge?</h4>
+          <p class="text-gray-400 text-xs leading-relaxed">While extremely rare due to our strict risk management, trading carries risk. If we fail a challenge due to our trading, we will pass your next identical challenge completely free of charge (Management fee waived).</p>
+        </div>
+        <div>
+          <h4 class="text-amber-400 font-bold text-sm mb-1">Do you use EAs or Bots?</h4>
+          <p class="text-gray-400 text-xs leading-relaxed">No. Every single trade is executed manually using price action and liquidity concepts. Prop firms frequently ban accounts for HFT or bot trading—our manual approach ensures 100% compliance with all firm rules.</p>
+        </div>
+        <div>
+          <h4 class="text-amber-400 font-bold text-sm mb-1">Which prop firms do you pass?</h4>
+          <p class="text-gray-400 text-xs leading-relaxed">We recommend FTMO, FundedNext, Alpha Capital, and Funding Pips. We accept any firm that allows standard manual trading over MT4/MT5/cTrader.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    feather.replace();
+    
+    // Simple Background Canvas (reused from index)
+    (function() {
+      const canvas = document.getElementById('bgCanvas');
+      if(!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let W, H, particles;
+      function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+      function createParticles() {
+        particles = [];
+        const count = Math.floor((W * H) / 18000);
+        for (let i = 0; i < count; i++) {
+          particles.push({
+            x: Math.random() * W, y: Math.random() * H,
+            vy: -(Math.random() * 0.3 + 0.1), vx: (Math.random() - 0.5) * 0.15,
+            r: Math.random() * 1.2 + 0.3, alpha: Math.random() * 0.5 + 0.2,
+          });
+        }
+      }
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+        particles.forEach(p => {
+          p.x += p.vx; p.y += p.vy;
+          if (p.y < -10) { p.y = H + 10; p.x = Math.random() * W; }
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(245, 158, 11, ${p.alpha})`;
+          ctx.fill();
+        });
+        requestAnimationFrame(draw);
+      }
+      window.addEventListener('resize', () => { resize(); createParticles(); });
+      resize(); createParticles(); draw();
+      
+      // Init theme
+      if (localStorage.getItem('theme') === 'dark-navy') {
+        document.body.classList.add('dark-navy-mode');
+      }
+    })();
+  </script>
+</body>
+</html>
