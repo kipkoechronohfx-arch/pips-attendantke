@@ -1464,6 +1464,14 @@
         btnSubmit.innerHTML = 'Create Account 🚀';
       }
     }
+    
+    // Auto-switch to login if requested
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('action') === 'login') {
+        switchAuthTab('login');
+      }
+    });
 
     async function handleAuth(e) {
       e.preventDefault();
@@ -1501,7 +1509,15 @@
         
         if (data.ok) {
           sessionStorage.setItem('vip_session_token', data.sessionToken);
+          localStorage.setItem('vip_session_token', data.sessionToken); // For journal across tabs
           localStorage.setItem('pa_vip_user_name', data.user.name || email.split('@')[0]);
+          
+          const urlParams = new URLSearchParams(window.location.search);
+          const returnUrl = urlParams.get('return');
+          if (returnUrl === 'journal') {
+            window.location.href = 'journal.html';
+            return;
+          }
           checkUserAccess();
         } else {
           errorEl.textContent = `❌ ${data.error || 'Authentication failed'}`;
@@ -1753,6 +1769,7 @@
 
     function logout() {
       sessionStorage.removeItem('vip_session_token');
+      localStorage.removeItem('vip_session_token');
       if (socket) socket.disconnect();
       window.location.reload();
     }

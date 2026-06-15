@@ -13,6 +13,7 @@ const TODAYS_SETUP_RESULTS_FILE = path.join(DATA_DIR, 'todays_setup_results.json
 const WHATSAPP_FILE = path.join(DATA_DIR, 'whatsapp.json');
 const CHAT_FILE = path.join(DATA_DIR, 'chat.json');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
+const JOURNAL_FILE = path.join(DATA_DIR, 'journal.json');
 
 // Ensure local fallback folders exist
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
@@ -85,6 +86,7 @@ const getCryptoRequestsColl = () => db.collection('crypto_payment_requests');
 const getUsersColl = () => db.collection('users');
 const getPromosColl = () => db.collection('promo_codes');
 const getTicketsColl = () => db.collection('support_tickets');
+const getJournalColl = () => db.collection('journal_entries');
 
 async function runMigrations() {
   console.log('[Migration] Checking for local data to migrate to MongoDB Atlas...');
@@ -826,6 +828,81 @@ async function getUsers() {
   return readJSON(USERS_FILE);
 }
 
+// ── Journal Operations ──────────────────────────────────────
+async function getJournalEntries(userId) {
+  if (db) {
+    try {
+      return await getJournalColl().find({ userId }).sort({ date: -1 }).toArray();
+    } catch (err) {}
+  }
+  const journal = readJSON(JOURNAL_FILE);
+  return journal.filter(j => j.userId === userId).sort((a, b) => b.date - a.date);
+}
+
+async function saveJournalEntry(entry) {
+  if (db) {
+    try {
+      if (entry._id) {
+        const { ObjectId } = require('mongodb');
+        const id = entry._id;
+        delete entry._id;
+        await getJournalColl().updateOne({ _id: new ObjectId(id) }, { $set: entry });
+        entry._id = id;
+      } else {
+        const result = await getJournalColl().insertOne(entry);
+        entry._id = result.insertedId.toString();
+      }
+      return entry;
+    } catch (err) {}
+  }
+  const journal = readJSON(JOURNAL_FILE);
+  if (entry._id) {
+    const index = journal.findIndex(j => j._id === entry._id);
+    if (index !== -1) journal[index] = entry;
+    else journal.push(entry);
+  } else {
+    entry._id = Date.now().toString() + Math.random().toString(36).substring(2, 9);
+    journal.push(entry);
+  }
+  writeJSON(JOURNAL_FILE, journal);
+  return entry;
+}
+
+async function deleteJournalEntry(entryId, userId) {
+  if (db) {
+    try {
+      const { ObjectId } = require('mongodb');
+      const isObjectId = /^[a-f\d]{24}$/i.test(String(entryId));
+      let query = { userId };
+      if (isObjectId) query._id = new ObjectId(entryId);
+      else query._id = entryId;
+      
+      const res = await getJournalColl().deleteOne(query);
+      return res.deletedCount > 0;
+    } catch (err) {}
+  }
+  let journal = readJSON(JOURNAL_FILE);
+  const initialLength = journal.length;
+  journal = journal.filter(j => !(j._id === entryId && j.userId === userId));
+  writeJSON(JOURNAL_FILE, journal);
+  return journal.length < initialLength;
+}
+
+async function syncJournalEntries(entries, userId) {
+  if (!entries || !entries.length) return { synced: 0 };
+  let synced = 0;
+  for (const localEntry of entries) {
+    // If it doesn't have an _id or it's purely a local client ID, we treat it as new
+    // We can just check if we already have it to prevent duplicates if needed
+    // But for simplicity, we just save each.
+    delete localEntry._id; // Remove local ID to generate a new DB ID
+    localEntry.userId = userId;
+    await saveJournalEntry(localEntry);
+    synced++;
+  }
+  return { synced };
+}
+
 module.exports = {
   connectDB, closeDB,
   getAppConfig, saveAppConfig,
@@ -842,5 +919,6 @@ module.exports = {
   getCryptoRequests, saveCryptoRequest, updateCryptoRequest,
   getPromos, savePromo, getPromoByCode, deletePromo,
   getTickets, getUserTickets, saveTicket,
-  logPerformanceAction, getPerformanceLogs
+  logPerformanceAction, getPerformanceLogs,
+  getJournalEntries, saveJournalEntry, deleteJournalEntry, syncJournalEntries
 };

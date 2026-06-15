@@ -16,6 +16,7 @@ const adminRoutes = require('./src/routes/adminRoutes');
 const vipRoutes = require('./src/routes/vipRoutes');
 const paymentRoutes = require('./src/routes/paymentRoutes');
 const publicRoutes = require('./src/routes/publicRoutes');
+const journalRoutes = require('./src/routes/journalRoutes');
 
 // ── Environment Validation ─────────────────────────────────────
 const REQUIRED_ENV = ['MONGODB_URI', 'JWT_SECRET'];
@@ -98,6 +99,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api', vipRoutes);
 app.use('/api', paymentRoutes);
 app.use('/api', publicRoutes);
+app.use('/api/journal', journalRoutes);
 
 // ── SPA Fallback ───────────────────────────────────────────────
 app.get('*', (req, res) => {

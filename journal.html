@@ -46,6 +46,17 @@
       <i data-feather="book-open" class="w-5 h-5 text-sky-400"></i>
       <span class="text-sky-400 font-bold tracking-wider text-sm uppercase">VIP Utility</span>
     </div>
+    <div class="flex items-center gap-3">
+      <div id="syncStatus" class="hidden items-center gap-1.5 px-3 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-bold transition">
+        <i data-feather="cloud" class="w-3.5 h-3.5"></i> <span id="syncText">Cloud Synced</span>
+      </div>
+      <a href="premium.html?action=login&return=journal" id="loginBtn" class="px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold hover:bg-emerald-500/20 transition cursor-pointer flex items-center gap-1.5">
+        <i data-feather="user" class="w-3.5 h-3.5"></i> Log In to Sync
+      </a>
+      <button onclick="logout()" id="logoutBtn" class="hidden px-4 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-bold hover:bg-rose-500/20 transition cursor-pointer items-center gap-1.5">
+        <i data-feather="log-out" class="w-3.5 h-3.5"></i> Log Out
+      </button>
+    </div>
   </nav>
 
   <!-- Main Content -->
@@ -56,8 +67,8 @@
       <h1 class="text-3xl md:text-4xl font-black tracking-tight mb-2 drop-shadow-md">
         Private Trading <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-400">Journal</span>
       </h1>
-      <p class="text-gray-400 max-w-lg mx-auto text-xs leading-relaxed">
-        Track your performance securely. All data is saved instantly to your local browser storage—100% private.
+      <p class="text-gray-400 max-w-lg mx-auto text-xs leading-relaxed" id="journalSubhead">
+        Track your performance securely. Data saves to local browser storage, or log in to sync securely to the Cloud.
       </p>
     </div>
 
@@ -193,13 +204,111 @@
 
     // --- JOURNAL LOGIC ---
     let trades = JSON.parse(localStorage.getItem('pipsJournal')) || [];
+    let isCloudSynced = false;
+    const sessionToken = localStorage.getItem('vip_session_token');
 
     const form = document.getElementById('tradeForm');
     const tbody = document.getElementById('tradesList');
     const emptyState = document.getElementById('emptyState');
     
-    function saveTrades() {
-      localStorage.setItem('pipsJournal', JSON.stringify(trades));
+    // UI Elements
+    const syncStatus = document.getElementById('syncStatus');
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const journalSubhead = document.getElementById('journalSubhead');
+
+    async function initJournal() {
+      if (sessionToken) {
+        try {
+          const res = await fetch('/api/journal', {
+            headers: { 'Authorization': `Bearer ${sessionToken}` }
+          });
+          const data = await res.json();
+          
+          if (data.ok) {
+            isCloudSynced = true;
+            syncStatus.classList.remove('hidden');
+            syncStatus.classList.add('flex');
+            loginBtn.classList.add('hidden');
+            logoutBtn.classList.remove('hidden');
+            logoutBtn.classList.add('flex');
+            journalSubhead.innerText = "Welcome back! Your trading journal is fully synced with the Cloud.";
+
+            // If we have local trades but cloud is empty, OR just generally we should sync local -> cloud
+            if (trades.length > 0) {
+              const syncRes = await fetch('/api/journal/sync', {
+                method: 'POST',
+                headers: { 
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${sessionToken}` 
+                },
+                body: JSON.stringify({ entries: trades })
+              });
+              const syncData = await syncRes.json();
+              if (syncData.ok) {
+                // Clear local storage after successful sync
+                localStorage.removeItem('pipsJournal');
+                trades = []; // Will be refilled from the next fetch
+                const finalRes = await fetch('/api/journal', { headers: { 'Authorization': `Bearer ${sessionToken}` } });
+                const finalData = await finalRes.json();
+                trades = finalData.entries || [];
+              }
+            } else {
+              trades = data.entries || [];
+            }
+          } else {
+            // Invalid token
+            handleLogoutUI();
+          }
+        } catch (err) {
+          console.error('Failed to init cloud journal', err);
+          handleLogoutUI();
+        }
+      } else {
+        handleLogoutUI();
+      }
+      renderTrades();
+    }
+
+    function handleLogoutUI() {
+      isCloudSynced = false;
+      syncStatus.classList.add('hidden');
+      syncStatus.classList.remove('flex');
+      loginBtn.classList.remove('hidden');
+      loginBtn.classList.add('flex');
+      logoutBtn.classList.add('hidden');
+      logoutBtn.classList.remove('flex');
+      journalSubhead.innerText = "Track your performance securely. Data saves to local browser storage, or log in to sync securely to the Cloud.";
+    }
+
+    window.logout = function() {
+      localStorage.removeItem('vip_session_token');
+      sessionStorage.removeItem('vip_session_token');
+      window.location.reload();
+    }
+    
+    async function saveTrades(newTrade = null) {
+      if (isCloudSynced && newTrade) {
+        try {
+          const res = await fetch('/api/journal', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${sessionToken}`
+            },
+            body: JSON.stringify(newTrade)
+          });
+          const data = await res.json();
+          if(data.ok) {
+             // Replace local object with DB object (which has _id)
+             trades[trades.length - 1] = data.entry;
+          }
+        } catch(err) {
+          console.error('Failed to save to cloud', err);
+        }
+      } else if (!isCloudSynced) {
+        localStorage.setItem('pipsJournal', JSON.stringify(trades));
+      }
     }
 
     function renderTrades() {
@@ -214,8 +323,12 @@
         let wins = 0;
         let totalPL = 0;
 
-        trades.slice().reverse().forEach((trade, index) => {
-          const actualIndex = trades.length - 1 - index; // because of reverse
+        // Render from newest to oldest (trades array might be sorted already if from DB, but let's safely reverse)
+        // If it's from DB, getJournalEntries returns newest first. Let's standardize trades array to be oldest-first locally, newest-first rendered.
+        // Or if it's mixed, just sort by date
+        const sortedTrades = [...trades].sort((a,b) => b.date - a.date);
+
+        sortedTrades.forEach((trade) => {
           const isWin = trade.pl > 0;
           if (isWin) wins++;
           totalPL += trade.pl;
@@ -236,7 +349,7 @@
             <td class="p-4 text-gray-300">${trade.exit}</td>
             <td class="p-4 text-right font-bold ${plClass}">${plSign}$${trade.pl.toFixed(2)}</td>
             <td class="p-4 text-center">
-              <button onclick="deleteTrade(${actualIndex})" class="text-gray-500 hover:text-rose-400 transition cursor-pointer p-1">
+              <button onclick="deleteTrade('${trade._id || trade.date}')" class="text-gray-500 hover:text-rose-400 transition cursor-pointer p-1">
                 <i data-feather="trash-2" class="w-4 h-4"></i>
               </button>
             </td>
@@ -245,9 +358,9 @@
         });
 
         // Update Stats
-        const winRate = trades.length > 0 ? Math.round((wins / trades.length) * 100) : 0;
+        const winRate = sortedTrades.length > 0 ? Math.round((wins / sortedTrades.length) * 100) : 0;
         document.getElementById('statWinRate').innerText = winRate + '%';
-        document.getElementById('statTotal').innerText = trades.length;
+        document.getElementById('statTotal').innerText = sortedTrades.length;
         
         const plEl = document.getElementById('statProfit');
         plEl.innerText = (totalPL >= 0 ? '+$' : '-$') + Math.abs(totalPL).toFixed(2);
@@ -256,7 +369,7 @@
       feather.replace();
     }
 
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       
       const newTrade = {
@@ -269,21 +382,37 @@
       };
 
       trades.push(newTrade);
-      saveTrades();
-      renderTrades();
+      renderTrades(); // render optimistically
+      await saveTrades(newTrade);
       form.reset();
     });
 
-    window.deleteTrade = function(index) {
+    window.deleteTrade = async function(id) {
       if(confirm('Delete this trade?')) {
-        trades.splice(index, 1);
-        saveTrades();
-        renderTrades();
+        const idx = trades.findIndex(t => t._id === id || String(t.date) === String(id));
+        if (idx > -1) {
+          const tradeToDelete = trades[idx];
+          trades.splice(idx, 1);
+          renderTrades(); // optimistic UI
+
+          if (isCloudSynced && tradeToDelete._id) {
+            try {
+              await fetch('/api/journal/' + tradeToDelete._id, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${sessionToken}` }
+              });
+            } catch(err) {
+              console.error('Failed to delete cloud trade');
+            }
+          } else if (!isCloudSynced) {
+            localStorage.setItem('pipsJournal', JSON.stringify(trades));
+          }
+        }
       }
     };
 
     // Initial render
-    renderTrades();
+    initJournal();
 
   </script>
 </body>
