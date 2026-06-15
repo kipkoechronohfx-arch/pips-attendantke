@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+@theme {
+  --color-dark-navy: #0d0800;
+  --color-neon-blue: #f59e0b;
+  --color-neon-purple: #d97706;
+  --font-inter: "Inter", "Poppins", sans-serif;
+}
