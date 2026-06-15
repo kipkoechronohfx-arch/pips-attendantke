@@ -494,6 +494,85 @@
       </div>
 
 
+      <!-- 🧮 INTERACTIVE RISK CALCULATOR -->
+      <div class="w-full mb-10">
+        <div class="flex items-center gap-3 mb-5 justify-center">
+          <span class="text-sky-400 text-lg">🧮</span>
+          <h2 class="text-lg font-bold text-white tracking-tight">Free Risk & Lot Size Calculator</h2>
+        </div>
+        <div class="glass-card rounded-2xl border border-sky-500/30 p-6 shadow-[0_0_20px_rgba(56,189,248,0.15)] relative overflow-hidden group">
+          <div class="absolute inset-0 bg-gradient-to-br from-sky-500/5 to-transparent pointer-events-none"></div>
+          <div class="relative z-10">
+            <form id="riskCalcForm" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              
+              <!-- Asset Pair -->
+              <div class="md:col-span-2 relative">
+                <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Asset Class</label>
+                <select id="calcAsset" class="w-full px-4 py-3 rounded-xl bg-black/50 border border-white/10 text-white text-sm focus:border-sky-400/50 focus:ring-1 focus:ring-sky-400/50 outline-none transition cursor-pointer appearance-none relative z-10">
+                  <option value="10">Forex Majors (EURUSD, GBPUSD, etc. - $10/pip)</option>
+                  <option value="1">Gold (XAUUSD - $1/pip per standard lot)</option>
+                </select>
+                <!-- Custom dropdown arrow -->
+                <div class="pointer-events-none absolute right-4 top-[38px] text-gray-400 z-20">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+              </div>
+              
+              <!-- Account Balance -->
+              <div>
+                <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Account Balance ($)</label>
+                <div class="relative">
+                  <span class="absolute left-4 top-3 text-gray-500 font-bold z-20">$</span>
+                  <input type="number" id="calcBalance" placeholder="1000" min="1" step="any" required class="w-full pl-8 pr-4 py-3 rounded-xl bg-black/50 border border-white/10 text-white text-sm focus:border-sky-400/50 focus:ring-1 focus:ring-sky-400/50 outline-none transition relative z-10" />
+                </div>
+              </div>
+
+              <!-- Risk Percentage -->
+              <div>
+                <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Risk %</label>
+                <div class="relative">
+                  <input type="number" id="calcRisk" placeholder="1.0" min="0.1" step="0.1" max="100" required class="w-full pl-4 pr-8 py-3 rounded-xl bg-black/50 border border-white/10 text-white text-sm focus:border-sky-400/50 focus:ring-1 focus:ring-sky-400/50 outline-none transition relative z-10" />
+                  <span class="absolute right-4 top-3 text-gray-500 font-bold z-20">%</span>
+                </div>
+              </div>
+
+              <!-- Stop Loss Pips -->
+              <div class="md:col-span-2">
+                <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Stop Loss (Pips)</label>
+                <input type="number" id="calcStopLoss" placeholder="30" min="1" step="any" required class="w-full px-4 py-3 rounded-xl bg-black/50 border border-white/10 text-white text-sm focus:border-sky-400/50 focus:ring-1 focus:ring-sky-400/50 outline-none transition relative z-10" />
+              </div>
+            </form>
+
+            <button type="button" onclick="calculateRisk()" class="w-full py-4 rounded-xl font-bold bg-gradient-to-r from-sky-500 to-blue-600 text-white hover:brightness-110 shadow-lg hover:shadow-sky-500/30 active:scale-95 transition duration-300 flex items-center justify-center gap-2 mb-6 cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+              Calculate Exact Lot Size
+            </button>
+
+            <!-- Results Display -->
+            <div id="calcResults" class="hidden flex-col items-center justify-center bg-black/60 border border-white/5 rounded-xl p-6 text-center shadow-inner relative overflow-hidden mt-2">
+              <div class="absolute inset-0 bg-gradient-to-b from-transparent to-sky-500/10"></div>
+              <div class="relative z-10 w-full flex flex-col md:flex-row items-center justify-center gap-6">
+                
+                <div class="flex-1">
+                  <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold mb-1">Amount at Risk</p>
+                  <p class="text-2xl font-bold text-rose-400" id="resRiskAmount">$--</p>
+                </div>
+                
+                <div class="hidden md:block w-px h-10 bg-white/10"></div>
+                <div class="md:hidden h-px w-12 bg-white/10"></div>
+                
+                <div class="flex-1">
+                  <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold mb-1">Recommended Lot</p>
+                  <p class="text-3xl font-black text-emerald-400 drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]" id="resLotSize">--</p>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
       <!-- 📱 WHATSAPP BROADCAST WIDGET -->
       <div class="w-full mb-12">
         <div class="glass-card rounded-2xl border border-emerald-500/30 p-6 text-center shadow-[0_0_20px_rgba(16,185,129,0.15)] relative overflow-hidden group">

@@ -194,3 +194,35 @@ async function subscribeWhatsApp(e) {
     btn.innerHTML = 'Join Broadcast';
   }
 }
+
+// --- RISK CALCULATOR ---
+function calculateRisk() {
+  const assetType = parseFloat(document.getElementById('calcAsset').value);
+  const balance = parseFloat(document.getElementById('calcBalance').value);
+  const riskPercent = parseFloat(document.getElementById('calcRisk').value);
+  const stopLossPips = parseFloat(document.getElementById('calcStopLoss').value);
+
+  if (!balance || !riskPercent || !stopLossPips || balance <= 0 || riskPercent <= 0 || stopLossPips <= 0) {
+    alert("Please enter valid numbers for Balance, Risk %, and Stop Loss.");
+    return;
+  }
+
+  // Calculate Risk Amount ($)
+  const riskAmount = balance * (riskPercent / 100);
+  
+  // Calculate Lot Size
+  // Lot Size = Risk Amount / (Stop Loss Pips * Pip Value)
+  const pipValue = assetType; // from select (10 or 1)
+  let lotSize = riskAmount / (stopLossPips * pipValue);
+  
+  // Round to 2 decimal places (standard micro lot minimum is 0.01)
+  lotSize = Math.max(0.01, Math.round(lotSize * 100) / 100);
+
+  // Display Results
+  document.getElementById('resRiskAmount').innerText = '$' + riskAmount.toFixed(2);
+  document.getElementById('resLotSize').innerText = lotSize.toFixed(2) + ' Lots';
+  
+  // Show the results container
+  document.getElementById('calcResults').classList.remove('hidden');
+  document.getElementById('calcResults').classList.add('flex');
+}
