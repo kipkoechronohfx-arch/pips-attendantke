@@ -226,3 +226,86 @@ function calculateRisk() {
   document.getElementById('calcResults').classList.remove('hidden');
   document.getElementById('calcResults').classList.add('flex');
 }
+
+// --- FAQ CHAT WIDGET ---
+function toggleChat() {
+  const chatWindow = document.getElementById('chatWindow');
+  const toggleBtn = document.getElementById('chatToggleBtn');
+  
+  if (chatWindow.classList.contains('hidden')) {
+    chatWindow.classList.remove('hidden');
+    chatWindow.classList.add('flex');
+    toggleBtn.classList.add('hidden');
+    // scroll to bottom
+    const messages = document.getElementById('chatMessages');
+    messages.scrollTop = messages.scrollHeight;
+  } else {
+    chatWindow.classList.add('hidden');
+    chatWindow.classList.remove('flex');
+    toggleBtn.classList.remove('hidden');
+  }
+}
+
+function handleChatOption(id, questionText) {
+  const messagesArea = document.getElementById('chatMessages');
+  const optionsArea = document.getElementById('chatOptions');
+  
+  // Hide options temporarily
+  optionsArea.style.opacity = '0.5';
+  optionsArea.style.pointerEvents = 'none';
+
+  // Add User Message
+  const userMsgHTML = `
+    <div class="flex flex-col gap-1 items-end transition-all">
+      <div class="bg-gradient-to-r from-amber-500 to-yellow-400 text-dark-navy font-semibold text-xs px-4 py-2.5 rounded-2xl rounded-tr-sm max-w-[85%] shadow-md">
+        ${questionText}
+      </div>
+    </div>
+  `;
+  messagesArea.insertAdjacentHTML('beforeend', userMsgHTML);
+  messagesArea.scrollTop = messagesArea.scrollHeight;
+
+  // Add Typing Indicator
+  const typingId = 'typing-' + Date.now();
+  const typingHTML = `
+    <div id="${typingId}" class="flex flex-col gap-1 items-start transition-all">
+      <div class="bg-white/10 text-white text-xs px-4 py-3 rounded-2xl rounded-tl-sm border border-white/5 flex gap-1 items-center h-9">
+        <span class="w-1.5 h-1.5 rounded-full bg-gray-400 typing-dot"></span>
+        <span class="w-1.5 h-1.5 rounded-full bg-gray-400 typing-dot"></span>
+        <span class="w-1.5 h-1.5 rounded-full bg-gray-400 typing-dot"></span>
+      </div>
+    </div>
+  `;
+  messagesArea.insertAdjacentHTML('beforeend', typingHTML);
+  messagesArea.scrollTop = messagesArea.scrollHeight;
+
+  // Answers Map
+  const answers = {
+    1: "To join VIP, simply click the 'VIP Premium Resources' card on the main page, or send me a direct message on Telegram!",
+    2: "I personally trade with and highly recommend JustMarkets or XM. You can find my partner links right on the landing page to get the best trading conditions.",
+    3: "Lot sizes depend entirely on your account balance and risk tolerance. I recommend using the Free Risk Calculator just above! A solid rule of thumb is risking 1% per trade.",
+    4: "You can reach me directly on my personal Telegram account: @pipsattendant. I try to reply to all messages within 24 hours!"
+  };
+
+  // Simulate thinking delay
+  setTimeout(() => {
+    // Remove typing indicator
+    const typingEl = document.getElementById(typingId);
+    if (typingEl) typingEl.remove();
+
+    // Add Bot Response
+    const botMsgHTML = `
+      <div class="flex flex-col gap-1 items-start transition-all">
+        <div class="bg-white/10 text-gray-200 text-xs px-4 py-2.5 rounded-2xl rounded-tl-sm max-w-[85%] leading-relaxed border border-white/5">
+          ${answers[id]}
+        </div>
+      </div>
+    `;
+    messagesArea.insertAdjacentHTML('beforeend', botMsgHTML);
+    messagesArea.scrollTop = messagesArea.scrollHeight;
+
+    // Restore options
+    optionsArea.style.opacity = '1';
+    optionsArea.style.pointerEvents = 'auto';
+  }, 1200);
+}
