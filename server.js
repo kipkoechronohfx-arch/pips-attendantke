@@ -101,7 +101,18 @@ app.use('/api', publicRoutes);
 
 // ── SPA Fallback ───────────────────────────────────────────────
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  // If request looks like a page (no extension or .html), try to serve it or 404
+  const ext = path.extname(req.path);
+  if (!ext || ext === '.html') {
+    const filePath = path.join(__dirname, req.path === '/' ? 'index.html' : req.path);
+    res.sendFile(filePath, (err) => {
+      if (err) {
+        res.status(404).sendFile(path.join(__dirname, '404.html'));
+      }
+    });
+  } else {
+    res.status(404).sendFile(path.join(__dirname, '404.html'));
+  }
 });
 
 // ── Centralized Error Handler ─────────────────────────────────

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 - Page Not Found | Pips_attendant</title>
+  <meta name="description" content="The page you are looking for could not be found. Return to Pips_attendant home.">
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="favicon.png">
+
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    @theme {
+      --color-dark-navy: #0d0800;
+      --color-neon-blue: #f59e0b;
+      --font-inter: "Inter", sans-serif;
+    }
+  </style>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/feather-icons"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-dark-navy text-white font-inter min-h-screen flex flex-col items-center justify-center relative overflow-hidden selection:bg-amber-400/20 selection:text-amber-400">
+
+  <!-- Background Glows -->
+  <div class="fixed inset-0 z-0 pointer-events-none">
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-amber-500/10 rounded-full blur-[120px]"></div>
+    <div class="absolute bottom-0 right-0 w-96 h-96 bg-rose-500/10 rounded-full blur-[100px]"></div>
+  </div>
+
+  <canvas id="bgCanvas" class="fixed inset-0 z-0 pointer-events-none opacity-30"></canvas>
+
+  <!-- Content -->
+  <div class="relative z-10 flex flex-col items-center justify-center text-center px-6 py-20 max-w-lg mx-auto">
+
+    <!-- Big 404 -->
+    <div class="mb-8 relative">
+      <div class="text-[120px] md:text-[160px] font-black leading-none text-transparent bg-clip-text bg-gradient-to-b from-amber-400 via-yellow-300 to-amber-600 select-none drop-shadow-[0_0_60px_rgba(245,158,11,0.3)]">
+        404
+      </div>
+      <div class="absolute inset-0 text-[120px] md:text-[160px] font-black leading-none text-amber-400/5 blur-2xl select-none">
+        404
+      </div>
+    </div>
+
+    <!-- Icon -->
+    <div class="w-16 h-16 rounded-full bg-amber-400/10 border border-amber-400/20 flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(245,158,11,0.15)]">
+      <i data-feather="alert-triangle" class="w-8 h-8 text-amber-400"></i>
+    </div>
+
+    <!-- Message -->
+    <h1 class="text-2xl md:text-3xl font-black mb-3">Page Not Found</h1>
+    <p class="text-gray-400 text-sm leading-relaxed mb-10">
+      The page you're looking for doesn't exist or may have been moved.<br>
+      Head back home and keep your pips green. 📈
+    </p>
+
+    <!-- Actions -->
+    <div class="flex flex-col sm:flex-row gap-4 w-full max-w-xs">
+      <a href="index.html" class="flex-1 py-4 rounded-xl font-bold bg-gradient-to-r from-amber-500 to-yellow-400 text-dark-navy hover:brightness-110 hover:shadow-[0_0_20px_rgba(245,158,11,0.4)] active:scale-95 transition duration-300 flex items-center justify-center gap-2">
+        <i data-feather="home" class="w-4 h-4"></i>
+        <span>Go Home</span>
+      </a>
+      <a href="https://t.me/pipsattendant" target="_blank" class="flex-1 py-4 rounded-xl font-bold border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 active:scale-95 transition duration-300 flex items-center justify-center gap-2 text-gray-300">
+        <i data-feather="send" class="w-4 h-4 text-sky-400"></i>
+        <span>Contact Us</span>
+      </a>
+    </div>
+
+    <!-- Countdown redirect -->
+    <p class="text-gray-600 text-xs mt-8">Redirecting to home in <span id="countdown" class="text-amber-400 font-bold">10</span>s...</p>
+
+  </div>
+
+  <script>
+    feather.replace();
+
+    // Particle background
+    (function() {
+      const canvas = document.getElementById('bgCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let W, H, particles;
+      function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+      function createParticles() {
+        particles = [];
+        const count = Math.floor((W * H) / 20000);
+        for (let i = 0; i < count; i++) {
+          particles.push({ x: Math.random()*W, y: Math.random()*H, vy: -(Math.random()*0.3+0.1), vx: (Math.random()-0.5)*0.15, r: Math.random()*1.2+0.3, alpha: Math.random()*0.4+0.1 });
+        }
+      }
+      function draw() {
+        ctx.clearRect(0,0,W,H);
+        particles.forEach(p => {
+          p.x+=p.vx; p.y+=p.vy;
+          if(p.y<-10){p.y=H+10;p.x=Math.random()*W;}
+          ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+          ctx.fillStyle=`rgba(245,158,11,${p.alpha})`; ctx.fill();
+        });
+        requestAnimationFrame(draw);
+      }
+      window.addEventListener('resize',()=>{resize();createParticles();});
+      resize(); createParticles(); draw();
+    })();
+
+    // Countdown redirect
+    let secs = 10;
+    const el = document.getElementById('countdown');
+    const timer = setInterval(() => {
+      secs--;
+      if (el) el.textContent = secs;
+      if (secs <= 0) { clearInterval(timer); window.location.href = 'index.html'; }
+    }, 1000);
+  </script>
+</body>
+</html>
