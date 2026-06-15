@@ -2513,7 +2513,7 @@
       tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center"><i data-feather="loader" class="w-4 h-4 animate-spin mx-auto text-amber-400"></i></td></tr>';
       feather.replace();
       try {
-        const res = await fetch('/api/subscribers', {
+        const res = await fetch('/api/admin/subscribers', {
           headers: { 'x-admin-token': adminToken }
         });
         const data = await res.json();
@@ -2551,7 +2551,7 @@
       tbody.innerHTML = '<tr><td colspan="2" class="py-4 text-center"><i data-feather="loader" class="w-4 h-4 animate-spin mx-auto text-emerald-400"></i></td></tr>';
       feather.replace();
       try {
-        const res = await fetch('/api/whatsapp-list', {
+        const res = await fetch('/api/admin/whatsapp-list', {
           headers: { 'x-admin-token': adminToken }
         });
         const data = await res.json();
@@ -2637,7 +2637,7 @@
           const entryTimeVal = document.getElementById('entryTime') ? document.getElementById('entryTime').value : null;
           const entryTimeMs = entryTimeVal ? new Date(entryTimeVal).getTime() : null;
 
-          const res = await fetch('/api/upload-todays-setup', {
+          const res = await fetch('/api/admin/upload-todays-setup', {
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',
@@ -2676,7 +2676,7 @@
       status.className = 'mt-2 text-xs text-amber-400';
       
       try {
-        const res = await fetch('/api/todays-setup', {
+        const res = await fetch('/api/admin/todays-setup', {
           method: 'DELETE',
           headers: { 'x-admin-token': adminToken }
         });
@@ -2754,7 +2754,7 @@
         reader.onloadend = async () => {
           const base64Image = reader.result;
           
-          const res = await fetch('/api/upload-todays-setup-results', {
+          const res = await fetch('/api/admin/upload-todays-setup-results', {
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',
@@ -2793,7 +2793,7 @@
       status.className = 'mt-2 text-xs text-amber-400';
       
       try {
-        const res = await fetch('/api/todays-setup-results', {
+        const res = await fetch('/api/admin/todays-setup-results', {
           method: 'DELETE',
           headers: { 'x-admin-token': adminToken }
         });
@@ -2824,7 +2824,7 @@
       if (!adminToken) return;
 
       try {
-        const res = await fetch('/api/vip-documents', {
+        const res = await fetch('/api/admin/vip-documents', {
           headers: { 'x-admin-token': adminToken }
         });
         const data = await res.json();
@@ -2897,7 +2897,7 @@
       reader.onload = async function(event) {
         const fileData = event.target.result;
         try {
-          const res = await fetch('/api/upload-vip-document', {
+          const res = await fetch('/api/admin/upload-vip-document', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -2961,7 +2961,7 @@
       feedback.innerHTML = '<span class="text-amber-400 animate-pulse">Updating password...</span>';
 
       try {
-        const res = await fetch('/api/update-vip-password', {
+        const res = await fetch('/api/admin/update-vip-password', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
