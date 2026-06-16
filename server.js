@@ -17,9 +17,11 @@ const vipRoutes = require('./src/routes/vipRoutes');
 const paymentRoutes = require('./src/routes/paymentRoutes');
 const publicRoutes = require('./src/routes/publicRoutes');
 const journalRoutes = require('./src/routes/journalRoutes');
+const chatRoutes   = require('./src/routes/chatRoutes');
 
 // ── Environment Validation ─────────────────────────────────────
 const REQUIRED_ENV = ['MONGODB_URI', 'JWT_SECRET'];
+// GEMINI_API_KEY is optional — AI chat is disabled gracefully if missing
 const RECOMMENDED_ENV = [
   'TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID',
   'PAYHERO_API_USER', 'PAYHERO_API_PASS', 'PAYHERO_CHANNEL_ID',
@@ -102,6 +104,7 @@ app.use('/api', vipRoutes);
 app.use('/api', paymentRoutes);
 app.use('/api', publicRoutes);
 app.use('/api/journal', journalRoutes);
+app.use('/api', chatRoutes);
 
 // ── SPA Fallback ───────────────────────────────────────────────
 app.get('*', (req, res) => {
