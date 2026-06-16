@@ -45,7 +45,7 @@ router.post('/chat', chatLimiter, async (req, res) => {
   }
 
   // Gemini 1.5 Flash endpoint (free tier, fast)
-  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
 
   const requestBody = {
     system_instruction: {
