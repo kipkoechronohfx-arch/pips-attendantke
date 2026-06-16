@@ -35,7 +35,7 @@ router.post('/register', authLimiter, async (req, res) => {
   const { email, password, name, referralCode } = req.body;
   if (!email || !password) return res.status(400).json({ ok: false, error: 'Email and password required.' });
   
-  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[\\W_]).{8,}$/;
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
   if (!passwordRegex.test(password)) {
     return res.status(400).json({ ok: false, error: 'Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.' });
   }
@@ -153,7 +153,7 @@ router.post('/reset-password', authLimiter, async (req, res) => {
     return res.status(400).json({ ok: false, error: 'Invalid or expired reset token.' });
   }
 
-  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[\\W_]).{8,}$/;
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
   if (!passwordRegex.test(newPassword)) {
     return res.status(400).json({ ok: false, error: 'Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.' });
   }
@@ -179,7 +179,7 @@ router.post('/change-password', validateUserSession, authLimiter, async (req, re
     return res.status(401).json({ ok: false, error: 'Incorrect old password.' });
   }
 
-  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[\\W_]).{8,}$/;
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
   if (!passwordRegex.test(newPassword)) {
     return res.status(400).json({ ok: false, error: 'Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.' });
   }
