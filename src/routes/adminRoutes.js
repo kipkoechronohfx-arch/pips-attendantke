@@ -205,6 +205,36 @@ router.delete('/todays-setup', validateAdminSession, async (req, res) => {
   }
 });
 
+// ── Today's Setup Results ──────────────────────────────────────
+router.get('/todays-setup-results', validateAdminSession, async (req, res) => {
+  try {
+    const setup = await db.getAdminTodaysSetupResults();
+    res.json({ ok: true, setup });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/upload-todays-setup-results', validateAdminSession, async (req, res) => {
+  const { image } = req.body;
+  if (!image) return res.status(400).json({ ok: false, error: 'Image required.' });
+  try {
+    await db.saveTodaysSetupResults({ image, timestamp: new Date().toISOString() });
+    res.json({ ok: true, message: "Today's setup results uploaded!" });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.delete('/todays-setup-results', validateAdminSession, async (req, res) => {
+  try {
+    await db.saveTodaysSetupResults({ image: null, timestamp: null });
+    res.json({ ok: true, message: 'Setup results cleared.' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // ── Crypto Requests ────────────────────────────────────────────
 router.get('/crypto-requests', validateAdminSession, async (req, res) => {
   try {
