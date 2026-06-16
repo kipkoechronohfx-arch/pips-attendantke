@@ -37,7 +37,7 @@
     #zuri-launcher {
       position: fixed;
       bottom: 28px;
-      right: 28px;
+      left: 28px;
       width: 60px;
       height: 60px;
       border-radius: 50%;
@@ -104,7 +104,7 @@
     #zuri-panel {
       position: fixed;
       bottom: 104px;
-      right: 28px;
+      left: 28px;
       width: 370px;
       max-width: calc(100vw - 40px);
       height: 560px;
@@ -118,7 +118,7 @@
       overflow: hidden;
       z-index: 9997;
       transform: scale(0.85) translateY(20px);
-      transform-origin: bottom right;
+      transform-origin: bottom left;
       opacity: 0;
       pointer-events: none;
       transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), opacity 0.3s ease;
@@ -380,8 +380,8 @@
 
     /* ── Mobile responsive ── */
     @media (max-width: 420px) {
-      #zuri-panel { right: 12px; bottom: 94px; width: calc(100vw - 24px); }
-      #zuri-launcher { right: 16px; bottom: 20px; }
+      #zuri-panel { left: 12px; bottom: 94px; width: calc(100vw - 24px); }
+      #zuri-launcher { left: 16px; bottom: 20px; }
     }
   `;
 
