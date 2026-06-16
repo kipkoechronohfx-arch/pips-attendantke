@@ -237,4 +237,15 @@ router.post('/redeem-code', validateUserSession, async (req, res) => {
   res.json({ ok: true, message: 'Subscription successfully activated!', subscriptionExpiry: user.subscriptionExpiry });
 });
 
+router.get('/public-config', async (req, res) => {
+  const { getAppConfig } = require('../services/db');
+  const config = await getAppConfig();
+  res.json({
+    ok: true,
+    config: {
+      promoCodesEnabled: config?.promoCodesEnabled || false
+    }
+  });
+});
+
 module.exports = router;

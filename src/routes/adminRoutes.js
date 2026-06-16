@@ -271,7 +271,19 @@ router.post('/reject-crypto-request', validateAdminSession, async (req, res) => 
 // ── Promos ──────────────────────────────────────────────────────
 router.get('/promos', validateAdminSession, async (req, res) => {
   const promos = await db.getPromos();
-  res.json({ ok: true, promos });
+  const config = await db.getAppConfig();
+  res.json({ ok: true, promos, promoCodesEnabled: config?.promoCodesEnabled || false });
+});
+
+router.post('/toggle-promo-codes', validateAdminSession, async (req, res) => {
+  const { enabled } = req.body;
+  const config = await db.getAppConfig();
+  config.promoCodesEnabled = !!enabled;
+  if (await db.saveAppConfig(config)) {
+    res.json({ ok: true, promoCodesEnabled: config.promoCodesEnabled });
+  } else {
+    res.status(500).json({ ok: false, error: 'Failed to save configuration.' });
+  }
 });
 
 router.post('/promos', validateAdminSession, async (req, res) => {

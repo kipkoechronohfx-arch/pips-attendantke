@@ -1470,6 +1470,17 @@
         <div class="flex-1 h-px bg-white/10"></div>
       </div>
 
+      <div class="glass-card rounded-2xl p-6 border border-white/10 mb-6 flex items-center justify-between">
+        <div>
+          <h3 class="text-white font-bold text-sm">Enable Promo Codes Globally</h3>
+          <p class="text-[10px] text-gray-500 mt-1">If disabled, the promo code input field will be hidden on the checkout page unless a user visits with ?promo=1 in the URL.</p>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="globalPromoToggle" class="sr-only peer" onchange="toggleGlobalPromos(this.checked)">
+          <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+        </label>
+      </div>
+
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Create Promo Form -->
         <div class="glass-card rounded-2xl p-6 border border-white/10">
@@ -3387,7 +3398,13 @@
       try {
         const res = await fetch('/api/admin/promos', { headers: { 'x-admin-token': adminToken } });
         const data = await res.json();
-        if (!data.ok || data.promos.length === 0) {
+        
+        if (data.ok) {
+          const toggle = document.getElementById('globalPromoToggle');
+          if (toggle) toggle.checked = data.promoCodesEnabled;
+        }
+
+        if (!data.ok || !data.promos || data.promos.length === 0) {
           container.innerHTML = '<p class="text-gray-500 text-xs text-center py-4">No promo codes yet.</p>';
           return;
         }
@@ -3448,6 +3465,30 @@
         fetchPromos();
       } catch (err) {
         alert('Failed to delete promo.');
+      }
+    }
+
+    async function toggleGlobalPromos(enabled) {
+      const adminToken = localStorage.getItem('pa_admin_token');
+      if (!adminToken) return;
+      try {
+        const res = await fetch('/api/admin/toggle-promo-codes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+          body: JSON.stringify({ enabled })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          if (typeof showToast !== 'undefined') {
+            showToast(enabled ? '✅ Promo codes enabled globally!' : '🔒 Promo codes hidden from checkout.');
+          }
+        } else {
+          alert('Failed to update promo setting.');
+          document.getElementById('globalPromoToggle').checked = !enabled;
+        }
+      } catch (err) {
+        alert('Network error. Please try again.');
+        document.getElementById('globalPromoToggle').checked = !enabled;
       }
     }
 

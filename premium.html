@@ -232,7 +232,7 @@
               onkeydown="if(event.key==='Enter') payMpesa()" />
           </div>
           
-          <div class="flex gap-2">
+          <div id="mpesaPromoContainer" class="hidden flex gap-2">
             <input type="text" id="mpesaPromo" placeholder="Promo Code (Optional)"
               class="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-emerald-400/50 focus:outline-none transition font-mono uppercase tracking-wider" />
             <button onclick="applyPromo('mpesa')" type="button" class="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-emerald-400 text-xs font-bold hover:bg-white/10 transition cursor-pointer">
@@ -334,7 +334,7 @@
                 <input type="text" id="cryptoContact" placeholder="Where should we send your code?" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-amber-400/50 focus:outline-none transition" />
               </div>
 
-              <div class="flex gap-2 mt-2">
+              <div id="cryptoPromoContainer" class="hidden flex gap-2 mt-2">
                 <input type="text" id="cryptoPromo" placeholder="Promo Code (Optional)"
                   class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-amber-400/50 focus:outline-none transition font-mono uppercase tracking-wider" />
                 <button onclick="applyPromo('crypto')" type="button" class="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-amber-400 text-xs font-bold hover:bg-white/10 transition cursor-pointer">
@@ -1471,7 +1471,25 @@
       if (urlParams.get('action') === 'login') {
         switchAuthTab('login');
       }
+
+      // Show promo fields if ?promo=1 or if admin has enabled globally
+      const forcePromo = urlParams.get('promo') === '1';
+      if (forcePromo) {
+        showPromoFields();
+      } else {
+        fetch('/api/public-config')
+          .then(r => r.json())
+          .then(data => { if (data?.config?.promoCodesEnabled) showPromoFields(); })
+          .catch(() => {});
+      }
     });
+
+    function showPromoFields() {
+      const mpesa = document.getElementById('mpesaPromoContainer');
+      const crypto = document.getElementById('cryptoPromoContainer');
+      if (mpesa) mpesa.classList.remove('hidden');
+      if (crypto) crypto.classList.remove('hidden');
+    }
 
     async function handleAuth(e) {
       e.preventDefault();
