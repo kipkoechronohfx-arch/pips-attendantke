@@ -2652,7 +2652,7 @@
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',
-              'x-admin-key': adminKey 
+              'x-admin-token': adminToken 
             },
             body: JSON.stringify({ image: base64Image, filename: file.name, entryTime: entryTimeMs })
           });
@@ -2769,7 +2769,7 @@
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',
-              'x-admin-key': adminKey 
+              'x-admin-token': adminToken 
             },
             body: JSON.stringify({ image: base64Image, filename: file.name })
           });
@@ -2912,7 +2912,7 @@
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'x-admin-key': adminKey
+              'x-admin-token': adminToken
             },
             body: JSON.stringify({ filename: selectedDocFile.name, fileData })
           });
@@ -2976,7 +2976,7 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-admin-key': adminKey
+            'x-admin-token': adminToken
           },
           body: JSON.stringify({ vipPassword: newPass })
         });

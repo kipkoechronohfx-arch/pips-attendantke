@@ -185,7 +185,7 @@ router.get('/todays-setup', validateAdminSession, async (req, res) => {
   }
 });
 
-router.post('/upload-todays-setup', validateAdminKey, async (req, res) => {
+router.post('/upload-todays-setup', validateAdminSession, async (req, res) => {
   const { image, analysis, signalType } = req.body;
   if (!image) return res.status(400).json({ ok: false, error: 'Image required.' });
   try {
@@ -196,7 +196,7 @@ router.post('/upload-todays-setup', validateAdminKey, async (req, res) => {
   }
 });
 
-router.delete('/todays-setup', validateAdminKey, async (req, res) => {
+router.delete('/todays-setup', validateAdminSession, async (req, res) => {
   try {
     await db.saveTodaysSetup({ image: null, analysis: null, signalType: null, timestamp: null });
     res.json({ ok: true, message: 'Setup cleared.' });
