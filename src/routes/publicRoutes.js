@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 const FormData = require('form-data');
 const webpush = require('web-push');
 const db = require('../services/db');
-const { validateAdminKey } = require('../middleware/auth');
+const { validateAdminKey, validateAdminSession } = require('../middleware/auth');
 
 function now() { return new Date().toISOString(); }
 
@@ -73,7 +73,7 @@ router.get('/performance/all', async (req, res) => {
   }
 });
 
-router.post('/performance', validateAdminKey, async (req, res) => {
+router.post('/performance', validateAdminSession, async (req, res) => {
   const { asset, type, result, pips } = req.body;
   if (!asset || !type || !result || pips === undefined) return res.status(400).json({ ok: false, error: 'Missing fields' });
   try {

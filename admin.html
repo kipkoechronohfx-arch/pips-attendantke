@@ -2942,7 +2942,7 @@
       
       const adminToken = localStorage.getItem('pa_admin_token');
       try {
-        const res = await fetch(`/api/delete-vip-document/${encodeURIComponent(filename)}`, {
+        const res = await fetch(`/api/admin/delete-vip-document/${encodeURIComponent(filename)}`, {
           method: 'DELETE',
           headers: { 'x-admin-token': adminToken }
         });
@@ -3322,7 +3322,7 @@
       feather.replace();
 
       try {
-        const res = await fetch('/api/admin/2fa/setup', { headers: { 'x-admin-token': adminToken } });
+        const res = await fetch('/api/admin/2fa/setup', { headers: { 'x-admin-key': adminKey } });
         const data = await res.json();
         if (data.ok) {
           twoFASecret = data.secret;
@@ -3358,7 +3358,7 @@
       try {
         const res = await fetch('/api/admin/2fa/verify-setup', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
           body: JSON.stringify({ secret: twoFASecret, token })
         });
         const data = await res.json();
