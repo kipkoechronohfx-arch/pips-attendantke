@@ -256,12 +256,17 @@ router.post('/approve-crypto-request', validateAdminSession, async (req, res) =>
     const userId = found.userId;
     const days = found.plan === '3months' ? 90 : (found.plan === '2months' ? 60 : 30);
 
+    let userEmail = null;
+    let userName = null;
+
     if (userId) {
       const user = await db.getUserById(userId);
       if (user) {
         const currentExpiry = user.subscriptionExpiry && user.subscriptionExpiry > Date.now() ? user.subscriptionExpiry : Date.now();
         user.subscriptionExpiry = currentExpiry + days * 24 * 60 * 60 * 1000;
         await db.saveUser(user);
+        userEmail = user.email;
+        userName = user.name;
       }
     }
 
@@ -274,6 +279,25 @@ router.post('/approve-crypto-request', validateAdminSession, async (req, res) =>
 
     const idStr = found._id?.toString() || found.id;
     await db.updateCryptoRequest(idStr, { status: 'Approved', approvedAt: new Date().toISOString() });
+
+    if (userEmail) {
+      try {
+        const emailHtml = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb; padding: 20px; border-radius: 8px;">
+          <h2 style="color: #10b981; text-align: center;">Crypto Payment Approved! 🎉</h2>
+          <p>Hello ${userName || 'Trader'},</p>
+          <p>We have successfully verified your crypto payment.</p>
+          <p>Your account has been granted <strong>${days} Days of VIP Access!</strong></p>
+          <p>You can access the VIP portal anytime at <a href="${process.env.APP_URL || 'https://pipsattendant.com'}/premium.html" style="color: #10b981;">pipsattendant.com/premium.html</a>.</p>
+          <br/>
+          <p>Happy Trading,<br/>Pips Attendant Team</p>
+          </div>
+        `;
+        sendEmail(userEmail, '✅ VIP Access Granted! - Pips_attendant', emailHtml).catch(console.error);
+      } catch (err) {
+        console.error('Failed to send crypto approval email', err);
+      }
+    }
 
     res.json({ ok: true, message: 'VIP granted (' + days + ' days) for user ' + (userId || 'unknown') + '.' });
   } catch (err) {

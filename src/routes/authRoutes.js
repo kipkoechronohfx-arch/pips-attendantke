@@ -234,6 +234,23 @@ router.post('/redeem-code', validateUserSession, async (req, res) => {
   await savePayment(payment.reference, payment);
   await saveUser(user);
 
+  try {
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb; padding: 20px; border-radius: 8px;">
+      <h2 style="color: #10b981; text-align: center;">Subscription Activated! 🎉</h2>
+      <p>Hello ${user.name || 'Trader'},</p>
+      <p>You have successfully redeemed an access code.</p>
+      <p>Your account has been granted <strong>${daysToAdd} Days of VIP Access!</strong></p>
+      <p>You can access the VIP portal anytime at <a href="${process.env.APP_URL || 'https://pipsattendant.com'}/premium.html" style="color: #10b981;">pipsattendant.com/premium.html</a>.</p>
+      <br/>
+      <p>Happy Trading,<br/>Pips Attendant Team</p>
+      </div>
+    `;
+    sendEmail(user.email, '✅ VIP Access Granted! - Pips_attendant', emailHtml).catch(console.error);
+  } catch (err) {
+    console.error('Failed to send subscription email', err);
+  }
+
   res.json({ ok: true, message: 'Subscription successfully activated!', subscriptionExpiry: user.subscriptionExpiry });
 });
 
