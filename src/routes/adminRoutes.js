@@ -37,7 +37,7 @@ router.post('/login', validateAdminKey, async (req, res) => {
     const verified = speakeasy.totp.verify({
       secret: currentSecret,
       encoding: 'base32',
-      token: String(totpToken).replace(/\\s/g, ''),
+      token: String(totpToken).replace(/\s/g, ''),
       window: 2
     });
     if (!verified) {
@@ -74,7 +74,7 @@ router.post('/2fa/verify-setup', validateAdminKey, async (req, res) => {
   const verified = speakeasy.totp.verify({
     secret,
     encoding: 'base32',
-    token: String(token).replace(/\\s/g, ''),
+    token: String(token).replace(/\s/g, ''),
     window: 2
   });
   if (verified) {
