@@ -32,8 +32,11 @@ async function sendEmail(to, subject, htmlContent) {
       html: htmlContent,
     });
     console.log(`[SendGrid] Email sent to ${to} — ${subject}`);
+    return { ok: true };
   } catch (error) {
-    console.error('[SendGrid Error]', error.response?.body?.errors || error.message || error);
+    const errorMsg = error.response?.body?.errors ? JSON.stringify(error.response.body.errors) : error.message || error;
+    console.error('[SendGrid Error]', errorMsg);
+    throw new Error(`SendGrid API Error: ${errorMsg}`);
   }
 }
 
