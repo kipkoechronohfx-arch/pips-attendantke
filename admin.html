@@ -3090,7 +3090,7 @@
         }
 
         tbody.innerHTML = data.requests.map(req => {
-          const date = new Date(req.submittedAt).toLocaleString();
+          const date = new Date(req.submittedAt || req.timestamp).toLocaleString();
           const shortTx = req.txHash ? req.txHash.slice(0, 12) + '…' + req.txHash.slice(-6) : '—';
           const statusColor = req.status === 'Approved' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
                             : req.status === 'Rejected' ? 'text-rose-400 bg-rose-500/10 border-rose-500/20'
