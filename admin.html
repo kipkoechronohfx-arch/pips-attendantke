@@ -293,6 +293,28 @@
       </div>
     </div>
 
+    <!-- 📧 TEST EMAIL CARD -->
+    <div id="testEmailCard" class="hidden max-w-md mx-auto mb-6">
+      <div class="glass-card rounded-2xl p-5 border border-emerald-500/20 bg-emerald-500/3">
+        <div class="flex items-center gap-2 mb-3">
+          <div class="p-1.5 bg-emerald-500/10 rounded-lg">
+            <i data-feather="send" class="w-4 h-4 text-emerald-400"></i>
+          </div>
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Test Email Delivery</span>
+        </div>
+        <p class="text-gray-400 text-xs mb-3">Send a test email via SendGrid to confirm your email config is working.</p>
+        <div class="flex gap-2">
+          <input type="email" id="testEmailTo" placeholder="your@email.com"
+            class="flex-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-emerald-400/50 focus:outline-none transition" />
+          <button id="testEmailBtn" type="button" onclick="sendTestEmail()"
+            class="px-4 py-2 rounded-xl font-bold text-xs bg-emerald-500 text-white hover:bg-emerald-400 active:scale-95 transition cursor-pointer whitespace-nowrap">
+            Send Test
+          </button>
+        </div>
+        <p id="testEmailFeedback" class="text-xs mt-2 min-h-[14px]"></p>
+      </div>
+    </div>
+
     <!-- 📊 2. MAIN BROADCAST INTERACTIVE DASHBOARD -->
     <div id="dashboardPanel" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-8">
       
@@ -1672,6 +1694,7 @@
         document.getElementById('promosPanel').classList.remove('hidden');
         document.getElementById('ticketsPanel').classList.remove('hidden');
         document.getElementById('statusSection').classList.remove('hidden');
+        document.getElementById('testEmailCard').classList.remove('hidden');
         updateLivePreview();
         updateEngPreview();
         updateLiveRoomPreview();
@@ -1700,6 +1723,7 @@
         document.getElementById('promosPanel').classList.add('hidden');
         document.getElementById('ticketsPanel').classList.add('hidden');
         document.getElementById('statusSection').classList.add('hidden');
+        document.getElementById('testEmailCard').classList.add('hidden');
         
         // Pre-fill inputs if credentials exist in localStorage
         if (document.getElementById('botToken')) {
@@ -3786,6 +3810,43 @@
         }
       } catch (err) {
         showSocialToast('❌ Could not reach Discord. Check your connection.', '#f87171');
+      }
+    }
+
+    // ── Send Test Email ───────────────────────────────────────────
+    async function sendTestEmail() {
+      const to = document.getElementById('testEmailTo').value.trim();
+      const feedback = document.getElementById('testEmailFeedback');
+      if (!to || !to.includes('@')) {
+        feedback.className = 'text-rose-400 text-xs mt-2 min-h-[14px]';
+        feedback.textContent = '⚠️ Please enter a valid email address.';
+        return;
+      }
+      const btn = document.getElementById('testEmailBtn');
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+      feedback.className = 'text-gray-400 text-xs mt-2 min-h-[14px]';
+      feedback.textContent = 'Dispatching test email…';
+      try {
+        const res = await fetch('/api/admin/test-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+          body: JSON.stringify({ to })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          feedback.className = 'text-emerald-400 text-xs mt-2 min-h-[14px]';
+          feedback.textContent = '✅ ' + data.message;
+        } else {
+          feedback.className = 'text-rose-400 text-xs mt-2 min-h-[14px]';
+          feedback.textContent = '❌ ' + (data.error || 'Failed to send.');
+        }
+      } catch (err) {
+        feedback.className = 'text-rose-400 text-xs mt-2 min-h-[14px]';
+        feedback.textContent = '❌ Network error. Could not reach server.';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Send Test';
       }
     }
 

@@ -106,6 +106,26 @@ router.post('/2fa/reset', validateAdminKey, async (req, res) => {
     conf.admin2FASecret = null;
     await db.saveAppConfig(conf);
     res.json({ ok: true, message: '2FA secret cleared. Visit /2fa/setup to configure a new one.' });
+  }
+});
+
+// ── Send Test Email ─────────────────────────────────────────────
+router.post('/test-email', validateAdminSession, async (req, res) => {
+  const { to } = req.body;
+  if (!to) return res.status(400).json({ ok: false, error: 'Recipient email (to) is required.' });
+  try {
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; background: #111827; padding: 32px; border-radius: 16px; color: #f9fafb;">
+        <h2 style="color: #fbbf24; text-align: center; margin-bottom: 8px;">📧 SendGrid Test Email</h2>
+        <p style="text-align: center; color: #9ca3af; margin-bottom: 24px; font-size: 14px;">This is a test sent from your Pips Attendant admin panel.</p>
+        <div style="background: #1f2937; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 24px;">
+          <p style="color: #10b981; font-size: 18px; font-weight: bold; margin: 0;">✅ Email delivery is working!</p>
+        </div>
+        <p style="color: #6b7280; font-size: 12px; text-align: center;">Sent at: ${new Date().toUTCString()}</p>
+      </div>
+    `;
+    await sendEmail(to, '🧪 Pips Attendant — SendGrid Test', html);
+    res.json({ ok: true, message: `Test email dispatched to ${to}. Check inbox (and spam folder).` });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
