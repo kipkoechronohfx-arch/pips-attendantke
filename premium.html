@@ -1242,7 +1242,7 @@
       try {
         const token = sessionStorage.getItem('vip_session_token');
         const promoCode = document.getElementById('cryptoPromo') ? document.getElementById('cryptoPromo').value.trim() : '';
-        const res = await fetch('/api/crypto-payment-request', {
+        const res = await fetch('/api/crypto-pay', {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
