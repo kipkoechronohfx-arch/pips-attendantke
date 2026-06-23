@@ -106,6 +106,8 @@ router.post('/2fa/reset', validateAdminKey, async (req, res) => {
     conf.admin2FASecret = null;
     await db.saveAppConfig(conf);
     res.json({ ok: true, message: '2FA secret cleared. Visit /2fa/setup to configure a new one.' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
