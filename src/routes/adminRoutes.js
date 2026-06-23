@@ -295,14 +295,17 @@ router.post('/approve-crypto-request', validateAdminSession, async (req, res) =>
     }
 
     const ref = found.id || found._id?.toString();
+    const generatedAccessCode = crypto.randomBytes(4).toString('hex').toUpperCase();
+    
     await db.savePayment('CRYPTO_' + ref, {
       status: 'Success', method: 'crypto', txHash: found.txHash, network: found.network,
       contactInfo: found.contactInfo, userId, plan: found.plan || '1month',
-      processedForUser: true, approvedAt: new Date().toISOString(), timestamp: new Date().toISOString()
+      processedForUser: !!userId, approvedAt: new Date().toISOString(), timestamp: new Date().toISOString(),
+      accessCode: generatedAccessCode
     });
 
     const idStr = found._id?.toString() || found.id;
-    await db.updateCryptoRequest(idStr, { status: 'Approved', approvedAt: new Date().toISOString() });
+    await db.updateCryptoRequest(idStr, { status: 'Approved', approvedAt: new Date().toISOString(), accessCode: generatedAccessCode });
 
     if (userEmail) {
       try {
@@ -323,7 +326,7 @@ router.post('/approve-crypto-request', validateAdminSession, async (req, res) =>
       }
     }
 
-    res.json({ ok: true, message: 'VIP granted (' + days + ' days) for user ' + (userId || 'unknown') + '.' });
+    res.json({ ok: true, message: `VIP granted. Access Code: ${generatedAccessCode}` });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
