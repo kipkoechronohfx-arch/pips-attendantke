@@ -3373,7 +3373,7 @@
     }
 
     async function verify2FASetup() {
-      const token = document.getElementById('twoFATokenInput').value.trim();
+      const token = document.getElementById('twoFATokenInput').value.replace(/\s/g, '');
       const msgEl = document.getElementById('twoFAVerifyMsg');
       if (!token || token.length !== 6) {
         msgEl.className = 'text-rose-400 text-[11px] min-h-[14px] mb-3 text-center';

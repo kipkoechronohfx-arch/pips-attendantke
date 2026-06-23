@@ -38,7 +38,7 @@ router.post('/login', validateAdminKey, async (req, res) => {
       secret: currentSecret,
       encoding: 'base32',
       token: String(totpToken).replace(/\s/g, ''),
-      window: 2
+      window: 6
     });
     if (!verified) {
       return res.status(401).json({ ok: false, error: 'Invalid 2FA code.' });
@@ -75,7 +75,7 @@ router.post('/2fa/verify-setup', validateAdminKey, async (req, res) => {
     secret,
     encoding: 'base32',
     token: String(token).replace(/\s/g, ''),
-    window: 2
+    window: 6
   });
   if (verified) {
     await saveAdmin2FASecret(secret);
