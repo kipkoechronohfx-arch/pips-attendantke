@@ -3815,6 +3815,7 @@
 
     // ── Send Test Email ───────────────────────────────────────────
     async function sendTestEmail() {
+      const adminToken = localStorage.getItem('pa_admin_token');
       const to = document.getElementById('testEmailTo').value.trim();
       const feedback = document.getElementById('testEmailFeedback');
       if (!to || !to.includes('@')) {
