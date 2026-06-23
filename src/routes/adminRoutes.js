@@ -87,6 +87,18 @@ router.post('/2fa/verify-setup', validateAdminKey, async (req, res) => {
   }
 });
 
+// ── Reset 2FA — clears stored secret so admin can re-scan a fresh QR ──
+router.post('/2fa/reset', validateAdminKey, async (req, res) => {
+  try {
+    const conf = await db.getAppConfig();
+    delete conf.admin2FASecret;
+    await db.saveAppConfig(conf);
+    res.json({ ok: true, message: '2FA secret cleared. Visit /2fa/setup to configure a new one.' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 router.get('/system-status', validateAdminSession, async (req, res) => {
   res.json({
     ok: true,

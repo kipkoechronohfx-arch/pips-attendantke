@@ -286,6 +286,9 @@
           <button type="button" onclick="open2FASetup()" class="w-full py-2.5 rounded-xl font-bold text-sm border border-violet-500/40 bg-violet-500/10 text-violet-400 hover:bg-violet-500 hover:text-white transition cursor-pointer">
             <span class="flex items-center justify-center gap-2"><i data-feather="shield" class="w-4 h-4"></i> Setup 2FA (Recommended)</span>
           </button>
+          <button type="button" onclick="reset2FA()" class="w-full py-2.5 rounded-xl font-bold text-sm border border-rose-500/40 bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white transition cursor-pointer mt-2">
+            <span class="flex items-center justify-center gap-2"><i data-feather="refresh-cw" class="w-4 h-4"></i> Reset 2FA (If Locked Out)</span>
+          </button>
         </form>
       </div>
     </div>
@@ -1775,6 +1778,30 @@
         localStorage.removeItem('pa_admin_key');
         localStorage.removeItem('pa_admin_token');
         checkCredentials();
+      }
+    }
+
+    async function reset2FA() {
+      const adminKey = document.getElementById('adminKey').value.trim();
+      if (!adminKey) {
+        alert('Please enter your Admin Access Key first to reset 2FA.');
+        return;
+      }
+      if (!confirm('Are you sure you want to reset 2FA? You will need to scan a new QR code.')) return;
+      
+      try {
+        const res = await fetch('/api/admin/2fa/reset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey }
+        });
+        const data = await res.json();
+        if (data.ok) {
+          alert('2FA Reset Successful! Please setup 2FA again.');
+        } else {
+          alert('Reset failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch (err) {
+        alert('Network error while resetting 2FA.');
       }
     }
 
