@@ -307,20 +307,30 @@ router.post('/approve-crypto-request', validateAdminSession, async (req, res) =>
     const idStr = found._id?.toString() || found.id;
     await db.updateCryptoRequest(idStr, { status: 'Approved', approvedAt: new Date().toISOString(), accessCode: generatedAccessCode });
 
-    if (userEmail) {
+    const targetEmail = userEmail || (found.contactInfo && found.contactInfo.includes('@') ? found.contactInfo : null);
+
+    if (targetEmail) {
       try {
         const emailHtml = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb; padding: 20px; border-radius: 8px;">
           <h2 style="color: #10b981; text-align: center;">Crypto Payment Approved! 🎉</h2>
           <p>Hello ${userName || 'Trader'},</p>
           <p>We have successfully verified your crypto payment.</p>
-          <p>Your account has been granted <strong>${days} Days of VIP Access!</strong></p>
-          <p>You can access the VIP portal anytime at <a href="${process.env.APP_URL || 'https://pipsattendant.com'}/premium.html" style="color: #10b981;">pipsattendant.com/premium.html</a>.</p>
+          <p>Your payment covers <strong>${days} Days of VIP Access!</strong></p>
+          
+          <div style="background-color: #111827; padding: 20px; border-radius: 12px; text-align: center; margin: 25px 0;">
+            <p style="color: #9ca3af; font-size: 13px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 1px;">Your VIP Access Code</p>
+            <p style="color: #10b981; font-size: 28px; font-weight: bold; font-family: monospace; letter-spacing: 3px; margin: 0;">${generatedAccessCode}</p>
+          </div>
+
+          ${!userEmail ? '<p>Since you do not have an account yet, you can create one or log in, then use the Access Code above to activate your VIP status.</p>' : '<p>Your account has been automatically upgraded, but you can keep this code for your records.</p>'}
+
+          <p>You can access the VIP portal anytime at <a href="${process.env.APP_URL || 'https://pipsattendant.com'}/premium.html" style="color: #10b981; font-weight: bold;">pipsattendant.com/premium.html</a>.</p>
           <br/>
           <p>Happy Trading,<br/>Pips Attendant Team</p>
           </div>
         `;
-        sendEmail(userEmail, '✅ VIP Access Granted! - Pips_attendant', emailHtml).catch(console.error);
+        sendEmail(targetEmail, '✅ VIP Access Granted! - Pips_attendant', emailHtml).catch(console.error);
       } catch (err) {
         console.error('Failed to send crypto approval email', err);
       }
