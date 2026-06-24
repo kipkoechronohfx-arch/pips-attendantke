@@ -49,6 +49,69 @@
     </div>
   </nav>
 
+  <!-- 🏆 Live Prop Firm Progress Tracker (shown only when logged in) -->
+  <div id="pfTrackerWrap" class="relative z-10 w-full max-w-3xl mx-auto px-6 mb-2 hidden">
+    <div id="pfTracker" class="glass-card rounded-3xl border border-amber-400/30 shadow-[0_0_30px_rgba(245,158,11,0.15)] overflow-hidden">
+      <!-- Header -->
+      <div class="flex items-center justify-between p-5 border-b border-white/10">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-amber-400/15 flex items-center justify-center border border-amber-400/30">
+            <i data-feather="award" class="w-5 h-5 text-amber-400"></i>
+          </div>
+          <div>
+            <p class="text-xs font-bold text-amber-400 uppercase tracking-widest">My Challenge</p>
+            <p id="pfFirmName" class="text-white font-black text-sm">Loading...</p>
+          </div>
+        </div>
+        <span id="pfStatusBadge" class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-sky-500/10 border border-sky-500/20 text-sky-400">Active</span>
+      </div>
+      <!-- Stats -->
+      <div class="grid grid-cols-3 divide-x divide-white/10 border-b border-white/10">
+        <div class="p-4 text-center">
+          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Phase</p>
+          <p id="pfPhase" class="text-white font-black text-base">—</p>
+        </div>
+        <div class="p-4 text-center">
+          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Account Size</p>
+          <p id="pfAccountSize" class="text-amber-400 font-black text-base">—</p>
+        </div>
+        <div class="p-4 text-center">
+          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Max Drawdown</p>
+          <p id="pfDrawdown" class="text-rose-400 font-black text-base">—</p>
+        </div>
+      </div>
+      <!-- Progress Bar -->
+      <div class="p-5">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-xs font-bold text-gray-300">Profit Progress</span>
+          <span class="text-xs font-bold">
+            <span id="pfCurrent" class="text-emerald-400">0%</span>
+            <span class="text-gray-500"> / </span>
+            <span id="pfTarget" class="text-white">8%</span>
+            <span class="text-gray-500"> target</span>
+          </span>
+        </div>
+        <div class="w-full h-4 rounded-full bg-white/5 border border-white/10 overflow-hidden">
+          <div id="pfProgressBar"
+               class="h-full rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(245,158,11,0.5)]"
+               style="width: 0%"></div>
+        </div>
+        <p id="pfNotes" class="text-xs text-gray-500 mt-3 italic hidden"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- No Account Assigned -->
+  <div id="pfNoAccount" class="relative z-10 w-full max-w-3xl mx-auto px-6 mb-2 hidden">
+    <div class="glass-card rounded-2xl border border-white/10 p-5 flex items-center gap-4">
+      <i data-feather="info" class="w-5 h-5 text-sky-400 flex-shrink-0"></i>
+      <div>
+        <p class="text-white font-bold text-sm">No challenge assigned yet</p>
+        <p class="text-gray-400 text-xs">Contact us on Telegram after purchasing your service and we'll link your progress here.</p>
+      </div>
+    </div>
+  </div>
+
   <!-- Main Content -->
   <main class="relative z-10 flex flex-col items-center w-full px-6 pt-4 pb-20 max-w-3xl mx-auto">
     
@@ -228,7 +291,71 @@
   <script>
     feather.replace();
     
-    // Simple Background Canvas (reused from index)
+    // ── Prop Firm Tracker Loader ──────────────────────────────────
+    (async function loadPropFirmStatus() {
+      const token = localStorage.getItem('vip_session_token');
+      if (!token) return; // not logged in — tracker stays hidden
+      
+      try {
+        const res = await fetch('/api/propfirm/status', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        
+        if (!data.ok) return; // invalid token or error
+        
+        if (!data.account) {
+          // Logged in but no challenge assigned yet
+          document.getElementById('pfNoAccount').classList.remove('hidden');
+          return;
+        }
+        
+        const a = data.account;
+        const wrap = document.getElementById('pfTrackerWrap');
+        wrap.classList.remove('hidden');
+        
+        // Firm name & phase
+        document.getElementById('pfFirmName').textContent = `${a.firm} — ${a.phase}`;
+        document.getElementById('pfPhase').textContent = a.phase;
+        document.getElementById('pfAccountSize').textContent = '$' + Number(a.accountSize).toLocaleString();
+        document.getElementById('pfDrawdown').textContent = a.maxDrawdown + '%';
+        document.getElementById('pfCurrent').textContent = a.currentPercent.toFixed(2) + '%';
+        document.getElementById('pfTarget').textContent = a.targetPercent + '%';
+        
+        // Animate progress bar
+        const pct = Math.min((a.currentPercent / a.targetPercent) * 100, 100);
+        setTimeout(() => {
+          document.getElementById('pfProgressBar').style.width = pct + '%';
+        }, 100);
+        
+        // Status badge
+        const badge = document.getElementById('pfStatusBadge');
+        if (a.status === 'passed') {
+          badge.textContent = '✅ Passed';
+          badge.className = 'px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-emerald-500/10 border border-emerald-500/30 text-emerald-400';
+          document.getElementById('pfProgressBar').classList.add('from-emerald-500', 'to-emerald-300');
+          document.getElementById('pfProgressBar').classList.remove('from-amber-500', 'to-yellow-400');
+        } else if (a.status === 'failed') {
+          badge.textContent = '❌ Failed';
+          badge.className = 'px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-rose-500/10 border border-rose-500/30 text-rose-400';
+          document.getElementById('pfProgressBar').classList.add('from-rose-500', 'to-rose-400');
+          document.getElementById('pfProgressBar').classList.remove('from-amber-500', 'to-yellow-400');
+        }
+        
+        // Notes from admin
+        if (a.notes) {
+          const notesEl = document.getElementById('pfNotes');
+          notesEl.textContent = '📝 ' + a.notes;
+          notesEl.classList.remove('hidden');
+        }
+        
+        feather.replace();
+      } catch (err) {
+        console.error('[PropFirm Tracker]', err.message);
+      }
+    })();
+
+    // Simple Background Canvas
     (function() {
       const canvas = document.getElementById('bgCanvas');
       if(!canvas) return;
@@ -261,12 +388,12 @@
       window.addEventListener('resize', () => { resize(); createParticles(); });
       resize(); createParticles(); draw();
       
-      // Init theme
       if (localStorage.getItem('theme') === 'dark-navy') {
         document.body.classList.add('dark-navy-mode');
       }
     })();
   </script>
+
 
   <!-- Pips Assistant AI Support Widget -->
   <script src="/chat-widget.js"></script>

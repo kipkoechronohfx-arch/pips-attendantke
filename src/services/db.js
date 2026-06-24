@@ -14,6 +14,7 @@ const WHATSAPP_FILE = path.join(DATA_DIR, 'whatsapp.json');
 const CHAT_FILE = path.join(DATA_DIR, 'chat.json');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const JOURNAL_FILE = path.join(DATA_DIR, 'journal.json');
+const PROP_FIRM_FILE = path.join(DATA_DIR, 'prop_firm_accounts.json');
 
 // Ensure local fallback folders exist
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
@@ -87,6 +88,7 @@ const getUsersColl = () => db.collection('users');
 const getPromosColl = () => db.collection('promo_codes');
 const getTicketsColl = () => db.collection('support_tickets');
 const getJournalColl = () => db.collection('journal_entries');
+const getPropFirmColl = () => db.collection('prop_firm_accounts');
 
 async function runMigrations() {
   console.log('[Migration] Checking for local data to migrate to MongoDB Atlas...');
@@ -892,15 +894,62 @@ async function syncJournalEntries(entries, userId) {
   if (!entries || !entries.length) return { synced: 0 };
   let synced = 0;
   for (const localEntry of entries) {
-    // If it doesn't have an _id or it's purely a local client ID, we treat it as new
-    // We can just check if we already have it to prevent duplicates if needed
-    // But for simplicity, we just save each.
-    delete localEntry._id; // Remove local ID to generate a new DB ID
+    delete localEntry._id;
     localEntry.userId = userId;
     await saveJournalEntry(localEntry);
     synced++;
   }
   return { synced };
+}
+
+// ── Prop Firm Account Operations ─────────────────────────────
+async function getPropFirmAccount(userId) {
+  if (db) {
+    try {
+      return await getPropFirmColl().findOne({ userId: String(userId) });
+    } catch (err) {}
+  }
+  const accounts = readJSON(PROP_FIRM_FILE);
+  return accounts.find(a => a.userId === String(userId)) || null;
+}
+
+async function getAllPropFirmAccounts() {
+  if (db) {
+    try {
+      return await getPropFirmColl().find({}).sort({ updatedAt: -1 }).toArray();
+    } catch (err) {}
+  }
+  return readJSON(PROP_FIRM_FILE);
+}
+
+async function savePropFirmAccount(accountData) {
+  if (db) {
+    try {
+      await getPropFirmColl().updateOne(
+        { userId: accountData.userId },
+        { $set: accountData },
+        { upsert: true }
+      );
+      return;
+    } catch (err) { console.error('[DB PropFirm Save Error]', err.message); }
+  }
+  let accounts = readJSON(PROP_FIRM_FILE);
+  const idx = accounts.findIndex(a => a.userId === accountData.userId);
+  if (idx > -1) accounts[idx] = accountData;
+  else accounts.push(accountData);
+  writeJSON(PROP_FIRM_FILE, accounts);
+}
+
+async function deletePropFirmAccount(userId) {
+  if (db) {
+    try {
+      await getPropFirmColl().deleteOne({ userId: String(userId) });
+      return;
+    } catch (err) {}
+  }
+  let accounts = readJSON(PROP_FIRM_FILE);
+  accounts = accounts.filter(a => a.userId !== String(userId));
+  writeJSON(PROP_FIRM_FILE, accounts);
 }
 
 module.exports = {
@@ -920,5 +969,6 @@ module.exports = {
   getPromos, savePromo, getPromoByCode, deletePromo,
   getTickets, getUserTickets, saveTicket,
   logPerformanceAction, getPerformanceLogs,
-  getJournalEntries, saveJournalEntry, deleteJournalEntry, syncJournalEntries
+  getJournalEntries, saveJournalEntry, deleteJournalEntry, syncJournalEntries,
+  getPropFirmAccount, getAllPropFirmAccounts, savePropFirmAccount, deletePropFirmAccount
 };

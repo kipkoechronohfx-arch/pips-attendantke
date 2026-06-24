@@ -3,6 +3,39 @@ const router = express.Router();
 const fetch = require('node-fetch');
 const rateLimit = require('express-rate-limit');
 const { SYSTEM_PROMPT } = require('../services/knowledgeBase');
+const db = require('../services/db');
+
+// Build a dynamic, data-enriched system prompt using live DB data
+async function buildDynamicPrompt() {
+  let context = SYSTEM_PROMPT;
+
+  try {
+    // Inject the 10 most recent VIP signals
+    const signals = await db.getSignals(10);
+    if (signals && signals.length > 0) {
+      const signalLines = signals.map((s, i) => {
+        const date = s.sentAt ? new Date(s.sentAt).toLocaleDateString() : 'Recent';
+        const preview = (s.text || '').slice(0, 200).replace(/\n/g, ' ');
+        return `  ${i + 1}. [${date}] ${preview}`;
+      }).join('\n');
+      context += `\n\n## Recent VIP Signals (Live from database):\n${signalLines}`;
+    }
+  } catch (e) {
+    // Non-fatal: if DB fails, use base prompt
+  }
+
+  try {
+    // Inject today's market setup if available
+    const setup = await db.getTodaysSetup();
+    if (setup && setup.analysis) {
+      context += `\n\n## Today's Market Setup Analysis:\n${setup.analysis}`;
+    }
+  } catch (e) {
+    // Non-fatal
+  }
+
+  return context;
+}
 
 // ── Rate Limiter — 20 messages per minute per IP ───────────────────────────
 const chatLimiter = rateLimit({
@@ -47,9 +80,12 @@ router.post('/chat', chatLimiter, async (req, res) => {
   // Gemini 1.5 Flash endpoint (free tier, fast)
   const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
 
+  // Build live-data-enriched prompt (RAG)
+  const dynamicPrompt = await buildDynamicPrompt();
+
   const requestBody = {
     system_instruction: {
-      parts: [{ text: SYSTEM_PROMPT }]
+      parts: [{ text: dynamicPrompt }]
     },
     contents: sanitised,
     generationConfig: {
