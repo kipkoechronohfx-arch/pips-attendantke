@@ -13,6 +13,7 @@ function hashPassword(password) {
 }
 
 function verifyPassword(password, hash) {
+  if (!hash) return false;
   // Silent migration for old scrypt passwords (format: salt:key)
   if (hash.includes(':')) {
     const [salt, key] = hash.split(':');
@@ -83,8 +84,9 @@ router.post('/register', authLimiter, async (req, res) => {
 });
 
 router.post('/login', authLimiter, async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) return res.status(400).json({ ok: false, error: 'Email and password required.' });
+  const { email: rawEmail, password } = req.body;
+  if (!rawEmail || !password) return res.status(400).json({ ok: false, error: 'Email and password required.' });
+  const email = rawEmail.toLowerCase().trim();
 
   const user = await getUserByEmail(email);
   if (!user || !verifyPassword(password, user.passwordHash)) {
