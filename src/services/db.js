@@ -661,8 +661,8 @@ async function getUserById(id) {
         const user = await getUsersColl().findOne({ _id: new ObjectId(id) });
         if (user) return user;
       }
-      // Fallback: search by string id field (for legacy USER_xxx format)
-      return await getUsersColl().findOne({ id: String(id) }) || null;
+      // Fallback: search by string _id or id field (for legacy USER_xxx format or stringified ObjectIds)
+      return await getUsersColl().findOne({ $or: [{ _id: String(id) }, { id: String(id) }] }) || null;
     } catch (err) {
       console.error('[DB Get User By Id Error]', err.message);
     }
