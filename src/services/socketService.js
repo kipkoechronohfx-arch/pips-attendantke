@@ -3,11 +3,15 @@ const jwt = require('jsonwebtoken');
 const db = require('./db');
 const { JWT_SECRET } = require('../middleware/auth');
 
+const VALID_ROOMS = ['general', 'vip', 'signals'];
+
 function initializeSocket(server) {
   const io = socketIo(server, {
     cors: {
       origin: [
         'https://pips-attendantke.onrender.com',
+        'https://pipsattendant.top',
+        'https://www.pipsattendant.top',
         'http://localhost:3000',
         'http://127.0.0.1:3000'
       ],
@@ -15,33 +19,70 @@ function initializeSocket(server) {
     }
   });
 
-  // Authenticate connections
+  // Authenticate connections (optional token — unauthenticated can use general room only)
   io.use((socket, next) => {
     const token = socket.handshake.auth.token;
-    if (!token) return next(new Error('Authentication error'));
-    
-    // Support legacy VIP password tokens or user tokens
+    if (!token) {
+      socket.user = null; // unauthenticated — general room only
+      return next();
+    }
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
       socket.user = decoded;
       next();
     } catch (err) {
-      next(new Error('Authentication error'));
+      socket.user = null;
+      next(); // Allow connection, but restrict room join below
     }
   });
 
   io.on('connection', (socket) => {
-    // When a user sends a message
+    // ── Join a room ────────────────────────────────────────────
+    socket.on('joinRoom', (room) => {
+      if (!VALID_ROOMS.includes(room)) return;
+
+      // VIP room requires active subscription
+      if (room === 'vip') {
+        if (!socket.user || !socket.user.subscriptionExpiry || socket.user.subscriptionExpiry < Date.now()) {
+          socket.emit('roomError', { room, error: 'Active VIP subscription required.' });
+          return;
+        }
+      }
+
+      // Leave any other rooms first (except the socket's own room)
+      VALID_ROOMS.forEach(r => {
+        if (r !== room) socket.leave(`room:${r}`);
+      });
+
+      socket.join(`room:${room}`);
+      socket.emit('roomJoined', { room });
+    });
+
+    // ── Send a message to a room ────────────────────────────────
     socket.on('sendMessage', async (data) => {
       try {
         if (!data || !data.text) return;
-        const author = data.author || 'VIP Member';
-        
-        // Save to database
-        const msg = await db.addChatMessage({ author, text: data.text });
-        
-        // Broadcast to everyone (including sender, for immediate feedback if desired, or let sender handle it locally)
-        io.emit('newMessage', msg);
+        const room = VALID_ROOMS.includes(data.room) ? data.room : 'general';
+        const author = data.author || (socket.user?.name) || 'Member';
+
+        // Signals room is admin-only
+        if (room === 'signals') {
+          if (!socket.user || socket.user.role !== 'admin') {
+            socket.emit('error', 'Signals room is read-only.');
+            return;
+          }
+        }
+
+        // VIP room requires subscription
+        if (room === 'vip') {
+          if (!socket.user || !socket.user.subscriptionExpiry || socket.user.subscriptionExpiry < Date.now()) {
+            socket.emit('error', 'Active VIP subscription required.');
+            return;
+          }
+        }
+
+        const msg = await db.addChatMessage({ author, text: data.text, room });
+        io.to(`room:${room}`).emit('newMessage', msg);
       } catch (err) {
         socket.emit('error', 'Failed to send message');
       }

@@ -7,7 +7,7 @@ const compression = require('compression');
 const morgan = require('morgan');
 const path = require('path');
 const db = require('./src/services/db');
-const { startCronJobs } = require('./src/services/cronJobs');
+const { startCronJobs, notifyVIPsNewSignal } = require('./src/services/cronJobs');
 const { registerTelegramWebhook, handleTelegramUpdate } = require('./src/services/telegramBot');
 const { initializeSocket } = require('./src/services/socketService');
 
@@ -196,7 +196,11 @@ process.on('SIGINT',  () => shutdown('SIGINT'));
 
 // ── Application Startup ────────────────────────────────────────
 const server = http.createServer(app);
-initializeSocket(server);
+const io = initializeSocket(server);
+// Expose io to routes so they can emit socket events
+app.set('io', io);
+// Expose notifyVIPsNewSignal to routes
+app.set('notifyVIPsNewSignal', notifyVIPsNewSignal);
 
 async function startServer() {
   validateEnv();

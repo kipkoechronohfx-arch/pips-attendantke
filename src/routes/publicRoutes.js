@@ -163,7 +163,13 @@ router.post('/broadcast', async (req, res) => {
 
     try {
       const entryTime = req.body.entryTime || null;
-      await db.addSignal({ id: Date.now(), type, text: text || '', sentAt: now(), entryTime });
+      const category = req.body.category || null;
+      await db.addSignal({ id: Date.now(), type, text: text || '', sentAt: now(), entryTime, category });
+      // Notify VIP users by email when a signal is posted
+      if (type === 'signal' && text) {
+        const notify = req.app.get('notifyVIPsNewSignal');
+        if (typeof notify === 'function') notify(text).catch(() => {});
+      }
     } catch (logErr) {}
 
     try {
@@ -231,13 +237,27 @@ router.post('/engagement', async (req, res) => {
 
 router.get('/signals', async (req, res) => {
   try {
+    const { category } = req.query;
     const signals = await db.getSignals(100);
-    signals.sort((a, b) => {
+    let filtered = signals;
+    if (category && category !== 'All') {
+      filtered = signals.filter(s => (s.category || 'Uncategorized').toLowerCase() === category.toLowerCase());
+    }
+    filtered.sort((a, b) => {
       const ta = typeof a.sentAt === 'string' ? new Date(a.sentAt).getTime() : Number(a.sentAt);
       const tb = typeof b.sentAt === 'string' ? new Date(b.sentAt).getTime() : Number(b.sentAt);
       return tb - ta;
     });
-    res.json({ ok: true, count: signals.length, signals });
+    res.json({ ok: true, count: filtered.length, signals: filtered });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/signals/stats', async (req, res) => {
+  try {
+    const stats = await db.getSignalStats();
+    res.json({ ok: true, ...stats });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }

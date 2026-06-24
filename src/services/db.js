@@ -328,6 +328,70 @@ async function addSignal(signal) {
   writeJSON(SIGNALS_FILE, signals);
 }
 
+async function updateSignalOutcome(id, outcome) {
+  // outcome: 'TP Hit' | 'SL Hit' | 'Breakeven' | 'Running'
+  if (db) {
+    try {
+      const { ObjectId } = require('mongodb');
+      const isObjectId = /^[a-f\d]{24}$/i.test(String(id));
+      const filter = isObjectId ? { _id: new ObjectId(id) } : { id: Number(id) };
+      await getSignalsColl().updateOne(filter, { $set: { outcome, outcomeAt: new Date().toISOString() } });
+      return true;
+    } catch (err) {
+      console.error('[DB Update Signal Outcome Error]', err.message);
+    }
+  }
+  return false;
+}
+
+async function updateSignalCategory(id, category) {
+  if (db) {
+    try {
+      const { ObjectId } = require('mongodb');
+      const isObjectId = /^[a-f\d]{24}$/i.test(String(id));
+      const filter = isObjectId ? { _id: new ObjectId(id) } : { id: Number(id) };
+      await getSignalsColl().updateOne(filter, { $set: { category } });
+      return true;
+    } catch (err) {
+      console.error('[DB Update Signal Category Error]', err.message);
+    }
+  }
+  return false;
+}
+
+async function getSignalStats() {
+  const signals = await getSignals(0);
+  const stats = { total: 0, wins: 0, losses: 0, breakeven: 0, running: 0, pipsGained: 0, pipsLost: 0 };
+  const byCategory = {};
+
+  for (const s of signals) {
+    stats.total++;
+    const cat = s.category || 'Uncategorized';
+    if (!byCategory[cat]) byCategory[cat] = { total: 0, wins: 0, losses: 0 };
+    byCategory[cat].total++;
+
+    if (s.outcome === 'TP Hit') {
+      stats.wins++;
+      byCategory[cat].wins++;
+      stats.pipsGained += Number(s.pips) || 0;
+    } else if (s.outcome === 'SL Hit') {
+      stats.losses++;
+      byCategory[cat].losses++;
+      stats.pipsLost += Number(s.pips) || 0;
+    } else if (s.outcome === 'Breakeven') {
+      stats.breakeven++;
+    } else {
+      stats.running++;
+    }
+  }
+
+  const resolved = stats.wins + stats.losses;
+  stats.winRate = resolved > 0 ? Math.round((stats.wins / resolved) * 100) : 0;
+  stats.netPips = stats.pipsGained - stats.pipsLost;
+  stats.byCategory = byCategory;
+  return stats;
+}
+
 async function getSubscribers() {
   if (db) {
     try {
@@ -393,7 +457,7 @@ async function getWhatsAppList() {
 }
 
 async function addChatMessage(msg) {
-  const message = { ...msg, timestamp: Date.now() };
+  const message = { ...msg, room: msg.room || 'general', timestamp: Date.now() };
   if (db) {
     try {
       await getChatColl().insertOne(message);
@@ -404,20 +468,23 @@ async function addChatMessage(msg) {
   }
   const list = readJSON(CHAT_FILE);
   list.push(message);
-  if (list.length > 100) list.shift();
+  if (list.length > 500) list.shift();
   writeJSON(CHAT_FILE, list);
   return message;
 }
 
-async function getChatMessages() {
+async function getChatMessages(room) {
+  const filter = room ? { room } : {};
   if (db) {
     try {
-      return await getChatColl().find({}).sort({ timestamp: -1 }).limit(100).toArray();
+      return await getChatColl().find(filter).sort({ timestamp: -1 }).limit(100).toArray();
     } catch (err) {
       console.error('[DB Chat Get Error]', err.message);
     }
   }
-  return readJSON(CHAT_FILE).reverse();
+  const all = readJSON(CHAT_FILE);
+  const filtered = room ? all.filter(m => m.room === room || (!m.room && room === 'general')) : all;
+  return filtered.slice().reverse().slice(0, 100);
 }
 
 async function getPayment(ref) {
@@ -989,10 +1056,40 @@ async function getLeaderboardData() {
   return leaderboard.sort((a, b) => b.netPL - a.netPL).slice(0, 10);
 }
 
+// ── Receipt Storage ──────────────────────────────────────────
+async function getReceiptsColl() {
+  return db ? db.collection('payment_receipts') : null;
+}
+
+async function saveReceipt(ref, receiptData) {
+  if (db) {
+    try {
+      const coll = await getReceiptsColl();
+      await coll.updateOne({ ref }, { $set: { ref, ...receiptData, savedAt: new Date().toISOString() } }, { upsert: true });
+      return true;
+    } catch (err) {
+      console.error('[DB Receipt Save Error]', err.message);
+    }
+  }
+  return false;
+}
+
+async function getReceipt(ref) {
+  if (db) {
+    try {
+      const coll = await getReceiptsColl();
+      return await coll.findOne({ ref });
+    } catch (err) {
+      console.error('[DB Receipt Get Error]', err.message);
+    }
+  }
+  return null;
+}
+
 module.exports = {
   connectDB, closeDB,
   getAppConfig, saveAppConfig,
-  getSignals, addSignal,
+  getSignals, addSignal, updateSignalOutcome, updateSignalCategory, getSignalStats,
   getSubscribers, addSubscriber, getSubscriberByTelegram,
   addWhatsApp, getWhatsAppList,
   addChatMessage, getChatMessages,
@@ -1007,5 +1104,6 @@ module.exports = {
   getTickets, getUserTickets, saveTicket,
   logPerformanceAction, getPerformanceLogs,
   getJournalEntries, saveJournalEntry, deleteJournalEntry, syncJournalEntries, getLeaderboardData,
-  getPropFirmAccount, getAllPropFirmAccounts, savePropFirmAccount, deletePropFirmAccount
+  getPropFirmAccount, getAllPropFirmAccounts, savePropFirmAccount, deletePropFirmAccount,
+  saveReceipt, getReceipt
 };

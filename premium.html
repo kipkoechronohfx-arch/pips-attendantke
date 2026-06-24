@@ -203,7 +203,7 @@
         <!-- Plan Selector -->
         <div class="mb-5">
           <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">Choose Your Plan</p>
-          <div class="grid grid-cols-3 gap-2" id="mpesaPlanBtns">
+          <div class="grid grid-cols-2 gap-2" id="mpesaPlanBtns">
             <button onclick="selectMpesaPlan('1month')" id="mp-1month"
               class="plan-btn-mpesa flex flex-col items-center py-3 px-1 rounded-xl border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 cursor-pointer transition text-center">
               <span class="text-[10px] font-bold">1 Month</span>
@@ -220,6 +220,13 @@
               class="plan-btn-mpesa flex flex-col items-center py-3 px-1 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:border-emerald-500/30 cursor-pointer transition text-center">
               <span class="text-[10px] font-bold">3 Months</span>
               <span class="text-base font-black mt-0.5">14,000</span>
+              <span class="text-[9px] text-gray-400">KES</span>
+            </button>
+            <button onclick="selectMpesaPlan('6months')" id="mp-6months"
+              class="plan-btn-mpesa flex flex-col items-center py-3 px-1 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:border-emerald-500/30 cursor-pointer transition text-center relative overflow-hidden">
+              <div class="absolute top-0 right-0 bg-emerald-500 text-black text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg">POPULAR</div>
+              <span class="text-[10px] font-bold">6 Months</span>
+              <span class="text-base font-black mt-0.5">25,000</span>
               <span class="text-[9px] text-gray-400">KES</span>
             </button>
           </div>
@@ -269,7 +276,7 @@
             <!-- Crypto Plan Selector -->
             <div class="mb-4">
               <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">Choose Your Plan</p>
-              <div class="grid grid-cols-3 gap-2">
+              <div class="grid grid-cols-2 gap-2">
                 <button onclick="selectCryptoPlan('1month')" id="cp-1month"
                   class="plan-btn-crypto flex flex-col items-center py-2.5 px-1 rounded-xl border border-amber-400/50 bg-amber-400/10 text-amber-400 cursor-pointer transition text-center">
                   <span class="text-[10px] font-bold">1 Month</span>
@@ -284,6 +291,12 @@
                   class="plan-btn-crypto flex flex-col items-center py-2.5 px-1 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:border-amber-400/30 cursor-pointer transition text-center">
                   <span class="text-[10px] font-bold">3 Months</span>
                   <span class="text-sm font-black mt-0.5">$140</span>
+                </button>
+                <button onclick="selectCryptoPlan('6months')" id="cp-6months"
+                  class="plan-btn-crypto flex flex-col items-center py-2.5 px-1 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:border-amber-400/30 cursor-pointer transition text-center relative overflow-hidden">
+                  <div class="absolute top-0 right-0 bg-amber-400 text-black text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg">POPULAR</div>
+                  <span class="text-[10px] font-bold">6 Months</span>
+                  <span class="text-sm font-black mt-0.5">$250</span>
                 </button>
               </div>
             </div>
@@ -744,13 +757,26 @@
       <!-- VIP Community Chat Wall -->
       <div class="mb-10">
         <div class="glass-card border border-amber-400/20 rounded-2xl overflow-hidden flex flex-col h-[500px]">
-          <div class="bg-gradient-to-r from-amber-500/10 to-transparent p-4 border-b border-white/5 flex items-center gap-3">
-            <div class="p-2 bg-amber-500/20 rounded-lg">
-              <i data-feather="message-circle" class="w-5 h-5 text-amber-400"></i>
+          <div class="bg-gradient-to-r from-amber-500/10 to-transparent p-4 border-b border-white/5 flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="p-2 bg-amber-500/20 rounded-lg">
+                  <i data-feather="message-circle" class="w-5 h-5 text-amber-400"></i>
+                </div>
+                <div>
+                  <h3 class="text-white font-bold text-lg leading-tight">Trading Community</h3>
+                  <p class="text-[10px] text-gray-400">Real-time discussion and signals</p>
+                </div>
+              </div>
             </div>
-            <div>
-              <h3 class="text-white font-bold text-lg leading-tight">VIP Community Wall</h3>
-              <p class="text-[10px] text-gray-400">Real-time discussion with other VIPs</p>
+            <!-- Room Tabs -->
+            <div class="flex items-center gap-2 mt-2 border-b border-white/10 pb-2">
+              <button onclick="switchChatRoom('general')" id="tab-room-general" class="px-4 py-1.5 rounded-full text-xs font-bold transition border border-white/10 bg-white/5 text-gray-400 hover:text-white">General</button>
+              <button onclick="switchChatRoom('vip')" id="tab-room-vip" class="px-4 py-1.5 rounded-full text-xs font-bold transition border border-amber-400/40 bg-amber-400/10 text-amber-400">VIP Discussion</button>
+              <button onclick="switchChatRoom('signals')" id="tab-room-signals" class="px-4 py-1.5 rounded-full text-xs font-bold transition border border-sky-400/20 bg-sky-400/5 text-gray-400 hover:text-sky-400 relative">
+                Signals Only
+                <span id="signalsUnreadBadge" class="hidden absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full animate-pulse"></span>
+              </button>
             </div>
           </div>
           <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin bg-black/20 flex flex-col-reverse">
@@ -759,13 +785,16 @@
               <p class="text-xs">Connecting to chat...</p>
             </div>
           </div>
-          <form onsubmit="sendChatMessage(event)" class="p-4 border-t border-white/5 bg-black/40 flex gap-3">
+          <form onsubmit="sendChatMessage(event)" id="chatForm" class="p-4 border-t border-white/5 bg-black/40 flex gap-3">
             <input type="text" id="chatInput" placeholder="Type your message..." required autocomplete="off"
               class="flex-1 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
             <button type="submit" id="chatBtn" class="px-5 py-2.5 rounded-xl font-bold bg-amber-400 text-dark-navy hover:brightness-110 active:scale-95 transition flex items-center gap-2">
               Send <i data-feather="send" class="w-4 h-4"></i>
             </button>
           </form>
+          <div id="readOnlyNotice" class="hidden p-4 border-t border-white/5 bg-black/40 text-center text-xs text-gray-500 italic">
+            Only admins can post in this room.
+          </div>
         </div>
       </div>
 
@@ -1088,19 +1117,26 @@
     let selectedCryptoPlan = '1month';
     let authMode = 'login';
 
-    const PLAN_KES  = { '1month': 5000, '2months': 9500, '3months': 14000 };
-    const PLAN_USDT = { '1month': 50,   '2months': 95,   '3months': 140   };
-    const PLAN_DAYS = { '1month': 30,   '2months': 60,   '3months': 90    };
+    const PLAN_KES  = { '1month': 5000, '2months': 9500, '3months': 14000, '6months': 25000 };
+    const PLAN_USDT = { '1month': 50,   '2months': 95,   '3months': 140,   '6months': 250   };
+    const PLAN_DAYS = { '1month': 30,   '2months': 60,   '3months': 90,    '6months': 180   };
 
     function selectMpesaPlan(plan) {
       selectedMpesaPlan = plan;
-      ['1month','2months','3months'].forEach(p => {
+      ['1month','2months','3months','6months'].forEach(p => {
         const btn = document.getElementById(`mp-${p}`);
         if (!btn) return;
         if (p === plan) {
-          btn.className = 'plan-btn-mpesa flex flex-col items-center py-3 px-1 rounded-xl border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 cursor-pointer transition text-center';
+          btn.className = 'plan-btn-mpesa flex flex-col items-center py-3 px-1 rounded-xl border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 cursor-pointer transition text-center relative overflow-hidden';
+          if(p === '6months') btn.innerHTML += '<div class="absolute top-0 right-0 bg-emerald-500 text-black text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg">POPULAR</div>';
         } else {
-          btn.className = 'plan-btn-mpesa flex flex-col items-center py-3 px-1 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:border-emerald-500/30 cursor-pointer transition text-center';
+          btn.className = 'plan-btn-mpesa flex flex-col items-center py-3 px-1 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:border-emerald-500/30 cursor-pointer transition text-center relative overflow-hidden';
+          if(p === '6months') btn.innerHTML += '<div class="absolute top-0 right-0 bg-emerald-500/50 text-white text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg">POPULAR</div>';
+        }
+        // Remove duplicate popular badges injected by the if-else loop
+        const badges = btn.querySelectorAll('div');
+        if (badges.length > 1) {
+          for (let i = 1; i < badges.length; i++) badges[i].remove();
         }
       });
       const kes = PLAN_KES[plan];
@@ -1110,13 +1146,20 @@
 
     function selectCryptoPlan(plan) {
       selectedCryptoPlan = plan;
-      ['1month','2months','3months'].forEach(p => {
+      ['1month','2months','3months','6months'].forEach(p => {
         const btn = document.getElementById(`cp-${p}`);
         if (!btn) return;
         if (p === plan) {
-          btn.className = 'plan-btn-crypto flex flex-col items-center py-2.5 px-1 rounded-xl border border-amber-400/50 bg-amber-400/10 text-amber-400 cursor-pointer transition text-center';
+          btn.className = 'plan-btn-crypto flex flex-col items-center py-2.5 px-1 rounded-xl border border-amber-400/50 bg-amber-400/10 text-amber-400 cursor-pointer transition text-center relative overflow-hidden';
+          if(p === '6months') btn.innerHTML += '<div class="absolute top-0 right-0 bg-amber-400 text-black text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg">POPULAR</div>';
         } else {
-          btn.className = 'plan-btn-crypto flex flex-col items-center py-2.5 px-1 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:border-amber-400/30 cursor-pointer transition text-center';
+          btn.className = 'plan-btn-crypto flex flex-col items-center py-2.5 px-1 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:border-amber-400/30 cursor-pointer transition text-center relative overflow-hidden';
+          if(p === '6months') btn.innerHTML += '<div class="absolute top-0 right-0 bg-amber-400/50 text-white text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg">POPULAR</div>';
+        }
+        const badges = btn.querySelectorAll('div');
+        if (badges.length > 1) {
+          for (let i = 1; i < badges.length; i++) badges[i].remove();
+        }
         }
       });
       const usdt = PLAN_USDT[plan];
@@ -1686,14 +1729,27 @@
 
     // -- Socket.io initialization --
     let socket = null;
+    let currentRoom = 'vip';
+
     function initSocket(token) {
       if (socket) return; // already connected
       socket = io({ auth: { token } });
 
+      socket.on('connect', () => {
+        socket.emit('joinRoom', currentRoom);
+      });
+
       socket.on('newMessage', (msg) => {
+        // If message is for another room, show badge
+        if (msg.room && msg.room !== currentRoom) {
+          if (msg.room === 'signals') {
+            document.getElementById('signalsUnreadBadge').classList.remove('hidden');
+          }
+          return;
+        }
+
         const chatContainer = document.getElementById('chatMessages');
-        // Remove 'No messages yet' if present
-        if (chatContainer.innerHTML.includes('No messages yet')) {
+        if (chatContainer.innerHTML.includes('No messages yet') || chatContainer.innerHTML.includes('Connecting to chat')) {
           chatContainer.innerHTML = '';
         }
         
@@ -1701,15 +1757,14 @@
         const isSelf = msg.author === (localStorage.getItem('pa_vip_user_name') || 'VIP Member');
         
         const msgHtml = `
-          <div class="flex flex-col ${isSelf ? 'items-end' : 'items-start'} w-full mt-2">
+          <div class="flex flex-col ${isSelf ? 'items-end' : 'items-start'} w-full mt-2 animate-fade-in-up">
             <span class="text-[10px] text-gray-500 mb-1 ml-1">${msg.author} • ${timeStr}</span>
             <div class="max-w-[80%] rounded-2xl px-4 py-2 text-sm ${isSelf ? 'bg-amber-500/20 border border-amber-500/30 text-amber-50' : 'bg-white/10 border border-white/5 text-gray-200'}">
               ${msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
             </div>
           </div>
         `;
-        chatContainer.insertAdjacentHTML('beforeend', msgHtml);
-        chatContainer.scrollTop = chatContainer.scrollHeight;
+        chatContainer.insertAdjacentHTML('afterbegin', msgHtml);
       });
       
       socket.on('error', (err) => console.error('Socket error:', err));
@@ -1962,18 +2017,62 @@
     }
 
     // ── VIP Chat Wall Logic ────────────────────────────────────────
+    
+    function switchChatRoom(room) {
+      currentRoom = room;
+      if (socket) {
+        socket.emit('joinRoom', room);
+      }
+      
+      // Update Tab Styles
+      ['general', 'vip', 'signals'].forEach(r => {
+        const btn = document.getElementById(`tab-room-${r}`);
+        if (!btn) return;
+        if (r === room) {
+          if(r==='vip') btn.className = 'px-4 py-1.5 rounded-full text-xs font-bold transition border border-amber-400/40 bg-amber-400/10 text-amber-400 relative';
+          if(r==='general') btn.className = 'px-4 py-1.5 rounded-full text-xs font-bold transition border border-emerald-400/40 bg-emerald-400/10 text-emerald-400 relative';
+          if(r==='signals') btn.className = 'px-4 py-1.5 rounded-full text-xs font-bold transition border border-sky-400/40 bg-sky-400/10 text-sky-400 relative';
+        } else {
+          btn.className = 'px-4 py-1.5 rounded-full text-xs font-bold transition border border-white/10 bg-white/5 text-gray-400 hover:text-white relative';
+        }
+      });
+
+      // Clear badges
+      if (room === 'signals') {
+        const badge = document.getElementById('signalsUnreadBadge');
+        if(badge) badge.classList.add('hidden');
+      }
+
+      // Hide input if Signals room
+      if (room === 'signals') {
+        document.getElementById('chatForm').classList.add('hidden');
+        document.getElementById('readOnlyNotice').classList.remove('hidden');
+      } else {
+        document.getElementById('chatForm').classList.remove('hidden');
+        document.getElementById('readOnlyNotice').classList.add('hidden');
+      }
+
+      // Clear UI and Reload
+      const chatContainer = document.getElementById('chatMessages');
+      chatContainer.innerHTML = '<div class="text-center text-gray-500 py-10 w-full"><i data-feather="loader" class="w-6 h-6 animate-spin mx-auto mb-2 text-amber-400/50"></i><p class="text-xs">Loading room...</p></div>';
+      feather.replace();
+      loadChatMessages();
+    }
+
     async function loadChatMessages() {
       const token = sessionStorage.getItem('vip_session_token');
       if (!token) return;
       const chatContainer = document.getElementById('chatMessages');
       try {
-        const res = await fetch(`/api/chat/messages?token=${token}`);
+        const res = await fetch(`/api/chat/messages?token=${token}&room=${currentRoom}`);
         const data = await res.json();
         if (data.ok) {
           if (data.messages.length === 0) {
             chatContainer.innerHTML = '<div class="text-center text-gray-500 py-10 w-full"><p class="text-xs">No messages yet. Say hello!</p></div>';
           } else {
-            chatContainer.innerHTML = data.messages.map(msg => {
+            // Reverse so newest is at the top of the flex-col-reverse container
+            const reversed = [...data.messages].reverse();
+            chatContainer.innerHTML = reversed.map(msg => {
               const timeStr = new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
               const isSelf = msg.author === (localStorage.getItem('pa_vip_user_name') || 'VIP Member');
               return `
@@ -1997,6 +2096,8 @@
       const token = sessionStorage.getItem('vip_session_token');
       if (!token || !socket) return;
       
+      if (currentRoom === 'signals') return; // Just in case
+      
       const input = document.getElementById('chatInput');
       const btn = document.getElementById('chatBtn');
       const text = input.value.trim();
@@ -2007,6 +2108,7 @@
 
       // Send via WebSocket instead of HTTP POST
       socket.emit('sendMessage', {
+        room: currentRoom,
         text,
         author: localStorage.getItem('pa_vip_user_name') || 'VIP Member'
       });

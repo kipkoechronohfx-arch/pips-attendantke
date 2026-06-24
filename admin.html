@@ -371,6 +371,16 @@
                 <option value="SELL STOP">Sell Stop</option>
               </select>
             </div>
+
+            <div class="col-span-2">
+              <label class="block text-[11px] font-semibold text-gray-400 mb-1">Signal Category</label>
+              <select id="signalCategory" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-neon-blue/50 focus:outline-none transition">
+                <option value="Forex">Forex</option>
+                <option value="Crypto">Crypto</option>
+                <option value="Indices">Indices</option>
+                <option value="Commodities">Commodities</option>
+              </select>
+            </div>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
@@ -1363,18 +1373,22 @@
         <div class="flex-1 h-px bg-white/10"></div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
         <div class="glass-card rounded-2xl p-6 border border-white/10 flex flex-col justify-center items-center">
-          <span class="text-gray-400 text-xs uppercase tracking-wider mb-2 font-semibold">Total Users</span>
-          <span id="statTotalUsers" class="text-4xl font-black text-white font-mono">--</span>
+          <span class="text-gray-400 text-xs uppercase tracking-wider mb-2 font-semibold text-center">Total Users</span>
+          <span id="statTotalUsers" class="text-3xl font-black text-white font-mono">--</span>
         </div>
         <div class="glass-card rounded-2xl p-6 border border-white/10 flex flex-col justify-center items-center">
-          <span class="text-amber-400/80 text-xs uppercase tracking-wider mb-2 font-semibold">Active VIPs</span>
-          <span id="statActiveVIPs" class="text-4xl font-black text-amber-400 font-mono">--</span>
+          <span class="text-amber-400/80 text-xs uppercase tracking-wider mb-2 font-semibold text-center">Active VIPs</span>
+          <span id="statActiveVIPs" class="text-3xl font-black text-amber-400 font-mono">--</span>
         </div>
         <div class="glass-card rounded-2xl p-6 border border-white/10 flex flex-col justify-center items-center">
-          <span class="text-emerald-400/80 text-xs uppercase tracking-wider mb-2 font-semibold">VIP Conversion</span>
-          <span id="statConversionRate" class="text-4xl font-black text-emerald-400 font-mono">--</span>
+          <span class="text-rose-400/80 text-xs uppercase tracking-wider mb-2 font-semibold text-center">Expired VIPs</span>
+          <span id="statExpiredUsers" class="text-3xl font-black text-rose-400 font-mono">--</span>
+        </div>
+        <div class="glass-card rounded-2xl p-6 border border-white/10 flex flex-col justify-center items-center">
+          <span class="text-emerald-400/80 text-xs uppercase tracking-wider mb-2 font-semibold text-center">VIP Conversion</span>
+          <span id="statConversionRate" class="text-3xl font-black text-emerald-400 font-mono">--</span>
         </div>
       </div>
 
@@ -1397,10 +1411,18 @@
         </div>
       </div>
 
-      <div class="glass-card rounded-2xl p-6 border border-white/10">
-        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-6">User Registrations (Last 7 Days)</h3>
-        <div class="w-full h-64">
-          <canvas id="registrationsChart"></canvas>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div class="glass-card rounded-2xl p-6 border border-white/10">
+          <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-6">User Registrations (Last 30 Days)</h3>
+          <div class="w-full h-64">
+            <canvas id="registrationsChart"></canvas>
+          </div>
+        </div>
+        <div class="glass-card rounded-2xl p-6 border border-white/10">
+          <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-6">Revenue by Month (Last 6 Months)</h3>
+          <div class="w-full h-64">
+            <canvas id="revenueChart"></canvas>
+          </div>
         </div>
       </div>
     </div>
@@ -1456,6 +1478,92 @@
               <tr>
                 <td colspan="4" class="py-8 text-center text-gray-500">Enter your Admin Key in credentials setup to view users.</td>
               </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- 💸 PAYMENTS HISTORY PANEL -->
+    <div id="paymentsPanel" class="hidden container mx-auto px-4 max-w-5xl mb-12">
+      <div class="flex items-center gap-4 mb-6">
+        <div class="flex-1 h-px bg-white/10"></div>
+        <div class="flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-500/30 bg-emerald-500/5">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="text-emerald-500 text-xs font-bold tracking-[0.2em] uppercase">Payments History</span>
+        </div>
+        <div class="flex-1 h-px bg-white/10"></div>
+      </div>
+
+      <div class="glass-card rounded-2xl p-6 border border-white/10 flex flex-col min-h-[350px]">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <span class="block text-xs font-bold uppercase tracking-wider text-emerald-400">All Transactions</span>
+            <p class="text-[10px] text-gray-500">M-Pesa and Crypto payments.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="window.open('/api/admin/payments/export?token=' + encodeURIComponent(localStorage.getItem('pa_admin_token')))" class="px-3.5 py-1.5 rounded-lg text-xs font-bold border border-emerald-500/20 hover:border-emerald-500/50 bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 transition cursor-pointer flex items-center gap-1.5">
+              <i data-feather="download" class="w-3 h-3"></i> Export CSV
+            </button>
+            <button type="button" onclick="fetchPayments()" class="px-3.5 py-1.5 rounded-lg text-xs font-bold border border-white/10 hover:border-neon-blue/50 hover:bg-neon-blue/10 text-gray-400 hover:text-neon-blue transition cursor-pointer flex items-center gap-1.5">
+              <i data-feather="refresh-cw" class="w-3 h-3"></i> Refresh
+            </button>
+          </div>
+        </div>
+
+        <div class="flex-1 overflow-x-auto max-h-[320px] scrollbar-thin">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="border-b border-white/10 text-gray-400 font-semibold">
+                <th class="py-2.5 px-3">Date</th>
+                <th class="py-2.5 px-3">Method</th>
+                <th class="py-2.5 px-3">Plan</th>
+                <th class="py-2.5 px-3">Amount</th>
+                <th class="py-2.5 px-3">Status</th>
+                <th class="py-2.5 px-3">Contact/User</th>
+              </tr>
+            </thead>
+            <tbody id="paymentsListBody">
+              <tr><td colspan="6" class="py-8 text-center text-gray-500">Loading payments...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 📡 SIGNALS HISTORY PANEL -->
+    <div id="signalsPanel" class="hidden container mx-auto px-4 max-w-5xl mb-12">
+      <div class="flex items-center gap-4 mb-6">
+        <div class="flex-1 h-px bg-white/10"></div>
+        <div class="flex items-center gap-2 px-4 py-2 rounded-full border border-sky-500/30 bg-sky-500/5">
+          <span class="w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span>
+          <span class="text-sky-500 text-xs font-bold tracking-[0.2em] uppercase">Signals Management</span>
+        </div>
+        <div class="flex-1 h-px bg-white/10"></div>
+      </div>
+
+      <div class="glass-card rounded-2xl p-6 border border-white/10 flex flex-col min-h-[350px]">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <span class="block text-xs font-bold uppercase tracking-wider text-sky-400">Past Signals</span>
+            <p class="text-[10px] text-gray-500">Update outcomes (TP/SL) for performance stats.</p>
+          </div>
+          <button type="button" onclick="fetchSignalsHistory()" class="px-3.5 py-1.5 rounded-lg text-xs font-bold border border-white/10 hover:border-sky-500/50 hover:bg-sky-500/10 text-gray-400 hover:text-sky-500 transition cursor-pointer flex items-center gap-1.5">
+            <i data-feather="refresh-cw" class="w-3 h-3"></i> Refresh
+          </button>
+        </div>
+
+        <div class="flex-1 overflow-x-auto max-h-[400px] scrollbar-thin">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="border-b border-white/10 text-gray-400 font-semibold">
+                <th class="py-2.5 px-3">Date</th>
+                <th class="py-2.5 px-3">Signal Preview</th>
+                <th class="py-2.5 px-3 w-32">Category</th>
+                <th class="py-2.5 px-3 w-36">Outcome</th>
+              </tr>
+            </thead>
+            <tbody id="signalsListBody">
+              <tr><td colspan="4" class="py-8 text-center text-gray-500">Loading signals...</td></tr>
             </tbody>
           </table>
         </div>
@@ -1671,6 +1779,8 @@
         document.getElementById('usersPanel').classList.remove('hidden');
         document.getElementById('promosPanel').classList.remove('hidden');
         document.getElementById('ticketsPanel').classList.remove('hidden');
+        document.getElementById('paymentsPanel').classList.remove('hidden');
+        document.getElementById('signalsPanel').classList.remove('hidden');
         document.getElementById('statusSection').classList.remove('hidden');
         updateLivePreview();
         updateEngPreview();
@@ -1687,6 +1797,8 @@
         fetchAnalytics();
         fetchPromos();
         fetchAdminTickets();
+        fetchPayments();
+        fetchSignalsHistory();
       } else {
         document.getElementById('setupPanel').classList.remove('hidden');
         document.getElementById('dashboardPanel').classList.add('hidden');
@@ -1699,6 +1811,8 @@
         document.getElementById('usersPanel').classList.add('hidden');
         document.getElementById('promosPanel').classList.add('hidden');
         document.getElementById('ticketsPanel').classList.add('hidden');
+        document.getElementById('paymentsPanel').classList.add('hidden');
+        document.getElementById('signalsPanel').classList.add('hidden');
         document.getElementById('statusSection').classList.add('hidden');
         
         // Pre-fill inputs if credentials exist in localStorage
@@ -1709,6 +1823,23 @@
           document.getElementById('adminKey').value = adminKey || '';
         }
       }
+    }
+
+    function switchTab(panelId) {
+      const panels = ['dashboardPanel', 'engagementPanel', 'livePanel', 'perfPanel', 'vipPanel', 'cryptoRequestsPanel', 'analyticsPanel', 'usersPanel', 'promosPanel', 'ticketsPanel', 'paymentsPanel', 'signalsPanel'];
+      panels.forEach(p => {
+        const el = document.getElementById(p);
+        if (el) el.classList.add('hidden');
+      });
+      document.getElementById(panelId).classList.remove('hidden');
+
+      if (panelId === 'analyticsPanel') fetchAnalytics();
+      if (panelId === 'usersPanel') fetchUsers();
+      if (panelId === 'cryptoRequestsPanel') fetchCryptoRequests();
+      if (panelId === 'promosPanel') fetchPromos();
+      if (panelId === 'ticketsPanel') fetchAdminTickets();
+      if (panelId === 'paymentsPanel') fetchPayments();
+      if (panelId === 'signalsPanel') fetchSignalsHistory();
     }
 
     async function saveCredentials(e) {
@@ -1994,11 +2125,13 @@
       const file = imageInput.files ? imageInput.files[0] : null;
       
       const entryTime = document.getElementById('entryTime').value;
+      const category = document.getElementById('signalCategory') ? document.getElementById('signalCategory').value : 'Forex';
       const payload = {
         token: token,
         chatId: chat,
         text: messageText,
         type: 'signal',
+        category: category,
         entryTime: entryTime ? new Date(entryTime).getTime() : null
       };
 
@@ -3199,6 +3332,7 @@
 
     // ── Analytics Management ──────────────────────────────
     let regChartInstance = null;
+    let revChartInstance = null;
 
     async function fetchAnalytics() {
       const adminToken = localStorage.getItem('pa_admin_token');
@@ -3211,9 +3345,8 @@
         if (data.ok) {
           document.getElementById('statTotalUsers').textContent = data.totalUsers;
           document.getElementById('statActiveVIPs').textContent = data.activeVIPs;
-          
-          const conversion = data.totalUsers > 0 ? Math.round((data.activeVIPs / data.totalUsers) * 100) : 0;
-          document.getElementById('statConversionRate').textContent = `${conversion}%`;
+          document.getElementById('statExpiredUsers').textContent = data.expiredUsers;
+          document.getElementById('statConversionRate').textContent = `${data.conversionRate}%`;
           
           if (data.totalKES !== undefined) {
             document.getElementById('statTotalKES').textContent = data.totalKES.toLocaleString();
@@ -3223,6 +3356,7 @@
           }
 
           renderChart(data.chartData);
+          if (data.revenueChart) renderRevenueChart(data.revenueChart);
         }
       } catch (err) {
         console.error('Failed to load analytics', err);
@@ -3249,10 +3383,8 @@
             fill: true,
             pointBackgroundColor: '#b026ff',
             pointBorderColor: '#fff',
-            pointHoverBackgroundColor: '#fff',
-            pointHoverBorderColor: '#b026ff',
-            pointRadius: 4,
-            pointHoverRadius: 6
+            pointBorderWidth: 1,
+            pointRadius: 3
           }]
         },
         options: {
@@ -3616,12 +3748,145 @@
       try {
         await fetch(`/api/admin/tickets/${id}/close`, {
           method: 'POST',
-          headers: { 'x-admin-token': adminToken }
+          headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken }
         });
         fetchAdminTickets();
       } catch (err) {
         alert('Failed to close ticket.');
       }
+    }
+
+    // ── Payments Management ────────────────────────────────────
+    async function fetchPayments() {
+      const adminToken = localStorage.getItem('pa_admin_token');
+      if (!adminToken) return;
+      
+      const tbody = document.getElementById('paymentsListBody');
+      tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-gray-500"><i data-feather="loader" class="w-4 h-4 animate-spin mx-auto"></i></td></tr>';
+      feather.replace();
+
+      try {
+        const res = await fetch('/api/admin/payments', { headers: { 'x-admin-token': adminToken } });
+        const data = await res.json();
+        
+        if (!data.ok) {
+          tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-rose-400">${data.error}</td></tr>`;
+          return;
+        }
+
+        if (data.payments.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-gray-500">No payments found.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = '';
+        data.payments.forEach(p => {
+          const date = new Date(p.timestamp || p.createdAt || 0).toLocaleString();
+          const isSuccess = p.status === 'Success';
+          const methodColor = p.method === 'crypto' ? 'text-amber-400' : 'text-emerald-400';
+          
+          tbody.innerHTML += `
+            <tr class="border-b border-white/5 hover:bg-white/5 transition">
+              <td class="py-3 px-3 text-gray-300">${date}</td>
+              <td class="py-3 px-3 font-bold ${methodColor} uppercase">${p.method || 'mpesa'}</td>
+              <td class="py-3 px-3 text-white">${p.plan || '1month'}</td>
+              <td class="py-3 px-3 text-white font-mono">${p.currency || 'KES'} ${p.amount}</td>
+              <td class="py-3 px-3">
+                <span class="px-2 py-1 rounded border ${isSuccess ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10' : 'border-rose-500/30 text-rose-400 bg-rose-500/10'} text-[10px] uppercase font-bold">
+                  ${p.status}
+                </span>
+              </td>
+              <td class="py-3 px-3 text-gray-400 text-[10px]">${p.phone || p.contactInfo || p.userId || '-'}</td>
+            </tr>
+          `;
+        });
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-rose-400">Error loading payments.</td></tr>';
+      }
+    }
+
+    // ── Signals Management ──────────────────────────────────────
+    async function fetchSignalsHistory() {
+      const tbody = document.getElementById('signalsListBody');
+      tbody.innerHTML = '<tr><td colspan="4" class="py-8 text-center text-gray-500"><i data-feather="loader" class="w-4 h-4 animate-spin mx-auto"></i></td></tr>';
+      feather.replace();
+
+      try {
+        const res = await fetch('/api/signals?category=All');
+        const data = await res.json();
+        
+        if (!data.ok) {
+          tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-rose-400">${data.error}</td></tr>`;
+          return;
+        }
+
+        if (!data.signals || data.signals.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" class="py-6 text-center text-gray-500">No signals found.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = '';
+        data.signals.forEach(s => {
+          if (s.type !== 'signal') return;
+          const date = new Date(Number(s.sentAt) || s.sentAt).toLocaleString();
+          const preview = (s.text || '').slice(0, 60).replace(/\n/g, ' ') + '...';
+          const out = s.outcome || 'Running';
+          const cat = s.category || 'Forex';
+
+          tbody.innerHTML += `
+            <tr class="border-b border-white/5 hover:bg-white/5 transition">
+              <td class="py-3 px-3 text-gray-300">${date}</td>
+              <td class="py-3 px-3 text-white text-[10px] font-mono whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]" title="${s.text}">${preview}</td>
+              <td class="py-3 px-3">
+                <select onchange="updateSignalCategory('${s.id}', this.value)" class="bg-black/50 border border-white/10 rounded px-2 py-1 text-[10px] text-gray-300 focus:outline-none focus:border-sky-500/50">
+                  <option value="Forex" ${cat==='Forex'?'selected':''}>Forex</option>
+                  <option value="Crypto" ${cat==='Crypto'?'selected':''}>Crypto</option>
+                  <option value="Indices" ${cat==='Indices'?'selected':''}>Indices</option>
+                  <option value="Commodities" ${cat==='Commodities'?'selected':''}>Commodities</option>
+                </select>
+              </td>
+              <td class="py-3 px-3">
+                <select onchange="updateSignalOutcome('${s.id}', this.value)" class="bg-black/50 border border-white/10 rounded px-2 py-1 text-[10px] text-gray-300 focus:outline-none focus:border-sky-500/50">
+                  <option value="Running" ${out==='Running'?'selected':''}>⏳ Running</option>
+                  <option value="TP Hit" ${out==='TP Hit'?'selected':''}>✅ TP Hit</option>
+                  <option value="SL Hit" ${out==='SL Hit'?'selected':''}>❌ SL Hit</option>
+                  <option value="Breakeven" ${out==='Breakeven'?'selected':''}>➖ Breakeven</option>
+                </select>
+              </td>
+            </tr>
+          `;
+        });
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="4" class="py-6 text-center text-rose-400">Error loading signals.</td></tr>';
+      }
+    }
+
+    async function updateSignalOutcome(id, outcome) {
+      const adminToken = localStorage.getItem('pa_admin_token');
+      try {
+        const res = await fetch(`/api/admin/signals/${id}/outcome`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+          body: JSON.stringify({ outcome })
+        });
+        const data = await res.json();
+        if (data.ok) showToast('Outcome updated!');
+        else alert('Error: ' + data.error);
+      } catch (err) { alert('Request failed'); }
+    }
+
+    async function updateSignalCategory(id, category) {
+      const adminToken = localStorage.getItem('pa_admin_token');
+      try {
+        const res = await fetch(`/api/admin/signals/${id}/category`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+          body: JSON.stringify({ category })
+        });
+        const data = await res.json();
+        if (data.ok) showToast('Category updated!');
+        else alert('Error: ' + data.error);
+      } catch (err) { alert('Request failed'); }
     }
 
     // ── Social Media & Ticket Broadcast Helpers ──────────────────────────────
@@ -3818,7 +4083,5 @@
     }
 
   </script>
-
-
 </body>
 </html>

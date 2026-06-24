@@ -5,12 +5,13 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const db = require('../services/db');
 const { validateUserSession, JWT_SECRET } = require('../middleware/auth');
-const { sendEmail } = require('../services/emailService');
+const { sendEmail, buildReceiptHtml } = require('../services/emailService');
 
 const PLANS = {
   '1month':  { days: 30,  kesPrice: 5000,  usdtPrice: 50  },
   '2months': { days: 60,  kesPrice: 9500,  usdtPrice: 95  },
-  '3months': { days: 90,  kesPrice: 14000, usdtPrice: 140 }
+  '3months': { days: 90,  kesPrice: 14000, usdtPrice: 140 },
+  '6months': { days: 180, kesPrice: 25000, usdtPrice: 250 }
 };
 
 function getDaysForPlan(plan) {
@@ -135,18 +136,23 @@ router.get('/check-payment/:ref', validateUserSession, async (req, res) => {
         }
 
         if (user && user.email) {
-          const emailHtml = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb; padding: 20px; border-radius: 8px;">
-            <h2 style="color: #10b981; text-align: center;">Payment Successful! 🎉</h2>
-            <p>Hello ${user.name || 'Trader'}</p>
-            <p>We have successfully received your payment of KES ${payment.amount}.</p>
-            <p>Your account has been granted <strong>${days} Days of VIP Access!</strong></p>
-            <p>You can access the VIP portal anytime at <a href="${process.env.APP_URL || 'https://pipsattendant.com'}/premium.html" style="color: #10b981;">pipsattendant.com/premium.html</a>.</p>
-            <br/>
-            <p>Happy Trading,<br/>Pips Attendant Team</p>
-            </div>
-          `;
-          await sendEmail(user.email, '✅ VIP Access Granted! - Pips_attendant', emailHtml);
+          const plan = payment.plan || '1month';
+          const expiryDate = new Date(user.subscriptionExpiry).toDateString();
+          const receiptHtml = buildReceiptHtml({
+            ref,
+            userName: user.name,
+            userEmail: user.email,
+            plan,
+            amount: payment.amount || PLANS[plan]?.kesPrice || 5000,
+            currency: 'KES',
+            method: 'M-Pesa (Payhero)',
+            days,
+            expiryDate
+          });
+          // Save receipt to DB
+          await db.saveReceipt(ref, { html: receiptHtml, userId: currentUserId, plan, amount: payment.amount, createdAt: new Date().toISOString() });
+          // Email receipt
+          await sendEmail(user.email, `🧾 Your VIP Receipt — Pips Attendant`, receiptHtml);
         }
       }
     }
@@ -209,6 +215,24 @@ router.post('/crypto-pay', validateUserSession, async (req, res) => {
     res.json({ ok: true, message: 'Payment request submitted! We will verify and issue your access within 24 hours.', requestId: request.id });
   } catch (err) {
     res.status(500).json({ ok: false, error: 'Failed to save request. Please try again.' });
+  }
+});
+
+// ── View Receipt ────────────────────────────────────────────────
+router.get('/receipt/:ref', validateUserSession, async (req, res) => {
+  const { ref } = req.params;
+  try {
+    const receipt = await db.getReceipt(ref);
+    if (!receipt) return res.status(404).json({ ok: false, error: 'Receipt not found.' });
+    // Verify the receipt belongs to the requesting user
+    const currentUserId = String(req.user._id || req.user.id);
+    if (receipt.userId && String(receipt.userId) !== currentUserId) {
+      return res.status(403).json({ ok: false, error: 'Unauthorized.' });
+    }
+    res.setHeader('Content-Type', 'text/html');
+    res.send(receipt.html);
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 

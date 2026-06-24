@@ -10,7 +10,7 @@ const { validateAdminKey, validateAdminSession, JWT_SECRET } = require('../middl
 // ── Rate Limiters (imported from middleware) ──────────────────
 const { adminLoginLimiter, twoFASetupLimiter } = require('../middleware/rateLimiters');
 const db = require('../services/db');
-const { sendEmail } = require('../services/emailService');
+const { sendEmail, buildReceiptHtml } = require('../services/emailService');
 
 const CONFIG_FILE = path.join(process.cwd(), 'data', 'config.json');
 
@@ -352,25 +352,35 @@ router.post('/approve-crypto-request', validateAdminSession, async (req, res) =>
 
     if (targetEmail) {
       try {
-        const emailHtml = `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb; padding: 20px; border-radius: 8px;">
-          <h2 style="color: #10b981; text-align: center;">Crypto Payment Approved! 🎉</h2>
-          <p>Hello ${userName || 'Trader'},</p>
-          <p>We have successfully verified your crypto payment.</p>
-          <p>Your payment covers <strong>${days} Days of VIP Access!</strong></p>
-          
+        const plan = found.plan || '1month';
+        const usdtMap = { '1month': 50, '2months': 95, '3months': 140, '6months': 250 };
+        const amount = usdtMap[plan] || 50;
+        const expiryDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toDateString();
+        const receiptHtml = buildReceiptHtml({
+          ref,
+          userName: userName || 'Trader',
+          userEmail: targetEmail,
+          plan,
+          amount,
+          currency: 'USDT',
+          method: `Crypto (${found.network || 'Unknown'})`,
+          days,
+          expiryDate
+        });
+
+        // Add the access code section at the top of the receipt
+        const accessCodeSection = `
           <div style="background-color: #111827; padding: 20px; border-radius: 12px; text-align: center; margin: 25px 0;">
             <p style="color: #9ca3af; font-size: 13px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 1px;">Your VIP Access Code</p>
             <p style="color: #10b981; font-size: 28px; font-weight: bold; font-family: monospace; letter-spacing: 3px; margin: 0;">${generatedAccessCode}</p>
           </div>
-
-          ${!userEmail ? '<p>Since you do not have an account yet, you can create one or log in, then use the Access Code above to activate your VIP status.</p>' : '<p>Your account has been automatically upgraded, but you can keep this code for your records.</p>'}
-
-          <p>You can access the VIP portal anytime at <a href="${process.env.APP_URL || 'https://pipsattendant.com'}/premium.html" style="color: #10b981; font-weight: bold;">pipsattendant.com/premium.html</a>.</p>
-          <br/>
-          <p>Happy Trading,<br/>Pips Attendant Team</p>
-          </div>
+          ${!userEmail ? '<p style="color:#9ca3af;font-size:13px;text-align:center;">Create an account and use this code to activate your VIP status.</p>' : ''}
         `;
+        const emailHtml = receiptHtml.replace('<div style="padding:32px;">', `<div style="padding:32px;">${accessCodeSection}`);
+
+        // Save receipt to DB
+        await db.saveReceipt(ref, { html: emailHtml, userId: userId || null, plan, amount, createdAt: new Date().toISOString() });
+        // Email receipt
         sendEmail(targetEmail, '✅ VIP Access Granted! - Pips_attendant', emailHtml).catch(console.error);
       } catch (err) {
         console.error('Failed to send crypto approval email', err);
@@ -490,28 +500,70 @@ router.post('/broadcast-to-tickets', validateAdminSession, async (req, res) => {
   }
 });
 
+// ── Signal Outcome & Category Management ────────────────────────────────
+router.post('/signals/:id/outcome', validateAdminSession, async (req, res) => {
+  const { outcome } = req.body;
+  const validOutcomes = ['TP Hit', 'SL Hit', 'Breakeven', 'Running'];
+  if (!outcome || !validOutcomes.includes(outcome)) {
+    return res.status(400).json({ ok: false, error: `Outcome must be one of: ${validOutcomes.join(', ')}` });
+  }
+  try {
+    const updated = await db.updateSignalOutcome(req.params.id, outcome);
+    if (!updated) return res.status(404).json({ ok: false, error: 'Signal not found or DB not connected.' });
+    res.json({ ok: true, message: `Signal outcome set to "${outcome}"` });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/signals/:id/category', validateAdminSession, async (req, res) => {
+  const { category } = req.body;
+  const validCats = ['Forex', 'Crypto', 'Indices', 'Commodities'];
+  if (!category || !validCats.includes(category)) {
+    return res.status(400).json({ ok: false, error: `Category must be one of: ${validCats.join(', ')}` });
+  }
+  try {
+    await db.updateSignalCategory(req.params.id, category);
+    res.json({ ok: true, message: `Signal category set to "${category}"` });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // ── Analytics ────────────────────────────────────────────────
 router.get('/analytics', validateAdminSession, async (req, res) => {
   try {
     const users = await db.getUsers();
     const now = Date.now();
     let activeVIPs = 0;
+    let expiredUsers = 0;
 
-    const last7Days = {};
-    for (let i = 6; i >= 0; i--) {
+    // 30-day signup chart
+    const last30Days = {};
+    for (let i = 29; i >= 0; i--) {
       const d = new Date(now - i * 24 * 60 * 60 * 1000);
-      last7Days[d.toISOString().split('T')[0]] = 0;
+      last30Days[d.toISOString().split('T')[0]] = 0;
     }
 
     users.forEach(user => {
       if (user.subscriptionExpiry && user.subscriptionExpiry > now) activeVIPs++;
+      else if (user.subscriptionExpiry && user.subscriptionExpiry <= now) expiredUsers++;
       const dateStr = (user.registeredAt || '').split('T')[0];
-      if (last7Days[dateStr] !== undefined) last7Days[dateStr]++;
+      if (last30Days[dateStr] !== undefined) last30Days[dateStr]++;
     });
 
     let totalKES = 0, totalUSDT = 0, mrrKES = 0, mrrUSDT = 0;
     const payments = await db.getAllPayments();
     const cryptoPayments = await db.getCryptoRequests();
+
+    // Revenue by month (last 6 months)
+    const revenueByMonth = {};
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now);
+      d.setMonth(d.getMonth() - i);
+      const key = d.toISOString().slice(0, 7); // YYYY-MM
+      revenueByMonth[key] = { kes: 0, usdt: 0 };
+    }
 
     payments.filter(p => p.status === 'Success').forEach(p => {
       const amount = Number(p.amount) || 0;
@@ -519,30 +571,137 @@ router.get('/analytics', validateAdminSession, async (req, res) => {
       if (p.plan === '1month') mrrKES += amount;
       if (p.plan === '2months') mrrKES += amount / 2;
       if (p.plan === '3months') mrrKES += amount / 3;
+      if (p.plan === '6months') mrrKES += amount / 6;
+      // Revenue by month
+      const monthKey = (p.timestamp || p.createdAt || '').slice(0, 7);
+      if (revenueByMonth[monthKey]) revenueByMonth[monthKey].kes += amount;
     });
 
     cryptoPayments.filter(p => p.status === 'Approved').forEach(p => {
-      const usdtMap = { '1month': 50, '2months': 95, '3months': 140 };
+      const usdtMap = { '1month': 50, '2months': 95, '3months': 140, '6months': 250 };
       const amount = usdtMap[p.plan] || 50;
       totalUSDT += amount;
       if (p.plan === '1month') mrrUSDT += amount;
       if (p.plan === '2months') mrrUSDT += amount / 2;
       if (p.plan === '3months') mrrUSDT += amount / 3;
+      if (p.plan === '6months') mrrUSDT += amount / 6;
+      const monthKey = (p.timestamp || '').slice(0, 7);
+      if (revenueByMonth[monthKey]) revenueByMonth[monthKey].usdt += amount;
     });
+
+    // Conversion rate: users who ever paid vs total registered
+    const payingUserIds = new Set(
+      payments.filter(p => p.status === 'Success' && p.userId).map(p => String(p.userId))
+    );
+    const conversionRate = users.length > 0
+      ? Math.round((payingUserIds.size / users.length) * 100)
+      : 0;
+
+    // Signal stats
+    const signalStats = await db.getSignalStats();
 
     res.json({
       ok: true,
       totalUsers: users.length,
       activeVIPs,
+      expiredUsers,
+      freeUsers: users.length - activeVIPs - expiredUsers,
+      conversionRate,
       totalKES,
       totalUSDT,
       mrrKES: Math.round(mrrKES),
       mrrUSDT: Math.round(mrrUSDT),
+      signalStats,
       chartData: {
-        labels: Object.keys(last7Days),
-        values: Object.values(last7Days)
+        labels: Object.keys(last30Days),
+        values: Object.values(last30Days)
+      },
+      revenueChart: {
+        labels: Object.keys(revenueByMonth),
+        kes: Object.values(revenueByMonth).map(m => m.kes),
+        usdt: Object.values(revenueByMonth).map(m => m.usdt)
       }
     });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── Payment History (filterable) ────────────────────────────────
+router.get('/payments', validateAdminSession, async (req, res) => {
+  try {
+    const { status, method, plan, from, to } = req.query;
+    let payments = await db.getAllPayments();
+    const cryptoPayments = (await db.getCryptoRequests()).map(p => ({
+      ...p,
+      method: 'crypto',
+      status: p.status === 'Approved' ? 'Success' : p.status,
+      amount: { '1month': 50, '2months': 95, '3months': 140, '6months': 250 }[p.plan] || 50,
+      currency: 'USDT'
+    }));
+
+    let all = [
+      ...payments.map(p => ({ ...p, currency: 'KES', method: p.method || 'mpesa' })),
+      ...cryptoPayments
+    ];
+
+    if (status) all = all.filter(p => p.status === status);
+    if (method) all = all.filter(p => (p.method || '').toLowerCase() === method.toLowerCase());
+    if (plan) all = all.filter(p => p.plan === plan);
+    if (from) all = all.filter(p => new Date(p.timestamp || p.createdAt || 0) >= new Date(from));
+    if (to) all = all.filter(p => new Date(p.timestamp || p.createdAt || 0) <= new Date(to));
+
+    all.sort((a, b) => new Date(b.timestamp || b.createdAt || 0) - new Date(a.timestamp || a.createdAt || 0));
+
+    res.json({ ok: true, count: all.length, payments: all });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── Payment CSV Export ────────────────────────────────────────────
+router.get('/payments/export', validateAdminSession, async (req, res) => {
+  try {
+    const payments = await db.getAllPayments();
+    const cryptoPayments = await db.getCryptoRequests();
+
+    const rows = [
+      ['Reference', 'Date', 'Method', 'Plan', 'Amount', 'Currency', 'Status', 'User ID', 'Phone/Contact']
+    ];
+
+    payments.forEach(p => {
+      rows.push([
+        p.reference || p.ref || '',
+        p.timestamp || '',
+        'M-Pesa',
+        p.plan || '',
+        p.amount || '',
+        'KES',
+        p.status || '',
+        p.userId || '',
+        p.phone || ''
+      ]);
+    });
+
+    cryptoPayments.forEach(p => {
+      const usdtMap = { '1month': 50, '2months': 95, '3months': 140, '6months': 250 };
+      rows.push([
+        p.id || p._id || '',
+        p.timestamp || '',
+        `Crypto (${p.network || 'Unknown'})`,
+        p.plan || '',
+        usdtMap[p.plan] || 50,
+        'USDT',
+        p.status || '',
+        p.userId || '',
+        p.contactInfo || ''
+      ]);
+    });
+
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="payments_${new Date().toISOString().slice(0,10)}.csv"`);
+    res.send(csv);
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
