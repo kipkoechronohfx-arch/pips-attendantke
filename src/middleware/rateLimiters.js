@@ -40,9 +40,20 @@ const twoFASetupLimiter = rateLimit({
   skipSuccessfulRequests: true
 });
 
+// ── Password Reset Limiter (strict) ───────────────────────────
+// Prevent malicious spamming of reset emails.
+const passwordResetLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 3, // Only 3 reset attempts per 15 mins
+  message: { ok: false, error: 'Too many password reset attempts. Try again in 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
 module.exports = {
   vipAuthLimiter,
   authLimiter,
   adminLoginLimiter,
-  twoFASetupLimiter
+  twoFASetupLimiter,
+  passwordResetLimiter
 };

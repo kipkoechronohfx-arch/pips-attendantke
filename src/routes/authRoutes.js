@@ -3,7 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const { authLimiter } = require('../middleware/rateLimiters');
+const { authLimiter, passwordResetLimiter } = require('../middleware/rateLimiters');
 const { validateUserSession, JWT_SECRET } = require('../middleware/auth');
 const { getUserByEmail, getUserById, saveUser, getPaymentByAccessCode } = require('../services/db');
 const { sendEmail } = require('../services/emailService');
@@ -116,7 +116,7 @@ router.get('/me', validateUserSession, (req, res) => {
 
 const resetTokens = new Map();
 
-router.post('/forgot-password', authLimiter, async (req, res) => {
+router.post('/forgot-password', passwordResetLimiter, async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ ok: false, error: 'Email required.' });
 
@@ -144,7 +144,7 @@ router.post('/forgot-password', authLimiter, async (req, res) => {
   res.json({ ok: true });
 });
 
-router.post('/reset-password', authLimiter, async (req, res) => {
+router.post('/reset-password', passwordResetLimiter, async (req, res) => {
   const { email, token, newPassword } = req.body;
   if (!email || !token || !newPassword) return res.status(400).json({ ok: false, error: 'Missing fields.' });
 
@@ -262,6 +262,42 @@ router.post('/redeem-code', validateUserSession, async (req, res) => {
   } catch (err) {
     console.error('Failed to send subscription email', err);
   }
+
+  // --- Referral Auto-Bonus System ---
+  if (user.referredBy && !user.hasPaidBefore) {
+    const referrer = await getUserById(user.referredBy);
+    if (referrer) {
+      const nowMs = Date.now();
+      if (!referrer.subscriptionExpiry || referrer.subscriptionExpiry < nowMs) {
+        referrer.subscriptionExpiry = nowMs;
+      }
+      // Grant 5 bonus days
+      referrer.subscriptionExpiry += 5 * 24 * 60 * 60 * 1000;
+      await saveUser(referrer);
+      
+      try {
+        const refHtml = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb; padding: 20px; border-radius: 8px;">
+          <h2 style="color: #f59e0b; text-align: center;">You Earned a Referral Bonus! 🎁</h2>
+          <p>Hello ${referrer.name || 'Trader'},</p>
+          <p>Great news! A friend you referred just activated their VIP subscription.</p>
+          <p>As a thank you, we've automatically added <strong>5 Bonus Days</strong> to your VIP access!</p>
+          <br/>
+          <p>Keep sharing your link to earn more free days!</p>
+          <p>- Pips Attendant Team</p>
+          </div>
+        `;
+        sendEmail(referrer.email, '🎁 5 Bonus Days Added! - Pips_attendant', refHtml).catch(console.error);
+      } catch(err) {
+        console.error('Failed to send referrer bonus email', err);
+      }
+    }
+  }
+
+  // Mark the user as having paid so they don't trigger the bonus again
+  user.hasPaidBefore = true;
+  await saveUser(user);
+  // -----------------------------------
 
   res.json({ ok: true, message: 'Subscription successfully activated!', subscriptionExpiry: user.subscriptionExpiry });
 });
