@@ -1778,7 +1778,9 @@
             document.getElementById('paymentPanel').style.display = 'block';
           }
         } else {
-          logout();
+          console.error('[checkUserAccess] Failed:', data);
+          document.getElementById('authError').textContent = 'Session error: ' + (data.error || 'Unknown');
+          // logout(); // Disabled temporarily to prevent instant reload
         }
       } catch (e) {
         // Fallback or offline, just stay where we are or logout
