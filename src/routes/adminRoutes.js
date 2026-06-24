@@ -3,9 +3,11 @@ const router = express.Router();
 const crypto = require('crypto');
 const speakeasy = require('speakeasy');
 const QRCode = require('qrcode');
+const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const path = require('path');
 const { validateAdminKey, validateAdminSession, JWT_SECRET } = require('../middleware/auth');
+const { adminLoginLimiter } = require('../middleware/rateLimiters');
 const db = require('../services/db');
 const { sendEmail } = require('../services/emailService');
 
@@ -24,7 +26,8 @@ async function saveAdmin2FASecret(secret) {
 }
 
 // ── Admin 2FA & Login ────────────────────────────────────────
-router.post('/login', validateAdminKey, async (req, res) => {
+// SECURITY: adminLoginLimiter caps brute-force attempts to 5 per 15 min.
+router.post('/login', adminLoginLimiter, validateAdminKey, async (req, res) => {
   try {
     const { totpToken } = req.body;
     const currentSecret = await getAdmin2FASecret();
@@ -35,17 +38,13 @@ router.post('/login', validateAdminKey, async (req, res) => {
       return res.status(400).json({ ok: false, error: '2FA code required.' });
     }
     const cleanedToken = String(totpToken).replace(/\s/g, '');
-    let verified = false;
-    if (cleanedToken === '000000') {
-      verified = true;
-    } else {
-      verified = speakeasy.totp.verify({
-        secret: currentSecret,
-        encoding: 'base32',
-        token: cleanedToken,
-        window: 10
-      });
-    }
+    // SECURITY: '000000' backdoor removed. Use /2fa/reset if locked out.
+    const verified = speakeasy.totp.verify({
+      secret: currentSecret,
+      encoding: 'base32',
+      token: cleanedToken,
+      window: 1  // ±30 seconds only (was ±5 minutes)
+    });
     if (!verified) {
       return res.status(401).json({ ok: false, error: 'Invalid 2FA code.' });
     }
@@ -74,28 +73,24 @@ router.get('/2fa/setup', validateAdminKey, async (req, res) => {
   }
 });
 
-router.post('/2fa/verify-setup', validateAdminKey, async (req, res) => {
+router.post('/2fa/verify-setup', adminLoginLimiter, validateAdminKey, async (req, res) => {
   const { secret, token } = req.body;
   if (!secret || !token) return res.status(400).json({ ok: false, error: 'Secret and token required.' });
   const cleanedToken = String(token).replace(/\s/g, '');
-  let verified = false;
-  if (cleanedToken === '000000') {
-    verified = true;
-  } else {
-    verified = speakeasy.totp.verify({
-      secret,
-      encoding: 'base32',
-      token: cleanedToken,
-      window: 10
-    });
-  }
+  // SECURITY: '000000' backdoor removed. Only real TOTP codes accepted.
+  const verified = speakeasy.totp.verify({
+    secret,
+    encoding: 'base32',
+    token: cleanedToken,
+    window: 1  // ±30 seconds only (was ±5 minutes)
+  });
   if (verified) {
     await saveAdmin2FASecret(secret);
     const jwt = require('jsonwebtoken');
     const adminSessionToken = jwt.sign({ role: 'admin' }, JWT_SECRET, { expiresIn: '24h' });
     res.json({ ok: true, adminToken: adminSessionToken });
   } else {
-    res.json({ ok: false, error: 'Invalid token.' });
+    res.status(401).json({ ok: false, error: 'Invalid token.' });
   }
 });
 
@@ -210,10 +205,14 @@ router.delete('/delete-vip-document/:filename', validateAdminSession, async (req
 
 router.post('/update-vip-password', validateAdminSession, async (req, res) => {
   const { vipPassword } = req.body;
-  if (!vipPassword || vipPassword.trim().length < 4) return res.status(400).json({ ok: false, error: 'Password must be at least 4 characters.' });
+  if (!vipPassword || vipPassword.trim().length < 6) {
+    return res.status(400).json({ ok: false, error: 'Password must be at least 6 characters.' });
+  }
   try {
     const config = await db.getAppConfig();
-    config.vipPassword = vipPassword.trim();
+    // SECURITY: Hash VIP password with bcrypt before storing (cost factor 10).
+    config.vipPassword = await bcrypt.hash(vipPassword.trim(), 10);
+    config.vipPasswordIsHashed = true; // flag so auth layer knows to use bcrypt.compare
     if (await db.saveAppConfig(config)) res.json({ ok: true, message: 'VIP password updated successfully.' });
     else res.status(500).json({ ok: false, error: 'Failed to save configuration.' });
   } catch (err) {

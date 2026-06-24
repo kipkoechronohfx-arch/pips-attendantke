@@ -20,7 +20,8 @@ const journalRoutes = require('./src/routes/journalRoutes');
 const chatRoutes   = require('./src/routes/chatRoutes');
 
 // ── Environment Validation ─────────────────────────────────────
-const REQUIRED_ENV = ['MONGODB_URI', 'JWT_SECRET'];
+// SECURITY: JWT_SECRET and ADMIN_KEY are now required at startup.
+const REQUIRED_ENV = ['MONGODB_URI', 'JWT_SECRET', 'ADMIN_KEY'];
 // GEMINI_API_KEY is optional — AI chat is disabled gracefully if missing
 const RECOMMENDED_ENV = [
   'TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID',
@@ -51,8 +52,35 @@ const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 app.set('trust proxy', 1);
 
 // ── Security Headers ───────────────────────────────────────────
+// SECURITY: CSP re-enabled with a permissive-but-real policy.
+// Allows CDN scripts (Tailwind, Chart.js, etc.) and inline styles for the admin UI,
+// but blocks arbitrary script injection from untrusted origins.
 app.use(helmet({
-  contentSecurityPolicy: false,  // Disabled to allow inline scripts in admin HTML pages
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: [
+        "'self'",
+        "'unsafe-inline'",    // Required by Tailwind browser CDN & flatpickr inline init
+        "https://unpkg.com",
+        "https://cdn.jsdelivr.net",
+        "https://fonts.googleapis.com"
+      ],
+      styleSrc: [
+        "'self'",
+        "'unsafe-inline'",    // Required by inline Tailwind @theme block
+        "https://unpkg.com",
+        "https://cdn.jsdelivr.net",
+        "https://fonts.googleapis.com",
+        "https://fonts.gstatic.com"
+      ],
+      imgSrc: ["'self'", "data:", "blob:", "https:"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      connectSrc: ["'self'", "https://api.telegram.org", "wss:", "ws:"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"]
+    }
+  },
   crossOriginEmbedderPolicy: false
 }));
 

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const db = require('../services/db');
 const { validateVipSession, JWT_SECRET } = require('../middleware/auth');
 const { vipAuthLimiter } = require('../middleware/rateLimiters');
@@ -10,8 +11,20 @@ router.post('/verify-vip', vipAuthLimiter, async (req, res) => {
   if (!password) return res.status(400).json({ ok: false, error: 'Password required.' });
 
   const config = await db.getAppConfig();
-  if (password === config.vipPassword) {
-    // Generate a simple JWT for the legacy VIP global password
+  if (!config || !config.vipPassword) {
+    return res.status(503).json({ ok: false, error: 'VIP access is not configured yet.' });
+  }
+
+  // SECURITY: Support bcrypt-hashed passwords (set via admin panel) and
+  // legacy plaintext passwords (for backward compatibility during migration).
+  let match = false;
+  if (config.vipPasswordIsHashed) {
+    match = await bcrypt.compare(password, config.vipPassword);
+  } else {
+    match = (password === config.vipPassword);
+  }
+
+  if (match) {
     const sessionToken = jwt.sign({ role: 'legacy_vip' }, JWT_SECRET, { expiresIn: '30d' });
     res.json({ ok: true, sessionToken });
   } else {
@@ -91,18 +104,9 @@ router.get('/download-vip', async (req, res) => {
             return res.status(403).send('VIP Subscription required or expired.');
         }
     }
+  // SECURITY: Legacy HMAC token fallback removed. JWT verification only.
   } catch (err) {
-    // legacy token fallback check
-    if (token.includes('.')) {
-        try {
-            const parts = token.split('.');
-            if (parts.length === 2) {
-                const serverSecret = process.env.SERVER_SECRET || 'pips-attendant-local-secret-key-2026';
-                const expectedHmac = require('crypto').createHmac('sha256', serverSecret).update(parts[0]).digest('hex');
-                if (parts[1] !== expectedHmac) return res.status(401).send('Invalid token.');
-            } else { return res.status(401).send('Invalid token format.'); }
-        } catch(e) { return res.status(401).send('Token verification failed.'); }
-    } else { return res.status(401).send('Invalid or expired token.'); }
+    return res.status(401).send('Invalid or expired token.');
   }
 
   try {
