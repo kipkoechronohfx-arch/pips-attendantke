@@ -65,6 +65,7 @@ app.use(helmet({
         "'unsafe-inline'",    // Required by Tailwind browser CDN & flatpickr inline init
         "https://unpkg.com",
         "https://cdn.jsdelivr.net",
+        "https://cdn.tailwindcss.com",
         "https://fonts.googleapis.com",
         "https://s3.tradingview.com",
         "https://*.tradingview.com"
