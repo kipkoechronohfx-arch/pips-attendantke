@@ -1762,10 +1762,13 @@
           if (typeof showToast !== 'undefined') showToast('Login successful!');
           checkCredentials();
         } else {
+          // Show error and clear totpToken field so user can try a fresh code
           alert(data.error || 'Login failed.');
+          const totpEl = document.getElementById('totpToken');
+          if (totpEl) { totpEl.value = ''; totpEl.focus(); }
         }
       } catch (err) {
-        alert('Network error during login.');
+        alert('Network error during login. Check your internet connection.');
       }
     }
 
@@ -1781,13 +1784,13 @@
       }
     }
 
-    async function reset2FA() {
+    async function reset2FA(silent = false) {
       const adminKey = document.getElementById('adminKey').value.trim();
       if (!adminKey) {
         alert('Please enter your Admin Access Key first to reset 2FA.');
         return;
       }
-      if (!confirm('Are you sure you want to reset 2FA? You will need to scan a new QR code.')) return;
+      if (!silent && !confirm('Are you sure you want to reset 2FA? You will need to scan a new QR code.')) return;
       
       try {
         const res = await fetch('/api/admin/2fa/reset', {
@@ -1796,7 +1799,9 @@
         });
         const data = await res.json();
         if (data.ok) {
-          alert('2FA Reset Successful! Please setup 2FA again.');
+          if (!silent) alert('2FA Reset Successful! Opening setup now...');
+          // Automatically open the setup flow to scan a new QR
+          await open2FASetup();
         } else {
           alert('Reset failed: ' + (data.error || 'Unknown error'));
         }
@@ -3346,6 +3351,11 @@
       modal.classList.remove('hidden');
       document.getElementById('twoFAStep1').classList.remove('hidden');
       document.getElementById('twoFAStep2').classList.add('hidden');
+      // Reset QR area to loading state
+      document.getElementById('twoFAQRContainer').innerHTML = `
+        <div class="w-16 h-16 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+          <i data-feather="loader" class="w-6 h-6 animate-spin text-violet-400"></i>
+        </div>`;
       feather.replace();
 
       try {
@@ -3356,12 +3366,23 @@
           document.getElementById('twoFASecretDisplay').value = data.secret;
           const qrContainer = document.getElementById('twoFAQRContainer');
           qrContainer.innerHTML = `<img src="${data.qrCode}" alt="2FA QR" class="w-48 h-48 rounded-xl border border-white/10" />`;
+        } else if (data.alreadyConfigured) {
+          // 2FA already set up — guide user to reset first
+          modal.classList.add('hidden');
+          const wantsReset = confirm(
+            '🔒 2FA is already configured for this admin key.\n\n' +
+            'To re-scan a new QR code (e.g. new phone), click OK to reset 2FA first.\n\n' +
+            '⚠️ Warning: This will log you out of any active sessions.'
+          );
+          if (wantsReset) {
+            await reset2FA(true); // pass silent=true so reset2FA skips its own confirm
+          }
         } else {
           alert('❌ Failed to generate 2FA secret: ' + (data.error || 'Unknown error'));
           modal.classList.add('hidden');
         }
       } catch (err) {
-        alert('❌ Server error generating 2FA.');
+        alert('❌ Server error generating 2FA. Check your connection and try again.');
         modal.classList.add('hidden');
       }
     }
@@ -3382,6 +3403,10 @@
       }
       
       const adminKey = document.getElementById('adminKey')?.value.trim() || localStorage.getItem('pa_admin_key');
+
+      msgEl.className = 'text-gray-400 text-[11px] min-h-[14px] mb-3 text-center';
+      msgEl.textContent = 'Verifying…';
+
       try {
         const res = await fetch('/api/admin/2fa/verify-setup', {
           method: 'POST',
@@ -3391,7 +3416,7 @@
         const data = await res.json();
         if (data.ok) {
           msgEl.className = 'text-emerald-400 text-[11px] min-h-[14px] mb-3 text-center';
-          msgEl.textContent = '✅ Setup successful!';
+          msgEl.textContent = '✅ 2FA enabled successfully!';
           
           localStorage.setItem('pa_admin_token', data.adminToken);
           const formToken = document.getElementById('botToken')?.value.trim();
@@ -3407,11 +3432,14 @@
           setTimeout(() => { document.getElementById('twoFAModal').classList.add('hidden'); checkCredentials(); }, 1500);
         } else {
           msgEl.className = 'text-rose-400 text-[11px] min-h-[14px] mb-3 text-center';
-          msgEl.textContent = '❌ Invalid code. Please try again.';
+          msgEl.textContent = '❌ ' + (data.error || 'Invalid code. Please try again.');
+          // Clear input so user can type fresh code
+          document.getElementById('twoFATokenInput').value = '';
+          document.getElementById('twoFATokenInput').focus();
         }
       } catch (err) {
         msgEl.className = 'text-rose-400 text-[11px] min-h-[14px] mb-3 text-center';
-        msgEl.textContent = '❌ Server error. Please try again.';
+        msgEl.textContent = '❌ Server error. Check your connection and try again.';
       }
     }
 

@@ -7,7 +7,8 @@ const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const path = require('path');
 const { validateAdminKey, validateAdminSession, JWT_SECRET } = require('../middleware/auth');
-const { adminLoginLimiter } = require('../middleware/rateLimiters');
+// ── Rate Limiters (imported from middleware) ──────────────────
+const { adminLoginLimiter, twoFASetupLimiter } = require('../middleware/rateLimiters');
 const db = require('../services/db');
 const { sendEmail } = require('../services/emailService');
 
@@ -35,18 +36,25 @@ router.post('/login', adminLoginLimiter, validateAdminKey, async (req, res) => {
       return res.json({ ok: false, requiresSetup: true });
     }
     if (!totpToken) {
-      return res.status(400).json({ ok: false, error: '2FA code required.' });
+      return res.status(400).json({
+        ok: false,
+        error: '2FA code required. Open your authenticator app and enter the 6-digit code.'
+      });
     }
     const cleanedToken = String(totpToken).replace(/\s/g, '');
     // SECURITY: '000000' backdoor removed. Use /2fa/reset if locked out.
+    // window: 2 = ±60 seconds tolerance for authenticator clock drift.
     const verified = speakeasy.totp.verify({
       secret: currentSecret,
       encoding: 'base32',
       token: cleanedToken,
-      window: 1  // ±30 seconds only (was ±5 minutes)
+      window: 2
     });
     if (!verified) {
-      return res.status(401).json({ ok: false, error: 'Invalid 2FA code.' });
+      return res.status(401).json({
+        ok: false,
+        error: 'Invalid 2FA code. Make sure your phone clock is synced and try the current code.'
+      });
     }
     const jwt = require('jsonwebtoken');
     const adminSessionToken = jwt.sign({ role: 'admin' }, JWT_SECRET, { expiresIn: '24h' });
@@ -56,11 +64,18 @@ router.post('/login', adminLoginLimiter, validateAdminKey, async (req, res) => {
   }
 });
 
+// GET /2fa/setup — generates QR + secret for fresh setup.
+// If 2FA is already configured, returns an error telling the user to reset first.
+// The frontend Reset 2FA button handles the reset flow.
 router.get('/2fa/setup', validateAdminKey, async (req, res) => {
   try {
     const existing = await getAdmin2FASecret();
     if (existing) {
-      return res.status(400).json({ ok: false, error: '2FA is already configured.' });
+      return res.status(400).json({
+        ok: false,
+        error: '2FA is already configured. Click "Reset 2FA" first to generate a new QR code.',
+        alreadyConfigured: true
+      });
     }
     const secret = speakeasy.generateSecret({
       name: `Pips_attendant Admin (${req.headers['x-admin-key'].slice(0, 6)}...)`,
@@ -73,16 +88,18 @@ router.get('/2fa/setup', validateAdminKey, async (req, res) => {
   }
 });
 
-router.post('/2fa/verify-setup', adminLoginLimiter, validateAdminKey, async (req, res) => {
+// Use twoFASetupLimiter (separate from login limiter) to avoid cross-contamination.
+router.post('/2fa/verify-setup', twoFASetupLimiter, validateAdminKey, async (req, res) => {
   const { secret, token } = req.body;
   if (!secret || !token) return res.status(400).json({ ok: false, error: 'Secret and token required.' });
   const cleanedToken = String(token).replace(/\s/g, '');
   // SECURITY: '000000' backdoor removed. Only real TOTP codes accepted.
+  // window: 2 = ±60 seconds tolerance for authenticator clock drift.
   const verified = speakeasy.totp.verify({
     secret,
     encoding: 'base32',
     token: cleanedToken,
-    window: 1  // ±30 seconds only (was ±5 minutes)
+    window: 2
   });
   if (verified) {
     await saveAdmin2FASecret(secret);
@@ -90,7 +107,10 @@ router.post('/2fa/verify-setup', adminLoginLimiter, validateAdminKey, async (req
     const adminSessionToken = jwt.sign({ role: 'admin' }, JWT_SECRET, { expiresIn: '24h' });
     res.json({ ok: true, adminToken: adminSessionToken });
   } else {
-    res.status(401).json({ ok: false, error: 'Invalid token.' });
+    res.status(401).json({
+      ok: false,
+      error: 'Invalid code. Make sure your phone clock is synced and try the current code from your authenticator app.'
+    });
   }
 });
 

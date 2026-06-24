@@ -29,8 +29,20 @@ const adminLoginLimiter = rateLimit({
   skipSuccessfulRequests: true // Only count failures against the limit
 });
 
+// ── 2FA Setup Limiter (separate from login limiter) ───────────
+// Higher limit than login (10 vs 5) since setup requires back-and-forth with app.
+const twoFASetupLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  message: { ok: false, error: 'Too many 2FA setup attempts. Try again in 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true
+});
+
 module.exports = {
   vipAuthLimiter,
   authLimiter,
-  adminLoginLimiter
+  adminLoginLimiter,
+  twoFASetupLimiter
 };
