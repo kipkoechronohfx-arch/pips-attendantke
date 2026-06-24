@@ -64,7 +64,8 @@ app.use(helmet({
         "'unsafe-inline'",    // Required by Tailwind browser CDN & flatpickr inline init
         "https://unpkg.com",
         "https://cdn.jsdelivr.net",
-        "https://fonts.googleapis.com"
+        "https://fonts.googleapis.com",
+        "https://s3.tradingview.com"  // TradingView scripts
       ],
       styleSrc: [
         "'self'",
@@ -77,6 +78,7 @@ app.use(helmet({
       imgSrc: ["'self'", "data:", "blob:", "https:"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       connectSrc: ["'self'", "https://api.telegram.org", "wss:", "ws:"],
+      frameSrc: ["'self'", "https://www.tradingview.com", "https://s3.tradingview.com"], // Allow TradingView iframes
       objectSrc: ["'none'"],
       baseUri: ["'self'"]
     }
