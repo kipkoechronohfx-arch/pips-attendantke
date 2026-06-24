@@ -133,7 +133,7 @@ function startCronJobs() {
         await sendEmail(u.email, '🏆 Weekly Performance Report 🏆', emailHtml).catch(() => {});
         emailsSent++;
       }
-      console.log(\`[Cron] Weekly report emailed to \${emailsSent} active VIP users.\`);
+      console.log(`[Cron] Weekly report emailed to ${emailsSent} active VIP users.`);
     } catch (err) {
       console.error('[Cron] Weekly report failed:', err.message);
     }
