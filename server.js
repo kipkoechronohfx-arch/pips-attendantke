@@ -65,7 +65,8 @@ app.use(helmet({
         "https://unpkg.com",
         "https://cdn.jsdelivr.net",
         "https://fonts.googleapis.com",
-        "https://s3.tradingview.com"  // TradingView scripts
+        "https://s3.tradingview.com",
+        "https://*.tradingview.com"
       ],
       styleSrc: [
         "'self'",
@@ -75,10 +76,10 @@ app.use(helmet({
         "https://fonts.googleapis.com",
         "https://fonts.gstatic.com"
       ],
-      imgSrc: ["'self'", "data:", "blob:", "https:"],
+      imgSrc: ["'self'", "data:", "blob:", "https:", "https://*.tradingview.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      connectSrc: ["'self'", "https://api.telegram.org", "wss:", "ws:"],
-      frameSrc: ["'self'", "https://www.tradingview.com", "https://s3.tradingview.com"], // Allow TradingView iframes
+      connectSrc: ["'self'", "https://api.telegram.org", "wss:", "ws:", "https://*.tradingview.com"],
+      frameSrc: ["'self'", "https://www.tradingview.com", "https://s3.tradingview.com", "https://s.tradingview.com", "https://*.tradingview.com"],
       objectSrc: ["'none'"],
       baseUri: ["'self'"]
     }
