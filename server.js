@@ -80,7 +80,7 @@ app.use(helmet({
       ],
       imgSrc: ["'self'", "data:", "blob:", "https:", "https://*.tradingview.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      connectSrc: ["'self'", "https://api.telegram.org", "wss:", "ws:", "https://*.tradingview.com"],
+      connectSrc: ["'self'", "https://api.telegram.org", "wss:", "ws:", "https://*.tradingview.com", "https://pips-attendantke.onrender.com", "https://pipsattendant.top", "https://www.pipsattendant.top"],
       frameSrc: ["'self'", "https://www.tradingview.com", "https://s3.tradingview.com", "https://s.tradingview.com", "https://*.tradingview.com"],
       objectSrc: ["'none'"],
       baseUri: ["'self'"]
@@ -94,6 +94,8 @@ const ALLOWED_ORIGINS = [
   'https://pips-attendantke.onrender.com',
   'https://pipsattendant.top',
   'https://www.pipsattendant.top',
+  'https://admin.pipsattendant.top',
+  'https://vip.pipsattendant.top',
   'http://localhost:3000',
   'http://127.0.0.1:3000'
 ];
