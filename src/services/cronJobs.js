@@ -138,6 +138,17 @@ function startCronJobs() {
       console.error('[Cron] Weekly report failed:', err.message);
     }
   }, { timezone: 'Africa/Nairobi' });
+  // ── Keep-Alive Ping (Render Free Tier) ───────────────────────
+  // Pings the server every 14 minutes to prevent Render from spinning it down.
+  const SELF_URL = process.env.RENDER_EXTERNAL_URL || 'https://pips-attendantke.onrender.com';
+  cron.schedule('*/14 * * * *', async () => {
+    try {
+      const res = await fetch(`${SELF_URL}/api/public-config`);
+      console.log('[Keep-Alive] Ping OK:', res.status);
+    } catch (err) {
+      console.warn('[Keep-Alive] Ping failed:', err.message);
+    }
+  });
 }
 
 module.exports = { startCronJobs };

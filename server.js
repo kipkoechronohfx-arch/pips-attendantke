@@ -62,13 +62,14 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       scriptSrc: [
         "'self'",
-        "'unsafe-inline'",    // Required by Tailwind browser CDN & flatpickr inline init
+        "'unsafe-inline'",
         "https://unpkg.com",
         "https://cdn.jsdelivr.net",
         "https://cdn.tailwindcss.com",
         "https://fonts.googleapis.com",
         "https://s3.tradingview.com",
-        "https://*.tradingview.com"
+        "https://*.tradingview.com",
+        "https://*.tradingview-widget.com"
       ],
       styleSrc: [
         "'self'",
@@ -80,8 +81,8 @@ app.use(helmet({
       ],
       imgSrc: ["'self'", "data:", "blob:", "https:", "https://*.tradingview.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      connectSrc: ["'self'", "https://api.telegram.org", "wss:", "ws:", "https://*.tradingview.com", "https://pips-attendantke.onrender.com", "https://pipsattendant.top", "https://www.pipsattendant.top"],
-      frameSrc: ["'self'", "https://www.tradingview.com", "https://s3.tradingview.com", "https://s.tradingview.com", "https://*.tradingview.com"],
+      connectSrc: ["'self'", "https://api.telegram.org", "wss:", "ws:", "https://unpkg.com", "https://cdn.jsdelivr.net", "https://*.tradingview.com", "https://*.tradingview-widget.com", "https://pips-attendantke.onrender.com", "https://pipsattendant.top", "https://www.pipsattendant.top"],
+      frameSrc: ["'self'", "https://www.tradingview.com", "https://s3.tradingview.com", "https://s.tradingview.com", "https://*.tradingview.com", "https://www.tradingview-widget.com", "https://*.tradingview-widget.com"],
       objectSrc: ["'none'"],
       baseUri: ["'self'"]
     }
