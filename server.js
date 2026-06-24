@@ -84,7 +84,10 @@ app.use(helmet({
       connectSrc: ["'self'", "https://api.telegram.org", "wss:", "ws:", "https://unpkg.com", "https://cdn.jsdelivr.net", "https://*.tradingview.com", "https://*.tradingview-widget.com", "https://pips-attendantke.onrender.com", "https://pipsattendant.top", "https://www.pipsattendant.top"],
       frameSrc: ["'self'", "https://www.tradingview.com", "https://s3.tradingview.com", "https://s.tradingview.com", "https://*.tradingview.com", "https://www.tradingview-widget.com", "https://*.tradingview-widget.com"],
       objectSrc: ["'none'"],
-      baseUri: ["'self'"]
+      baseUri: ["'self'"],
+      // Helmet 7+ sets script-src-attr: 'none' by default, which blocks ALL inline onclick/onsubmit handlers.
+      // We must explicitly allow them here so buttons work.
+      scriptSrcAttr: ["'unsafe-inline'"]
     }
   },
   crossOriginEmbedderPolicy: false
