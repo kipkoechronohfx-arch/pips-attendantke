@@ -201,6 +201,18 @@ router.post('/update-profile', validateUserSession, async (req, res) => {
   res.json({ ok: true, message: 'Profile updated successfully.', name: user.name });
 });
 
+router.post('/leaderboard-optin', validateUserSession, async (req, res) => {
+  const { optIn } = req.body;
+  if (typeof optIn !== 'boolean') return res.status(400).json({ ok: false, error: 'optIn must be a boolean.' });
+
+  const user = await getUserById(req.user._id || req.user.id);
+  if (!user) return res.status(404).json({ ok: false, error: 'User not found.' });
+
+  user.leaderboardOptIn = optIn;
+  await saveUser(user);
+  res.json({ ok: true, message: optIn ? 'Opted into leaderboard.' : 'Opted out of leaderboard.', optIn: user.leaderboardOptIn });
+});
+
 router.post('/redeem-code', validateUserSession, async (req, res) => {
   const { code } = req.body;
   if (!code) return res.status(400).json({ ok: false, error: 'No access code provided.' });

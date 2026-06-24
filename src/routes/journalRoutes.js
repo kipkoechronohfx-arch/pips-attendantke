@@ -15,6 +15,17 @@ router.get('/', validateUserSession, async (req, res) => {
   }
 });
 
+// GET leaderboard data
+router.get('/leaderboard', validateUserSession, async (req, res) => {
+  try {
+    const leaderboard = await db.getLeaderboardData();
+    res.json({ ok: true, leaderboard });
+  } catch (err) {
+    console.error('[Leaderboard GET error]', err);
+    res.status(500).json({ ok: false, error: 'Failed to fetch leaderboard.' });
+  }
+});
+
 // POST a new journal entry
 router.post('/', validateUserSession, async (req, res) => {
   try {

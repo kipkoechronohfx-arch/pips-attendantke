@@ -168,13 +168,44 @@ router.post('/broadcast', async (req, res) => {
 
     try {
       const subscriptions = await db.getPushSubscriptions();
+
+      // ── Parse signal text to build a rich notification ──────────
+      let notifTitle = '🔔 New VIP Signal Alert!';
+      let notifBody  = text ? text.substring(0, 120) : 'A new signal or update was just posted.';
+
+      if (text) {
+        // Try to extract: direction (BUY/SELL), asset (e.g. XAUUSD), entry, SL, TP
+        const dirMatch   = text.match(/\b(BUY|SELL)\b/i);
+        const assetMatch = text.match(/\b(XAUUSD|EURUSD|GBPUSD|USDJPY|GBPJPY|AUDUSD|US30|NAS100|USDCAD|USDCHF|[A-Z]{6})\b/);
+        const entryMatch = text.match(/[Ee]ntry[:\s]+([0-9]+\.?[0-9]*)/);
+        const slMatch    = text.match(/\bSL[:\s]+([0-9]+\.?[0-9]*)/i);
+        const tp1Match   = text.match(/\bTP1?[:\s]+([0-9]+\.?[0-9]*)/i);
+
+        if (dirMatch && assetMatch) {
+          const dir   = dirMatch[1].toUpperCase();
+          const asset = assetMatch[1];
+          const emoji = dir === 'BUY' ? '📈' : '📉';
+          notifTitle  = `${emoji} ${dir} ${asset} — VIP Signal`;
+
+          const parts = [];
+          if (entryMatch) parts.push(`Entry: ${entryMatch[1]}`);
+          if (slMatch)    parts.push(`SL: ${slMatch[1]}`);
+          if (tp1Match)   parts.push(`TP: ${tp1Match[1]}`);
+          notifBody = parts.length > 0 ? parts.join(' | ') : notifBody;
+        }
+      }
+
       const pushPayload = JSON.stringify({
-        title: 'New VIP Signal Alert!',
-        body: text ? text.substring(0, 100) + '...' : 'A new signal or update was just posted.',
-        icon: '/favicon.png',
-        url: '/'
+        title: notifTitle,
+        body:  notifBody,
+        icon:  '/favicon.png',
+        badge: '/favicon.png',
+        tag:   'vip-signal',       // replaces previous notification of same type
+        url:   '/premium.html',
+        data:  { url: '/premium.html' }
       });
-      const pushPromises = subscriptions.map(sub => 
+
+      const pushPromises = subscriptions.map(sub =>
         webpush.sendNotification(sub, pushPayload).catch(err => {
           if (err.statusCode === 404 || err.statusCode === 410) {
             return db.deletePushSubscription(sub);

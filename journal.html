@@ -152,6 +152,40 @@
       </form>
     </div>
 
+    <!-- VIP Leaderboard Section (hidden by default unless opted in or viewing) -->
+    <div id="leaderboardSection" class="w-full glass-card rounded-3xl border border-amber-400/30 mb-8 overflow-hidden relative shadow-[0_0_20px_rgba(245,158,11,0.15)]">
+      <div class="p-6 bg-gradient-to-r from-amber-500/10 to-transparent border-b border-white/5 flex items-center justify-between">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i data-feather="award" class="w-5 h-5 text-amber-400"></i> VIP Leaderboard (Top 10)
+        </h3>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Join Leaderboard</span>
+          <div class="relative">
+            <input type="checkbox" id="optInToggle" class="sr-only" onchange="toggleLeaderboardOptIn()">
+            <div class="block bg-black/50 w-10 h-6 rounded-full border border-white/20 transition-colors" id="optInTrack"></div>
+            <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform" id="optInDot"></div>
+          </div>
+        </label>
+      </div>
+      
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left border-collapse min-w-[500px]">
+          <thead>
+            <tr class="bg-white/5 border-b border-white/10 text-[10px] uppercase tracking-wider text-gray-400">
+              <th class="p-4 font-bold text-center w-16">Rank</th>
+              <th class="p-4 font-bold">Trader</th>
+              <th class="p-4 font-bold text-center">Trades</th>
+              <th class="p-4 font-bold text-center">Win Rate</th>
+              <th class="p-4 font-bold text-right">Net P/L</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardList" class="text-sm divide-y divide-white/5">
+            <tr><td colspan="5" class="p-6 text-center text-xs text-gray-500">Loading leaderboard...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- Trades Table -->
     <div class="w-full glass-card rounded-3xl border border-white/10 overflow-hidden">
       <div class="overflow-x-auto custom-scrollbar">
@@ -514,8 +548,94 @@
       }
     };
 
+    // --- LEADERBOARD LOGIC ---
+    async function loadLeaderboard() {
+      if (!sessionToken) {
+        document.getElementById('leaderboardSection').classList.add('hidden');
+        return;
+      }
+      try {
+        const res = await fetch('/api/journal/leaderboard', {
+          headers: { 'Authorization': `Bearer ${sessionToken}` }
+        });
+        const data = await res.json();
+        if (data.ok) {
+          document.getElementById('leaderboardSection').classList.remove('hidden');
+          const tbody = document.getElementById('leaderboardList');
+          tbody.innerHTML = '';
+          
+          if (data.leaderboard.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-xs text-gray-500">No traders have joined the leaderboard yet. Be the first!</td></tr>';
+            return;
+          }
+
+          data.leaderboard.forEach((user, index) => {
+            const rank = index + 1;
+            let rankHtml = `<span class="font-bold text-gray-400">${rank}</span>`;
+            if (rank === 1) rankHtml = `<span class="text-xl">🥇</span>`;
+            if (rank === 2) rankHtml = `<span class="text-xl">🥈</span>`;
+            if (rank === 3) rankHtml = `<span class="text-xl">🥉</span>`;
+
+            const plClass = user.netPL >= 0 ? 'text-emerald-400' : 'text-rose-400';
+            const plSign = user.netPL >= 0 ? '+$' : '-$';
+
+            tbody.innerHTML += `
+              <tr class="hover:bg-white/5 transition-colors">
+                <td class="p-4 text-center">${rankHtml}</td>
+                <td class="p-4 font-bold text-white flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-[10px] text-amber-400 font-black">
+                    ${user.name.substring(0, 2).toUpperCase()}
+                  </div>
+                  ${user.name}
+                </td>
+                <td class="p-4 text-center text-gray-300 font-mono">${user.totalTrades}</td>
+                <td class="p-4 text-center text-sky-400 font-bold">${user.winRate}%</td>
+                <td class="p-4 text-right font-black ${plClass}">${plSign}${Math.abs(user.netPL).toFixed(2)}</td>
+              </tr>
+            `;
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load leaderboard', err);
+      }
+    }
+
+    async function toggleLeaderboardOptIn() {
+      const isOptedIn = document.getElementById('optInToggle').checked;
+      document.getElementById('optInDot').style.transform = isOptedIn ? 'translateX(100%)' : 'translateX(0)';
+      document.getElementById('optInTrack').className = isOptedIn 
+        ? 'block bg-amber-500/30 w-10 h-6 rounded-full border border-amber-500/50 transition-colors'
+        : 'block bg-black/50 w-10 h-6 rounded-full border border-white/20 transition-colors';
+
+      try {
+        await fetch('/api/auth/leaderboard-optin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sessionToken}` },
+          body: JSON.stringify({ optIn: isOptedIn })
+        });
+        loadLeaderboard(); // reload board to show/hide themselves
+      } catch (err) {
+        console.error('Opt-in failed', err);
+      }
+    }
+
+    async function checkOptInStatus() {
+      if (!sessionToken) return;
+      try {
+        const res = await fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${sessionToken}` } });
+        const data = await res.json();
+        if (data.ok && data.user.leaderboardOptIn) {
+          document.getElementById('optInToggle').checked = true;
+          document.getElementById('optInDot').style.transform = 'translateX(100%)';
+          document.getElementById('optInTrack').className = 'block bg-amber-500/30 w-10 h-6 rounded-full border border-amber-500/50 transition-colors';
+        }
+      } catch (err) {}
+    }
+
     // Initial render
     initJournal();
+    loadLeaderboard();
+    checkOptInStatus();
 
   </script>
 

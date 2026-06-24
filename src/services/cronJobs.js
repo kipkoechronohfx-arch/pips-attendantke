@@ -81,6 +81,59 @@ function startCronJobs() {
       const msg = '\ud83c\udfc6 *Weekly Performance Report* \ud83c\udfc6\n\nTrades this week: ' + (wins + losses) +
         '\nWin Rate (Pips): ' + winRate + '%\nNet Pips Gained: ' + netStr + ' pips\n\nLet\'s crush the coming week! \ud83d\ude80';
       await sendTelegramMessage(process.env.TELEGRAM_CHAT_ID, msg);
+
+      // Also send Email to all active VIP users
+      const users = await db.getUsers();
+      const now = Date.now();
+      const activeVIPs = users.filter(u => u.subscriptionExpiry && u.subscriptionExpiry > now && u.email);
+      
+      // Find best trade
+      let bestTradeStr = 'N/A';
+      if (weeklyLogs.length > 0) {
+        const sorted = [...weeklyLogs].sort((a, b) => (b.pips || 0) - (a.pips || 0));
+        if (sorted[0] && sorted[0].pips > 0) {
+          bestTradeStr = `${sorted[0].asset || 'Trade'} (+${sorted[0].pips} pips)`;
+        }
+      }
+      
+      const emailHtml = `
+      <div style="font-family: 'Inter', sans-serif; background-color: #0d0800; color: #fff; padding: 30px; max-width: 600px; margin: 0 auto; border-radius: 16px; border: 1px solid rgba(251,191,36,0.2);">
+        <h2 style="color: #fbbf24; text-align: center; margin-bottom: 30px;">🏆 Weekly Performance Report 🏆</h2>
+        <p style="color: #d1d5db; text-align: center; margin-bottom: 20px;">Here is how we did this week in the VIP group.</p>
+        
+        <div style="background-color: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin-bottom: 30px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
+            <span style="color: #9ca3af; font-weight: bold;">Total Trades</span>
+            <span style="color: #fff; font-weight: bold; font-size: 1.2rem;">${wins + losses}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
+            <span style="color: #9ca3af; font-weight: bold;">Win Rate</span>
+            <span style="color: #10b981; font-weight: bold; font-size: 1.2rem;">${winRate}%</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
+            <span style="color: #9ca3af; font-weight: bold;">Net Pips</span>
+            <span style="color: ${netPips > 0 ? '#10b981' : (netPips < 0 ? '#ef4444' : '#fff')}; font-weight: bold; font-size: 1.2rem;">${netStr} pips</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: #9ca3af; font-weight: bold;">Best Trade</span>
+            <span style="color: #fbbf24; font-weight: bold; font-size: 1.2rem;">${bestTradeStr}</span>
+          </div>
+        </div>
+        
+        <p style="color: #d1d5db; text-align: center; margin-bottom: 30px;">Let's keep crushing the markets! Prepare yourself for another profitable week ahead. 🚀</p>
+        
+        <div style="text-align: center;">
+          <a href="https://pipsattendant.com/premium.html" style="background: linear-gradient(135deg, #f59e0b, #fbbf24); color: #0d0800; font-weight: bold; padding: 14px 28px; border-radius: 12px; text-decoration: none; display: inline-block;">Access VIP Area</a>
+        </div>
+      </div>
+      `;
+
+      let emailsSent = 0;
+      for (const u of activeVIPs) {
+        await sendEmail(u.email, '🏆 Weekly Performance Report 🏆', emailHtml).catch(() => {});
+        emailsSent++;
+      }
+      console.log(\`[Cron] Weekly report emailed to \${emailsSent} active VIP users.\`);
     } catch (err) {
       console.error('[Cron] Weekly report failed:', err.message);
     }

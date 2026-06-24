@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline | Pips_attendant</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0d0800;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      overflow: hidden;
+    }
+
+    /* Ambient glows */
+    .glow-top {
+      position: fixed; top: -15%; right: -10%;
+      width: 55vw; height: 55vw; border-radius: 50%;
+      background: radial-gradient(circle, rgba(245,158,11,0.22) 0%, transparent 70%);
+      filter: blur(100px); pointer-events: none; animation: pulse 5s ease-in-out infinite;
+    }
+    .glow-bottom {
+      position: fixed; bottom: -20%; left: -10%;
+      width: 50vw; height: 50vw; border-radius: 50%;
+      background: radial-gradient(circle, rgba(217,119,6,0.16) 0%, transparent 70%);
+      filter: blur(90px); pointer-events: none; animation: pulse 5s ease-in-out infinite 2.5s;
+    }
+    @keyframes pulse { 0%,100%{ opacity:.7; } 50%{ opacity:1; } }
+
+    .card {
+      position: relative; z-index: 10;
+      background: rgba(255,255,255,0.03);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 28px;
+      padding: 48px 36px;
+      max-width: 440px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+
+    .icon-wrap {
+      width: 80px; height: 80px;
+      background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(217,119,6,0.1));
+      border: 1px solid rgba(245,158,11,0.3);
+      border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px;
+      margin: 0 auto 28px;
+      box-shadow: 0 0 30px rgba(245,158,11,0.2);
+    }
+
+    h1 {
+      font-size: 1.75rem; font-weight: 900; line-height: 1.2;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+
+    p {
+      color: #9ca3af;
+      font-size: 0.875rem;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    .links {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 14px 20px;
+      border-radius: 14px;
+      font-weight: 700; font-size: 0.875rem;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #f59e0b, #fbbf24);
+      color: #0d0800;
+      box-shadow: 0 0 20px rgba(245,158,11,0.3);
+    }
+    .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.04);
+      border-color: rgba(255,255,255,0.08);
+      color: #d1d5db;
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.08); border-color: rgba(245,158,11,0.3); color: #fbbf24; }
+
+    .status-dot {
+      display: inline-block;
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #ef4444;
+      margin-right: 6px;
+      animation: blink 1.5s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{ opacity:1; } 50%{ opacity:0.3; } }
+
+    .status-bar {
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; color: #6b7280; margin-bottom: 28px;
+    }
+
+    .retry-btn {
+      background: none; border: none; cursor: pointer;
+      color: #f59e0b; font-size: 0.75rem; font-weight: 700;
+      margin-top: 16px; text-decoration: underline;
+      font-family: inherit;
+    }
+    .retry-btn:hover { color: #fbbf24; }
+  </style>
+</head>
+<body>
+
+  <div class="glow-top"></div>
+  <div class="glow-bottom"></div>
+
+  <div class="card">
+    <div class="icon-wrap">📡</div>
+
+    <h1>You're Offline</h1>
+
+    <div class="status-bar">
+      <span class="status-dot"></span>
+      No internet connection detected
+    </div>
+
+    <p>
+      Don't worry — your journal and recent signals are still available below.
+      We'll reconnect automatically when your connection is restored.
+    </p>
+
+    <div class="links">
+      <a href="/journal.html" class="btn btn-primary">
+        📓 My Trading Journal
+      </a>
+      <a href="/premium.html" class="btn btn-secondary">
+        ⭐ VIP Resources
+      </a>
+      <a href="/propfirm.html" class="btn btn-secondary">
+        🏆 Prop Firm Tracker
+      </a>
+    </div>
+
+    <button class="retry-btn" onclick="window.location.reload()">
+      ↻ Try Again
+    </button>
+  </div>
+
+  <script>
+    // Auto-redirect when connection is restored
+    window.addEventListener('online', () => {
+      window.location.reload();
+    });
+  </script>
+</body>
+</html>

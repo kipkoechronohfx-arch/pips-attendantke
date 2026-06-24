@@ -952,6 +952,43 @@ async function deletePropFirmAccount(userId) {
   writeJSON(PROP_FIRM_FILE, accounts);
 }
 
+async function getLeaderboardData() {
+  const users = await getUsers();
+  const optedInUsers = users.filter(u => u.leaderboardOptIn === true);
+  
+  const leaderboard = [];
+  
+  for (const user of optedInUsers) {
+    const userId = user._id ? user._id.toString() : user.id;
+    const entries = await getJournalEntries(userId);
+    if (!entries || entries.length === 0) continue;
+    
+    let totalPL = 0;
+    let wins = 0;
+    let losses = 0;
+    
+    entries.forEach(e => {
+      const pl = Number(e.pl) || 0;
+      totalPL += pl;
+      if (pl > 0) wins++;
+      else if (pl < 0) losses++;
+    });
+    
+    const totalTrades = wins + losses;
+    const winRate = totalTrades > 0 ? Math.round((wins / totalTrades) * 100) : 0;
+    
+    leaderboard.push({
+      userId,
+      name: user.name || 'Anonymous Trader',
+      netPL: totalPL,
+      winRate,
+      totalTrades
+    });
+  }
+  
+  return leaderboard.sort((a, b) => b.netPL - a.netPL).slice(0, 10);
+}
+
 module.exports = {
   connectDB, closeDB,
   getAppConfig, saveAppConfig,
@@ -969,6 +1006,6 @@ module.exports = {
   getPromos, savePromo, getPromoByCode, deletePromo,
   getTickets, getUserTickets, saveTicket,
   logPerformanceAction, getPerformanceLogs,
-  getJournalEntries, saveJournalEntry, deleteJournalEntry, syncJournalEntries,
+  getJournalEntries, saveJournalEntry, deleteJournalEntry, syncJournalEntries, getLeaderboardData,
   getPropFirmAccount, getAllPropFirmAccounts, savePropFirmAccount, deletePropFirmAccount
 };
