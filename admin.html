@@ -1707,8 +1707,26 @@
     </div>
   </div>
 
-  <!-- Custom Scripts for Admin Operations -->
+    <!-- Custom Scripts for Admin Operations -->
   <script>
+    // Global fetch interceptor to handle 401 Unauthorized errors
+    const originalFetch = window.fetch;
+    let isLoggingOut = false;
+    window.fetch = async function(...args) {
+      const response = await originalFetch.apply(this, args);
+      if (response.status === 401 && typeof args[0] === 'string' && args[0].includes('/api/admin/') && !args[0].includes('/login') && !isLoggingOut) {
+        isLoggingOut = true;
+        localStorage.removeItem('pa_admin_token');
+        localStorage.removeItem('pa_bot_token');
+        localStorage.removeItem('pa_chat_id');
+        localStorage.removeItem('pa_vip_chat_id');
+        localStorage.removeItem('pa_admin_key');
+        
+        setTimeout(() => { window.location.reload(); }, 500);
+      }
+      return response;
+    };
+
     // State variables
     let currentTemplate = 'buy';
     
