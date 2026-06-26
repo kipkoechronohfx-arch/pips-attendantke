@@ -907,7 +907,7 @@
       const token = sessionStorage.getItem('vip_session_token');
       if (token) {
         try {
-          const payload = JSON.parse(atob(token.split('.')[0]));
+          const payload = JSON.parse(atob(token.split('.')[1]));
           const userId = payload.id;
           if (userId) {
             const refLink = `${window.location.origin}${window.location.pathname}?ref=${userId}`;
@@ -1774,8 +1774,8 @@
       try {
         const botRes = await fetch('/api/telegram/bot-username');
         const botData = await botRes.json();
-        if (botData.ok && botData.username) {
-          TELEGRAM_BOT_USERNAME = botData.username;
+        if (botData.ok && botData.botUsername) {
+          TELEGRAM_BOT_USERNAME = botData.botUsername;
         }
       } catch (e) {
         console.log('Using default bot username');
