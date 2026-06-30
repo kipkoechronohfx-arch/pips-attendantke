@@ -642,6 +642,20 @@
         </a>
       </div>
 
+      <!-- No Setup Notification Banner (Hidden if setup exists) -->
+      <div id="noSetupBanner" class="mb-6 p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 flex items-center gap-4 shadow-[0_0_15px_rgba(251,191,36,0.15)] relative overflow-hidden group">
+        <!-- Shine effect -->
+        <div class="absolute top-0 -inset-full h-full w-1/2 z-0 block transform -skew-x-12 bg-gradient-to-r from-transparent to-amber-500/10 opacity-40 animate-[shine_3s_infinite]"></div>
+        
+        <div class="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0 relative z-10 border border-amber-400/20 shadow-[0_0_10px_rgba(251,191,36,0.2)]">
+          <i data-feather="refresh-cw" class="w-6 h-6 text-amber-400 animate-spin"></i>
+        </div>
+        <div class="relative z-10">
+          <h4 class="text-amber-400 font-black text-sm tracking-wide uppercase">Setup Pending</h4>
+          <p class="text-amber-400/80 text-xs mt-0.5">No setup has been posted yet for today. Please wait for admin.</p>
+        </div>
+      </div>
+
       <!-- Today's Setup Section - Always visible, shows placeholder when no image -->
       <div id="todaysSetupSection" class="mb-10">
         <div class="glass-card border border-amber-400/20 rounded-2xl overflow-hidden relative group">
@@ -1960,6 +1974,8 @@
 
           if (data.setup.image) {
             document.getElementById('setupPlaceholder').classList.add('hidden');
+            const noSetupBanner = document.getElementById('noSetupBanner');
+            if (noSetupBanner) noSetupBanner.classList.add('hidden');
             const img  = document.getElementById('todaysSetupImage');
             const dlBtn = document.getElementById('todaysSetupDownload');
             img.src = data.setup.image;
