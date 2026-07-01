@@ -1797,6 +1797,7 @@
       
       socket.on('error', (err) => console.error('Socket error:', err));
     }
+    let TELEGRAM_BOT_USERNAME = 'PipsAttendantBot';
 
     async function checkUserAccess() {
       // Fetch dynamic Telegram bot username
@@ -1848,6 +1849,22 @@
             const daysLeft = Math.ceil((data.user.subscriptionExpiry - now) / (1000 * 60 * 60 * 24));
             document.getElementById('vipExpiryText').textContent = `VIP Access: ${daysLeft} days remaining.`;
             document.getElementById('profileName').value = data.user.name || '';
+            
+            const tgStatus = document.getElementById('telegramLinkStatus');
+            const tgBtnAcc = document.getElementById('telegramLinkBtn');
+            if (tgStatus && tgBtnAcc) {
+              if (data.user.telegramId) {
+                tgStatus.className = 'text-emerald-400 text-[11px] mb-3';
+                tgStatus.innerHTML = '✅ Linked successfully';
+                tgBtnAcc.classList.add('hidden');
+              } else {
+                tgStatus.className = 'text-gray-400 text-[11px] mb-3';
+                tgStatus.innerHTML = 'Not linked yet';
+                tgBtnAcc.classList.remove('hidden');
+                tgBtnAcc.href = `https://t.me/${TELEGRAM_BOT_USERNAME}?start=${data.user.id}`;
+              }
+            }
+
             updateDownloadLinks();
             loadTodaysSetup();
             loadTodaysSetupResults();

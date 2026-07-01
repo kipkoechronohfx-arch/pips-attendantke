@@ -57,7 +57,7 @@ async function registerTelegramWebhook() {
     console.warn('[Telegram Bot] No token or URL set — skipping webhook registration.');
     return;
   }
-  const webhookUrl = `${BASE_URL}/api/telegram/webhook`; // I'll change this to /api/telegram/webhook in routes
+  const webhookUrl = `${BASE_URL}/telegram-webhook`;
   try {
     const res = await fetch(`https://api.telegram.org/bot${TOKEN}/setWebhook`, {
       method: 'POST',
