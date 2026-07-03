@@ -115,7 +115,7 @@ body {
   background-size: cover;
   background-position: center bottom;
   background-repeat: no-repeat;
-  opacity: 0.38;
+  opacity: 0.8;
   will-change: transform;
   pointer-events: none;
 }
@@ -124,7 +124,7 @@ body {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(180deg, rgba(5,5,5,0.85) 0%, rgba(5,5,5,0.4) 40%, rgba(5,5,5,0.3) 70%, rgba(5,5,5,0.95) 100%);
+  background: linear-gradient(180deg, rgba(5,5,5,0.7) 0%, rgba(5,5,5,0.1) 40%, rgba(5,5,5,0.1) 70%, rgba(5,5,5,0.95) 100%);
   pointer-events: none;
 }
 
