@@ -99,7 +99,7 @@
                 <a href="#hero" class="hover:text-white transition-colors">Home</a>
                 <a href="#services" class="hover:text-white transition-colors">Signals</a>
                 <a href="#results" class="hover:text-white transition-colors">Results</a>
-                <a href="#calculator" class="hover:text-white transition-colors">Calculator</a>
+                <a href="#" onclick="openCalculatorModal(event)" class="hover:text-white transition-colors">Calculator</a>
                 <a href="#community" class="hover:text-white transition-colors">Community</a>
                 <a href="#vip" class="hover:text-white transition-colors">VIP</a>
             </div>
@@ -121,7 +121,7 @@
                 <a href="#hero" class="mobile-link text-gray-300 hover:text-white transition-colors">Home</a>
                 <a href="#services" class="mobile-link text-gray-300 hover:text-white transition-colors">Signals</a>
                 <a href="#results" class="mobile-link text-gray-300 hover:text-white transition-colors">Results</a>
-                <a href="#calculator" class="mobile-link text-gray-300 hover:text-white transition-colors">Calculator</a>
+                <a href="#" onclick="openCalculatorModal(event)" class="mobile-link text-gray-300 hover:text-white transition-colors">Calculator</a>
                 <a href="#community" class="mobile-link text-gray-300 hover:text-white transition-colors">Community</a>
                 <a href="#vip" class="mobile-link text-gold transition-colors">VIP Access</a>
                 <a href="premium.html" class="btn-gold px-6 py-3 rounded-full text-center mt-2 text-primary font-bold">Join VIP</a>
@@ -389,22 +389,23 @@
         </div>
     </section>
 
-    <!-- 5.5 LIVE RISK CALCULATOR -->
-    <section id="calculator" class="py-24 px-6 bg-black/40 border-y border-white/5 relative z-10 backdrop-blur-sm">
-        <div class="max-w-4xl mx-auto">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Risk Calculator</h2>
-                <p class="text-gray-400">Calculate your exact position size before entering any trade. Professional risk management made simple.</p>
-            </div>
+    <!-- 5.5 LIVE RISK CALCULATOR MODAL -->
+    <div id="calculatorModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md opacity-0 transition-opacity duration-300">
+        <div class="max-w-4xl w-full max-h-[90vh] overflow-y-auto hide-scrollbar custom-scrollbar relative rounded-3xl">
+            
+            <!-- Close Button -->
+            <button onclick="closeCalculatorModal()" class="absolute top-4 right-4 z-10 w-10 h-10 bg-black/50 hover:bg-red-500/80 hover:text-white rounded-full flex items-center justify-center transition-colors border border-white/10 text-gray-400">
+                <i data-feather="x" class="w-5 h-5"></i>
+            </button>
 
-            <div class="glass-card border border-gold/20 rounded-3xl overflow-hidden shadow-[0_0_30px_rgba(212,175,55,0.05)]">
-                <div class="bg-gradient-to-r from-gold/10 to-transparent p-6 border-b border-white/5 flex items-center gap-4">
+            <div class="glass-card border border-gold/20 rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(212,175,55,0.1)] bg-[#050505]/95">
+                <div class="bg-gradient-to-r from-gold/10 to-transparent p-6 border-b border-white/5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                     <div class="p-3 bg-gold/20 rounded-xl">
                         <i data-feather="crosshair" class="w-6 h-6 text-gold"></i>
                     </div>
                     <div>
                         <h3 class="text-white font-bold text-xl leading-tight">Position Size Calculator</h3>
-                        <p class="text-xs text-gray-400 mt-1">Free tool for all traders</p>
+                        <p class="text-xs text-gray-400 mt-1">Calculate your exact position size before entering any trade.</p>
                     </div>
                 </div>
 
@@ -498,7 +499,7 @@
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
     <!-- 6. TESTIMONIALS (Carousel via CSS snap) -->
     <section class="py-24 px-6 border-y border-white/5">
@@ -848,6 +849,25 @@
         });
 
         // ── Risk / Lot Size Calculator ───────────────────────────────
+        function openCalculatorModal(e) {
+            if (e) e.preventDefault();
+            const modal = document.getElementById('calculatorModal');
+            modal.classList.remove('hidden');
+            // small delay to allow display:block before fading in
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+            }, 10);
+            feather.replace();
+        }
+
+        function closeCalculatorModal() {
+            const modal = document.getElementById('calculatorModal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
         function runRiskCalc() {
             const balance  = parseFloat(document.getElementById('rc_balance').value);
             const risk     = parseFloat(document.getElementById('rc_risk').value);
