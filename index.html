@@ -82,6 +82,19 @@
                 <i data-feather="menu"></i>
             </button>
         </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="md:hidden hidden bg-black/95 backdrop-blur-xl border-t border-white/5 absolute top-full left-0 w-full transition-all duration-300">
+            <div class="flex flex-col px-6 py-6 gap-6 text-sm font-medium">
+                <a href="#hero" class="mobile-link text-gray-300 hover:text-white transition-colors">Home</a>
+                <a href="#services" class="mobile-link text-gray-300 hover:text-white transition-colors">Signals</a>
+                <a href="#results" class="mobile-link text-gray-300 hover:text-white transition-colors">Results</a>
+                <a href="#services" class="mobile-link text-gray-300 hover:text-white transition-colors">Tools</a>
+                <a href="#community" class="mobile-link text-gray-300 hover:text-white transition-colors">Community</a>
+                <a href="#vip" class="mobile-link text-gold transition-colors">VIP Access</a>
+                <a href="premium.html" class="btn-gold px-6 py-3 rounded-full text-center mt-2 text-primary font-bold">Join VIP</a>
+            </div>
+        </div>
     </nav>
 
     <!-- 2. HERO SECTION -->
@@ -546,6 +559,21 @@
                 nav.classList.remove('bg-black/50', 'backdrop-blur-xl', 'shadow-lg');
                 nav.classList.add('border-white/5');
             }
+        });
+
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileLinks = document.querySelectorAll('.mobile-link');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
         });
     </script>
 </body>
