@@ -99,7 +99,7 @@
                 <a href="#hero" class="hover:text-white transition-colors">Home</a>
                 <a href="#services" class="hover:text-white transition-colors">Signals</a>
                 <a href="#results" class="hover:text-white transition-colors">Results</a>
-                <a href="#" onclick="openCalculatorModal(event)" class="hover:text-white transition-colors">Calculator</a>
+                <a href="premium.html" class="hover:text-white transition-colors">Calculator</a>
                 <a href="#community" class="hover:text-white transition-colors">Community</a>
                 <a href="#vip" class="hover:text-white transition-colors">VIP</a>
             </div>
@@ -121,7 +121,7 @@
                 <a href="#hero" class="mobile-link text-gray-300 hover:text-white transition-colors">Home</a>
                 <a href="#services" class="mobile-link text-gray-300 hover:text-white transition-colors">Signals</a>
                 <a href="#results" class="mobile-link text-gray-300 hover:text-white transition-colors">Results</a>
-                <a href="#" onclick="openCalculatorModal(event)" class="mobile-link text-gray-300 hover:text-white transition-colors">Calculator</a>
+                <a href="premium.html" class="mobile-link text-gray-300 hover:text-white transition-colors">Calculator</a>
                 <a href="#community" class="mobile-link text-gray-300 hover:text-white transition-colors">Community</a>
                 <a href="#vip" class="mobile-link text-gold transition-colors">VIP Access</a>
                 <a href="premium.html" class="btn-gold px-6 py-3 rounded-full text-center mt-2 text-primary font-bold">Join VIP</a>
@@ -274,7 +274,7 @@
                     </div>
                     <h3 class="text-2xl font-bold text-white mb-3">Risk Calculator</h3>
                     <p class="text-gray-400 mb-6 leading-relaxed">Calculate exact position sizes based on your account balance, risk percentage, and stop loss distance in pips.</p>
-                    <a href="#" class="inline-flex items-center gap-2 text-white font-medium text-sm hover:text-gold transition-colors">
+                    <a href="premium.html" class="inline-flex items-center gap-2 text-white font-medium text-sm hover:text-gold transition-colors">
                         Use Calculator <i data-feather="arrow-right" class="w-4 h-4"></i>
                     </a>
                 </div>
@@ -398,8 +398,9 @@
                 <i data-feather="x" class="w-5 h-5"></i>
             </button>
 
-            <div class="glass-card border border-gold/20 rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(212,175,55,0.1)] bg-[#050505]/95">
-                <div class="bg-gradient-to-r from-gold/10 to-transparent p-6 border-b border-white/5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div class="glass-card border border-gold/30 rounded-3xl overflow-hidden shadow-[0_20px_60px_rgba(212,175,55,0.15)] bg-[#050505]/95 transition-transform duration-500 hover:shadow-[0_20px_80px_rgba(212,175,55,0.25)] relative group">
+                <div class="absolute -top-32 -right-32 w-64 h-64 bg-gold/10 rounded-full blur-[80px] pointer-events-none group-hover:bg-gold/20 transition-all duration-700"></div>
+                <div class="bg-gradient-to-r from-gold/15 to-transparent p-6 border-b border-white/5 flex flex-col sm:flex-row items-start sm:items-center gap-4 relative z-10">
                     <div class="p-3 bg-gold/20 rounded-xl">
                         <i data-feather="crosshair" class="w-6 h-6 text-gold"></i>
                     </div>
@@ -459,34 +460,36 @@
                         <!-- Results Panel -->
                         <div class="flex flex-col gap-4">
                             <div class="grid grid-cols-2 gap-4">
-                                <div class="bg-black/50 border border-white/5 rounded-2xl p-5 text-center flex flex-col justify-center">
-                                    <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-2 font-semibold">Amount at Risk</p>
-                                    <p class="text-2xl font-black text-red-400">$<span id="rc_riskAmount">—</span></p>
+                                <div class="bg-black/60 backdrop-blur-md border border-white/10 rounded-2xl p-5 text-center flex flex-col justify-center hover:border-red-500/30 transition-all duration-300 hover:shadow-[0_0_20px_rgba(248,113,113,0.1)] group/risk relative overflow-hidden">
+                                    <div class="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent opacity-0 group-hover/risk:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+                                    <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-2 font-semibold group-hover/risk:text-red-400/70 transition-colors relative z-10">Amount at Risk</p>
+                                    <p class="text-2xl font-black text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.3)] relative z-10">$<span id="rc_riskAmount">—</span></p>
                                 </div>
-                                <div class="bg-black/50 border border-gold/30 rounded-2xl p-5 text-center flex flex-col justify-center relative overflow-hidden" style="box-shadow: 0 0 20px rgba(212,175,55,0.1);">
-                                    <div class="absolute inset-0 bg-gold/5"></div>
+                                <div class="bg-black/60 backdrop-blur-md border border-gold/40 rounded-2xl p-5 text-center flex flex-col justify-center relative overflow-hidden transition-all duration-500 hover:shadow-[0_0_30px_rgba(212,175,55,0.2)] hover:scale-[1.02] hover:border-gold/60 group/lot">
+                                    <div class="absolute inset-0 bg-gradient-to-br from-gold/10 to-transparent group-hover/lot:opacity-80 transition-opacity duration-500"></div>
                                     <p class="text-[10px] text-gold uppercase tracking-widest mb-2 font-semibold relative z-10">Recommended Lot</p>
-                                    <p class="text-4xl font-black text-white relative z-10" id="rc_lots">—</p>
+                                    <p class="text-4xl font-black text-white relative z-10 drop-shadow-[0_0_12px_rgba(255,255,255,0.2)] group-hover/lot:text-gold transition-colors duration-300" id="rc_lots">—</p>
                                 </div>
                             </div>
 
-                            <div class="bg-surface/50 border border-white/5 rounded-2xl p-6 space-y-3 flex-1 flex flex-col justify-center">
-                                <div class="flex justify-between items-center text-sm">
-                                    <span class="text-gray-500 font-medium">Account Balance</span>
-                                    <span class="text-white font-mono" id="rc_disp_balance">—</span>
+                            <div class="relative bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-6 space-y-3 flex-1 flex flex-col justify-center overflow-hidden hover:border-gold/30 transition-all duration-500 group/results">
+                                <div class="absolute inset-0 bg-gradient-to-br from-gold/5 to-transparent opacity-0 group-hover/results:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+                                <div class="flex justify-between items-center text-sm relative z-10">
+                                    <span class="text-gray-400 font-medium group-hover/results:text-gray-300 transition-colors">Account Balance</span>
+                                    <span class="text-white font-mono tracking-wider" id="rc_disp_balance">—</span>
                                 </div>
-                                <div class="flex justify-between items-center text-sm">
-                                    <span class="text-gray-500 font-medium">Risk Percentage</span>
-                                    <span class="text-white font-mono" id="rc_disp_risk">—</span>
+                                <div class="flex justify-between items-center text-sm relative z-10">
+                                    <span class="text-gray-400 font-medium group-hover/results:text-gray-300 transition-colors">Risk Percentage</span>
+                                    <span class="text-white font-mono tracking-wider" id="rc_disp_risk">—</span>
                                 </div>
-                                <div class="flex justify-between items-center text-sm">
-                                    <span class="text-gray-500 font-medium">Stop Loss Size</span>
-                                    <span class="text-white font-mono" id="rc_disp_sl">—</span>
+                                <div class="flex justify-between items-center text-sm relative z-10">
+                                    <span class="text-gray-400 font-medium group-hover/results:text-gray-300 transition-colors">Stop Loss Size</span>
+                                    <span class="text-white font-mono tracking-wider" id="rc_disp_sl">—</span>
                                 </div>
-                                <div class="h-px bg-white/10 my-2"></div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-300 font-bold">Optimal Position</span>
-                                    <span class="text-gold font-black text-lg font-mono" id="rc_disp_lots">—</span>
+                                <div class="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent my-3 relative z-10"></div>
+                                <div class="flex justify-between items-center relative z-10">
+                                    <span class="text-gray-200 font-bold tracking-wide">Optimal Position</span>
+                                    <span class="text-gold font-black text-xl font-mono tracking-wider drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]" id="rc_disp_lots">—</span>
                                 </div>
                             </div>
 
