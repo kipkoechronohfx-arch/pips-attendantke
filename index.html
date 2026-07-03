@@ -450,7 +450,7 @@
                                 </select>
                             </div>
 
-                            <button onclick="runRiskCalc()"
+                            <button type="button" onclick="runRiskCalc()"
                                 class="w-full py-4 rounded-xl font-bold text-primary flex items-center justify-center gap-2 transition-all duration-300 hover:brightness-110 active:scale-95 shadow-[0_0_20px_rgba(212,175,55,0.2)]"
                                 style="background: linear-gradient(135deg, #D4AF37, #E5C158);">
                                 <i data-feather="calculator" class="w-5 h-5"></i> Calculate Lot Size
@@ -493,7 +493,7 @@
                                 </div>
                             </div>
 
-                            <div id="rc_warning" class="hidden p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-start gap-3">
+                            <div id="rc_warning" style="display: none;" class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-start gap-3">
                                 <i data-feather="alert-triangle" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
                                 <span id="rc_warning_text" class="leading-relaxed"></span>
                             </div>
@@ -908,36 +908,41 @@
         }
 
         function runRiskCalc() {
-            const balance  = parseFloat(document.getElementById('rc_balance').value);
-            const risk     = parseFloat(document.getElementById('rc_risk').value);
-            const sl       = parseFloat(document.getElementById('rc_sl').value);
-            const pipValue = parseFloat(document.getElementById('rc_pair').value);
-            const warnEl   = document.getElementById('rc_warning');
-            const warnTxt  = document.getElementById('rc_warning_text');
+            try {
+                const balance  = parseFloat(document.getElementById('rc_balance').value);
+                const risk     = parseFloat(document.getElementById('rc_risk').value);
+                const sl       = parseFloat(document.getElementById('rc_sl').value);
+                const pipValue = parseFloat(document.getElementById('rc_pair').value);
+                const warnEl   = document.getElementById('rc_warning');
+                const warnTxt  = document.getElementById('rc_warning_text');
 
-            warnEl.classList.add('hidden');
+                warnEl.style.display = 'none';
 
-            if (isNaN(balance) || isNaN(risk) || isNaN(sl) || balance <= 0 || risk <= 0 || sl <= 0) {
-                warnTxt.textContent = 'Please enter valid numbers for all fields.';
-                warnEl.classList.remove('hidden');
-                feather.replace();
-                return;
+                if (isNaN(balance) || isNaN(risk) || isNaN(sl) || balance <= 0 || risk <= 0 || sl <= 0) {
+                    warnTxt.textContent = 'Please enter valid numbers for all fields.';
+                    warnEl.style.display = 'flex';
+                    feather.replace();
+                    return;
+                }
+                if (risk > 5) {
+                    warnTxt.textContent = 'Warning: risking more than 5% per trade is extremely dangerous.';
+                    warnEl.style.display = 'flex';
+                    feather.replace();
+                }
+
+                const riskAmount = balance * (risk / 100);
+                const lotSize    = riskAmount / (sl * pipValue);
+
+                document.getElementById('rc_riskAmount').textContent = riskAmount.toFixed(2);
+                document.getElementById('rc_lots').textContent       = lotSize.toFixed(2);
+                document.getElementById('rc_disp_balance').textContent = `$${balance.toLocaleString()}`;
+                document.getElementById('rc_disp_risk').textContent    = `${risk}%`;
+                document.getElementById('rc_disp_sl').textContent      = `${sl} pips`;
+                document.getElementById('rc_disp_lots').textContent    = lotSize.toFixed(2);
+            } catch (err) {
+                alert("Calculator Error: " + err.message);
+                console.error(err);
             }
-            if (risk > 5) {
-                warnTxt.textContent = 'Warning: risking more than 5% per trade is extremely dangerous.';
-                warnEl.classList.remove('hidden');
-                feather.replace();
-            }
-
-            const riskAmount = balance * (risk / 100);
-            const lotSize    = riskAmount / (sl * pipValue);
-
-            document.getElementById('rc_riskAmount').textContent = riskAmount.toFixed(2);
-            document.getElementById('rc_lots').textContent       = lotSize.toFixed(2);
-            document.getElementById('rc_disp_balance').textContent = `$${balance.toLocaleString()}`;
-            document.getElementById('rc_disp_risk').textContent    = `${risk}%`;
-            document.getElementById('rc_disp_sl').textContent      = `${sl} pips`;
-            document.getElementById('rc_disp_lots').textContent    = lotSize.toFixed(2);
         }
     </script>
     <!-- Testimonials Auto-Scroll Script -->
