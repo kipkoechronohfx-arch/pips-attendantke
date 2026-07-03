@@ -46,7 +46,7 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-primary text-gray-300 font-sans antialiased selection:bg-gold/30 selection:text-white pt-[46px]">
+<body class="bg-primary text-gray-300 font-sans antialiased selection:bg-gold/30 selection:text-white pt-[72px] md:pt-[46px]">
 
     <!-- Header Ticker -->
     <div class="fixed top-0 left-0 w-full z-[100]">
@@ -78,14 +78,14 @@
     <canvas id="bgCanvas" class="fixed inset-0 z-[-1] pointer-events-none opacity-25"></canvas>
 
     <!-- Theme Toggle Button -->
-    <div class="fixed top-[60px] right-4 z-[90]">
+    <div class="fixed top-[86px] md:top-[60px] right-4 z-[90]">
         <button onclick="toggleTheme()" class="flex items-center justify-center w-10 h-10 rounded-full glass-card border border-white/10 hover:border-gold/50 hover:bg-gold/10 hover:text-gold text-gray-400 transition duration-300 cursor-pointer shadow-lg" title="Toggle Theme">
             <i data-feather="sun" id="themeIcon" class="w-5 h-5"></i>
         </button>
     </div>
 
     <!-- 1. STICKY NAVBAR -->
-    <nav class="fixed top-[46px] left-0 w-full z-50 glass-panel border-b border-white/5 transition-all duration-300" id="navbar">
+    <nav class="fixed top-[72px] md:top-[46px] left-0 w-full z-50 glass-panel border-b border-white/5 transition-all duration-300" id="navbar">
         <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
             <a href="index.html" class="flex items-center gap-3 group">
                 <div class="w-10 h-10 rounded-full bg-surface border border-white/10 flex items-center justify-center overflow-hidden transition-transform group-hover:scale-105">
