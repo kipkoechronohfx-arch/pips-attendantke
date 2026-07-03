@@ -95,6 +95,21 @@ body {
   scrollbar-width: none;
 }
 
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.3);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.6);
+}
+
 /* Horizontal Snap Scrolling */
 .snap-x-mandatory {
   scroll-snap-type: x mandatory;
@@ -109,14 +124,16 @@ body {
 /* Parallax Background */
 .parallax-bg {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   z-index: -2;
   background-image: url('dubai_bg.png');
   background-size: cover;
   background-position: center bottom;
   background-repeat: no-repeat;
   opacity: 0.8;
-  will-change: transform;
   pointer-events: none;
 }
 

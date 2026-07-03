@@ -1,107 +1,131 @@
-<!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+﻿<!DOCTYPE html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIP Access | Pips Attendant</title>
-    
-    <meta name="theme-color" content="#050505">
-    <link rel="icon" type="image/png" href="avatar.png">
-    
-    <!-- Google Fonts: Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#050505',
-                        secondary: 'rgba(255,255,255,0.04)',
-                        gold: '#D4AF37',
-                        'gold-hover': '#E5C158',
-                        surface: 'rgba(255,255,255,0.02)',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    }
-                }
-            }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VIP Premium Resources | Pips_attendant</title>
+  <meta name="description" content="Exclusive trading strategies, indicators and PDF guides for VIP members of Pips_attendant.">
+  <link rel="icon" type="image/png" href="avatar.png">
+  
+  <!-- PWA & Mobile Meta Tags -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0a0f1c">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PipsAttendant">
+  <link rel="apple-touch-icon" href="/avatar.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'neon-blue': '#f59e0b',
+            'neon-purple': '#d97706',
+            'dark-navy': '#0d0800',
+          }
         }
-    </script>
-    
-    <script src="https://unpkg.com/feather-icons"></script>
-    <link rel="stylesheet" href="style.css">
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { background-color: #0d0800; font-family: 'Inter', sans-serif; }
+    .glass-card {
+      backdrop-filter: blur(16px);
+      background: rgba(255,255,255,0.03);
+      border-color: rgba(255,255,255,0.08);
+      box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37);
+    }
+    .premium-card {
+      background: linear-gradient(135deg, rgba(251,191,36,0.05), rgba(176,38,255,0.05));
+      border-color: rgba(251,191,36,0.15);
+      transition: all 0.3s ease;
+    }
+    .premium-card:hover {
+      border-color: rgba(251,191,36,0.4);
+      box-shadow: 0 0 20px rgba(251,191,36,0.15);
+      transform: translateY(-2px);
+    }
+    #gatePanel, #contentPanel { transition: opacity 0.4s ease; }
+  </style>
 </head>
-<body class="bg-primary text-gray-300 font-sans antialiased min-h-screen flex flex-col relative selection:bg-gold/30 selection:text-white pt-[46px]">
+<body class="text-white min-h-screen relative overflow-x-hidden selection:bg-amber-400/20">
 
-    <!-- Parallax Background -->
-    <div class="parallax-bg"></div>
-    <div class="gradient-overlay"></div>
+  <!-- Dubai Golden Background Image -->
+  <div class="fixed inset-0 z-0 pointer-events-none" style="
+    background-image: url('dubai_bg.png');
+    background-size: cover;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    opacity: 0.38;
+  "></div>
 
-    <!-- NAVBAR -->
-    <nav class="fixed top-0 left-0 w-full z-50 glass-panel border-b border-white/5 transition-all duration-300" id="navbar">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="index.html" class="flex items-center gap-3 group">
-                <div class="w-10 h-10 rounded-full bg-surface border border-white/10 flex items-center justify-center overflow-hidden transition-transform group-hover:scale-105">
-                    <img src="avatar.png" alt="Logo" class="w-full h-full object-cover">
-                </div>
-                <span class="text-white font-bold text-lg tracking-tight">Pips Attendant</span>
-            </a>
-            <a href="index.html" class="text-sm font-medium text-gray-400 hover:text-white transition-colors flex items-center gap-2">
-                <i data-feather="arrow-left" class="w-4 h-4"></i> Return to Home
-            </a>
-        </div>
-    </nav>
+  <!-- Dark golden base overlay -->
+  <div class="fixed inset-0 z-0 pointer-events-none" style="background: linear-gradient(180deg, rgba(13,8,0,0.82) 0%, rgba(13,8,0,0.5) 40%, rgba(13,8,0,0.45) 70%, rgba(13,8,0,0.9) 100%);"></div>
 
+  <!-- Background Glow -->
+  <div class="fixed inset-0 z-0 pointer-events-none opacity-70">
+    <div class="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full mix-blend-screen animate-pulse" style="background: radial-gradient(circle, rgba(245,158,11,0.28) 0%, transparent 70%); filter: blur(120px);"></div>
+    <div class="absolute bottom-[-10%] left-[-10%] w-[55%] h-[50%] rounded-full mix-blend-screen animate-pulse" style="background: radial-gradient(circle, rgba(217,119,6,0.22) 0%, transparent 70%); filter: blur(100px); animation-delay: 1.5s"></div>
+    <div class="absolute top-[40%] left-[35%] w-[30%] h-[25%] rounded-full mix-blend-screen" style="background: radial-gradient(circle, rgba(251,191,36,0.12) 0%, transparent 70%); filter: blur(80px);"></div>
+  </div>
 
-    <!-- MAIN CONTENT AND SCRIPTS FROM OLD -->
-    <div class="pt-24"></div>
-    <main class="container mx-auto px-4 py-12 max-w-2xl relative z-10">
+  <main class="container mx-auto px-4 py-12 max-w-2xl relative z-10">
+
+    <!-- Header Nav -->
+    <div class="mb-8 flex justify-between items-center">
+      <a href="index.html" class="inline-flex items-center gap-2 text-gray-400 hover:text-amber-400 transition text-sm font-medium">
+        <i data-feather="arrow-left" class="w-4 h-4"></i>
+        Back to Home
+      </a>
+      <button onclick="toggleTheme()" class="flex items-center justify-center w-8 h-8 rounded-full bg-white/5 border border-white/10 hover:border-amber-400/50 hover:bg-amber-400/10 hover:text-amber-400 text-gray-400 transition duration-300 cursor-pointer" title="Toggle Theme">
+        <i id="themeIcon" data-feather="sun" class="w-4 h-4"></i>
+      </button>
+    </div>
 
     <!-- Header -->
     <div class="text-center mb-10">
-      <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-tr from-gold-hover to-yellow-300 text-4xl mb-5 shadow-[0_0_30px_rgba(251,191,36,0.3)]">🔒</div>
-      <h1 class="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-gold via-yellow-300 to-gold mb-3">VIP Resources</h1>
+      <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-tr from-amber-500 to-yellow-300 text-4xl mb-5 shadow-[0_0_30px_rgba(251,191,36,0.3)]">≡ƒöÆ</div>
+      <h1 class="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 mb-3">VIP Resources</h1>
       <p class="text-gray-400 text-sm max-w-sm mx-auto">Exclusive strategies, indicators, and guides reserved for Pips_attendant VIP members.</p>
     </div>
 
     <!-- AUTH PANEL -->
     <div id="authPanel">
-      <div class="glass-card border border-gold/20 rounded-2xl p-8 max-w-sm mx-auto">
+      <div class="glass-card border border-amber-400/20 rounded-2xl p-8 max-w-sm mx-auto">
         <div class="flex gap-2 mb-6">
-          <button id="tabLogin" onclick="switchAuthTab('login')" class="flex-1 py-2 rounded-xl text-xs font-bold border border-gold-hover/40 bg-gold-hover/10 text-gold transition cursor-pointer">Login</button>
-          <button id="tabRegister" onclick="switchAuthTab('register')" class="flex-1 py-2 rounded-xl text-xs font-bold border border-white/5 bg-white/5 text-gray-400 hover:text-gold transition cursor-pointer">Register</button>
+          <button id="tabLogin" onclick="switchAuthTab('login')" class="flex-1 py-2 rounded-xl text-xs font-bold border border-amber-500/40 bg-amber-500/10 text-amber-400 transition cursor-pointer">Login</button>
+          <button id="tabRegister" onclick="switchAuthTab('register')" class="flex-1 py-2 rounded-xl text-xs font-bold border border-white/5 bg-white/5 text-gray-400 hover:text-amber-400 transition cursor-pointer">Register</button>
         </div>
 
         <form id="authForm" onsubmit="return false;" class="space-y-4">
           <div id="nameFieldGroup" class="hidden">
             <label class="block text-[10px] text-gray-500 mb-1">Full Name</label>
-            <input type="text" id="authName" placeholder="e.g. John Doe" class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-gold/50 focus:outline-none transition" />
+            <input type="text" id="authName" placeholder="e.g. John Doe" class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
           </div>
           <div>
             <label class="block text-[10px] text-gray-500 mb-1">Email Address</label>
-            <input type="email" id="authEmail" placeholder="you@email.com" class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-gold/50 focus:outline-none transition" />
+            <input type="email" id="authEmail" placeholder="you@email.com" class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
           </div>
           <div class="relative">
             <div class="flex justify-between items-center mb-1">
               <label class="block text-[10px] text-gray-500">Password</label>
-              <button type="button" id="forgotPasswordLink" onclick="showForgotPasswordModal()" class="text-[10px] text-gold hover:underline bg-transparent border-none cursor-pointer">Forgot Password?</button>
+              <button type="button" id="forgotPasswordLink" onclick="showForgotPasswordModal()" class="text-[10px] text-amber-400 hover:underline bg-transparent border-none cursor-pointer">Forgot Password?</button>
             </div>
             <div class="relative">
-              <input type="password" id="authPassword" placeholder="••••••••" class="w-full px-4 py-3 pr-10 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-gold/50 focus:outline-none transition" />
-              <button type="button" onclick="togglePasswordVisibility('authPassword', 'authPwIcon')" class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gold transition cursor-pointer">
+              <input type="password" id="authPassword" placeholder="ΓÇóΓÇóΓÇóΓÇóΓÇóΓÇóΓÇóΓÇó" class="w-full px-4 py-3 pr-10 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
+              <button type="button" onclick="togglePasswordVisibility('authPassword', 'authPwIcon')" class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-amber-400 transition cursor-pointer">
                 <i data-feather="eye" id="authPwIcon" class="w-4 h-4"></i>
               </button>
             </div>
           </div>
           <div id="authError" class="text-rose-400 text-[11px] min-h-[14px]"></div>
-          <button type="button" id="authBtn" onclick="handleAuth(event)" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r from-gold-hover to-yellow-400 text-primary hover:brightness-110 active:scale-95 transition duration-300 cursor-pointer text-sm shadow-[0_0_20px_rgba(251,191,36,0.3)]">
-            Log In 🔓
+          <button type="button" id="authBtn" onclick="handleAuth(event)" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r from-amber-500 to-yellow-400 text-dark-navy hover:brightness-110 active:scale-95 transition duration-300 cursor-pointer text-sm shadow-[0_0_20px_rgba(251,191,36,0.3)]">
+            Log In ≡ƒöô
           </button>
         </form>
       </div>
@@ -109,7 +133,7 @@
 
     <!-- FORGOT PASSWORD MODAL -->
     <div id="forgotPasswordModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-      <div class="glass-card rounded-2xl p-8 max-w-sm w-full mx-4 border border-gold/20 transform scale-95 transition-transform duration-300">
+      <div class="glass-card rounded-2xl p-8 max-w-sm w-full mx-4 border border-amber-400/20 transform scale-95 transition-transform duration-300">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xl font-bold text-white">Reset Password</h2>
           <button onclick="closeForgotPasswordModal()" class="text-gray-400 hover:text-white transition cursor-pointer">
@@ -120,10 +144,10 @@
         <form id="forgotPasswordForm" onsubmit="handleForgotPassword(event)" class="space-y-4">
           <div>
             <label class="block text-[10px] text-gray-500 mb-1">Email Address</label>
-            <input type="email" id="forgotEmail" placeholder="you@email.com" required class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-gold/50 focus:outline-none transition" />
+            <input type="email" id="forgotEmail" placeholder="you@email.com" required class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
           </div>
           <div id="forgotError" class="text-[11px] min-h-[14px]"></div>
-          <button type="submit" id="forgotBtn" class="w-full py-3 rounded-xl font-bold bg-gold text-primary hover:brightness-110 active:scale-95 transition duration-300 cursor-pointer text-sm">
+          <button type="submit" id="forgotBtn" class="w-full py-3 rounded-xl font-bold bg-amber-400 text-dark-navy hover:brightness-110 active:scale-95 transition duration-300 cursor-pointer text-sm">
             Send Reset Link
           </button>
         </form>
@@ -141,7 +165,7 @@
           <div>
             <label class="block text-[10px] text-gray-500 mb-1">New Password</label>
             <div class="relative">
-              <input type="password" id="newResetPassword" placeholder="••••••••" required class="w-full px-4 py-3 pr-10 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-emerald-400/50 focus:outline-none transition" />
+              <input type="password" id="newResetPassword" placeholder="ΓÇóΓÇóΓÇóΓÇóΓÇóΓÇóΓÇóΓÇó" required class="w-full px-4 py-3 pr-10 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-emerald-400/50 focus:outline-none transition" />
               <button type="button" onclick="togglePasswordVisibility('newResetPassword', 'resetPwIcon')" class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-emerald-400 transition cursor-pointer">
                 <i data-feather="eye" id="resetPwIcon" class="w-4 h-4"></i>
               </button>
@@ -161,11 +185,11 @@
       <div class="flex gap-2 max-w-sm mx-auto mb-4">
         <button id="tabMpesa" onclick="switchPayTab('mpesa')"
           class="flex-1 py-2.5 rounded-xl text-xs font-bold border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 transition duration-200 cursor-pointer">
-          📱 M-Pesa
+          ≡ƒô▒ M-Pesa
         </button>
         <button id="tabCrypto" onclick="switchPayTab('crypto')"
-          class="flex-1 py-2.5 rounded-xl text-xs font-bold border border-gold-hover/20 bg-white/5 text-gray-400 hover:border-gold-hover/40 hover:text-gold transition duration-200 cursor-pointer">
-          ₿ Crypto (USDT)
+          class="flex-1 py-2.5 rounded-xl text-xs font-bold border border-amber-500/20 bg-white/5 text-gray-400 hover:border-amber-500/40 hover:text-amber-400 transition duration-200 cursor-pointer">
+          Γé┐ Crypto (USDT)
         </button>
       </div>
 
@@ -224,8 +248,8 @@
           </div>
           
           <div id="mpesaError" class="text-rose-400 text-xs min-h-[16px]"></div>
-          <button onclick="payMpesa()" id="payBtn" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r from-emerald-500 to-emerald-300 text-primary hover:brightness-110 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] active:scale-95 transition duration-300 cursor-pointer text-sm">
-            Pay KES 5,000 via M-Pesa 💸
+          <button onclick="payMpesa()" id="payBtn" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r from-emerald-500 to-emerald-300 text-dark-navy hover:brightness-110 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] active:scale-95 transition duration-300 cursor-pointer text-sm">
+            Pay KES 5,000 via M-Pesa ≡ƒÆ╕
           </button>
         </div>
 
@@ -234,17 +258,17 @@
       <!-- Crypto Panel (hidden by default) -->
       <div id="cryptoPanel" class="hidden max-w-sm mx-auto">
         <!-- Crypto Card -->
-        <div class="glass-card border border-gold/25 rounded-2xl p-6 relative overflow-hidden" style="box-shadow: 0 0 30px rgba(251,191,36,0.08);">
+        <div class="glass-card border border-amber-400/25 rounded-2xl p-6 relative overflow-hidden" style="box-shadow: 0 0 30px rgba(251,191,36,0.08);">
           <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(ellipse at top right, rgba(251,191,36,0.06) 0%, transparent 70%);"></div>
           <div class="relative">
             <div class="flex items-center gap-3 mb-4">
-              <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style="background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.08)); border: 1px solid rgba(251,191,36,0.3);">₿</div>
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style="background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.08)); border: 1px solid rgba(251,191,36,0.3);">Γé┐</div>
               <div>
                 <h2 class="text-white font-bold text-base leading-tight">Pay with Crypto</h2>
-                <p class="text-gold/70 text-[11px] font-medium">USDT — VIP Access</p>
+                <p class="text-amber-400/70 text-[11px] font-medium">USDT ΓÇö VIP Access</p>
               </div>
               <div class="ml-auto text-right">
-                <p id="cryptoPriceDisplay" class="text-2xl font-black text-gold">$50</p>
+                <p id="cryptoPriceDisplay" class="text-2xl font-black text-amber-400">$50</p>
                 <p class="text-gray-500 text-[10px]">USDT</p>
               </div>
             </div>
@@ -254,23 +278,23 @@
               <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">Choose Your Plan</p>
               <div class="grid grid-cols-2 gap-2">
                 <button onclick="selectCryptoPlan('1month')" id="cp-1month"
-                  class="plan-btn-crypto flex flex-col items-center py-2.5 px-1 rounded-xl border border-gold/50 bg-gold/10 text-gold cursor-pointer transition text-center">
+                  class="plan-btn-crypto flex flex-col items-center py-2.5 px-1 rounded-xl border border-amber-400/50 bg-amber-400/10 text-amber-400 cursor-pointer transition text-center">
                   <span class="text-[10px] font-bold">1 Month</span>
                   <span class="text-sm font-black mt-0.5">$50</span>
                 </button>
                 <button onclick="selectCryptoPlan('2months')" id="cp-2months"
-                  class="plan-btn-crypto flex flex-col items-center py-2.5 px-1 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:border-gold/30 cursor-pointer transition text-center">
+                  class="plan-btn-crypto flex flex-col items-center py-2.5 px-1 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:border-amber-400/30 cursor-pointer transition text-center">
                   <span class="text-[10px] font-bold">2 Months</span>
                   <span class="text-sm font-black mt-0.5">$95</span>
                 </button>
                 <button onclick="selectCryptoPlan('3months')" id="cp-3months"
-                  class="plan-btn-crypto flex flex-col items-center py-2.5 px-1 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:border-gold/30 cursor-pointer transition text-center">
+                  class="plan-btn-crypto flex flex-col items-center py-2.5 px-1 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:border-amber-400/30 cursor-pointer transition text-center">
                   <span class="text-[10px] font-bold">3 Months</span>
                   <span class="text-sm font-black mt-0.5">$140</span>
                 </button>
                 <button onclick="selectCryptoPlan('6months')" id="cp-6months"
-                  class="plan-btn-crypto flex flex-col items-center py-2.5 px-1 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:border-gold/30 cursor-pointer transition text-center relative overflow-hidden">
-                  <div class="absolute top-0 right-0 bg-gold text-black text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg">POPULAR</div>
+                  class="plan-btn-crypto flex flex-col items-center py-2.5 px-1 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:border-amber-400/30 cursor-pointer transition text-center relative overflow-hidden">
+                  <div class="absolute top-0 right-0 bg-amber-400 text-black text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg">POPULAR</div>
                   <span class="text-[10px] font-bold">6 Months</span>
                   <span class="text-sm font-black mt-0.5">$250</span>
                 </button>
@@ -281,25 +305,25 @@
             <div class="mb-4">
               <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2">Select Network</label>
               <div class="flex gap-2">
-                <button id="netTRC20" onclick="selectNetwork('TRC20')" class="flex-1 py-2 rounded-lg text-xs font-bold border border-gold/40 bg-gold/10 text-gold transition cursor-pointer">TRC20 (TRON)</button>
-                <button id="netBEP20" onclick="selectNetwork('BEP20')" class="flex-1 py-2 rounded-lg text-xs font-bold border border-white/10 bg-white/5 text-gray-400 hover:border-gold/30 hover:text-amber-300 transition cursor-pointer">BEP20 (BSC)</button>
-                <button id="netERC20" onclick="selectNetwork('ERC20')" class="flex-1 py-2 rounded-lg text-xs font-bold border border-white/10 bg-white/5 text-gray-400 hover:border-gold/30 hover:text-amber-300 transition cursor-pointer">ERC20 (ETH)</button>
+                <button id="netTRC20" onclick="selectNetwork('TRC20')" class="flex-1 py-2 rounded-lg text-xs font-bold border border-amber-400/40 bg-amber-400/10 text-amber-400 transition cursor-pointer">TRC20 (TRON)</button>
+                <button id="netBEP20" onclick="selectNetwork('BEP20')" class="flex-1 py-2 rounded-lg text-xs font-bold border border-white/10 bg-white/5 text-gray-400 hover:border-amber-400/30 hover:text-amber-300 transition cursor-pointer">BEP20 (BSC)</button>
+                <button id="netERC20" onclick="selectNetwork('ERC20')" class="flex-1 py-2 rounded-lg text-xs font-bold border border-white/10 bg-white/5 text-gray-400 hover:border-amber-400/30 hover:text-amber-300 transition cursor-pointer">ERC20 (ETH)</button>
               </div>
             </div>
 
             <!-- Wallet Address Box -->
             <div class="mb-1">
               <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2">Send to This Address</label>
-              <div class="relative bg-black/50 border border-gold/20 rounded-xl p-3.5 flex items-center gap-3" style="box-shadow: inset 0 0 12px rgba(251,191,36,0.03);">
-                <div class="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center flex-shrink-0">
-                  <i data-feather="credit-card" class="w-4 h-4 text-gold"></i>
+              <div class="relative bg-black/50 border border-amber-400/20 rounded-xl p-3.5 flex items-center gap-3" style="box-shadow: inset 0 0 12px rgba(251,191,36,0.03);">
+                <div class="w-8 h-8 rounded-lg bg-amber-400/10 flex items-center justify-center flex-shrink-0">
+                  <i data-feather="credit-card" class="w-4 h-4 text-amber-400"></i>
                 </div>
                 <p id="cryptoWalletAddress" class="text-amber-300 font-mono text-[11px] leading-snug break-all flex-1 select-all">TF3xCKAFGBJKvxPtAqHqF5oQ7Lm2PzYsVN</p>
-                <button onclick="copyCryptoAddress()" id="copyAddrBtn" class="flex-shrink-0 p-1.5 rounded-lg bg-gold/10 border border-gold/20 hover:bg-gold/20 transition cursor-pointer" title="Copy Address">
-                  <i data-feather="copy" class="w-3.5 h-3.5 text-gold"></i>
+                <button onclick="copyCryptoAddress()" id="copyAddrBtn" class="flex-shrink-0 p-1.5 rounded-lg bg-amber-400/10 border border-amber-400/20 hover:bg-amber-400/20 transition cursor-pointer" title="Copy Address">
+                  <i data-feather="copy" class="w-3.5 h-3.5 text-amber-400"></i>
                 </button>
               </div>
-              <p id="cryptoNetworkNote" class="text-gray-500 text-[10px] mt-1.5 text-center">⚠️ Only send USDT on the <span class="text-gold font-bold">TRC20 (TRON)</span> network to this address</p>
+              <p id="cryptoNetworkNote" class="text-gray-500 text-[10px] mt-1.5 text-center">ΓÜá∩╕Å Only send USDT on the <span class="text-amber-400 font-bold">TRC20 (TRON)</span> network to this address</p>
             </div>
 
             <!-- Warning Banner -->
@@ -315,25 +339,25 @@
             <div class="space-y-3">
               <div>
                 <label class="block text-[10px] text-gray-500 mb-1">Transaction Hash (TX ID)</label>
-                <input type="text" id="cryptoTxHash" placeholder="e.g. 0xabc123..." class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-gold/50 focus:outline-none transition font-mono" autocomplete="off" spellcheck="false" />
+                <input type="text" id="cryptoTxHash" placeholder="e.g. 0xabc123..." class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-amber-400/50 focus:outline-none transition font-mono" autocomplete="off" spellcheck="false" />
               </div>
 
               <div>
                 <label class="block text-[10px] text-gray-500 mb-1">Telegram Username or Email</label>
-                <input type="text" id="cryptoContact" placeholder="Where should we send your code?" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-gold/50 focus:outline-none transition" />
+                <input type="text" id="cryptoContact" placeholder="Where should we send your code?" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-amber-400/50 focus:outline-none transition" />
               </div>
 
               <div id="cryptoPromoContainer" class="hidden flex gap-2 mt-2">
                 <input type="text" id="cryptoPromo" placeholder="Promo Code (Optional)"
-                  class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-gold/50 focus:outline-none transition font-mono uppercase tracking-wider" />
-                <button onclick="applyPromo('crypto')" type="button" class="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-gold text-xs font-bold hover:bg-white/10 transition cursor-pointer">
+                  class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-amber-400/50 focus:outline-none transition font-mono uppercase tracking-wider" />
+                <button onclick="applyPromo('crypto')" type="button" class="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-amber-400 text-xs font-bold hover:bg-white/10 transition cursor-pointer">
                   Apply
                 </button>
               </div>
 
               <div id="cryptoFormError" class="text-rose-400 text-[11px] min-h-[14px]"></div>
-              <button id="cryptoSubmitBtn" onclick="submitCryptoPayment()" class="w-full py-3.5 rounded-xl font-bold text-sm text-primary hover:brightness-110 active:scale-95 transition duration-300 cursor-pointer" style="background: linear-gradient(135deg, #fbbf24, #f59e0b); box-shadow: 0 0 20px rgba(251,191,36,0.25);">
-                Submit Payment Proof ✅
+              <button id="cryptoSubmitBtn" onclick="submitCryptoPayment()" class="w-full py-3.5 rounded-xl font-bold text-sm text-dark-navy hover:brightness-110 active:scale-95 transition duration-300 cursor-pointer" style="background: linear-gradient(135deg, #fbbf24, #f59e0b); box-shadow: 0 0 20px rgba(251,191,36,0.25);">
+                Submit Payment Proof Γ£à
               </button>
             </div>
           </div>
@@ -343,7 +367,7 @@
       <!-- Legacy Access Code Section (Shared) -->
       <div class="mt-6 pt-5 border-t border-white/5 text-center">
         <p class="text-gray-500 text-[11px] mb-2">Have a legacy access code?</p>
-        <button onclick="togglePasswordForm()" class="inline-flex items-center gap-2 text-gold text-xs font-bold hover:underline cursor-pointer bg-transparent border-none">
+        <button onclick="togglePasswordForm()" class="inline-flex items-center gap-2 text-amber-400 text-xs font-bold hover:underline cursor-pointer bg-transparent border-none">
           <i data-feather="key" class="w-3.5 h-3.5"></i>
           Redeem Access Code
         </button>
@@ -353,18 +377,18 @@
       <div class="space-y-4 hidden mt-4 pt-4 border-t border-white/5" id="passwordForm">
         <div>
           <input type="text" id="vipPassword" placeholder="e.g. PIPS-AB3K7M"
-            class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-gold/50 focus:outline-none transition font-mono uppercase tracking-widest"
+            class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition font-mono uppercase tracking-widest"
             onkeydown="if(event.key==='Enter') redeemCode()" />
         </div>
         <div id="gateError" class="text-rose-400 text-xs min-h-[16px]"></div>
-        <button id="unlockBtn" onclick="redeemCode()" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r from-gold-hover to-yellow-400 text-primary hover:brightness-110 hover:shadow-[0_0_20px_rgba(251,191,36,0.4)] active:scale-95 transition duration-300 cursor-pointer text-sm">
-          Redeem 🔓
+        <button id="unlockBtn" onclick="redeemCode()" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r from-amber-500 to-yellow-400 text-dark-navy hover:brightness-110 hover:shadow-[0_0_20px_rgba(251,191,36,0.4)] active:scale-95 transition duration-300 cursor-pointer text-sm">
+          Redeem ≡ƒöô
         </button>
       </div>
       
       <!-- Account / Logout Footer -->
       <div class="flex items-center justify-center gap-6 mt-8 border-t border-white/5 pt-6">
-        <button onclick="showMyAccountModal()" class="text-gray-400 hover:text-gold text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+        <button onclick="showMyAccountModal()" class="text-gray-400 hover:text-amber-400 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
           <i data-feather="user" class="w-3.5 h-3.5"></i> My Account
         </button>
         <div class="w-px h-4 bg-white/10"></div>
@@ -382,9 +406,9 @@
         </div>
         <h2 class="text-white font-bold text-xl mb-2">Subscription Activated!</h2>
         <p class="text-gray-400 text-sm mb-6">Your VIP subscription has been successfully activated.</p>
-        <p id="codeExpiryText" class="text-emerald-400/80 text-xs font-medium mb-8 bg-emerald-500/10 inline-block px-3 py-1.5 rounded-full border border-emerald-500/20">⏱ Valid for 30 days</p>
-        <button onclick="enterVIPFromSavePanel()" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r from-emerald-500 to-emerald-300 text-primary hover:brightness-110 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] active:scale-95 transition duration-300 cursor-pointer">
-          Enter VIP Area Now 🔓
+        <p id="codeExpiryText" class="text-emerald-400/80 text-xs font-medium mb-8 bg-emerald-500/10 inline-block px-3 py-1.5 rounded-full border border-emerald-500/20">ΓÅ▒ Valid for 30 days</p>
+        <button onclick="enterVIPFromSavePanel()" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r from-emerald-500 to-emerald-300 text-dark-navy hover:brightness-110 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] active:scale-95 transition duration-300 cursor-pointer">
+          Enter VIP Area Now ≡ƒöô
         </button>
       </div>
     </div>
@@ -393,16 +417,16 @@
     <div id="contentPanel" class="hidden">
       
       <!-- Welcome Banner -->
-      <div class="glass-card border border-gold/20 rounded-2xl p-5 mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+      <div class="glass-card border border-amber-400/20 rounded-2xl p-5 mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
         <div class="flex items-center gap-4 w-full sm:w-auto">
-          <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-gold-hover to-yellow-300 flex items-center justify-center text-2xl flex-shrink-0">🏆</div>
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center text-2xl flex-shrink-0">≡ƒÅå</div>
           <div class="flex-1">
             <h2 class="text-white font-bold" id="vipWelcomeText">Welcome, VIP Member!</h2>
             <p class="text-gray-400 text-xs mt-0.5" id="vipExpiryText">You now have full access to all exclusive resources below.</p>
           </div>
         </div>
         <div class="sm:ml-auto flex items-center gap-3 w-full sm:w-auto mt-3 sm:mt-0 justify-end">
-          <button onclick="showMyAccountModal()" class="text-gray-400 hover:text-gold transition cursor-pointer flex items-center gap-1 text-xs font-bold bg-white/5 border border-white/10 px-3 py-1.5 rounded-lg hover:border-gold/50">
+          <button onclick="showMyAccountModal()" class="text-gray-400 hover:text-amber-400 transition cursor-pointer flex items-center gap-1 text-xs font-bold bg-white/5 border border-white/10 px-3 py-1.5 rounded-lg hover:border-amber-400/50">
             <i data-feather="user" class="w-3.5 h-3.5"></i> Account
           </button>
           <button onclick="logout()" class="text-gray-500 hover:text-rose-400 transition cursor-pointer bg-black/40 border border-white/5 px-2.5 py-1.5 rounded-lg hover:border-rose-400/30" title="Log Out">
@@ -413,10 +437,10 @@
 
       <!-- MY ACCOUNT MODAL -->
       <div id="myAccountModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div class="glass-card rounded-2xl p-6 md:p-8 max-w-md w-full mx-4 border border-gold/20 transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto custom-scrollbar">
+        <div class="glass-card rounded-2xl p-6 md:p-8 max-w-md w-full mx-4 border border-amber-400/20 transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto custom-scrollbar">
           <div class="flex justify-between items-center mb-6">
             <h2 class="text-xl font-bold text-white flex items-center gap-2">
-              <i data-feather="user" class="w-5 h-5 text-gold"></i> My Account
+              <i data-feather="user" class="w-5 h-5 text-amber-400"></i> My Account
             </h2>
             <button onclick="closeMyAccountModal()" class="text-gray-400 hover:text-white transition cursor-pointer">
               <i data-feather="x" class="w-5 h-5"></i>
@@ -430,10 +454,10 @@
               <form id="updateProfileForm" onsubmit="handleUpdateProfile(event)" class="space-y-3">
                 <div>
                   <label class="block text-[10px] text-gray-500 mb-1">Display Name</label>
-                  <input type="text" id="profileName" required class="w-full px-3 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-gold/50 focus:outline-none transition" />
+                  <input type="text" id="profileName" required class="w-full px-3 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
                 </div>
                 <div id="profileError" class="text-[11px] min-h-[14px]"></div>
-                <button type="submit" id="profileBtn" class="w-full py-2.5 rounded-xl font-bold border border-gold-hover/40 bg-gold-hover/10 text-gold hover:bg-gold-hover hover:text-primary transition cursor-pointer text-xs">
+                <button type="submit" id="profileBtn" class="w-full py-2.5 rounded-xl font-bold border border-amber-500/40 bg-amber-500/10 text-amber-400 hover:bg-amber-500 hover:text-dark-navy transition cursor-pointer text-xs">
                   Update Profile
                 </button>
               </form>
@@ -448,8 +472,8 @@
                 <div>
                   <label class="block text-[10px] text-gray-500 mb-1">Current Password</label>
                   <div class="relative">
-                    <input type="password" id="oldPassword" required class="w-full px-3 py-2.5 pr-10 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-gold/50 focus:outline-none transition" />
-                    <button type="button" onclick="togglePasswordVisibility('oldPassword', 'oldPwIcon')" class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gold transition cursor-pointer">
+                    <input type="password" id="oldPassword" required class="w-full px-3 py-2.5 pr-10 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
+                    <button type="button" onclick="togglePasswordVisibility('oldPassword', 'oldPwIcon')" class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-amber-400 transition cursor-pointer">
                       <i data-feather="eye" id="oldPwIcon" class="w-4 h-4"></i>
                     </button>
                   </div>
@@ -457,8 +481,8 @@
                 <div>
                   <label class="block text-[10px] text-gray-500 mb-1">New Password</label>
                   <div class="relative">
-                    <input type="password" id="newPassword" required class="w-full px-3 py-2.5 pr-10 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-gold/50 focus:outline-none transition" />
-                    <button type="button" onclick="togglePasswordVisibility('newPassword', 'newPwIcon')" class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gold transition cursor-pointer">
+                    <input type="password" id="newPassword" required class="w-full px-3 py-2.5 pr-10 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
+                    <button type="button" onclick="togglePasswordVisibility('newPassword', 'newPwIcon')" class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-amber-400 transition cursor-pointer">
                       <i data-feather="eye" id="newPwIcon" class="w-4 h-4"></i>
                     </button>
                   </div>
@@ -488,11 +512,11 @@
             <!-- Referral Program -->
             <div>
               <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Refer a Friend</h3>
-              <p class="text-gray-500 text-[10px] mb-3">When a friend subscribes using your link, you get <span class="text-gold font-bold">5 bonus days</span> added to your VIP!</p>
+              <p class="text-gray-500 text-[10px] mb-3">When a friend subscribes using your link, you get <span class="text-amber-400 font-bold">5 bonus days</span> added to your VIP!</p>
               <div class="flex items-center gap-2">
                 <input type="text" id="referralLinkInput" readonly
                   class="flex-1 px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-amber-300 text-[11px] font-mono focus:outline-none" />
-                <button onclick="copyReferralLink()" class="px-3 py-2 rounded-xl bg-gold-hover/10 border border-gold-hover/30 text-gold hover:bg-gold-hover/20 transition cursor-pointer">
+                <button onclick="copyReferralLink()" class="px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500/20 transition cursor-pointer">
                   <i data-feather="copy" class="w-3.5 h-3.5"></i>
                 </button>
               </div>
@@ -549,52 +573,52 @@
             </a>
             
             <p class="text-[10px] text-gray-500">After linking your account via the bot, refresh this page.</p>
-            <button onclick="window.location.reload()" class="mt-4 text-xs text-gold hover:underline cursor-pointer">I have linked my account (Refresh)</button>
+            <button onclick="window.location.reload()" class="mt-4 text-xs text-amber-400 hover:underline cursor-pointer">I have linked my account (Refresh)</button>
           </div>
         </div>
       </div>
 
       <div id="vipMainContent">
-      <!-- ⏱ Live Signal Countdown Timer -->
+      <!-- ΓÅ▒ Live Signal Countdown Timer -->
       <div id="countdownSection" class="mb-6 hidden">
-        <div class="glass-card border border-gold/30 rounded-2xl p-5 relative overflow-hidden">
+        <div class="glass-card border border-amber-400/30 rounded-2xl p-5 relative overflow-hidden">
           <!-- Glow bg -->
           <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(ellipse at center, rgba(251,191,36,0.06) 0%, transparent 70%);"></div>
 
           <div class="flex items-center justify-between mb-4 relative">
             <div class="flex items-center gap-3">
-              <div class="p-2 bg-gold-hover/20 rounded-lg">
-                <i data-feather="clock" class="w-5 h-5 text-gold"></i>
+              <div class="p-2 bg-amber-500/20 rounded-lg">
+                <i data-feather="clock" class="w-5 h-5 text-amber-400"></i>
               </div>
               <div>
-                <h3 class="text-white font-bold text-sm">⏱ Next Signal Entry</h3>
+                <h3 class="text-white font-bold text-sm">ΓÅ▒ Next Signal Entry</h3>
                 <p id="countdownLabel" class="text-gray-400 text-[11px]">Counting down to entry...</p>
               </div>
             </div>
-            <span id="countdownBadge" class="px-3 py-1 bg-gold-hover/20 text-gold text-xs font-bold rounded-full border border-gold-hover/30 animate-pulse">LIVE</span>
+            <span id="countdownBadge" class="px-3 py-1 bg-amber-500/20 text-amber-400 text-xs font-bold rounded-full border border-amber-500/30 animate-pulse">LIVE</span>
           </div>
 
           <!-- Countdown Digits -->
           <div id="countdownDisplay" class="flex items-center justify-center gap-3 py-2">
             <div class="flex flex-col items-center">
-              <span id="cdHours" class="text-4xl font-black text-gold font-mono tabular-nums tracking-tight">--</span>
+              <span id="cdHours" class="text-4xl font-black text-amber-400 font-mono tabular-nums tracking-tight">--</span>
               <span class="text-[9px] text-gray-500 uppercase tracking-widest mt-1">Hours</span>
             </div>
-            <span class="text-3xl font-black text-gold/40 mb-4">:</span>
+            <span class="text-3xl font-black text-amber-400/40 mb-4">:</span>
             <div class="flex flex-col items-center">
-              <span id="cdMinutes" class="text-4xl font-black text-gold font-mono tabular-nums tracking-tight">--</span>
+              <span id="cdMinutes" class="text-4xl font-black text-amber-400 font-mono tabular-nums tracking-tight">--</span>
               <span class="text-[9px] text-gray-500 uppercase tracking-widest mt-1">Minutes</span>
             </div>
-            <span class="text-3xl font-black text-gold/40 mb-4">:</span>
+            <span class="text-3xl font-black text-amber-400/40 mb-4">:</span>
             <div class="flex flex-col items-center">
-              <span id="cdSeconds" class="text-4xl font-black text-gold font-mono tabular-nums tracking-tight">--</span>
+              <span id="cdSeconds" class="text-4xl font-black text-amber-400 font-mono tabular-nums tracking-tight">--</span>
               <span class="text-[9px] text-gray-500 uppercase tracking-widest mt-1">Seconds</span>
             </div>
           </div>
 
           <!-- Entry reached state (hidden by default) -->
           <div id="countdownFired" class="hidden text-center py-4">
-            <div class="text-3xl mb-2">🚀</div>
+            <div class="text-3xl mb-2">≡ƒÜÇ</div>
             <p class="text-emerald-400 font-bold text-lg">Entry Time!</p>
             <p class="text-gray-400 text-xs mt-1">Check the signal details and prepare your trade.</p>
           </div>
@@ -603,28 +627,28 @@
 
       <!-- VIP Signals Card -->
       <div class="mb-8">
-        <h3 class="text-xs font-bold uppercase tracking-wider text-gold mb-3">⭐ VIP Signals</h3>
-        <a id="vipTelegramLink" href="#" data-telegram-link="true" target="_blank" class="premium-card border border-gold/20 bg-gold-hover/5 hover:bg-gold-hover/10 hover:border-gold/40 rounded-2xl p-5 flex items-center justify-between gap-4 transition-all duration-300 cursor-pointer shadow-[0_0_15px_rgba(251,191,36,0.1)] group">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400 mb-3">Γ¡É VIP Signals</h3>
+        <a id="vipTelegramLink" href="#" data-telegram-link="true" target="_blank" class="premium-card border border-amber-400/20 bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-400/40 rounded-2xl p-5 flex items-center justify-between gap-4 transition-all duration-300 cursor-pointer shadow-[0_0_15px_rgba(251,191,36,0.1)] group">
           <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-gold-hover/20 border border-gold/30 flex items-center justify-center text-xl flex-shrink-0 shadow-inner group-hover:scale-110 transition-transform">⭐</div>
+            <div class="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center text-xl flex-shrink-0 shadow-inner group-hover:scale-110 transition-transform">Γ¡É</div>
             <div>
               <h4 class="text-white font-bold text-sm">Join VIP Signals Channel</h4>
               <p class="text-gray-400 text-xs mt-0.5">Click here to generate your personal 1-time invite link.</p>
             </div>
           </div>
-          <div class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-gold/10 border border-gold/20 text-gold text-xs font-bold group-hover:bg-gold group-hover:text-primary transition-colors">
+          <div class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-400/10 border border-amber-400/20 text-amber-400 text-xs font-bold group-hover:bg-amber-400 group-hover:text-dark-navy transition-colors">
             Join Now <i data-feather="arrow-right" class="w-3.5 h-3.5"></i>
           </div>
         </a>
       </div>
 
       <!-- No Setup Notification Banner (Hidden if setup exists) -->
-      <div id="noSetupBanner" class="mb-6 p-4 rounded-xl border border-gold-hover/30 bg-gold-hover/10 flex items-center gap-4 shadow-[0_0_15px_rgba(251,191,36,0.15)] relative overflow-hidden group">
+      <div id="noSetupBanner" class="mb-6 p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 flex items-center gap-4 shadow-[0_0_15px_rgba(251,191,36,0.15)] relative overflow-hidden group">
         <!-- Shine effect -->
-        <div class="absolute top-0 -inset-full h-full w-1/2 z-0 block transform -skew-x-12 bg-gradient-to-r from-transparent to-gold-hover/10 opacity-40 animate-[shine_3s_infinite]"></div>
+        <div class="absolute top-0 -inset-full h-full w-1/2 z-0 block transform -skew-x-12 bg-gradient-to-r from-transparent to-amber-500/10 opacity-40 animate-[shine_3s_infinite]"></div>
         
-        <div class="w-12 h-12 rounded-full bg-gold-hover/20 flex items-center justify-center flex-shrink-0 relative z-10 border border-gold/20 shadow-[0_0_10px_rgba(251,191,36,0.2)]">
-          <i data-feather="refresh-cw" class="w-6 h-6 text-gold animate-spin"></i>
+        <div class="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0 relative z-10 border border-amber-400/20 shadow-[0_0_10px_rgba(251,191,36,0.2)]">
+          <i data-feather="refresh-cw" class="w-6 h-6 text-amber-400 animate-spin"></i>
         </div>
         <style>
           @keyframes rgbSweep {
@@ -649,27 +673,27 @@
 
       <!-- Today's Setup Section - Always visible, shows placeholder when no image -->
       <div id="todaysSetupSection" class="mb-10">
-        <div class="glass-card border border-gold/20 rounded-2xl overflow-hidden relative group">
+        <div class="glass-card border border-amber-400/20 rounded-2xl overflow-hidden relative group">
           <!-- Premium Header -->
-          <div class="bg-gradient-to-r from-gold-hover/10 to-transparent p-4 border-b border-white/5 flex items-center justify-between">
+          <div class="bg-gradient-to-r from-amber-500/10 to-transparent p-4 border-b border-white/5 flex items-center justify-between">
             <div class="flex items-center gap-3">
-              <div class="p-2 bg-gold-hover/20 rounded-lg">
-                <i data-feather="activity" class="w-5 h-5 text-gold"></i>
+              <div class="p-2 bg-amber-500/20 rounded-lg">
+                <i data-feather="activity" class="w-5 h-5 text-amber-400"></i>
               </div>
               <h3 class="text-white font-bold text-lg">Today's Setup (Analysis)</h3>
             </div>
-            <span class="px-3 py-1 bg-gold-hover/20 text-gold text-xs font-bold rounded-full border border-gold-hover/30 shadow-[0_0_10px_rgba(251,191,36,0.3)]">LATEST</span>
+            <span class="px-3 py-1 bg-amber-500/20 text-amber-400 text-xs font-bold rounded-full border border-amber-500/30 shadow-[0_0_10px_rgba(251,191,36,0.3)]">LATEST</span>
           </div>
           
           <!-- Image Container -->
           <div class="p-4 bg-black/40 flex justify-center" id="setupImageContainer">
             <!-- Placeholder shown when no image uploaded -->
-            <div id="setupPlaceholder" class="w-full flex flex-col items-center justify-center py-16 rounded-xl border border-dashed border-gold/20 bg-gold-hover/5 text-center">
-              <div class="w-16 h-16 rounded-2xl bg-gold-hover/10 flex items-center justify-center mb-4 mx-auto">
-                <i data-feather="image" class="w-8 h-8 text-gold/50"></i>
+            <div id="setupPlaceholder" class="w-full flex flex-col items-center justify-center py-16 rounded-xl border border-dashed border-amber-400/20 bg-amber-500/5 text-center">
+              <div class="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center mb-4 mx-auto">
+                <i data-feather="image" class="w-8 h-8 text-amber-400/50"></i>
               </div>
-              <p class="text-gold/70 font-bold text-sm">Today's Setup Coming Soon</p>
-              <p class="text-gray-500 text-xs mt-1">Check back soon — the admin uploads fresh analysis daily.</p>
+              <p class="text-amber-400/70 font-bold text-sm">Today's Setup Coming Soon</p>
+              <p class="text-gray-500 text-xs mt-1">Check back soon ΓÇö the admin uploads fresh analysis daily.</p>
             </div>
             <!-- Actual image (hidden until loaded) -->
             <img id="todaysSetupImage" src="" alt="Today's Analysis" class="hidden max-w-full h-auto rounded-xl border border-white/10 shadow-lg" />
@@ -678,7 +702,7 @@
           <!-- Footer/Download -->
           <div class="p-4 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 bg-black/20">
             <p class="text-gray-400 text-xs">This setup is updated daily by the admin.</p>
-            <a id="todaysSetupDownload" href="#" download="todays-setup.png" class="hidden flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold bg-gold-hover/10 text-gold border border-gold-hover/30 hover:bg-gold-hover hover:text-primary transition duration-300 shadow-[0_0_15px_rgba(251,191,36,0.2)]">
+            <a id="todaysSetupDownload" href="#" download="todays-setup.png" class="hidden flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500 hover:text-dark-navy transition duration-300 shadow-[0_0_15px_rgba(251,191,36,0.2)]">
               <i data-feather="download" class="w-4 h-4"></i>
               Download Image
             </a>
@@ -716,7 +740,7 @@
           <!-- Footer/Download -->
           <div class="p-4 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 bg-black/20">
             <p class="text-gray-400 text-xs">These results correspond to today's setup.</p>
-            <a id="todaysSetupResultsDownload" href="#" download="todays-setup-results.png" class="hidden flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500 hover:text-primary transition duration-300 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+            <a id="todaysSetupResultsDownload" href="#" download="todays-setup-results.png" class="hidden flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500 hover:text-dark-navy transition duration-300 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
               <i data-feather="download" class="w-4 h-4"></i>
               Download Image
             </a>
@@ -761,12 +785,12 @@
 
       <!-- VIP Community Chat Wall -->
       <div class="mb-10">
-        <div class="glass-card border border-gold/20 rounded-2xl overflow-hidden flex flex-col h-[500px]">
-          <div class="bg-gradient-to-r from-gold-hover/10 to-transparent p-4 border-b border-white/5 flex flex-col gap-3">
+        <div class="glass-card border border-amber-400/20 rounded-2xl overflow-hidden flex flex-col h-[500px]">
+          <div class="bg-gradient-to-r from-amber-500/10 to-transparent p-4 border-b border-white/5 flex flex-col gap-3">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3">
-                <div class="p-2 bg-gold-hover/20 rounded-lg">
-                  <i data-feather="message-circle" class="w-5 h-5 text-gold"></i>
+                <div class="p-2 bg-amber-500/20 rounded-lg">
+                  <i data-feather="message-circle" class="w-5 h-5 text-amber-400"></i>
                 </div>
                 <div>
                   <h3 class="text-white font-bold text-lg leading-tight">Trading Community</h3>
@@ -777,7 +801,7 @@
             <!-- Room Tabs -->
             <div class="flex items-center gap-2 mt-2 border-b border-white/10 pb-2">
               <button onclick="switchChatRoom('general')" id="tab-room-general" class="px-4 py-1.5 rounded-full text-xs font-bold transition border border-white/10 bg-white/5 text-gray-400 hover:text-white">General</button>
-              <button onclick="switchChatRoom('vip')" id="tab-room-vip" class="px-4 py-1.5 rounded-full text-xs font-bold transition border border-gold/40 bg-gold/10 text-gold">VIP Discussion</button>
+              <button onclick="switchChatRoom('vip')" id="tab-room-vip" class="px-4 py-1.5 rounded-full text-xs font-bold transition border border-amber-400/40 bg-amber-400/10 text-amber-400">VIP Discussion</button>
               <button onclick="switchChatRoom('signals')" id="tab-room-signals" class="px-4 py-1.5 rounded-full text-xs font-bold transition border border-sky-400/20 bg-sky-400/5 text-gray-400 hover:text-sky-400 relative">
                 Signals Only
                 <span id="signalsUnreadBadge" class="hidden absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full animate-pulse"></span>
@@ -786,14 +810,14 @@
           </div>
           <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin bg-black/20 flex flex-col-reverse">
             <div class="text-center text-gray-500 py-10 w-full">
-              <i data-feather="loader" class="w-6 h-6 animate-spin mx-auto mb-2 text-gold/50"></i>
+              <i data-feather="loader" class="w-6 h-6 animate-spin mx-auto mb-2 text-amber-400/50"></i>
               <p class="text-xs">Connecting to chat...</p>
             </div>
           </div>
           <form onsubmit="sendChatMessage(event)" id="chatForm" class="p-4 border-t border-white/5 bg-black/40 flex gap-3">
             <input type="text" id="chatInput" placeholder="Type your message..." required autocomplete="off"
-              class="flex-1 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:border-gold/50 focus:outline-none transition" />
-            <button type="submit" id="chatBtn" class="px-5 py-2.5 rounded-xl font-bold bg-gold text-primary hover:brightness-110 active:scale-95 transition flex items-center gap-2">
+              class="flex-1 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:border-amber-400/50 focus:outline-none transition" />
+            <button type="submit" id="chatBtn" class="px-5 py-2.5 rounded-xl font-bold bg-amber-400 text-dark-navy hover:brightness-110 active:scale-95 transition flex items-center gap-2">
               Send <i data-feather="send" class="w-4 h-4"></i>
             </button>
           </form>
@@ -814,119 +838,14 @@
         </a>
       </div>
 
-      <!-- 🧮 Live Risk Calculator -->
-      <div class="mb-10">
-        <div class="glass-card border border-gold/20 rounded-2xl overflow-hidden">
-          <!-- Header -->
-          <div class="bg-gradient-to-r from-gold/10 to-transparent p-4 border-b border-white/5 flex items-center gap-3">
-            <div class="p-2 bg-gold/20 rounded-lg">
-              <i data-feather="percent" class="w-5 h-5 text-gold"></i>
-            </div>
-            <div>
-              <h3 class="text-white font-bold text-lg leading-tight">Risk / Lot Size Calculator</h3>
-              <p class="text-[10px] text-gray-400">Calculate your position size in real time</p>
-            </div>
-          </div>
-
-          <div class="p-5 md:p-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <!-- Inputs -->
-              <div class="space-y-4">
-                <div>
-                  <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Account Balance (USD)</label>
-                  <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-500 text-sm">$</span>
-                    <input type="number" id="rc_balance" placeholder="e.g. 10000" min="1"
-                      class="w-full bg-black/50 border border-white/10 rounded-xl pl-8 pr-4 py-2.5 text-white text-sm focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/30 transition-all placeholder-gray-600">
-                  </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                  <div>
-                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Risk (%)</label>
-                    <div class="relative">
-                      <input type="number" id="rc_risk" placeholder="1.0" step="0.1" min="0.1" max="100"
-                        class="w-full bg-black/50 border border-white/10 rounded-xl pl-4 pr-8 py-2.5 text-white text-sm focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/30 transition-all placeholder-gray-600">
-                      <span class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-500 text-sm">%</span>
-                    </div>
-                  </div>
-                  <div>
-                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Stop Loss (Pips)</label>
-                    <input type="number" id="rc_sl" placeholder="e.g. 50" min="1"
-                      class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/30 transition-all placeholder-gray-600">
-                  </div>
-                </div>
-
-                <div>
-                  <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Instrument / Pair</label>
-                  <select id="rc_pair"
-                    class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/30 transition-all appearance-none">
-                    <option value="10">Forex Majors (EURUSD, GBPUSD…) — $10/pip</option>
-                    <option value="100">Gold (XAUUSD) — $10/pip per 0.1 lot</option>
-                    <option value="1">Indices (US30, NAS100) — $1/pt per 0.01 lot</option>
-                    <option value="5">Forex Minors/Exotics — $5/pip</option>
-                  </select>
-                </div>
-
-                <button onclick="runRiskCalc()"
-                  class="w-full py-3 rounded-xl font-bold text-sm text-primary flex items-center justify-center gap-2 transition-all duration-200 hover:brightness-110 active:scale-95"
-                  style="background: linear-gradient(135deg, #D4AF37, #E5C158); box-shadow: 0 0 16px rgba(212,175,55,0.3);">
-                  <i data-feather="crosshair" class="w-4 h-4"></i> Calculate
-                </button>
-              </div>
-
-              <!-- Results Panel -->
-              <div class="flex flex-col gap-4">
-                <div class="grid grid-cols-2 gap-3">
-                  <div class="bg-black/40 border border-white/5 rounded-xl p-4 text-center">
-                    <p class="text-[9px] text-gray-500 uppercase tracking-widest mb-1">Amount at Risk</p>
-                    <p class="text-xl font-black text-red-400">$<span id="rc_riskAmount">—</span></p>
-                  </div>
-                  <div class="bg-black/40 border border-gold/20 rounded-xl p-4 text-center" style="box-shadow: 0 0 12px rgba(212,175,55,0.08);">
-                    <p class="text-[9px] text-gold uppercase tracking-widest mb-1">Lot Size</p>
-                    <p class="text-2xl font-black text-white" id="rc_lots">—</p>
-                  </div>
-                </div>
-
-                <div class="bg-black/30 border border-white/5 rounded-xl p-4 space-y-2.5">
-                  <div class="flex justify-between text-xs">
-                    <span class="text-gray-500">Balance</span>
-                    <span class="text-white font-medium" id="rc_disp_balance">—</span>
-                  </div>
-                  <div class="flex justify-between text-xs">
-                    <span class="text-gray-500">Risk %</span>
-                    <span class="text-white font-medium" id="rc_disp_risk">—</span>
-                  </div>
-                  <div class="flex justify-between text-xs">
-                    <span class="text-gray-500">Stop Loss</span>
-                    <span class="text-white font-medium" id="rc_disp_sl">—</span>
-                  </div>
-                  <div class="h-px bg-white/5 my-1"></div>
-                  <div class="flex justify-between text-xs">
-                    <span class="text-gray-400 font-semibold">Recommended Lot</span>
-                    <span class="text-gold font-black" id="rc_disp_lots">—</span>
-                  </div>
-                </div>
-
-                <div id="rc_warning" class="hidden p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[11px] flex items-center gap-2">
-                  <i data-feather="alert-triangle" class="w-3.5 h-3.5 flex-shrink-0"></i>
-                  <span id="rc_warning_text"></span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Resource Cards -->
       <div class="space-y-4 mb-10">
-
-        <h3 class="text-xs font-bold uppercase tracking-wider text-gold mb-3">📂 PDF Strategy Guides</h3>
+        <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400 mb-3">≡ƒôé PDF Strategy Guides</h3>
 
         <!-- Resource 1 -->
         <div class="premium-card border rounded-2xl p-5 flex items-center justify-between gap-4">
           <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center text-xl flex-shrink-0">📄</div>
+            <div class="w-12 h-12 rounded-xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-xl flex-shrink-0">≡ƒôä</div>
             <div>
               <h4 class="text-white font-bold text-sm">Smart Money Concepts Guide</h4>
               <p class="text-gray-400 text-xs mt-0.5">Advanced ICT & SMC strategy breakdown. 42 pages.</p>
@@ -940,7 +859,7 @@
         <!-- Resource 2 -->
         <div class="premium-card border rounded-2xl p-5 flex items-center justify-between gap-4">
           <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-xl flex-shrink-0">📊</div>
+            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-xl flex-shrink-0">≡ƒôè</div>
             <div>
               <h4 class="text-white font-bold text-sm">Risk Management Workbook</h4>
               <p class="text-gray-400 text-xs mt-0.5">Position sizing, lot calculator, drawdown rules. 18 pages.</p>
@@ -954,7 +873,7 @@
         <!-- Resource 3 -->
         <div class="premium-card border rounded-2xl p-5 flex items-center justify-between gap-4">
           <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-neon-blue/10 border border-neon-blue/20 flex items-center justify-center text-xl flex-shrink-0">📈</div>
+            <div class="w-12 h-12 rounded-xl bg-neon-blue/10 border border-neon-blue/20 flex items-center justify-center text-xl flex-shrink-0">≡ƒôê</div>
             <div>
               <h4 class="text-white font-bold text-sm">High Probability Setups Playbook</h4>
               <p class="text-gray-400 text-xs mt-0.5">My personal top 5 trade setups with real examples.</p>
@@ -965,12 +884,12 @@
           </span>
         </div>
 
-        <h3 class="text-xs font-bold uppercase tracking-wider text-neon-purple mt-8 mb-3">🔧 Indicator Settings</h3>
+        <h3 class="text-xs font-bold uppercase tracking-wider text-neon-purple mt-8 mb-3">≡ƒöº Indicator Settings</h3>
 
         <!-- Resource 4 -->
         <div class="premium-card border rounded-2xl p-5 flex items-center justify-between gap-4">
           <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-neon-purple/10 border border-neon-purple/20 flex items-center justify-center text-xl flex-shrink-0">⚙️</div>
+            <div class="w-12 h-12 rounded-xl bg-neon-purple/10 border border-neon-purple/20 flex items-center justify-center text-xl flex-shrink-0">ΓÜÖ∩╕Å</div>
             <div>
               <h4 class="text-white font-bold text-sm">Custom EMA Settings Pack</h4>
               <p class="text-gray-400 text-xs mt-0.5">My exact EMA periods and color settings for TradingView.</p>
@@ -984,7 +903,7 @@
         <!-- Resource 5 -->
         <div class="premium-card border rounded-2xl p-5 flex items-center justify-between gap-4">
           <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-xl flex-shrink-0">🎯</div>
+            <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-xl flex-shrink-0">≡ƒÄ»</div>
             <div>
               <h4 class="text-white font-bold text-sm">Session Kill Zones Cheat Sheet</h4>
               <p class="text-gray-400 text-xs mt-0.5">Key trading times for London, NY & Asian overlap sessions.</p>
@@ -1005,40 +924,6 @@
 
   <script>
     feather.replace();
-
-    // ── Risk / Lot Size Calculator ───────────────────────────────
-    function runRiskCalc() {
-      const balance  = parseFloat(document.getElementById('rc_balance').value);
-      const risk     = parseFloat(document.getElementById('rc_risk').value);
-      const sl       = parseFloat(document.getElementById('rc_sl').value);
-      const pipValue = parseFloat(document.getElementById('rc_pair').value);
-      const warnEl   = document.getElementById('rc_warning');
-      const warnTxt  = document.getElementById('rc_warning_text');
-
-      warnEl.classList.add('hidden');
-
-      if (isNaN(balance) || isNaN(risk) || isNaN(sl) || balance <= 0 || risk <= 0 || sl <= 0) {
-        warnTxt.textContent = 'Please enter valid numbers for all fields.';
-        warnEl.classList.remove('hidden');
-        feather.replace();
-        return;
-      }
-      if (risk > 5) {
-        warnTxt.textContent = 'Warning: risking more than 5% per trade is extremely dangerous.';
-        warnEl.classList.remove('hidden');
-        feather.replace();
-      }
-
-      const riskAmount = balance * (risk / 100);
-      const lotSize    = riskAmount / (sl * pipValue);
-
-      document.getElementById('rc_riskAmount').textContent = riskAmount.toFixed(2);
-      document.getElementById('rc_lots').textContent       = lotSize.toFixed(2);
-      document.getElementById('rc_disp_balance').textContent = `$${balance.toLocaleString()}`;
-      document.getElementById('rc_disp_risk').textContent    = `${risk}%`;
-      document.getElementById('rc_disp_sl').textContent      = `${sl} pips`;
-      document.getElementById('rc_disp_lots').textContent    = lotSize.toFixed(2);
-    }
 
     let TELEGRAM_BOT_USERNAME = 'PipsAttendantBot';
 
@@ -1068,9 +953,9 @@
             const tgStatus = document.getElementById('telegramLinkStatus');
             if (tgStatus) {
               tgStatus.textContent = telegramId
-                ? `✅ Linked (TG ID: ${telegramId})`
-                : '⚠️ Not linked — click below to link.';
-              tgStatus.className = telegramId ? 'text-emerald-400 text-[11px] mb-3' : 'text-gold text-[11px] mb-3';
+                ? `Γ£à Linked (TG ID: ${telegramId})`
+                : 'ΓÜá∩╕Å Not linked ΓÇö click below to link.';
+              tgStatus.className = telegramId ? 'text-emerald-400 text-[11px] mb-3' : 'text-amber-400 text-[11px] mb-3';
             }
           }
         } catch (e) { /* ignore */ }
@@ -1090,12 +975,12 @@
       const msgEl = document.getElementById('referralCopyMsg');
       if (!input || !input.value) return;
       navigator.clipboard.writeText(input.value).then(() => {
-        msgEl.textContent = '✅ Referral link copied!';
+        msgEl.textContent = 'Γ£à Referral link copied!';
         setTimeout(() => { msgEl.textContent = ''; }, 3000);
       }).catch(() => {
         input.select();
         document.execCommand('copy');
-        msgEl.textContent = '✅ Copied!';
+        msgEl.textContent = 'Γ£à Copied!';
         setTimeout(() => { msgEl.textContent = ''; }, 3000);
       });
     }
@@ -1116,7 +1001,7 @@
       const msgEl = document.getElementById('ticketSubmitMsg');
 
       if (!subject || !message) {
-        if (msgEl) { msgEl.className = 'text-rose-400 text-xs min-h-[14px]'; msgEl.textContent = '❌ Please fill in all fields.'; }
+        if (msgEl) { msgEl.className = 'text-rose-400 text-xs min-h-[14px]'; msgEl.textContent = 'Γ¥î Please fill in all fields.'; }
         return;
       }
 
@@ -1128,7 +1013,7 @@
         });
         const data = await res.json();
         if (data.ok) {
-          if (msgEl) { msgEl.className = 'text-emerald-400 text-xs min-h-[14px]'; msgEl.textContent = '✅ Ticket submitted! We\'ll reply soon.'; }
+          if (msgEl) { msgEl.className = 'text-emerald-400 text-xs min-h-[14px]'; msgEl.textContent = 'Γ£à Ticket submitted! We\'ll reply soon.'; }
           document.getElementById('ticketSubject').value = '';
           document.getElementById('ticketMessage').value = '';
           setTimeout(() => {
@@ -1137,10 +1022,10 @@
           }, 2500);
           fetchUserTickets();
         } else {
-          if (msgEl) { msgEl.className = 'text-rose-400 text-xs min-h-[14px]'; msgEl.textContent = `❌ ${data.error}`; }
+          if (msgEl) { msgEl.className = 'text-rose-400 text-xs min-h-[14px]'; msgEl.textContent = `Γ¥î ${data.error}`; }
         }
       } catch (err) {
-        if (msgEl) { msgEl.className = 'text-rose-400 text-xs min-h-[14px]'; msgEl.textContent = '❌ Server error. Please try again.'; }
+        if (msgEl) { msgEl.className = 'text-rose-400 text-xs min-h-[14px]'; msgEl.textContent = 'Γ¥î Server error. Please try again.'; }
       }
     }
 
@@ -1157,7 +1042,7 @@
         }
         container.innerHTML = data.tickets.map(t => {
           const statusColor = t.status === 'Open' ? 'text-rose-400'
-            : t.status === 'Answered' ? 'text-gold'
+            : t.status === 'Answered' ? 'text-amber-400'
             : 'text-gray-400';
           const lastMsg = t.messages && t.messages.length > 0 ? t.messages[t.messages.length - 1] : null;
           return `
@@ -1197,17 +1082,17 @@
         const data = await res.json();
         if (data.ok) {
           errorEl.className = 'text-emerald-400 text-[11px] min-h-[14px]';
-          errorEl.textContent = '✅ Profile updated!';
+          errorEl.textContent = 'Γ£à Profile updated!';
           document.getElementById('vipWelcomeText').textContent = `Welcome, ${data.name}!`;
           localStorage.setItem('pa_vip_user_name', data.name);
           setTimeout(() => { errorEl.textContent = ''; }, 3000);
         } else {
           errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
-          errorEl.textContent = `❌ ${data.error}`;
+          errorEl.textContent = `Γ¥î ${data.error}`;
         }
       } catch (err) {
         errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
-        errorEl.textContent = '❌ Server error.';
+        errorEl.textContent = 'Γ¥î Server error.';
       } finally {
         btn.innerHTML = origText;
         btn.disabled = false;
@@ -1237,24 +1122,24 @@
         const data = await res.json();
         if (data.ok) {
           errorEl.className = 'text-emerald-400 text-[11px] min-h-[14px]';
-          errorEl.textContent = '✅ Password changed successfully!';
+          errorEl.textContent = 'Γ£à Password changed successfully!';
           document.getElementById('oldPassword').value = '';
           document.getElementById('newPassword').value = '';
           setTimeout(() => { errorEl.textContent = ''; }, 3000);
         } else {
           errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
-          errorEl.textContent = `❌ ${data.error}`;
+          errorEl.textContent = `Γ¥î ${data.error}`;
         }
       } catch (err) {
         errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
-        errorEl.textContent = '❌ Server error.';
+        errorEl.textContent = 'Γ¥î Server error.';
       } finally {
         btn.innerHTML = origText;
         btn.disabled = false;
       }
     }
 
-    // ── File Management ────────────────────────────────────────
+    // ΓöÇΓöÇ File Management ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
     let pollInterval;
     let selectedNetwork = 'TRC20';
     let selectedMpesaPlan = '1month';
@@ -1285,7 +1170,7 @@
       });
       const kes = PLAN_KES[plan];
       const btn = document.getElementById('payBtn');
-      if (btn) btn.textContent = `Pay KES ${kes.toLocaleString()} via M-Pesa 💸`;
+      if (btn) btn.textContent = `Pay KES ${kes.toLocaleString()} via M-Pesa ≡ƒÆ╕`;
     }
 
     function selectCryptoPlan(plan) {
@@ -1294,11 +1179,11 @@
         const btn = document.getElementById(`cp-${p}`);
         if (!btn) return;
         if (p === plan) {
-          btn.className = 'plan-btn-crypto flex flex-col items-center py-2.5 px-1 rounded-xl border border-gold/50 bg-gold/10 text-gold cursor-pointer transition text-center relative overflow-hidden';
-          if(p === '6months') btn.innerHTML += '<div class="absolute top-0 right-0 bg-gold text-black text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg">POPULAR</div>';
+          btn.className = 'plan-btn-crypto flex flex-col items-center py-2.5 px-1 rounded-xl border border-amber-400/50 bg-amber-400/10 text-amber-400 cursor-pointer transition text-center relative overflow-hidden';
+          if(p === '6months') btn.innerHTML += '<div class="absolute top-0 right-0 bg-amber-400 text-black text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg">POPULAR</div>';
         } else {
-          btn.className = 'plan-btn-crypto flex flex-col items-center py-2.5 px-1 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:border-gold/30 cursor-pointer transition text-center relative overflow-hidden';
-          if(p === '6months') btn.innerHTML += '<div class="absolute top-0 right-0 bg-gold/50 text-white text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg">POPULAR</div>';
+          btn.className = 'plan-btn-crypto flex flex-col items-center py-2.5 px-1 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:border-amber-400/30 cursor-pointer transition text-center relative overflow-hidden';
+          if(p === '6months') btn.innerHTML += '<div class="absolute top-0 right-0 bg-amber-400/50 text-white text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg">POPULAR</div>';
         }
         const badges = btn.querySelectorAll('div');
         if (badges.length > 1) {
@@ -1310,8 +1195,8 @@
       if (priceEl) priceEl.textContent = `$${usdt}`;
     }
 
-    // ── Crypto Wallet Addresses per network ───────────────────
-    // Fallback defaults — overridden by server on load
+    // ΓöÇΓöÇ Crypto Wallet Addresses per network ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+    // Fallback defaults ΓÇö overridden by server on load
     const cryptoWallets = {
       TRC20: '',
       BEP20: '',
@@ -1340,7 +1225,7 @@
       ERC20: 'ERC20 (ETH)'
     };
 
-    // ── Payment Tab Switching ──────────────────────────────────
+    // ΓöÇΓöÇ Payment Tab Switching ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
     function switchPayTab(tab) {
       const mpesaPanel = document.getElementById('mpesaPanel');
       const cryptoPanel = document.getElementById('cryptoPanel');
@@ -1351,17 +1236,17 @@
         mpesaPanel.classList.remove('hidden');
         cryptoPanel.classList.add('hidden');
         tabMpesa.className = 'flex-1 py-2.5 rounded-xl text-xs font-bold border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 transition duration-200 cursor-pointer';
-        tabCrypto.className = 'flex-1 py-2.5 rounded-xl text-xs font-bold border border-gold-hover/20 bg-white/5 text-gray-400 hover:border-gold-hover/40 hover:text-gold transition duration-200 cursor-pointer';
+        tabCrypto.className = 'flex-1 py-2.5 rounded-xl text-xs font-bold border border-amber-500/20 bg-white/5 text-gray-400 hover:border-amber-500/40 hover:text-amber-400 transition duration-200 cursor-pointer';
       } else {
         mpesaPanel.classList.add('hidden');
         cryptoPanel.classList.remove('hidden');
-        tabCrypto.className = 'flex-1 py-2.5 rounded-xl text-xs font-bold border border-gold-hover/40 bg-gold-hover/10 text-gold transition duration-200 cursor-pointer';
+        tabCrypto.className = 'flex-1 py-2.5 rounded-xl text-xs font-bold border border-amber-500/40 bg-amber-500/10 text-amber-400 transition duration-200 cursor-pointer';
         tabMpesa.className = 'flex-1 py-2.5 rounded-xl text-xs font-bold border border-emerald-500/20 bg-white/5 text-gray-400 hover:border-emerald-500/40 hover:text-emerald-400 transition duration-200 cursor-pointer';
         feather.replace();
       }
     }
 
-    // ── Crypto Network Selection ───────────────────────────────
+    // ΓöÇΓöÇ Crypto Network Selection ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
     function selectNetwork(net) {
       selectedNetwork = net;
       const networks = ['TRC20', 'BEP20', 'ERC20'];
@@ -1369,20 +1254,20 @@
         const btn = document.getElementById(`net${n}`);
         if (!btn) return;
         if (n === net) {
-          btn.className = 'flex-1 py-2 rounded-lg text-xs font-bold border border-gold/40 bg-gold/10 text-gold transition cursor-pointer';
+          btn.className = 'flex-1 py-2 rounded-lg text-xs font-bold border border-amber-400/40 bg-amber-400/10 text-amber-400 transition cursor-pointer';
         } else {
-          btn.className = 'flex-1 py-2 rounded-lg text-xs font-bold border border-white/10 bg-white/5 text-gray-400 hover:border-gold/30 hover:text-amber-300 transition cursor-pointer';
+          btn.className = 'flex-1 py-2 rounded-lg text-xs font-bold border border-white/10 bg-white/5 text-gray-400 hover:border-amber-400/30 hover:text-amber-300 transition cursor-pointer';
         }
       });
       // Update wallet address display
       const addrEl = document.getElementById('cryptoWalletAddress');
-      if (addrEl) addrEl.textContent = cryptoWallets[net] || '—';
+      if (addrEl) addrEl.textContent = cryptoWallets[net] || 'ΓÇö';
       // Update warning note
       const noteEl = document.getElementById('cryptoNetworkNote');
-      if (noteEl) noteEl.innerHTML = `⚠️ Only send USDT on the <span class="text-gold font-bold">${networkNames[net]}</span> network to this address`;
+      if (noteEl) noteEl.innerHTML = `ΓÜá∩╕Å Only send USDT on the <span class="text-amber-400 font-bold">${networkNames[net]}</span> network to this address`;
     }
 
-    // ── Copy Crypto Wallet Address ─────────────────────────────
+    // ΓöÇΓöÇ Copy Crypto Wallet Address ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
     function copyCryptoAddress() {
       const address = cryptoWallets[selectedNetwork];
       if (!address) return;
@@ -1392,7 +1277,7 @@
           btn.innerHTML = '<i data-feather="check" class="w-3.5 h-3.5 text-emerald-400"></i>';
           feather.replace();
           setTimeout(() => {
-            btn.innerHTML = '<i data-feather="copy" class="w-3.5 h-3.5 text-gold"></i>';
+            btn.innerHTML = '<i data-feather="copy" class="w-3.5 h-3.5 text-amber-400"></i>';
             feather.replace();
           }, 2000);
         }
@@ -1408,7 +1293,7 @@
       });
     }
 
-    // ── Submit Crypto Payment Proof ────────────────────────────
+    // ΓöÇΓöÇ Submit Crypto Payment Proof ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
     async function submitCryptoPayment() {
       const txHash = document.getElementById('cryptoTxHash').value.trim();
       const contact = document.getElementById('cryptoContact').value.trim();
@@ -1417,12 +1302,12 @@
 
       errorEl.textContent = '';
 
-      if (!txHash) { errorEl.textContent = '❌ Please enter your transaction hash.'; return; }
-      if (txHash.length < 10) { errorEl.textContent = '❌ Transaction hash looks too short. Double check.'; return; }
-      if (!contact) { errorEl.textContent = '❌ Please enter your Telegram or email to receive the code.'; return; }
+      if (!txHash) { errorEl.textContent = 'Γ¥î Please enter your transaction hash.'; return; }
+      if (txHash.length < 10) { errorEl.textContent = 'Γ¥î Transaction hash looks too short. Double check.'; return; }
+      if (!contact) { errorEl.textContent = 'Γ¥î Please enter your Telegram or email to receive the code.'; return; }
 
       const origText = btn.textContent;
-      btn.textContent = '⏳ Submitting...';
+      btn.textContent = 'ΓÅ│ Submitting...';
       btn.disabled = true;
 
       try {
@@ -1441,20 +1326,20 @@
         if (data.ok) {
           // Show success state
           errorEl.className = 'text-emerald-400 text-[11px] min-h-[14px]';
-          errorEl.innerHTML = '✅ Submitted successfully! We\'ll verify and send your access code within 24 hours.';
-          btn.textContent = '✅ Submitted!';
+          errorEl.innerHTML = 'Γ£à Submitted successfully! We\'ll verify and send your access code within 24 hours.';
+          btn.textContent = 'Γ£à Submitted!';
           btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
           document.getElementById('cryptoTxHash').value = '';
           document.getElementById('cryptoContact').value = '';
         } else {
           errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
-          errorEl.textContent = `❌ ${data.error || 'Submission failed. Please try again.'}`;
+          errorEl.textContent = `Γ¥î ${data.error || 'Submission failed. Please try again.'}`;
           btn.textContent = origText;
           btn.disabled = false;
         }
       } catch {
         errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
-        errorEl.textContent = '❌ Network error. Please try again.';
+        errorEl.textContent = 'Γ¥î Network error. Please try again.';
         btn.textContent = origText;
         btn.disabled = false;
       }
@@ -1464,7 +1349,7 @@
       document.getElementById('passwordForm').classList.toggle('hidden');
     }
 
-    // ── Update download & Telegram links with session token ────
+    // ΓöÇΓöÇ Update download & Telegram links with session token ΓöÇΓöÇΓöÇΓöÇ
     function updateDownloadLinks() {
       const token = sessionStorage.getItem('vip_session_token');
       if (!token) return;
@@ -1477,14 +1362,14 @@
 
 
 
-    // ── Show "Success" panel after payment ──────────────
+    // ΓöÇΓöÇ Show "Success" panel after payment ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
     function showSuccessPanel() {
       document.getElementById('paymentPanel').style.display = 'none';
       document.getElementById('saveCodePanel').classList.remove('hidden');
       feather.replace();
     }
 
-    // ── Transition from Success panel → VIP Content ─────────
+    // ΓöÇΓöÇ Transition from Success panel ΓåÆ VIP Content ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
     function enterVIPFromSavePanel() {
       document.getElementById('saveCodePanel').classList.add('hidden');
       document.getElementById('contentPanel').classList.remove('hidden');
@@ -1494,13 +1379,13 @@
       feather.replace();
     }
 
-    // ── M-Pesa Payment Flow ────────────────────────────────────
+    // ΓöÇΓöÇ M-Pesa Payment Flow ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
     async function payMpesa() {
       const phone = document.getElementById('mpesaPhone').value.trim();
       const error = document.getElementById('mpesaError');
       const btn   = document.getElementById('payBtn');
 
-      if (!phone) { error.textContent = '❌ Please enter a phone number.'; return; }
+      if (!phone) { error.textContent = 'Γ¥î Please enter a phone number.'; return; }
 
       const originalText = btn.innerHTML;
       btn.innerHTML = '<span class="animate-pulse flex items-center justify-center gap-2"><i data-feather="loader" class="w-4 h-4 animate-spin"></i> Initiating STK Push...</span>';
@@ -1522,19 +1407,19 @@
 
         if (data.ok) {
           error.className = 'text-emerald-400 text-xs min-h-[16px]';
-          error.textContent = '✅ STK Push sent! Enter your M-Pesa PIN on your phone.';
+          error.textContent = 'Γ£à STK Push sent! Enter your M-Pesa PIN on your phone.';
           btn.innerHTML = '<span class="animate-pulse flex items-center justify-center gap-2"><i data-feather="loader" class="w-4 h-4 animate-spin"></i> Waiting for payment...</span>';
           feather.replace();
           pollPayment(data.reference, btn, originalText, error);
         } else {
           error.className = 'text-rose-400 text-xs min-h-[16px]';
-          error.textContent = `❌ ${data.error}`;
+          error.textContent = `Γ¥î ${data.error}`;
           btn.innerHTML = originalText;
           btn.disabled = false;
         }
       } catch {
         error.className = 'text-rose-400 text-xs min-h-[16px]';
-        error.textContent = '❌ Server error. Please try again later.';
+        error.textContent = 'Γ¥î Server error. Please try again later.';
         btn.innerHTML = originalText;
         btn.disabled = false;
       }
@@ -1560,24 +1445,24 @@
         
         if (data.ok) {
           errorEl.className = 'text-emerald-400 text-xs min-h-[16px]';
-          errorEl.textContent = `✅ Promo applied: ${data.discountPercentage}% off!`;
+          errorEl.textContent = `Γ£à Promo applied: ${data.discountPercentage}% off!`;
           
           if (type === 'mpesa') {
             const baseAmount = PLAN_KES[selectedMpesaPlan];
             const newAmount = Math.floor(baseAmount * (1 - (data.discountPercentage / 100)));
-            btn.innerHTML = `Pay KES ${newAmount.toLocaleString()} via M-Pesa 💸`;
+            btn.innerHTML = `Pay KES ${newAmount.toLocaleString()} via M-Pesa ≡ƒÆ╕`;
           } else {
             const baseAmount = PLAN_USDT[selectedCryptoPlan];
             const newAmount = Math.floor(baseAmount * (1 - (data.discountPercentage / 100)));
-            btn.innerHTML = `Submit Payment Proof ($${newAmount} USDT) ✅`;
+            btn.innerHTML = `Submit Payment Proof ($${newAmount} USDT) Γ£à`;
           }
         } else {
           errorEl.className = 'text-rose-400 text-xs min-h-[16px]';
-          errorEl.textContent = `❌ ${data.error}`;
+          errorEl.textContent = `Γ¥î ${data.error}`;
         }
       } catch (err) {
         errorEl.className = 'text-rose-400 text-xs min-h-[16px]';
-        errorEl.textContent = '❌ Failed to validate promo.';
+        errorEl.textContent = 'Γ¥î Failed to validate promo.';
       }
     }
 
@@ -1589,7 +1474,7 @@
         if (++attempts > 60) {
           clearInterval(pollInterval);
           errorEl.className = 'text-rose-400 text-xs min-h-[16px]';
-          errorEl.textContent = '❌ Payment timed out. Please try again.';
+          errorEl.textContent = 'Γ¥î Payment timed out. Please try again.';
           btn.innerHTML = originalText;
           btn.disabled = false;
           return;
@@ -1619,7 +1504,7 @@
           } else if (data.ok && data.status === 'Failed') {
             clearInterval(pollInterval);
             errorEl.className = 'text-rose-400 text-xs min-h-[16px]';
-            errorEl.textContent = '❌ Payment failed or was cancelled.';
+            errorEl.textContent = 'Γ¥î Payment failed or was cancelled.';
             btn.innerHTML = originalText;
             btn.disabled  = false;
           }
@@ -1627,7 +1512,7 @@
       }, 3000);
     }
 
-    // ── User Authentication ────────────────────────────────────
+    // ΓöÇΓöÇ User Authentication ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
     function switchAuthTab(mode) {
       authMode = mode;
       const btnLogin = document.getElementById('tabLogin');
@@ -1639,15 +1524,15 @@
       errorEl.textContent = '';
 
       if (mode === 'login') {
-        btnLogin.className = 'flex-1 py-2 rounded-xl text-xs font-bold border border-gold-hover/40 bg-gold-hover/10 text-gold transition cursor-pointer';
-        btnRegister.className = 'flex-1 py-2 rounded-xl text-xs font-bold border border-white/5 bg-white/5 text-gray-400 hover:text-gold transition cursor-pointer';
+        btnLogin.className = 'flex-1 py-2 rounded-xl text-xs font-bold border border-amber-500/40 bg-amber-500/10 text-amber-400 transition cursor-pointer';
+        btnRegister.className = 'flex-1 py-2 rounded-xl text-xs font-bold border border-white/5 bg-white/5 text-gray-400 hover:text-amber-400 transition cursor-pointer';
         nameGroup.classList.add('hidden');
-        btnSubmit.innerHTML = 'Log In 🔓';
+        btnSubmit.innerHTML = 'Log In ≡ƒöô';
       } else {
-        btnRegister.className = 'flex-1 py-2 rounded-xl text-xs font-bold border border-gold-hover/40 bg-gold-hover/10 text-gold transition cursor-pointer';
-        btnLogin.className = 'flex-1 py-2 rounded-xl text-xs font-bold border border-white/5 bg-white/5 text-gray-400 hover:text-gold transition cursor-pointer';
+        btnRegister.className = 'flex-1 py-2 rounded-xl text-xs font-bold border border-amber-500/40 bg-amber-500/10 text-amber-400 transition cursor-pointer';
+        btnLogin.className = 'flex-1 py-2 rounded-xl text-xs font-bold border border-white/5 bg-white/5 text-gray-400 hover:text-amber-400 transition cursor-pointer';
         nameGroup.classList.remove('hidden');
-        btnSubmit.innerHTML = 'Create Account 🚀';
+        btnSubmit.innerHTML = 'Create Account ≡ƒÜÇ';
       }
     }
     
@@ -1688,7 +1573,7 @@
       if (authMode === 'register') {
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
         if (!passwordRegex.test(password)) {
-          errorEl.textContent = '❌ Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.';
+          errorEl.textContent = 'Γ¥î Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.';
           return;
         }
       }
@@ -1724,10 +1609,10 @@
           }
           checkUserAccess();
         } else {
-          errorEl.textContent = `❌ ${data.error || 'Authentication failed'}`;
+          errorEl.textContent = `Γ¥î ${data.error || 'Authentication failed'}`;
         }
       } catch (err) {
-        errorEl.textContent = '❌ Server error. Please try again.';
+        errorEl.textContent = 'Γ¥î Server error. Please try again.';
       } finally {
         btn.innerHTML = origText;
         btn.disabled = false;
@@ -1767,15 +1652,15 @@
         const data = await res.json();
         if (data.ok) {
           errorEl.className = 'text-emerald-400 text-[11px] min-h-[14px]';
-          errorEl.textContent = '✅ If that email is registered, a reset link has been sent.';
+          errorEl.textContent = 'Γ£à If that email is registered, a reset link has been sent.';
           setTimeout(closeForgotPasswordModal, 3000);
         } else {
           errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
-          errorEl.textContent = `❌ ${data.error || 'Failed to send reset link.'}`;
+          errorEl.textContent = `Γ¥î ${data.error || 'Failed to send reset link.'}`;
         }
       } catch (err) {
         errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
-        errorEl.textContent = '❌ Server error.';
+        errorEl.textContent = 'Γ¥î Server error.';
       } finally {
         btn.innerHTML = origText;
         btn.disabled = false;
@@ -1807,17 +1692,17 @@
         
         if (data.ok) {
           errorEl.className = 'text-emerald-400 text-[11px] min-h-[14px]';
-          errorEl.textContent = '✅ Password updated successfully! Redirecting to login...';
+          errorEl.textContent = 'Γ£à Password updated successfully! Redirecting to login...';
           setTimeout(() => {
             window.location.href = window.location.pathname; // Remove query params
           }, 2000);
         } else {
           errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
-          errorEl.textContent = `❌ ${data.error || 'Failed to reset password.'}`;
+          errorEl.textContent = `Γ¥î ${data.error || 'Failed to reset password.'}`;
         }
       } catch (err) {
         errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
-        errorEl.textContent = '❌ Server error.';
+        errorEl.textContent = 'Γ¥î Server error.';
       } finally {
         btn.innerHTML = origText;
         btn.disabled = false;
@@ -1847,10 +1732,10 @@
         if (data.ok) {
           checkUserAccess();
         } else {
-          error.textContent = `❌ ${data.error || 'Invalid code'}`;
+          error.textContent = `Γ¥î ${data.error || 'Invalid code'}`;
         }
       } catch (err) {
-        error.textContent = '❌ Server error';
+        error.textContent = 'Γ¥î Server error';
       } finally {
         btn.innerHTML = origText;
         btn.disabled = false;
@@ -1901,8 +1786,8 @@
         
         const msgHtml = `
           <div class="flex flex-col ${isSelf ? 'items-end' : 'items-start'} w-full mt-2 animate-fade-in-up">
-            <span class="text-[10px] text-gray-500 mb-1 ml-1">${msg.author} • ${timeStr}</span>
-            <div class="max-w-[80%] rounded-2xl px-4 py-2 text-sm ${isSelf ? 'bg-gold-hover/20 border border-gold-hover/30 text-amber-50' : 'bg-white/10 border border-white/5 text-gray-200'}">
+            <span class="text-[10px] text-gray-500 mb-1 ml-1">${msg.author} ΓÇó ${timeStr}</span>
+            <div class="max-w-[80%] rounded-2xl px-4 py-2 text-sm ${isSelf ? 'bg-amber-500/20 border border-amber-500/30 text-amber-50' : 'bg-white/10 border border-white/5 text-gray-200'}">
               ${msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
             </div>
           </div>
@@ -1969,7 +1854,7 @@
             if (tgStatus && tgBtnAcc) {
               if (data.user.telegramId) {
                 tgStatus.className = 'text-emerald-400 text-[11px] mb-3';
-                tgStatus.innerHTML = '✅ Linked successfully';
+                tgStatus.innerHTML = 'Γ£à Linked successfully';
                 tgBtnAcc.classList.add('hidden');
               } else {
                 tgStatus.className = 'text-gray-400 text-[11px] mb-3';
@@ -2050,7 +1935,7 @@
           display.classList.add('hidden');
           fired.classList.remove('hidden');
           badge.textContent = 'NOW';
-          badge.classList.remove('animate-pulse', 'bg-gold-hover/20', 'text-gold', 'border-gold-hover/30');
+          badge.classList.remove('animate-pulse', 'bg-amber-500/20', 'text-amber-400', 'border-amber-500/30');
           badge.classList.add('bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/30');
           // Auto-hide the section 30 seconds after the countdown fires
           setTimeout(() => {
@@ -2074,16 +1959,16 @@
     // --- THEME TOGGLE ---
     function initTheme() {
       const savedTheme = localStorage.getItem('theme');
-      if (savedTheme === 'primary') {
-        document.body.classList.add('primary-mode');
+      if (savedTheme === 'dark-navy') {
+        document.body.classList.add('dark-navy-mode');
         const icon = document.getElementById('themeIcon');
         if (icon) icon.setAttribute('data-feather', 'moon');
       }
     }
 
     function toggleTheme() {
-      const isDarkNavy = document.body.classList.toggle('primary-mode');
-      localStorage.setItem('theme', isDarkNavy ? 'primary' : 'gold');
+      const isDarkNavy = document.body.classList.toggle('dark-navy-mode');
+      localStorage.setItem('theme', isDarkNavy ? 'dark-navy' : 'gold');
       const icon = document.getElementById('themeIcon');
       if (icon) {
         icon.setAttribute('data-feather', isDarkNavy ? 'moon' : 'sun');
@@ -2135,7 +2020,7 @@
       } catch (err) { console.error('Failed to load setup:', err); }
     }
 
-    // ── Load Countdown from Latest Signal ──────────────────────────
+    // ΓöÇΓöÇ Load Countdown from Latest Signal ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
     async function loadCountdownFromSignals() {
       try {
         const res = await fetch('/api/signals/history');
@@ -2156,7 +2041,7 @@
       }
     }
 
-    // ── Load Today's Setup Results image (VIP only) ────────────────
+    // ΓöÇΓöÇ Load Today's Setup Results image (VIP only) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
     async function loadTodaysSetupResults() {
       const token = sessionStorage.getItem('vip_session_token');
       if (!token) return;
@@ -2177,7 +2062,7 @@
       } catch (err) { console.error('Failed to load setup results:', err); }
     }
 
-    // ── VIP Chat Wall Logic ────────────────────────────────────────
+    // ΓöÇΓöÇ VIP Chat Wall Logic ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
     
     function switchChatRoom(room) {
       currentRoom = room;
@@ -2190,7 +2075,7 @@
         const btn = document.getElementById(`tab-room-${r}`);
         if (!btn) return;
         if (r === room) {
-          if(r==='vip') btn.className = 'px-4 py-1.5 rounded-full text-xs font-bold transition border border-gold/40 bg-gold/10 text-gold relative';
+          if(r==='vip') btn.className = 'px-4 py-1.5 rounded-full text-xs font-bold transition border border-amber-400/40 bg-amber-400/10 text-amber-400 relative';
           if(r==='general') btn.className = 'px-4 py-1.5 rounded-full text-xs font-bold transition border border-emerald-400/40 bg-emerald-400/10 text-emerald-400 relative';
           if(r==='signals') btn.className = 'px-4 py-1.5 rounded-full text-xs font-bold transition border border-sky-400/40 bg-sky-400/10 text-sky-400 relative';
         } else {
@@ -2215,7 +2100,7 @@
 
       // Clear UI and Reload
       const chatContainer = document.getElementById('chatMessages');
-      chatContainer.innerHTML = '<div class="text-center text-gray-500 py-10 w-full"><i data-feather="loader" class="w-6 h-6 animate-spin mx-auto mb-2 text-gold/50"></i><p class="text-xs">Loading room...</p></div>';
+      chatContainer.innerHTML = '<div class="text-center text-gray-500 py-10 w-full"><i data-feather="loader" class="w-6 h-6 animate-spin mx-auto mb-2 text-amber-400/50"></i><p class="text-xs">Loading room...</p></div>';
       feather.replace();
       loadChatMessages();
     }
@@ -2238,8 +2123,8 @@
               const isSelf = msg.author === (localStorage.getItem('pa_vip_user_name') || 'VIP Member');
               return `
                 <div class="flex flex-col ${isSelf ? 'items-end' : 'items-start'} w-full">
-                  <span class="text-[10px] text-gray-500 mb-1 ml-1">${msg.author} • ${timeStr}</span>
-                  <div class="max-w-[80%] rounded-2xl px-4 py-2 text-sm ${isSelf ? 'bg-gold-hover/20 border border-gold-hover/30 text-amber-50' : 'bg-white/10 border border-white/5 text-gray-200'}">
+                  <span class="text-[10px] text-gray-500 mb-1 ml-1">${msg.author} ΓÇó ${timeStr}</span>
+                  <div class="max-w-[80%] rounded-2xl px-4 py-2 text-sm ${isSelf ? 'bg-amber-500/20 border border-amber-500/30 text-amber-50' : 'bg-white/10 border border-white/5 text-gray-200'}">
                     ${msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
                   </div>
                 </div>
@@ -2288,4 +2173,3 @@
   <script src="/chat-widget.js"></script>
 </body>
 </html>
-

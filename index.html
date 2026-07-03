@@ -99,7 +99,7 @@
                 <a href="#hero" class="hover:text-white transition-colors">Home</a>
                 <a href="#services" class="hover:text-white transition-colors">Signals</a>
                 <a href="#results" class="hover:text-white transition-colors">Results</a>
-                <a href="#services" class="hover:text-white transition-colors">Tools</a>
+                <a href="calculator.html" class="hover:text-white transition-colors">Calculator</a>
                 <a href="#community" class="hover:text-white transition-colors">Community</a>
                 <a href="#vip" class="hover:text-white transition-colors">VIP</a>
             </div>
@@ -121,7 +121,7 @@
                 <a href="#hero" class="mobile-link text-gray-300 hover:text-white transition-colors">Home</a>
                 <a href="#services" class="mobile-link text-gray-300 hover:text-white transition-colors">Signals</a>
                 <a href="#results" class="mobile-link text-gray-300 hover:text-white transition-colors">Results</a>
-                <a href="#services" class="mobile-link text-gray-300 hover:text-white transition-colors">Tools</a>
+                <a href="calculator.html" class="mobile-link text-gray-300 hover:text-white transition-colors">Calculator</a>
                 <a href="#community" class="mobile-link text-gray-300 hover:text-white transition-colors">Community</a>
                 <a href="#vip" class="mobile-link text-gold transition-colors">VIP Access</a>
                 <a href="premium.html" class="btn-gold px-6 py-3 rounded-full text-center mt-2 text-primary font-bold">Join VIP</a>
@@ -394,7 +394,7 @@
         <div class="max-w-7xl mx-auto">
             <h2 class="text-3xl md:text-4xl font-bold text-white text-center mb-16">Trusted by Traders</h2>
             
-            <div class="flex overflow-x-auto hide-scrollbar gap-8 pb-8 snap-x-mandatory px-4 -mx-4 md:mx-0 md:px-0">
+            <div id="testimonials-carousel" class="flex overflow-x-auto gap-8 pb-8 snap-x-mandatory px-4 -mx-4 md:mx-0 md:px-0 scroll-smooth custom-scrollbar">
                 <!-- Testimonial 1 -->
                 <div class="min-w-[300px] md:min-w-[400px] p-8 glass-card snap-center flex-shrink-0">
                     <div class="flex items-center gap-4 mb-6">
@@ -585,7 +585,7 @@
                         <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
                         <li><a href="#" class="hover:text-white transition-colors">Terms of Service</a></li>
                         <li><a href="#" class="hover:text-white transition-colors">Risk Disclaimer</a></li>
-                        <li><a href="https://t.me/Pips_attendant" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">Contact Us</a></li>
+                        <li><a href="https://t.me/pipsattendant" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">Contact Us</a></li>
                     </ul>
                 </div>
             </div>
@@ -734,6 +734,36 @@
             link.addEventListener('click', () => {
                 mobileMenu.classList.add('hidden');
             });
+        });
+    </script>
+    <!-- Testimonials Auto-Scroll Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const carousel = document.getElementById('testimonials-carousel');
+            if (!carousel) return;
+            
+            let isHovered = false;
+            let scrollSpeed = 1; // Pixels per frame
+            
+            // Pause on hover
+            carousel.addEventListener('mouseenter', () => isHovered = true);
+            carousel.addEventListener('mouseleave', () => isHovered = false);
+            
+            function autoScroll() {
+                if (!isHovered) {
+                    carousel.scrollLeft += scrollSpeed;
+                    // Reset to beginning if at the end
+                    if (carousel.scrollLeft >= (carousel.scrollWidth - carousel.clientWidth - 1)) {
+                        carousel.scrollLeft = 0;
+                    }
+                }
+                requestAnimationFrame(autoScroll);
+            }
+            
+            // Wait a moment before starting to allow layout to settle
+            setTimeout(() => {
+                requestAnimationFrame(autoScroll);
+            }, 1000);
         });
     </script>
 </body>
