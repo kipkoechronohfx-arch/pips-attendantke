@@ -46,14 +46,46 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-primary text-gray-300 font-sans antialiased selection:bg-gold/30 selection:text-white">
+<body class="bg-primary text-gray-300 font-sans antialiased selection:bg-gold/30 selection:text-white pt-[46px]">
+
+    <!-- Header Ticker -->
+    <div class="fixed top-0 left-0 w-full z-[100]">
+        <div class="tradingview-widget-container">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+            {
+            "symbols": [
+                { "proName": "FX_IDC:EURUSD", "title": "EUR/USD" },
+                { "proName": "FX_IDC:GBPUSD", "title": "GBP/USD" },
+                { "proName": "FX_IDC:USDJPY", "title": "USD/JPY" },
+                { "proName": "FX_IDC:AUDUSD", "title": "AUD/USD" },
+                { "proName": "FX_IDC:GBPJPY", "title": "GBP/JPY" },
+                { "proName": "OANDA:XAUUSD", "title": "XAU/USD" }
+            ],
+            "showSymbolLogo": true,
+            "isTransparent": false,
+            "displayMode": "adaptive",
+            "colorTheme": "dark",
+            "locale": "en"
+            }
+            </script>
+        </div>
+    </div>
 
     <!-- Parallax Background -->
     <div class="parallax-bg"></div>
     <div class="gradient-overlay"></div>
+    <canvas id="bgCanvas" class="fixed inset-0 z-[-1] pointer-events-none opacity-25"></canvas>
+
+    <!-- Theme Toggle Button -->
+    <div class="fixed top-[60px] right-4 z-[90]">
+        <button onclick="toggleTheme()" class="flex items-center justify-center w-10 h-10 rounded-full glass-card border border-white/10 hover:border-gold/50 hover:bg-gold/10 hover:text-gold text-gray-400 transition duration-300 cursor-pointer shadow-lg" title="Toggle Theme">
+            <i data-feather="sun" id="themeIcon" class="w-5 h-5"></i>
+        </button>
+    </div>
 
     <!-- 1. STICKY NAVBAR -->
-    <nav class="fixed top-0 left-0 w-full z-50 glass-panel border-b border-white/5 transition-all duration-300" id="navbar">
+    <nav class="fixed top-[46px] left-0 w-full z-50 glass-panel border-b border-white/5 transition-all duration-300" id="navbar">
         <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
             <a href="index.html" class="flex items-center gap-3 group">
                 <div class="w-10 h-10 rounded-full bg-surface border border-white/10 flex items-center justify-center overflow-hidden transition-transform group-hover:scale-105">
@@ -127,21 +159,28 @@
             <!-- Stats -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
                 <div class="glass-card p-6 text-center">
-                    <h3 class="text-3xl font-bold text-white mb-1">85%</h3>
+                    <h3 class="text-3xl font-bold text-white flex items-center justify-center gap-1"><span id="publicWinRate">85</span>%</h3>
                     <p class="text-xs text-gray-400 uppercase tracking-wider">Verified Win Rate</p>
                 </div>
                 <div class="glass-card p-6 text-center">
-                    <h3 class="text-3xl font-bold text-white mb-1">12k+</h3>
+                    <h3 class="text-3xl font-bold text-white flex items-center justify-center gap-1">+<span id="publicTotalPips">12k</span></h3>
                     <p class="text-xs text-gray-400 uppercase tracking-wider">Pips Shared</p>
                 </div>
                 <div class="glass-card p-6 text-center">
-                    <h3 class="text-3xl font-bold text-white mb-1">5+</h3>
+                    <h3 class="text-3xl font-bold text-white flex items-center justify-center gap-1"><span id="publicTotalTrades">5</span>+</h3>
                     <p class="text-xs text-gray-400 uppercase tracking-wider">Years Experience</p>
                 </div>
                 <div class="glass-card p-6 text-center">
-                    <h3 class="text-3xl font-bold text-white mb-1">5k+</h3>
+                    <h3 class="text-3xl font-bold text-white">5k+</h3>
                     <p class="text-xs text-gray-400 uppercase tracking-wider">Community Members</p>
                 </div>
+            </div>
+
+            <!-- Push Opt-In -->
+            <div class="flex justify-center mt-8 hidden" id="pushOptInContainer">
+                <button onclick="subscribeToPush()" class="px-5 py-2.5 rounded-full text-xs font-bold border border-gold/50 text-gold bg-gold/10 hover:bg-gold hover:text-primary transition flex items-center gap-2 shadow-[0_0_15px_rgba(212,175,55,0.2)] cursor-pointer mx-auto">
+                    <i data-feather="bell" class="w-3.5 h-3.5"></i> Enable VIP Push Alerts
+                </button>
             </div>
         </div>
         
@@ -431,6 +470,25 @@
                     <i data-feather="video" class="w-6 h-6 group-hover:scale-110 transition-transform"></i>
                 </a>
             </div>
+
+            <!-- WhatsApp Broadcast Widget -->
+            <div class="max-w-xs mx-auto mt-12 p-6 glass-card border border-gold/20 relative overflow-hidden text-center">
+                <div class="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent"></div>
+                <div class="relative z-10">
+                    <div class="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4 border border-green-500/30">
+                        <i data-feather="message-circle" class="w-6 h-6 text-green-400"></i>
+                    </div>
+                    <h3 class="text-white font-bold mb-2">Free WhatsApp Broadcast</h3>
+                    <p class="text-xs text-gray-400 mb-6">Get occasional free signal teasers directly to your WhatsApp.</p>
+                    <form onsubmit="subscribeWhatsApp(event)" class="space-y-3">
+                        <input type="tel" id="waPhone" placeholder="Enter your number (e.g. +254...)" required class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-green-400/50 focus:outline-none transition font-mono text-center" />
+                        <button type="submit" id="waBtn" class="w-full py-3 rounded-xl font-bold bg-gradient-to-r from-green-500 to-green-400 text-black hover:brightness-110 active:scale-95 transition duration-300 text-sm shadow-lg">
+                            Join Broadcast
+                        </button>
+                        <div id="waStatus" class="text-xs min-h-[16px] mt-2"></div>
+                    </form>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -543,11 +601,113 @@
         </div>
     </footer>
 
-    <!-- Chat Widget Integration -->
+    <!-- Chat Widget & Logic Integration -->
+    <script src="app.js"></script>
     <script src="chat-widget.js"></script>
     <script>
         // Initialize Feather Icons
         feather.replace();
+
+        // Canvas Background Animation
+        (function() {
+            const canvas = document.getElementById('bgCanvas');
+            const ctx = canvas.getContext('2d');
+            let W, H, particles;
+
+            function resize() {
+                W = canvas.width = window.innerWidth;
+                H = canvas.height = window.innerHeight;
+            }
+
+            function createParticles() {
+                particles = [];
+                const count = Math.floor((W * H) / 18000);
+                for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: Math.random() * W,
+                    y: Math.random() * H,
+                    vy: -(Math.random() * 0.3 + 0.1),
+                    vx: (Math.random() - 0.5) * 0.15,
+                    r: Math.random() * 1.2 + 0.3,
+                    alpha: Math.random() * 0.5 + 0.2,
+                    color: Math.random() > 0.6 ? '#D4AF37' : Math.random() > 0.5 ? '#E5C158' : '#F4D03F'
+                });
+                }
+            }
+
+            function drawCandlestick(x, y, open, close, high, low, col) {
+                ctx.strokeStyle = col;
+                ctx.lineWidth = 0.8;
+                ctx.globalAlpha = 0.12;
+                // Wick
+                ctx.beginPath();
+                ctx.moveTo(x, y - high);
+                ctx.lineTo(x, y + low);
+                ctx.stroke();
+                // Body
+                ctx.fillStyle = col;
+                ctx.fillRect(x - 3, y - Math.max(open, close), 6, Math.abs(open - close) || 1);
+                ctx.globalAlpha = 1;
+            }
+
+            const candles = [];
+            function initCandles() {
+                candles.length = 0;
+                const cols = Math.floor(W / 60);
+                for (let i = 0; i < cols; i++) {
+                candles.push({
+                    x: i * 60 + 30,
+                    y: Math.random() * H * 0.6 + H * 0.2,
+                    open: Math.random() * 10 + 4,
+                    close: Math.random() * 10 + 4,
+                    high: Math.random() * 12 + 6,
+                    low: Math.random() * 12 + 6,
+                    color: Math.random() > 0.5 ? '#D4AF37' : '#E5C158',
+                    vy: (Math.random() - 0.5) * 0.15
+                });
+                }
+            }
+
+            function animate() {
+                if (!isVisible) return;
+                ctx.clearRect(0, 0, W, H);
+
+                // Draw floating candles
+                candles.forEach(c => {
+                c.y += c.vy;
+                if (c.y < 0) c.y = H;
+                if (c.y > H) c.y = 0;
+                drawCandlestick(c.x, c.y, c.open, c.close, c.high, c.low, c.color);
+                });
+
+                // Draw floating particles
+                particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                if (p.y < 0) { p.y = H; p.x = Math.random() * W; }
+                ctx.globalAlpha = p.alpha;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+                });
+
+                requestAnimationFrame(animate);
+            }
+
+            let isVisible = true;
+            document.addEventListener('visibilitychange', () => {
+                isVisible = !document.hidden;
+                if (isVisible) animate();
+            });
+
+            window.addEventListener('resize', () => { resize(); createParticles(); initCandles(); });
+            resize();
+            createParticles();
+            initCandles();
+            animate();
+        })();
 
         // Navbar Scroll Effect
         window.addEventListener('scroll', () => {
