@@ -1,153 +1,132 @@
+/* --- PREMIUM UI STYLES --- */
+
+/* Base & Typography */
+body {
+  background-color: #050505;
+  color: #f8fafc;
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Glassmorphism Utilities */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
 .glass-card {
-  backdrop-filter: blur(10px);
   background: rgba(255, 255, 255, 0.03);
-  transition: all 0.5s ease;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 1rem;
 }
 
-@keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
 }
 
-.animate-spin-slow {
-  animation: spin-slow 6s linear infinite;
-}
-
-.link-card {
-  position: relative;
-  display: flex;
-  align-items: center;
-  padding: 1rem;
-  border-radius: 0.75rem;
-  border-width: 1px;
+/* Gold Accents & CTA */
+.btn-gold {
+  background: #D4AF37;
+  color: #050505;
+  font-weight: 600;
   transition: all 0.3s ease;
-  width: 100%;
-  background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(217,119,6,0.06));
-  border-color: rgba(245, 158, 11, 0.35);
-  box-shadow:
-    0 0 14px rgba(245, 158, 11, 0.2),
-    0 0 28px rgba(217, 119, 6, 0.1),
-    inset 0 0 12px rgba(245, 158, 11, 0.04);
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
 }
 
-.link-card:hover {
-  transform: scale(1.02) translateX(5px);
-  background: linear-gradient(135deg, rgba(245,158,11,0.14), rgba(217,119,6,0.12));
-  border-color: rgba(245, 158, 11, 0.75);
-  box-shadow:
-    0 0 22px rgba(245, 158, 11, 0.45),
-    0 0 45px rgba(217, 119, 6, 0.2),
-    inset 0 0 16px rgba(245, 158, 11, 0.07);
+.btn-gold:hover {
+  background: #E5C158;
+  box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+  transform: scale(1.02);
 }
 
-/* Keep these classes but make them identical for uniform glow */
-.highlight-card {}
-.normal-card {}
-.highlight-card:hover {}
-.normal-card:hover {}
-
-.link-icon {
-  flex-shrink: 0;
-  width: 3rem;
-  height: 3rem;
-  border-radius: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 1rem;
+.text-gold {
+  color: #D4AF37;
 }
 
-.highlight-icon {
-  background-color: rgba(245, 158, 11, 0.12);
-  color: #f59e0b;
+.border-gold {
+  border-color: #D4AF37;
 }
 
-.normal-icon {
-  background-color: rgba(245, 158, 11, 0.12);
-  color: #f59e0b;
+.bg-gold {
+  background-color: #D4AF37;
 }
 
-/* --- DARK NAVY MODE OVERRIDES --- */
-body.dark-navy-mode {
-  background-color: #0b1120 !important; /* Deep dark navy */
-  color: #f8fafc !important;
+/* Animations */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* Hide the golden background images and glows */
-body.dark-navy-mode .fixed.inset-0.z-0 {
-  display: none !important;
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Add a subtle dark navy gradient background instead */
-body.dark-navy-mode::before {
-  content: "";
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+
+/* Custom Scrollbar for Horizontal Scrolling Sections */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Horizontal Snap Scrolling */
+.snap-x-mandatory {
+  scroll-snap-type: x mandatory;
+}
+.snap-center {
+  scroll-snap-align: center;
+}
+.snap-start {
+  scroll-snap-align: start;
+}
+
+/* Parallax Background */
+.parallax-bg {
   position: fixed;
   inset: 0;
-  z-index: 0;
-  background: radial-gradient(circle at top right, rgba(14, 165, 233, 0.1), transparent 40%),
-              radial-gradient(circle at bottom left, rgba(56, 189, 248, 0.05), transparent 40%);
-  pointer-events: none;
+  z-index: -2;
+  background-image: url('dubai_bg.png');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.15;
+  filter: blur(3px);
+  will-change: transform;
 }
 
-body.dark-navy-mode .glass-card,
-body.dark-navy-mode .link-card {
-  background: rgba(30, 41, 59, 0.6) !important; /* Slate 800 */
-  border-color: rgba(56, 189, 248, 0.2) !important;
-  box-shadow: 0 8px 32px 0 rgba(0,0,0,0.5) !important;
+.gradient-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(5,5,5,0.85) 0%, rgba(5,5,5,0.7) 30%, rgba(5,5,5,0.95) 80%, #050505 100%);
 }
 
-body.dark-navy-mode .link-card:hover {
-  transform: scale(1.02) translateX(5px);
-  background: rgba(30, 41, 59, 0.9) !important;
-  border-color: rgba(56, 189, 248, 0.6) !important;
-  box-shadow: 0 0 20px rgba(56, 189, 248, 0.2) !important;
-}
-
-/* Shift amber/gold accents to cyan/sky blue accents for the Navy theme */
-body.dark-navy-mode .text-amber-400,
-body.dark-navy-mode .text-amber-500,
-body.dark-navy-mode .text-yellow-300 {
-  color: #38bdf8 !important; /* Sky 400 */
-}
-
-body.dark-navy-mode .bg-amber-400,
-body.dark-navy-mode .bg-amber-500,
-body.dark-navy-mode .bg-yellow-300 {
-  background-color: #38bdf8 !important;
-}
-
-body.dark-navy-mode .from-amber-400,
-body.dark-navy-mode .from-amber-500 {
-  --tw-gradient-from: #0ea5e9 !important; /* Sky 500 */
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(14, 165, 233, 0));
-}
-
-body.dark-navy-mode .to-amber-400,
-body.dark-navy-mode .to-yellow-300 {
-  --tw-gradient-to: #38bdf8 !important;
-}
-
-body.dark-navy-mode .border-amber-400\/20,
-body.dark-navy-mode .border-amber-500\/30 {
-  border-color: rgba(56, 189, 248, 0.3) !important;
-}
-
-body.dark-navy-mode .bg-amber-500\/10,
-body.dark-navy-mode .bg-amber-500\/20 {
-  background-color: rgba(56, 189, 248, 0.15) !important;
-}
-
-body.dark-navy-mode input,
-body.dark-navy-mode textarea {
-  background-color: rgba(15, 23, 42, 0.8) !important;
-  border-color: rgba(56, 189, 248, 0.3) !important;
-}
-
-body.dark-navy-mode .selection\:bg-amber-400\/20 *::selection {
-  background-color: rgba(56, 189, 248, 0.3) !important;
-}
-
-/* --- CHAT WIDGET CUSTOM STYLES --- */
+/* --- CHAT WIDGET CUSTOM STYLES (Preserved) --- */
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
 }

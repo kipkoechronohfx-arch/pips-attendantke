@@ -1,760 +1,546 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pips_attendant</title>
-  
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png">
-  
-  <!-- SEO & Social Media Meta Tags -->
-  <meta name="description" content="Pips_attendant Trading Hub - Premium Forex and Crypto signals, technical analysis, and VIP educational resources. Join our elite trading community today.">
-  <meta name="keywords" content="forex, crypto, trading signals, technical analysis, VIP trading, Pips attendant">
-  <meta name="author" content="Pips_attendant">
-  
-  <!-- Open Graph / Facebook / WhatsApp -->
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://pipsattendant.com/">
-  <meta property="og:title" content="Pips_attendant | Elite Trading Signals & Analysis">
-  <meta property="og:description" content="Premium Forex and Crypto signals, technical analysis, and VIP educational resources. Join our elite trading community today.">
-  <meta property="og:image" content="https://pipsattendant.com/preview.png">
-
-  <!-- Twitter -->
-  <meta property="twitter:card" content="summary_large_image">
-  <meta property="twitter:url" content="https://pipsattendant.com/">
-  <meta property="twitter:title" content="Pips_attendant | Elite Trading Signals & Analysis">
-  <meta property="twitter:description" content="Premium Forex and Crypto signals, technical analysis, and VIP educational resources. Join our elite trading community today.">
-  <meta property="twitter:image" content="https://pipsattendant.com/preview.png">
-  
-  <!-- PWA & Mobile Meta Tags -->
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0d0800">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="PipsAttendant">
-  <link rel="apple-touch-icon" href="/avatar.png">
-  
-  <link rel="stylesheet" href="dist.css">
-
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
-  <!-- Feather Icons for lightweight SVGs -->
-  <script src="https://unpkg.com/feather-icons"></script>
-
-  <!-- Custom Styles -->
-  <link rel="stylesheet" href="style.css?v=3">
-</head>
-<body class="text-white font-inter relative overflow-x-hidden selection:bg-amber-400/30 min-h-screen pt-[46px] transition-colors duration-500" style="background-color: #0d0800;">
-  
-  <!-- Header Ticker -->
-  <div class="fixed top-0 left-0 w-full z-[100]">
-    <div class="tradingview-widget-container">
-      <div class="tradingview-widget-container__widget"></div>
-      <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
-      {
-      "symbols": [
-        { "proName": "FX_IDC:EURUSD", "title": "EUR/USD" },
-        { "proName": "FX_IDC:GBPUSD", "title": "GBP/USD" },
-        { "proName": "FX_IDC:USDJPY", "title": "USD/JPY" },
-        { "proName": "FX_IDC:AUDUSD", "title": "AUD/USD" },
-        { "proName": "FX_IDC:GBPJPY", "title": "GBP/JPY" },
-        { "proName": "OANDA:XAUUSD", "title": "XAU/USD" }
-      ],
-      "showSymbolLogo": true,
-      "isTransparent": false,
-      "displayMode": "adaptive",
-      "colorTheme": "dark",
-      "locale": "en"
-      }
-      </script>
-    </div>
-  </div>
-
-  <!-- Dubai Golden Background Image -->
-  <div class="fixed inset-0 z-0 pointer-events-none" style="
-    background-image: url('dubai_bg.png');
-    background-size: cover;
-    background-position: center bottom;
-    background-repeat: no-repeat;
-    opacity: 0.38;
-  "></div>
-
-  <!-- Dark golden base overlay -->
-  <div class="fixed inset-0 z-0 pointer-events-none" style="background: linear-gradient(180deg, rgba(13,8,0,0.75) 0%, rgba(13,8,0,0.4) 40%, rgba(13,8,0,0.35) 70%, rgba(13,8,0,0.85) 100%);"></div>
-
-  <!-- Animated Canvas Background -->
-  <canvas id="bgCanvas" class="fixed inset-0 z-0 pointer-events-none opacity-25"></canvas>
-
-  <!-- Background Glow Effects -->
-  <div class="fixed inset-0 z-0 pointer-events-none opacity-70" style="will-change: transform, opacity;">
-    <div class="absolute top-[-10%] left-[-10%] w-[70%] h-[60%] rounded-full mix-blend-screen animate-pulse duration-1000" style="background: radial-gradient(circle, rgba(245,158,11,0.3) 0%, transparent 70%); filter: blur(120px); will-change: transform, opacity;"></div>
-    <div class="absolute bottom-[-10%] right-[-10%] w-[60%] h-[55%] rounded-full mix-blend-screen animate-pulse duration-1000" style="background: radial-gradient(circle, rgba(217,119,6,0.25) 0%, transparent 70%); filter: blur(100px); animation-delay: 1.5s; will-change: transform, opacity;"></div>
-    <div class="absolute top-[35%] left-[30%] w-[40%] h-[30%] rounded-full mix-blend-screen" style="background: radial-gradient(circle, rgba(251,191,36,0.15) 0%, transparent 70%); filter: blur(90px); will-change: transform, opacity;"></div>
-  </div>
-
-  <!-- Theme Toggle Button -->
-  <div class="fixed top-[60px] right-4 z-[90]">
-    <button onclick="toggleTheme()" class="flex items-center justify-center w-10 h-10 rounded-full glass-card border border-white/10 hover:border-neon-blue/50 hover:bg-neon-blue/10 hover:text-neon-blue text-gray-400 transition duration-300 cursor-pointer shadow-lg" title="Toggle Theme">
-      <i data-feather="sun" id="themeIcon" class="w-5 h-5"></i>
-    </button>
-  </div>
-
-  <main class="container mx-auto px-4 py-5 max-w-2xl relative z-10 pb-20">
-
-
-    <!-- Profile Header -->
-    <div class="flex flex-col items-center text-center mb-6 pt-6 relative">
-      <div class="relative w-32 h-32 mb-6 transform transition-transform duration-500 hover:scale-105">
-        <div class="absolute inset-0 rounded-full bg-gradient-to-tr from-neon-purple to-neon-blue animate-spin-slow opacity-75 blur-md"></div>
-        <div class="absolute inset-1 rounded-full bg-dark-navy z-10 flex items-center justify-center overflow-hidden border-2 border-white/10">
-          <img src="avatar.png?v=2" alt="Pips_Attendant" class="w-full h-full object-cover" width="128" height="128" />
-        </div>
-      </div>
-      <h1 class="text-4xl md:text-5xl font-bold mb-3 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-gray-400">
-        Pips_attendant
-      </h1>
-      <p class="text-neon-blue font-medium tracking-widest uppercase text-sm mb-4">
-        Professional Forex Trader
-      </p>
-      <p class="text-gray-400 max-w-md mx-auto text-sm md:text-base leading-relaxed">
-        Precision. Patience. Profit. Turning pips into possibilities. Join my community to trade alongside me.
-      </p>
-    </div>
-
-    <!-- Verified Performance Mini Dashboard -->
-    <div class="w-full glass-card rounded-2xl p-4 mb-4 border border-emerald-500/30 flex items-center justify-between shadow-[0_0_20px_rgba(16,185,129,0.1)]">
-      <div class="flex flex-col items-center flex-1 border-r border-white/10">
-        <span class="text-[10px] text-gray-400 font-semibold tracking-wider uppercase mb-1">Win Rate</span>
-        <div class="text-xl font-bold text-emerald-400 flex items-center gap-1">
-          <span id="publicWinRate">--</span>% <i data-feather="trending-up" class="w-3.5 h-3.5"></i>
-        </div>
-      </div>
-      <div class="flex flex-col items-center flex-1">
-        <span class="text-[10px] text-gray-400 font-semibold tracking-wider uppercase mb-1">Total Pips</span>
-        <div class="text-xl font-bold text-amber-400 flex items-center gap-1">
-          +<span id="publicTotalPips">--</span>
-        </div>
-      </div>
-      <div class="flex flex-col items-center flex-1 border-l border-white/10">
-        <span class="text-[10px] text-gray-400 font-semibold tracking-wider uppercase mb-1">Verified Trades</span>
-        <div class="text-xl font-bold text-sky-400 flex items-center gap-1">
-          <span id="publicTotalTrades">--</span>
-        </div>
-      </div>
-    </div>
-    <div class="flex justify-center mb-8 hidden" id="pushOptInContainer">
-      <button onclick="subscribeToPush()" class="px-5 py-2.5 rounded-full text-xs font-bold border border-amber-400/50 text-amber-400 bg-amber-400/10 hover:bg-amber-400 hover:text-dark-navy transition flex items-center gap-2 shadow-[0_0_15px_rgba(251,191,36,0.2)] cursor-pointer">
-        <i data-feather="bell" class="w-3.5 h-3.5"></i> Enable VIP Push Alerts
-      </button>
-    </div>
-
-    <!-- View Signal History Link -->
-    <div class="flex justify-center mb-8">
-      <a href="history.html" class="flex items-center gap-2 text-gray-400 hover:text-amber-400 text-sm font-medium transition duration-300">
-        <i data-feather="clock" class="w-4 h-4"></i> View Signal History & Results
-      </a>
-    </div>
-
-    <!-- Link Cards -->
-    <div class="flex flex-col gap-4 mb-8">
-      
-
-      <!-- Link 1 (JustMarkets) -->
-      <a href="https://one.justmarkets.link/a/by21d0s1wd" target="_blank" class="link-card highlight-card group active:scale-95">
-        <div class="link-icon overflow-hidden bg-white rounded-lg p-1">
-          <img src="justmarkets.png" alt="JustMarkets" class="w-full h-full object-contain" width="40" height="40" loading="lazy" />
-        </div>
-        <div class="flex-1 text-left">
-          <h3 class="text-lg font-semibold text-white tracking-wide group-hover:text-neon-blue transition-colors">JustMarkets</h3>
-          <p class="text-sm text-gray-400 mt-1 line-clamp-1">Trade with the best conditions</p>
-        </div>
-        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-neon-blue ml-2">
-          <i data-feather="external-link" class="w-5 h-5"></i>
-        </div>
-      </a>
-
-      <!-- Link 2 (XM) -->
-      <a href="https://clicks.pipaffiliates.com/c?c=768946&l=en&p=1" target="_blank" class="link-card highlight-card group active:scale-95">
-        <div class="link-icon overflow-hidden bg-black rounded-lg p-1">
-          <img src="xm.png" alt="XM" class="w-full h-full object-contain" width="40" height="40" loading="lazy" />
-        </div>
-        <div class="flex-1 text-left">
-          <h3 class="text-lg font-semibold text-white tracking-wide group-hover:text-neon-blue transition-colors">XM</h3>
-          <p class="text-sm text-gray-400 mt-1 line-clamp-1">Global broker of choice</p>
-        </div>
-        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-neon-blue ml-2">
-          <i data-feather="external-link" class="w-5 h-5"></i>
-        </div>
-      </a>
-
-      <!-- Link 3 -->
-      <a href="https://t.me/pips_attendant" target="_blank" class="link-card highlight-card group active:scale-95">
-        <div class="link-icon highlight-icon">
-          <i data-feather="send"></i>
-        </div>
-        <div class="flex-1 text-left">
-          <h3 class="text-lg font-semibold text-white tracking-wide group-hover:text-neon-blue transition-colors">Join Our Community</h3>
-          <p class="text-sm text-gray-400 mt-1 line-clamp-1">Free signals & mentorship</p>
-        </div>
-        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-neon-blue ml-2">
-          <i data-feather="external-link" class="w-5 h-5"></i>
-        </div>
-      </a>
-
-      <!-- Link Journal -->
-      <a href="journal.html" class="link-card normal-card group active:scale-95 border-sky-400/30">
-        <div class="link-icon bg-sky-500/10 text-sky-400">
-          <i data-feather="book-open"></i>
-        </div>
-        <div class="flex-1 text-left">
-          <div class="flex items-center gap-2 mb-1">
-            <h3 class="text-lg font-bold text-white tracking-wide group-hover:text-sky-400 transition-colors">Trading Journal</h3>
-            <span class="bg-sky-500/20 text-sky-400 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border border-sky-400/30">Free Tool</span>
-          </div>
-          <p class="text-gray-400 text-sm mt-1 line-clamp-1">Track your performance securely</p>
-        </div>
-        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-sky-400 ml-2">
-          <i data-feather="arrow-right" class="w-5 h-5"></i>
-        </div>
-      </a>
-
-      <!-- Link Prop Firm -->
-      <a href="propfirm.html" class="link-card highlight-card group active:scale-95 border-amber-400/50 shadow-[0_0_20px_rgba(245,158,11,0.2)]">
-        <div class="link-icon highlight-icon relative overflow-hidden">
-          <div class="absolute inset-0 bg-gradient-to-tr from-amber-500 to-yellow-300 opacity-20"></div>
-          <i data-feather="award" class="text-amber-400 z-10 relative"></i>
-        </div>
-        <div class="flex-1 text-left relative z-10">
-          <div class="flex items-center gap-2 mb-1">
-            <h3 class="text-lg font-bold text-white tracking-wide group-hover:text-amber-400 transition-colors">Prop Firm Passing</h3>
-            <span class="bg-gradient-to-r from-amber-500 to-yellow-300 text-dark-navy text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse">Hot</span>
-          </div>
-          <p class="text-gray-400 text-[10px] uppercase tracking-widest font-semibold group-hover:text-amber-400/70 transition-colors">Get Funded Automatically</p>
-        </div>
-        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-amber-400 ml-2 relative z-10">
-          <i data-feather="arrow-right" class="w-5 h-5"></i>
-        </div>
-      </a>
-
-      <!-- Link 4 -->
-      <a href="https://instagram.com/pips_attendant" target="_blank" class="link-card normal-card group active:scale-95">
-        <div class="link-icon normal-icon">
-          <i data-feather="instagram"></i>
-        </div>
-        <div class="flex-1 text-left">
-          <h3 class="text-lg font-semibold text-white tracking-wide group-hover:text-neon-blue transition-colors">Instagram</h3>
-        </div>
-        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-neon-blue ml-2">
-          <i data-feather="external-link" class="w-5 h-5"></i>
-        </div>
-      </a>
-
-      <!-- Link 5 -->
-      <a href="https://youtube.com/@pips_attendant" target="_blank" class="link-card normal-card group active:scale-95">
-        <div class="link-icon normal-icon">
-          <i data-feather="youtube"></i>
-        </div>
-        <div class="flex-1 text-left">
-          <h3 class="text-lg font-semibold text-white tracking-wide group-hover:text-neon-blue transition-colors">YouTube</h3>
-        </div>
-        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-neon-blue ml-2">
-          <i data-feather="external-link" class="w-5 h-5"></i>
-        </div>
-      </a>
-
-      <!-- Link 6 -->
-      <a href="https://twitter.com/pips_attendant" target="_blank" class="link-card normal-card group active:scale-95">
-        <div class="link-icon normal-icon">
-          <i data-feather="twitter"></i>
-        </div>
-        <div class="flex-1 text-left">
-          <h3 class="text-lg font-semibold text-white tracking-wide group-hover:text-neon-blue transition-colors">Twitter</h3>
-        </div>
-        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-neon-blue ml-2">
-          <i data-feather="external-link" class="w-5 h-5"></i>
-        </div>
-      </a>
-
-      <!-- Link TikTok -->
-      <a href="https://tiktok.com/@pips_attendant" target="_blank" class="link-card normal-card group active:scale-95">
-        <div class="link-icon normal-icon">
-          <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
-             <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 2.22-1.15 4.35-2.9 5.61-1.61 1.16-3.7 1.53-5.61 1.09-2.06-.48-3.79-1.89-4.7-3.77-.85-1.74-.9-3.83-.24-5.62.6-1.62 1.94-2.96 3.6-3.5 1.58-.51 3.32-.4 4.86.06V14.8c-.89-.33-1.92-.3-2.76.13-.8.41-1.4 1.15-1.6 2.03-.22.95.03 1.99.68 2.69.64.69 1.63 1 2.58.89 1.1-.12 2.05-.88 2.45-1.9.15-.4.21-.83.21-1.25V.02h-3.08z"/>
-          </svg>
-        </div>
-        <div class="flex-1 text-left">
-          <h3 class="text-lg font-semibold text-white tracking-wide group-hover:text-neon-blue transition-colors">TikTok</h3>
-        </div>
-      </a>
-
-      <!-- VIP Premium Resources Link -->
-      <a href="premium.html" class="link-card highlight-card group active:scale-95" style="background: linear-gradient(135deg, rgba(251,191,36,0.1), rgba(176,38,255,0.07)); border-color: rgba(251,191,36,0.3); box-shadow: 0 0 12px rgba(251,191,36,0.2), 0 0 24px rgba(176, 38, 255, 0.1), inset 0 0 12px rgba(251,191,36,0.03);">
-        <div class="link-icon" style="background-color: rgba(251,191,36,0.1); color: #fbbf24;">
-          <i data-feather="lock"></i>
-        </div>
-        <div class="flex-1 text-left">
-          <h3 class="text-lg font-semibold text-white tracking-wide group-hover:text-amber-400 transition-colors">VIP Premium Resources</h3>
-          <p class="text-xs text-gray-400 mt-1">Daily market analysis, strategies, indicators and pdf guides</p>
-        </div>
-        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-amber-400 ml-2">
-          <i data-feather="chevron-right" class="w-5 h-5"></i>
-        </div>
-      </a>
-    </div>
-
-    <!-- 🔒 VIP SIGNAL TEASER SECTION -->
-    <div class="w-full mb-8 relative">
-      <div class="flex items-center gap-3 mb-4 justify-center">
-        <span class="text-amber-400 text-lg">👑</span>
-        <h2 class="text-lg font-bold text-white tracking-tight">Recent VIP Signals</h2>
-        <span class="px-2 py-0.5 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-400 text-[10px] font-bold uppercase tracking-wider">Exclusive</span>
-      </div>
-      <div class="relative rounded-2xl overflow-hidden border border-amber-400/20" style="box-shadow: 0 0 30px rgba(251,191,36,0.1)">
-        <!-- Blurred signal cards (FOMO layer) -->
-        <div class="p-4 space-y-3 select-none" style="filter: blur(5px); pointer-events: none;">
-          <!-- Signal row 1 -->
-          <div class="flex items-center justify-between p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-            <div class="flex items-center gap-3">
-              <span class="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-sm font-bold">📈</span>
-              <div>
-                <p class="text-white text-sm font-bold">XAUUSD BUY</p>
-                <p class="text-gray-400 text-[10px]">Entry: ██████ | SL: █████</p>
-              </div>
-            </div>
-            <div class="text-right">
-              <p class="text-emerald-400 text-sm font-bold">+187 pips</p>
-              <p class="text-gray-500 text-[10px]">TP3 Hit ✅</p>
-            </div>
-          </div>
-          <!-- Signal row 2 -->
-          <div class="flex items-center justify-between p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-            <div class="flex items-center gap-3">
-              <span class="w-8 h-8 rounded-lg bg-sky-500/20 flex items-center justify-center text-sky-400 text-sm font-bold">📉</span>
-              <div>
-                <p class="text-white text-sm font-bold">GBPUSD SELL</p>
-                <p class="text-gray-400 text-[10px]">Entry: ██████ | SL: █████</p>
-              </div>
-            </div>
-            <div class="text-right">
-              <p class="text-emerald-400 text-sm font-bold">+94 pips</p>
-              <p class="text-gray-500 text-[10px]">TP2 Hit ✅</p>
-            </div>
-          </div>
-          <!-- Signal row 3 -->
-          <div class="flex items-center justify-between p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-            <div class="flex items-center gap-3">
-              <span class="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-sm font-bold">📈</span>
-              <div>
-                <p class="text-white text-sm font-bold">USDJPY BUY</p>
-                <p class="text-gray-400 text-[10px]">Entry: ██████ | SL: █████</p>
-              </div>
-            </div>
-            <div class="text-right">
-              <p class="text-emerald-400 text-sm font-bold">+143 pips</p>
-              <p class="text-gray-500 text-[10px]">TP3 Hit ✅</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Glass overlay / Lock -->
-        <div class="absolute inset-0 flex flex-col items-center justify-center" style="background: linear-gradient(135deg, rgba(10,15,28,0.7), rgba(176,38,255,0.15)); backdrop-filter: blur(2px);">
-          <div class="w-14 h-14 rounded-full bg-amber-400/20 border border-amber-400/40 flex items-center justify-center mb-3 shadow-[0_0_20px_rgba(251,191,36,0.3)]">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-          </div>
-          <p class="text-white font-bold text-base mb-1">VIP Members Only</p>
-          <p class="text-gray-300 text-xs text-center max-w-[220px] mb-4">Unlock full entry, SL & TP levels with real-time alerts</p>
-          <a href="premium.html" class="px-5 py-2.5 rounded-full font-bold text-sm text-dark-navy" style="background: linear-gradient(135deg, #fbbf24, #f59e0b); box-shadow: 0 0 20px rgba(251,191,36,0.4);">
-            👑 Upgrade to VIP
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Footer Section -->
-    <div class="mt-16 flex flex-col items-center text-center">
-      <!-- Call to Action Button -->
-      <div class="relative group cursor-pointer mb-4">
-        <!-- Glowing aura behind the button -->
-        <div class="absolute -inset-1 bg-gradient-to-r from-neon-purple to-neon-blue rounded-xl blur opacity-75 group-hover:opacity-100 transition duration-500"></div>
-        <!-- Button content -->
-        <a href="https://t.me/pips_attendant" target="_blank" class="relative flex items-center justify-center px-8 py-4 bg-dark-navy rounded-xl border border-white/10 leading-none">
-          <svg class="w-5 h-5 text-neon-blue mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
-            <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path>
-            <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path>
-            <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path>
-          </svg>
-          <span class="text-white font-bold text-lg">Join My Trading Community</span>
-        </a>
-      </div>
-      
-      <!-- Trust Text -->
-      <p class="text-gray-500 text-xs mb-8">Trusted by 5,000+ traders worldwide.</p>
-
-      <!-- 🏆 TESTIMONIALS CAROUSEL -->
-      <div class="w-full mb-10">
-        <div class="flex items-center gap-3 mb-5 justify-center">
-          <span class="text-neon-blue text-lg">🏆</span>
-          <h2 class="text-lg font-bold text-white tracking-tight">What Traders Are Saying</h2>
-        </div>
-
-        <div class="relative overflow-hidden" id="testimonialTrack">
-          <div id="testimonialSlider" class="flex gap-4 transition-transform duration-500 ease-in-out">
-
-            <!-- Card 1 -->
-            <div class="flex-shrink-0 w-72 glass-card rounded-2xl p-5 border border-white/10">
-              <div class="flex items-center gap-3 mb-3">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-neon-purple to-neon-blue flex items-center justify-center text-sm font-bold text-white flex-shrink-0">JK</div>
-                <div>
-                  <p class="text-white text-sm font-bold">James K.</p>
-                  <p class="text-gray-500 text-[10px]">🇰🇪 Nairobi, Kenya</p>
-                </div>
-                <div class="ml-auto text-amber-400 text-xs">★★★★★</div>
-              </div>
-              <p class="text-gray-300 text-xs leading-relaxed">"Pips_attendant is the real deal. Caught a 120 pip move on GBPUSD last Tuesday thanks to the signal. Finally making consistent profits! 🚀"</p>
-              <p class="text-emerald-400 text-[10px] font-bold mt-3">+120 PIPS ✅</p>
-            </div>
-
-            <!-- Card 2 -->
-            <div class="flex-shrink-0 w-72 glass-card rounded-2xl p-5 border border-neon-purple/20">
-              <div class="flex items-center gap-3 mb-3">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-500 to-sky-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">AM</div>
-                <div>
-                  <p class="text-white text-sm font-bold">Amara M.</p>
-                  <p class="text-gray-500 text-[10px]">🇳🇬 Lagos, Nigeria</p>
-                </div>
-                <div class="ml-auto text-amber-400 text-xs">★★★★★</div>
-              </div>
-              <p class="text-gray-300 text-xs leading-relaxed">"I've been following for 3 months and my account is up 40%. The live voice sessions are worth it alone. Highly recommended! 💎"</p>
-              <p class="text-emerald-400 text-[10px] font-bold mt-3">+40% Account Growth ✅</p>
-            </div>
-
-            <!-- Card 3 -->
-            <div class="flex-shrink-0 w-72 glass-card rounded-2xl p-5 border border-white/10">
-              <div class="flex items-center gap-3 mb-3">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-rose-500 to-amber-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">DW</div>
-                <div>
-                  <p class="text-white text-sm font-bold">Daniel W.</p>
-                  <p class="text-gray-500 text-[10px]">🇬🇧 London, UK</p>
-                </div>
-                <div class="ml-auto text-amber-400 text-xs">★★★★★</div>
-              </div>
-              <p class="text-gray-300 text-xs leading-relaxed">"Clear entries, stop losses, and TP levels. No guessing games. The risk management advice alone transformed my trading mentality. 🎯"</p>
-              <p class="text-emerald-400 text-[10px] font-bold mt-3">85% Win Rate This Month ✅</p>
-            </div>
-
-            <!-- Card 4 -->
-            <div class="flex-shrink-0 w-72 glass-card rounded-2xl p-5 border border-neon-blue/20">
-              <div class="flex items-center gap-3 mb-3">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-violet-500 to-pink-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">FN</div>
-                <div>
-                  <p class="text-white text-sm font-bold">Fatuma N.</p>
-                  <p class="text-gray-500 text-[10px]">🇹🇿 Dar es Salaam</p>
-                </div>
-                <div class="ml-auto text-amber-400 text-xs">★★★★★</div>
-              </div>
-              <p class="text-gray-300 text-xs leading-relaxed">"Started with $200, now at $650 in 2 months. The Telegram alerts are instant and the analysis is spot on every single time! 🔥"</p>
-              <p class="text-emerald-400 text-[10px] font-bold mt-3">$200 → $650 ✅</p>
-            </div>
-
-            <!-- Card 5 -->
-            <div class="flex-shrink-0 w-72 glass-card rounded-2xl p-5 border border-white/10">
-              <div class="flex items-center gap-3 mb-3">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-500 to-neon-blue flex items-center justify-center text-sm font-bold text-white flex-shrink-0">TP</div>
-                <div>
-                  <p class="text-white text-sm font-bold">Theo P.</p>
-                  <p class="text-gray-500 text-[10px]">🇿🇦 Johannesburg</p>
-                </div>
-                <div class="ml-auto text-amber-400 text-xs">★★★★★</div>
-              </div>
-              <p class="text-gray-300 text-xs leading-relaxed">"The community is so supportive and the signals are consistent. Best forex group I've ever joined. Worth every penny! 💰"</p>
-              <p class="text-emerald-400 text-[10px] font-bold mt-3">Top Community Pick ✅</p>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- Carousel Controls -->
-        <div class="flex items-center justify-center gap-4 mt-4">
-          <button onclick="slideTestimonial(-1)" class="w-8 h-8 rounded-full glass-card border border-white/10 flex items-center justify-center text-gray-400 hover:text-neon-blue hover:border-neon-blue/50 transition cursor-pointer">
-            <i data-feather="chevron-left" class="w-4 h-4"></i>
-          </button>
-          <div id="testimonialDots" class="flex gap-2">
-            <span class="w-2 h-2 rounded-full bg-neon-blue dot-indicator"></span>
-            <span class="w-2 h-2 rounded-full bg-white/20 dot-indicator"></span>
-            <span class="w-2 h-2 rounded-full bg-white/20 dot-indicator"></span>
-            <span class="w-2 h-2 rounded-full bg-white/20 dot-indicator"></span>
-            <span class="w-2 h-2 rounded-full bg-white/20 dot-indicator"></span>
-          </div>
-          <button onclick="slideTestimonial(1)" class="w-8 h-8 rounded-full glass-card border border-white/10 flex items-center justify-center text-gray-400 hover:text-neon-blue hover:border-neon-blue/50 transition cursor-pointer">
-            <i data-feather="chevron-right" class="w-4 h-4"></i>
-          </button>
-        </div>
-      </div>
-
-      <!-- 📅 ECONOMIC CALENDAR WIDGET -->
-      <div class="w-full mb-10">
-        <div class="flex items-center gap-3 mb-5 justify-center">
-          <span class="text-amber-400 text-lg">📅</span>
-          <h2 class="text-lg font-bold text-white tracking-tight">Upcoming High-Impact News</h2>
-        </div>
-        <div class="glass-card rounded-2xl border border-white/10 overflow-hidden">
-          <div class="tradingview-widget-container" style="height:300px;">
-            <div class="tradingview-widget-container__widget" style="height:300px;"></div>
-            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
-            {
-              "colorTheme": "dark",
-              "isTransparent": true,
-              "width": "100%",
-              "height": "300",
-              "locale": "en",
-              "importanceFilter": "1",
-              "countryFilter": "us,eu,gb,jp,cn,ca,au,nz"
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pips Attendant | Premium Forex Trading Platform</title>
+    
+    <!-- Meta Tags -->
+    <meta name="description" content="Professional forex signals, trading tools, mentorship, and prop firm solutions designed for disciplined traders.">
+    <meta name="theme-color" content="#050505">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="apple-touch-icon" href="avatar.png">
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS (CDN for rapid prototyping as before) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#050505',
+                        secondary: 'rgba(255,255,255,0.04)',
+                        gold: '#D4AF37',
+                        'gold-hover': '#E5C158',
+                        surface: 'rgba(255,255,255,0.02)',
+                        'surface-hover': 'rgba(255,255,255,0.05)',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
             }
-            </script>
-          </div>
-        </div>
-      </div>
+        }
+    </script>
+    
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-primary text-gray-300 font-sans antialiased selection:bg-gold/30 selection:text-white">
 
+    <!-- Parallax Background -->
+    <div class="parallax-bg"></div>
+    <div class="gradient-overlay"></div>
 
-      <!-- 🧮 INTERACTIVE RISK CALCULATOR -->
-      <div class="w-full mb-10">
-        <div class="flex items-center gap-3 mb-5 justify-center">
-          <span class="text-sky-400 text-lg">🧮</span>
-          <h2 class="text-lg font-bold text-white tracking-tight">Free Risk & Lot Size Calculator</h2>
-        </div>
-        <div class="glass-card rounded-2xl border border-sky-500/30 p-6 shadow-[0_0_20px_rgba(56,189,248,0.15)] relative overflow-hidden group">
-          <div class="absolute inset-0 bg-gradient-to-br from-sky-500/5 to-transparent pointer-events-none"></div>
-          <div class="relative z-10">
-            <form id="riskCalcForm" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              
-              <!-- Asset Pair -->
-              <div class="md:col-span-2 relative">
-                <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Asset Class</label>
-                <select id="calcAsset" class="w-full px-4 py-3 rounded-xl bg-black/50 border border-white/10 text-white text-sm focus:border-sky-400/50 focus:ring-1 focus:ring-sky-400/50 outline-none transition cursor-pointer appearance-none relative z-10">
-                  <option value="10">Forex Majors (EURUSD, GBPUSD, etc. - $10/pip)</option>
-                  <option value="10">Gold (XAUUSD - $10/pip per standard lot)</option>
-                </select>
-                <!-- Custom dropdown arrow -->
-                <div class="pointer-events-none absolute right-4 top-[38px] text-gray-400 z-20">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+    <!-- 1. STICKY NAVBAR -->
+    <nav class="fixed top-0 left-0 w-full z-50 glass-panel border-b border-white/5 transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-full bg-surface border border-white/10 flex items-center justify-center overflow-hidden transition-transform group-hover:scale-105">
+                    <img src="avatar.png" alt="Logo" class="w-full h-full object-cover">
                 </div>
-              </div>
-              
-              <!-- Account Balance -->
-              <div>
-                <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Account Balance ($)</label>
-                <div class="relative">
-                  <span class="absolute left-4 top-3 text-gray-500 font-bold z-20">$</span>
-                  <input type="number" id="calcBalance" placeholder="1000" min="1" step="any" required class="w-full pl-8 pr-4 py-3 rounded-xl bg-black/50 border border-white/10 text-white text-sm focus:border-sky-400/50 focus:ring-1 focus:ring-sky-400/50 outline-none transition relative z-10" />
-                </div>
-              </div>
-
-              <!-- Risk Percentage -->
-              <div>
-                <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Risk %</label>
-                <div class="relative">
-                  <input type="number" id="calcRisk" placeholder="1.0" min="0.1" step="0.1" max="100" required class="w-full pl-4 pr-8 py-3 rounded-xl bg-black/50 border border-white/10 text-white text-sm focus:border-sky-400/50 focus:ring-1 focus:ring-sky-400/50 outline-none transition relative z-10" />
-                  <span class="absolute right-4 top-3 text-gray-500 font-bold z-20">%</span>
-                </div>
-              </div>
-
-              <!-- Stop Loss Pips -->
-              <div class="md:col-span-2">
-                <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Stop Loss (Pips)</label>
-                <input type="number" id="calcStopLoss" placeholder="30" min="1" step="any" required class="w-full px-4 py-3 rounded-xl bg-black/50 border border-white/10 text-white text-sm focus:border-sky-400/50 focus:ring-1 focus:ring-sky-400/50 outline-none transition relative z-10" />
-              </div>
-            </form>
-
-            <button type="button" onclick="calculateRisk()" class="w-full py-4 rounded-xl font-bold bg-gradient-to-r from-sky-500 to-blue-600 text-white hover:brightness-110 shadow-lg hover:shadow-sky-500/30 active:scale-95 transition duration-300 flex items-center justify-center gap-2 mb-6 cursor-pointer">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
-              Calculate Exact Lot Size
-            </button>
-
-            <!-- Results Display -->
-            <div id="calcResults" class="hidden flex-col items-center justify-center bg-black/60 border border-white/5 rounded-xl p-6 text-center shadow-inner relative overflow-hidden mt-2">
-              <div class="absolute inset-0 bg-gradient-to-b from-transparent to-sky-500/10"></div>
-              <div class="relative z-10 w-full flex flex-col md:flex-row items-center justify-center gap-6">
-                
-                <div class="flex-1">
-                  <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold mb-1">Amount at Risk</p>
-                  <p class="text-2xl font-bold text-rose-400" id="resRiskAmount">$--</p>
-                </div>
-                
-                <div class="hidden md:block w-px h-10 bg-white/10"></div>
-                <div class="md:hidden h-px w-12 bg-white/10"></div>
-                
-                <div class="flex-1">
-                  <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold mb-1">Recommended Lot</p>
-                  <p class="text-3xl font-black text-emerald-400 drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]" id="resLotSize">--</p>
-                </div>
-
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
-      <!-- 📱 WHATSAPP BROADCAST WIDGET -->
-      <div class="w-full mb-12">
-        <div class="glass-card rounded-2xl border border-emerald-500/30 p-6 text-center shadow-[0_0_20px_rgba(16,185,129,0.15)] relative overflow-hidden group">
-          <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent"></div>
-          <div class="relative z-10">
-            <div class="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4 border border-emerald-500/30">
-              <i data-feather="message-circle" class="w-6 h-6 text-emerald-400"></i>
-            </div>
-            <h2 class="text-xl font-bold text-white mb-2">Free WhatsApp Broadcast</h2>
-            <p class="text-gray-400 text-sm mb-6 max-w-sm mx-auto">Get occasional free signal teasers directly to your WhatsApp. No spam, only high-probability setups.</p>
+                <span class="text-white font-bold text-lg tracking-tight">Pips Attendant</span>
+            </a>
             
-            <form onsubmit="subscribeWhatsApp(event)" class="max-w-xs mx-auto space-y-3">
-              <input type="tel" id="waPhone" placeholder="Enter your number (e.g. +254...)" required
-                class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-emerald-400/50 focus:outline-none transition font-mono text-center" />
-              <button type="submit" id="waBtn" class="w-full py-3 rounded-xl font-bold bg-gradient-to-r from-emerald-500 to-emerald-400 text-dark-navy hover:brightness-110 shadow-lg hover:shadow-emerald-500/30 active:scale-95 transition duration-300">
-                Join Broadcast
-              </button>
-              <div id="waStatus" class="text-xs min-h-[16px] mt-2"></div>
-            </form>
-          </div>
-        </div>
-      </div>
+            <!-- Desktop Links -->
+            <div class="hidden md:flex items-center gap-8 text-sm font-medium">
+                <a href="#hero" class="hover:text-white transition-colors">Home</a>
+                <a href="#services" class="hover:text-white transition-colors">Signals</a>
+                <a href="#results" class="hover:text-white transition-colors">Results</a>
+                <a href="#services" class="hover:text-white transition-colors">Tools</a>
+                <a href="#community" class="hover:text-white transition-colors">Community</a>
+                <a href="#vip" class="hover:text-white transition-colors">VIP</a>
+            </div>
 
-      <!-- High Visibility Risk Disclaimer -->
-      <div class="w-full mb-8 p-4 rounded-xl border-l-4 border-red-500 bg-red-500/10 backdrop-blur-sm text-left">
-        <div class="flex items-start gap-3">
-          <i data-feather="alert-triangle" class="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5"></i>
-          <div>
-            <h3 class="text-red-500 font-bold text-sm uppercase tracking-wider mb-1">High Risk Investment Warning</h3>
-            <p class="text-gray-300 text-xs leading-relaxed">
-              Trading foreign exchange (Forex) and CFDs carries a high level of risk and may not be suitable for all investors. The high degree of leverage can work against you as well as for you. Past performance is not indicative of future results. Never invest money you cannot afford to lose.
+            <!-- CTA -->
+            <div class="hidden md:block">
+                <a href="premium.html" class="btn-gold px-6 py-2.5 rounded-full text-sm">Join VIP</a>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden text-white focus:outline-none" id="mobile-menu-btn">
+                <i data-feather="menu"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 2. HERO SECTION -->
+    <section id="hero" class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 px-6 flex flex-col items-center justify-center min-h-[90vh] text-center overflow-hidden">
+        <div class="max-w-4xl mx-auto z-10 animate-fade-in-up">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-panel text-xs font-medium text-gold mb-6 border border-gold/20">
+                <span class="w-2 h-2 rounded-full bg-gold animate-pulse"></span>
+                Premium Trading Ecosystem
+            </div>
+            
+            <h1 class="text-5xl md:text-7xl font-extrabold text-white tracking-tight leading-tight mb-6">
+                Trade Smarter. <br/> <span class="text-transparent bg-clip-text bg-gradient-to-r from-gray-100 to-gray-500">Grow Consistently.</span>
+            </h1>
+            
+            <p class="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+                Professional forex signals, trading tools, mentorship, and prop firm solutions designed for disciplined traders.
             </p>
-          </div>
+
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+                <a href="#community" class="w-full sm:w-auto px-8 py-3.5 rounded-full glass-card text-white font-medium hover:bg-white/10 transition-all border border-white/10 flex items-center justify-center gap-2">
+                    Join Free Community
+                    <i data-feather="arrow-right" class="w-4 h-4"></i>
+                </a>
+                <a href="premium.html" class="w-full sm:w-auto px-8 py-3.5 rounded-full btn-gold flex items-center justify-center gap-2">
+                    Upgrade to VIP
+                    <i data-feather="lock" class="w-4 h-4"></i>
+                </a>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+                <div class="glass-card p-6 text-center">
+                    <h3 class="text-3xl font-bold text-white mb-1">85%</h3>
+                    <p class="text-xs text-gray-400 uppercase tracking-wider">Verified Win Rate</p>
+                </div>
+                <div class="glass-card p-6 text-center">
+                    <h3 class="text-3xl font-bold text-white mb-1">12k+</h3>
+                    <p class="text-xs text-gray-400 uppercase tracking-wider">Pips Shared</p>
+                </div>
+                <div class="glass-card p-6 text-center">
+                    <h3 class="text-3xl font-bold text-white mb-1">5+</h3>
+                    <p class="text-xs text-gray-400 uppercase tracking-wider">Years Experience</p>
+                </div>
+                <div class="glass-card p-6 text-center">
+                    <h3 class="text-3xl font-bold text-white mb-1">5k+</h3>
+                    <p class="text-xs text-gray-400 uppercase tracking-wider">Community Members</p>
+                </div>
+            </div>
         </div>
-      </div>
+        
+        <!-- Subtle Glow -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gold/5 rounded-full blur-[120px] pointer-events-none -z-10"></div>
+    </section>
 
-      <!-- Copyright & Disclaimer -->
-      <div class="text-gray-500 text-[10px] leading-relaxed max-w-md mx-auto">
-        <p class="mb-2">&copy; 2026 Pips_attendant. All rights reserved. <a href="admin.html" class="opacity-15 hover:opacity-100 hover:text-neon-blue transition duration-300 ml-1">Console</a></p>
-        <p>Trading foreign exchange carries a high level of risk and may not be suitable for all investors.</p>
-      </div>
-    </div>
-  </main>
+    <!-- 4. TRUSTED PARTNERS SECTION (Moved up slightly for flow) -->
+    <section class="py-10 border-y border-white/5 bg-black/20">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <p class="text-xs text-gray-500 uppercase tracking-[0.2em] mb-6">Trusted Partners</p>
+            <div class="flex flex-wrap justify-center items-center gap-12 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
+                <img src="justmarkets.png" alt="JustMarkets" class="h-8 md:h-10 object-contain hover:scale-105 transition-transform cursor-pointer" onerror="this.src='https://via.placeholder.com/150x50?text=JustMarkets'">
+                <img src="xm.png" alt="XM" class="h-8 md:h-10 object-contain hover:scale-105 transition-transform cursor-pointer" onerror="this.src='https://via.placeholder.com/150x50?text=XM'">
+            </div>
+        </div>
+    </section>
 
+    <!-- 3. FEATURED SERVICES SECTION -->
+    <section id="services" class="py-24 px-6 relative">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">The Complete Ecosystem</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">Everything you need to analyze, execute, and grow your trading account.</p>
+            </div>
 
-  <!-- Floating Telegram Button -->
-  <a href="https://t.me/pipsattendant" target="_blank" class="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-tr from-sky-400 to-blue-600 rounded-full flex items-center justify-center text-white shadow-[0_0_20px_rgba(56,189,248,0.4)] z-50 hover:shadow-[0_0_30px_rgba(56,189,248,0.6)] transition-all hover:scale-110 active:scale-95 duration-300" aria-label="Contact on Telegram">
-    <i data-feather="send" class="w-6 h-6"></i>
-  </a>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- VIP Signals -->
+                <div class="glass-card p-8 group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <i data-feather="trending-up" class="w-24 h-24 text-white"></i>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-surface border border-white/10 flex items-center justify-center mb-6 text-white group-hover:text-gold transition-colors">
+                        <i data-feather="activity"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-3">VIP Signals</h3>
+                    <p class="text-gray-400 mb-6 leading-relaxed">Real-time premium trading signals with exact entry, stop loss, and take profit levels. Push notifications to ensure you never miss a setup.</p>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-2 text-sm text-gray-300"><i data-feather="check" class="w-4 h-4 text-gold"></i> Verified results</li>
+                        <li class="flex items-center gap-2 text-sm text-gray-300"><i data-feather="check" class="w-4 h-4 text-gold"></i> Instant Telegram alerts</li>
+                    </ul>
+                    <a href="premium.html" class="inline-flex items-center gap-2 text-gold font-medium text-sm hover:underline">
+                        Explore Signals <i data-feather="arrow-right" class="w-4 h-4"></i>
+                    </a>
+                </div>
 
-  <!-- Custom Logic -->
-  <script src="app.js"></script>
+                <!-- Prop Firm Passing -->
+                <div class="glass-card p-8 group relative overflow-hidden border border-gold/10">
+                    <div class="absolute top-6 right-6">
+                        <span class="bg-gold text-primary text-xs font-bold px-3 py-1 rounded-full tracking-wider">HOT</span>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-surface border border-white/10 flex items-center justify-center mb-6 text-white group-hover:text-gold transition-colors">
+                        <i data-feather="award"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-3">Prop Firm Passing</h3>
+                    <p class="text-gray-400 mb-6 leading-relaxed">Let our automated systems and professional traders help you pass your prop firm challenges and get funded.</p>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-2 text-sm text-gray-300"><i data-feather="check" class="w-4 h-4 text-gold"></i> HFT Support</li>
+                        <li class="flex items-center gap-2 text-sm text-gray-300"><i data-feather="check" class="w-4 h-4 text-gold"></i> Strict Risk Management</li>
+                    </ul>
+                    <a href="propfirm.html" class="inline-flex items-center gap-2 text-white font-medium text-sm hover:text-gold transition-colors">
+                        Get Funded <i data-feather="arrow-right" class="w-4 h-4"></i>
+                    </a>
+                </div>
 
-  <!-- Animated Canvas Background Script -->
-  <script>
-    (function() {
-      const canvas = document.getElementById('bgCanvas');
-      const ctx = canvas.getContext('2d');
-      let W, H, particles;
+                <!-- Trading Journal -->
+                <div class="glass-card p-8 group relative overflow-hidden">
+                    <div class="absolute top-6 right-6">
+                        <span class="bg-white/10 text-white text-xs font-bold px-3 py-1 rounded-full tracking-wider border border-white/10">FREE TOOL</span>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-surface border border-white/10 flex items-center justify-center mb-6 text-white group-hover:text-gold transition-colors">
+                        <i data-feather="book-open"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-3">Trading Journal</h3>
+                    <p class="text-gray-400 mb-6 leading-relaxed">Track your performance, analyze your psychology, and optimize your strategy with our built-in digital journal.</p>
+                    <a href="journal.html" class="inline-flex items-center gap-2 text-white font-medium text-sm hover:text-gold transition-colors">
+                        Start Tracking <i data-feather="arrow-right" class="w-4 h-4"></i>
+                    </a>
+                </div>
 
-      function resize() {
-        W = canvas.width = window.innerWidth;
-        H = canvas.height = window.innerHeight;
-      }
+                <!-- Risk Calculator -->
+                <div class="glass-card p-8 group relative overflow-hidden">
+                    <div class="w-12 h-12 rounded-xl bg-surface border border-white/10 flex items-center justify-center mb-6 text-white group-hover:text-gold transition-colors">
+                        <i data-feather="pie-chart"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-3">Risk Calculator</h3>
+                    <p class="text-gray-400 mb-6 leading-relaxed">Calculate exact position sizes based on your account balance, risk percentage, and stop loss distance in pips.</p>
+                    <a href="#" class="inline-flex items-center gap-2 text-white font-medium text-sm hover:text-gold transition-colors">
+                        Use Calculator <i data-feather="arrow-right" class="w-4 h-4"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
 
-      function createParticles() {
-        particles = [];
-        const count = Math.floor((W * H) / 18000);
-        for (let i = 0; i < count; i++) {
-          particles.push({
-            x: Math.random() * W,
-            y: Math.random() * H,
-            vy: -(Math.random() * 0.3 + 0.1),
-            vx: (Math.random() - 0.5) * 0.15,
-            r: Math.random() * 1.2 + 0.3,
-            alpha: Math.random() * 0.5 + 0.2,
-            color: Math.random() > 0.6 ? '#f59e0b' : Math.random() > 0.5 ? '#fbbf24' : '#d97706'
-          });
-        }
-      }
+    <!-- 5. RESULTS SECTION -->
+    <section id="results" class="py-24 px-6 overflow-hidden">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex justify-between items-end mb-12">
+                <div>
+                    <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Recent Performance</h2>
+                    <p class="text-gray-400">Verified setups from the VIP community.</p>
+                </div>
+                <div class="hidden md:flex gap-2">
+                    <button class="w-10 h-10 rounded-full glass-card flex items-center justify-center hover:bg-white/10 transition-colors" onclick="document.getElementById('results-scroll').scrollBy({left: -300, behavior: 'smooth'})">
+                        <i data-feather="chevron-left"></i>
+                    </button>
+                    <button class="w-10 h-10 rounded-full glass-card flex items-center justify-center hover:bg-white/10 transition-colors" onclick="document.getElementById('results-scroll').scrollBy({left: 300, behavior: 'smooth'})">
+                        <i data-feather="chevron-right"></i>
+                    </button>
+                </div>
+            </div>
 
-      function drawCandlestick(x, y, open, close, high, low, col) {
-        ctx.strokeStyle = col;
-        ctx.lineWidth = 0.8;
-        ctx.globalAlpha = 0.12;
-        // Wick
-        ctx.beginPath();
-        ctx.moveTo(x, y - high);
-        ctx.lineTo(x, y + low);
-        ctx.stroke();
-        // Body
-        ctx.fillStyle = col;
-        ctx.fillRect(x - 3, y - Math.max(open, close), 6, Math.abs(open - close) || 1);
-        ctx.globalAlpha = 1;
-      }
+            <!-- Horizontal Scroll Container -->
+            <div id="results-scroll" class="flex overflow-x-auto hide-scrollbar gap-6 pb-8 snap-x-mandatory px-4 -mx-4 md:mx-0 md:px-0">
+                <!-- Card 1 -->
+                <div class="min-w-[280px] md:min-w-[320px] glass-card p-6 snap-start flex-shrink-0">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h4 class="text-lg font-bold text-white">XAUUSD</h4>
+                            <span class="text-xs text-gray-400">Gold vs US Dollar</span>
+                        </div>
+                        <span class="bg-green-500/10 text-green-400 text-xs font-bold px-2.5 py-1 rounded border border-green-500/20 flex items-center gap-1">
+                            <i data-feather="arrow-up-right" class="w-3 h-3"></i> WIN
+                        </span>
+                    </div>
+                    <div class="space-y-2 text-sm text-gray-300 mb-6">
+                        <div class="flex justify-between"><span>Entry</span> <span class="font-mono">2345.50</span></div>
+                        <div class="flex justify-between"><span>Exit</span> <span class="font-mono">2360.00</span></div>
+                        <div class="flex justify-between border-t border-white/5 pt-2 mt-2">
+                            <span>Profit</span> <span class="text-gold font-bold">+145 Pips</span>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500 text-right">Yesterday</div>
+                </div>
 
-      const candles = [];
-      function initCandles() {
-        candles.length = 0;
-        const cols = Math.floor(W / 60);
-        for (let i = 0; i < cols; i++) {
-          candles.push({
-            x: i * 60 + 30,
-            y: Math.random() * H * 0.6 + H * 0.2,
-            open: Math.random() * 10 + 4,
-            close: Math.random() * 10 + 4,
-            high: Math.random() * 12 + 6,
-            low: Math.random() * 12 + 6,
-            color: Math.random() > 0.5 ? '#f59e0b' : '#fbbf24',
-            vy: (Math.random() - 0.5) * 0.15
-          });
-        }
-      }
+                <!-- Card 2 -->
+                <div class="min-w-[280px] md:min-w-[320px] glass-card p-6 snap-start flex-shrink-0">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h4 class="text-lg font-bold text-white">GBPUSD</h4>
+                            <span class="text-xs text-gray-400">British Pound</span>
+                        </div>
+                        <span class="bg-green-500/10 text-green-400 text-xs font-bold px-2.5 py-1 rounded border border-green-500/20 flex items-center gap-1">
+                            <i data-feather="arrow-down-right" class="w-3 h-3"></i> WIN
+                        </span>
+                    </div>
+                    <div class="space-y-2 text-sm text-gray-300 mb-6">
+                        <div class="flex justify-between"><span>Entry</span> <span class="font-mono">1.26500</span></div>
+                        <div class="flex justify-between"><span>Exit</span> <span class="font-mono">1.25800</span></div>
+                        <div class="flex justify-between border-t border-white/5 pt-2 mt-2">
+                            <span>Profit</span> <span class="text-gold font-bold">+70 Pips</span>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500 text-right">July 1st</div>
+                </div>
 
-      function animate() {
-        if (!isVisible) return;
-        ctx.clearRect(0, 0, W, H);
+                <!-- Card 3 -->
+                <div class="min-w-[280px] md:min-w-[320px] glass-card p-6 snap-start flex-shrink-0">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h4 class="text-lg font-bold text-white">US30</h4>
+                            <span class="text-xs text-gray-400">Dow Jones Index</span>
+                        </div>
+                        <span class="bg-red-500/10 text-red-400 text-xs font-bold px-2.5 py-1 rounded border border-red-500/20 flex items-center gap-1">
+                            <i data-feather="x" class="w-3 h-3"></i> LOSS
+                        </span>
+                    </div>
+                    <div class="space-y-2 text-sm text-gray-300 mb-6">
+                        <div class="flex justify-between"><span>Entry</span> <span class="font-mono">39000</span></div>
+                        <div class="flex justify-between"><span>Exit</span> <span class="font-mono">38970</span></div>
+                        <div class="flex justify-between border-t border-white/5 pt-2 mt-2">
+                            <span>Loss</span> <span class="text-red-400 font-bold">-30 Pips</span>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500 text-right">June 28th</div>
+                </div>
 
-        // Draw floating candles
-        candles.forEach(c => {
-          c.y += c.vy;
-          if (c.y < 0) c.y = H;
-          if (c.y > H) c.y = 0;
-          drawCandlestick(c.x, c.y, c.open, c.close, c.high, c.low, c.color);
+                 <!-- Card 4 -->
+                 <div class="min-w-[280px] md:min-w-[320px] glass-card p-6 snap-start flex-shrink-0">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h4 class="text-lg font-bold text-white">EURJPY</h4>
+                            <span class="text-xs text-gray-400">Euro vs Yen</span>
+                        </div>
+                        <span class="bg-green-500/10 text-green-400 text-xs font-bold px-2.5 py-1 rounded border border-green-500/20 flex items-center gap-1">
+                            <i data-feather="arrow-up-right" class="w-3 h-3"></i> WIN
+                        </span>
+                    </div>
+                    <div class="space-y-2 text-sm text-gray-300 mb-6">
+                        <div class="flex justify-between"><span>Entry</span> <span class="font-mono">168.200</span></div>
+                        <div class="flex justify-between"><span>Exit</span> <span class="font-mono">169.100</span></div>
+                        <div class="flex justify-between border-t border-white/5 pt-2 mt-2">
+                            <span>Profit</span> <span class="text-gold font-bold">+90 Pips</span>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500 text-right">June 26th</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. TESTIMONIALS (Carousel via CSS snap) -->
+    <section class="py-24 px-6 bg-surface/50 border-y border-white/5">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-3xl md:text-4xl font-bold text-white text-center mb-16">Trusted by Traders</h2>
+            
+            <div class="flex overflow-x-auto hide-scrollbar gap-8 pb-8 snap-x-mandatory px-4 -mx-4 md:mx-0 md:px-0">
+                <!-- Testimonial 1 -->
+                <div class="min-w-[300px] md:min-w-[400px] p-8 glass-card snap-center flex-shrink-0">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 rounded-full bg-gray-800 overflow-hidden">
+                            <img src="https://ui-avatars.com/api/?name=Michael+T&background=D4AF37&color=000" alt="Avatar">
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold">Michael T.</h4>
+                            <div class="text-gold text-xs font-medium flex items-center gap-1">
+                                <i data-feather="award" class="w-3 h-3"></i> Funded $100k
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 text-sm italic mb-4">"The risk management tools and exact setups completely changed my psychology. Passed my prop firm challenge in 3 weeks using the VIP signals."</p>
+                </div>
+
+                <!-- Testimonial 2 -->
+                <div class="min-w-[300px] md:min-w-[400px] p-8 glass-card snap-center flex-shrink-0">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 rounded-full bg-gray-800 overflow-hidden">
+                            <img src="https://ui-avatars.com/api/?name=Sarah+J&background=1f2937&color=fff" alt="Avatar">
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold">Sarah J.</h4>
+                            <div class="text-green-400 text-xs font-medium flex items-center gap-1">
+                                <i data-feather="trending-up" class="w-3 h-3"></i> Consistent Profit
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 text-sm italic mb-4">"No noise, just clean setups. The UI is amazing, but the education and community support is what keeps me here. Worth every penny."</p>
+                </div>
+                
+                <!-- Testimonial 3 -->
+                <div class="min-w-[300px] md:min-w-[400px] p-8 glass-card snap-center flex-shrink-0">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 rounded-full bg-gray-800 overflow-hidden">
+                            <img src="https://ui-avatars.com/api/?name=David+O&background=374151&color=D4AF37" alt="Avatar">
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold">David O.</h4>
+                            <div class="text-gold text-xs font-medium flex items-center gap-1">
+                                <i data-feather="star" class="w-3 h-3"></i> 2 Yrs Member
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 text-sm italic mb-4">"Finally a platform that feels professional. The journal feature is incredible and the analysis is top tier. Best decision for my trading journey."</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. COMMUNITY SECTION -->
+    <section id="community" class="py-24 px-6 text-center">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-3xl md:text-5xl font-bold text-white mb-6">Join Thousands of Traders Worldwide</h2>
+            <p class="text-gray-400 text-lg mb-12 max-w-2xl mx-auto">Free education, daily market insights, and a supportive network of traders aiming for consistency.</p>
+            
+            <div class="flex flex-wrap justify-center gap-4 md:gap-8">
+                <!-- Telegram -->
+                <a href="#" class="flex items-center justify-center w-16 h-16 rounded-2xl glass-card text-white hover:text-[#0088cc] hover:border-[#0088cc]/30 transition-all group">
+                    <i data-feather="send" class="w-6 h-6 group-hover:scale-110 transition-transform"></i>
+                </a>
+                <!-- Instagram -->
+                <a href="#" class="flex items-center justify-center w-16 h-16 rounded-2xl glass-card text-white hover:text-[#E1306C] hover:border-[#E1306C]/30 transition-all group">
+                    <i data-feather="instagram" class="w-6 h-6 group-hover:scale-110 transition-transform"></i>
+                </a>
+                <!-- YouTube -->
+                <a href="#" class="flex items-center justify-center w-16 h-16 rounded-2xl glass-card text-white hover:text-[#FF0000] hover:border-[#FF0000]/30 transition-all group">
+                    <i data-feather="youtube" class="w-6 h-6 group-hover:scale-110 transition-transform"></i>
+                </a>
+                <!-- TikTok (using video icon as fallback) -->
+                <a href="#" class="flex items-center justify-center w-16 h-16 rounded-2xl glass-card text-white hover:text-[#00f2fe] hover:border-[#00f2fe]/30 transition-all group">
+                    <i data-feather="video" class="w-6 h-6 group-hover:scale-110 transition-transform"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 8. VIP SECTION -->
+    <section id="vip" class="py-24 px-6">
+        <div class="max-w-5xl mx-auto relative">
+            <!-- Gold glow behind card -->
+            <div class="absolute inset-0 bg-gold/10 blur-[80px] rounded-[3rem] -z-10"></div>
+            
+            <div class="glass-card rounded-[2.5rem] p-8 md:p-16 border-gold/20 flex flex-col md:flex-row items-center justify-between gap-12 overflow-hidden relative">
+                <!-- Background pattern -->
+                <div class="absolute top-0 right-0 w-64 h-64 bg-gold/5 rounded-full blur-[50px]"></div>
+
+                <div class="flex-1 z-10">
+                    <h2 class="text-3xl md:text-5xl font-extrabold text-white mb-6">Unlock the Full<br/> Trading Experience</h2>
+                    <p class="text-gray-400 mb-8 text-lg">Gain the edge you need with our premium toolkit, exact market setups, and private mentorship.</p>
+                    
+                    <ul class="space-y-4 mb-10">
+                        <li class="flex items-center gap-3 text-gray-200">
+                            <div class="w-6 h-6 rounded-full bg-gold/10 flex items-center justify-center"><i data-feather="check" class="w-3 h-3 text-gold"></i></div>
+                            Instant push alerts & signals
+                        </li>
+                        <li class="flex items-center gap-3 text-gray-200">
+                            <div class="w-6 h-6 rounded-full bg-gold/10 flex items-center justify-center"><i data-feather="check" class="w-3 h-3 text-gold"></i></div>
+                            VIP market analysis & breakdowns
+                        </li>
+                        <li class="flex items-center gap-3 text-gray-200">
+                            <div class="w-6 h-6 rounded-full bg-gold/10 flex items-center justify-center"><i data-feather="check" class="w-3 h-3 text-gold"></i></div>
+                            Exclusive, high-probability setups
+                        </li>
+                        <li class="flex items-center gap-3 text-gray-200">
+                            <div class="w-6 h-6 rounded-full bg-gold/10 flex items-center justify-center"><i data-feather="check" class="w-3 h-3 text-gold"></i></div>
+                            Private mentorship sessions
+                        </li>
+                        <li class="flex items-center gap-3 text-gray-200">
+                            <div class="w-6 h-6 rounded-full bg-gold/10 flex items-center justify-center"><i data-feather="check" class="w-3 h-3 text-gold"></i></div>
+                            Priority support & guidance
+                        </li>
+                    </ul>
+
+                    <a href="premium.html" class="inline-block btn-gold px-10 py-4 rounded-full text-lg font-bold">
+                        Become VIP
+                    </a>
+                </div>
+
+                <div class="flex-1 z-10 hidden md:block">
+                    <!-- Decorative mock UI element -->
+                    <div class="w-full aspect-[4/3] glass-panel rounded-2xl border-white/10 p-6 relative shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-500">
+                        <div class="flex justify-between items-center mb-6">
+                            <div class="w-24 h-4 bg-white/10 rounded-full"></div>
+                            <div class="w-8 h-8 rounded-full bg-gold/20 flex items-center justify-center"><i data-feather="lock" class="w-4 h-4 text-gold"></i></div>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="w-full h-12 bg-white/5 rounded-lg"></div>
+                            <div class="w-3/4 h-12 bg-white/5 rounded-lg"></div>
+                            <div class="w-5/6 h-12 bg-white/5 rounded-lg"></div>
+                            <div class="w-full h-12 bg-gold/10 rounded-lg border border-gold/20 mt-8"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 9. FOOTER -->
+    <footer class="border-t border-white/5 pt-16 pb-8 px-6 bg-black">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div class="md:col-span-2">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-8 h-8 rounded-full bg-surface border border-white/10 flex items-center justify-center overflow-hidden">
+                            <img src="avatar.png" alt="Logo" class="w-full h-full object-cover">
+                        </div>
+                        <span class="text-white font-bold text-lg">Pips Attendant</span>
+                    </div>
+                    <p class="text-sm text-gray-500 max-w-sm mb-6 leading-relaxed">
+                        Risk Warning: Trading foreign exchange on margin carries a high level of risk, and may not be suitable for all investors. Past performance is not indicative of future results.
+                    </p>
+                </div>
+                
+                <div>
+                    <h4 class="text-white font-bold mb-4 text-sm uppercase tracking-wider">Platform</h4>
+                    <ul class="space-y-3 text-sm text-gray-400">
+                        <li><a href="#services" class="hover:text-gold transition-colors">Signals</a></li>
+                        <li><a href="journal.html" class="hover:text-gold transition-colors">Trading Journal</a></li>
+                        <li><a href="propfirm.html" class="hover:text-gold transition-colors">Prop Firms</a></li>
+                        <li><a href="premium.html" class="hover:text-gold transition-colors">VIP Access</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-white font-bold mb-4 text-sm uppercase tracking-wider">Legal</h4>
+                    <ul class="space-y-3 text-sm text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Terms of Service</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Risk Disclaimer</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Contact Us</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-xs text-gray-600">© 2026 Pips Attendant. All rights reserved.</p>
+                <div class="flex gap-4">
+                    <a href="#" class="text-gray-500 hover:text-white"><i data-feather="instagram" class="w-4 h-4"></i></a>
+                    <a href="#" class="text-gray-500 hover:text-white"><i data-feather="send" class="w-4 h-4"></i></a>
+                    <a href="#" class="text-gray-500 hover:text-white"><i data-feather="youtube" class="w-4 h-4"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Chat Widget Integration -->
+    <script src="chat-widget.js"></script>
+    <script>
+        // Initialize Feather Icons
+        feather.replace();
+
+        // Navbar Scroll Effect
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 20) {
+                nav.classList.add('bg-black/50', 'backdrop-blur-xl', 'shadow-lg');
+                nav.classList.remove('border-white/5');
+            } else {
+                nav.classList.remove('bg-black/50', 'backdrop-blur-xl', 'shadow-lg');
+                nav.classList.add('border-white/5');
+            }
         });
-
-        // Draw floating particles
-        particles.forEach(p => {
-          p.x += p.vx;
-          p.y += p.vy;
-          if (p.y < 0) { p.y = H; p.x = Math.random() * W; }
-          ctx.globalAlpha = p.alpha;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-          ctx.fillStyle = p.color;
-          ctx.fill();
-          ctx.globalAlpha = 1;
-        });
-
-        requestAnimationFrame(animate);
-      }
-
-      let isVisible = true;
-      document.addEventListener('visibilitychange', () => {
-        isVisible = !document.hidden;
-        if (isVisible) animate();
-      });
-
-      window.addEventListener('resize', () => { resize(); createParticles(); initCandles(); });
-      resize();
-      createParticles();
-      initCandles();
-      animate();
-    })();
-  </script>
-
-  <!-- Pips Assistant AI Support Widget -->
-  <script src="/chat-widget.js"></script>
+    </script>
 </body>
 </html>
