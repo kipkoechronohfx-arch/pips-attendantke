@@ -825,8 +825,113 @@
         </a>
       </div>
 
+      <!-- 🧮 Live Risk Calculator -->
+      <div class="mb-10">
+        <div class="glass-card border border-gold/20 rounded-2xl overflow-hidden">
+          <!-- Header -->
+          <div class="bg-gradient-to-r from-gold/10 to-transparent p-4 border-b border-white/5 flex items-center gap-3">
+            <div class="p-2 bg-gold/20 rounded-lg">
+              <i data-feather="percent" class="w-5 h-5 text-gold"></i>
+            </div>
+            <div>
+              <h3 class="text-white font-bold text-lg leading-tight">Risk / Lot Size Calculator</h3>
+              <p class="text-[10px] text-gray-400">Calculate your position size in real time</p>
+            </div>
+          </div>
+
+          <div class="p-5 md:p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <!-- Inputs -->
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Account Balance (USD)</label>
+                  <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-500 text-sm">$</span>
+                    <input type="number" id="rc_balance" placeholder="e.g. 10000" min="1"
+                      class="w-full bg-black/50 border border-white/10 rounded-xl pl-8 pr-4 py-2.5 text-white text-sm focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/30 transition-all placeholder-gray-600">
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Risk (%)</label>
+                    <div class="relative">
+                      <input type="number" id="rc_risk" placeholder="1.0" step="0.1" min="0.1" max="100"
+                        class="w-full bg-black/50 border border-white/10 rounded-xl pl-4 pr-8 py-2.5 text-white text-sm focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/30 transition-all placeholder-gray-600">
+                      <span class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-500 text-sm">%</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Stop Loss (Pips)</label>
+                    <input type="number" id="rc_sl" placeholder="e.g. 50" min="1"
+                      class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/30 transition-all placeholder-gray-600">
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Instrument / Pair</label>
+                  <select id="rc_pair"
+                    class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/30 transition-all appearance-none">
+                    <option value="10">Forex Majors (EURUSD, GBPUSD…) — $10/pip</option>
+                    <option value="100">Gold (XAUUSD) — $10/pip per 0.1 lot</option>
+                    <option value="1">Indices (US30, NAS100) — $1/pt per 0.01 lot</option>
+                    <option value="5">Forex Minors/Exotics — $5/pip</option>
+                  </select>
+                </div>
+
+                <button onclick="runRiskCalc()"
+                  class="w-full py-3 rounded-xl font-bold text-sm text-primary flex items-center justify-center gap-2 transition-all duration-200 hover:brightness-110 active:scale-95"
+                  style="background: linear-gradient(135deg, #D4AF37, #E5C158); box-shadow: 0 0 16px rgba(212,175,55,0.3);">
+                  <i data-feather="crosshair" class="w-4 h-4"></i> Calculate
+                </button>
+              </div>
+
+              <!-- Results Panel -->
+              <div class="flex flex-col gap-4">
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="bg-black/40 border border-white/5 rounded-xl p-4 text-center">
+                    <p class="text-[9px] text-gray-500 uppercase tracking-widest mb-1">Amount at Risk</p>
+                    <p class="text-xl font-black text-red-400">$<span id="rc_riskAmount">—</span></p>
+                  </div>
+                  <div class="bg-black/40 border border-gold/20 rounded-xl p-4 text-center" style="box-shadow: 0 0 12px rgba(212,175,55,0.08);">
+                    <p class="text-[9px] text-gold uppercase tracking-widest mb-1">Lot Size</p>
+                    <p class="text-2xl font-black text-white" id="rc_lots">—</p>
+                  </div>
+                </div>
+
+                <div class="bg-black/30 border border-white/5 rounded-xl p-4 space-y-2.5">
+                  <div class="flex justify-between text-xs">
+                    <span class="text-gray-500">Balance</span>
+                    <span class="text-white font-medium" id="rc_disp_balance">—</span>
+                  </div>
+                  <div class="flex justify-between text-xs">
+                    <span class="text-gray-500">Risk %</span>
+                    <span class="text-white font-medium" id="rc_disp_risk">—</span>
+                  </div>
+                  <div class="flex justify-between text-xs">
+                    <span class="text-gray-500">Stop Loss</span>
+                    <span class="text-white font-medium" id="rc_disp_sl">—</span>
+                  </div>
+                  <div class="h-px bg-white/5 my-1"></div>
+                  <div class="flex justify-between text-xs">
+                    <span class="text-gray-400 font-semibold">Recommended Lot</span>
+                    <span class="text-gold font-black" id="rc_disp_lots">—</span>
+                  </div>
+                </div>
+
+                <div id="rc_warning" class="hidden p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[11px] flex items-center gap-2">
+                  <i data-feather="alert-triangle" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                  <span id="rc_warning_text"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Resource Cards -->
       <div class="space-y-4 mb-10">
+
         <h3 class="text-xs font-bold uppercase tracking-wider text-gold mb-3">📂 PDF Strategy Guides</h3>
 
         <!-- Resource 1 -->
@@ -911,6 +1016,40 @@
 
   <script>
     feather.replace();
+
+    // ── Risk / Lot Size Calculator ───────────────────────────────
+    function runRiskCalc() {
+      const balance  = parseFloat(document.getElementById('rc_balance').value);
+      const risk     = parseFloat(document.getElementById('rc_risk').value);
+      const sl       = parseFloat(document.getElementById('rc_sl').value);
+      const pipValue = parseFloat(document.getElementById('rc_pair').value);
+      const warnEl   = document.getElementById('rc_warning');
+      const warnTxt  = document.getElementById('rc_warning_text');
+
+      warnEl.classList.add('hidden');
+
+      if (isNaN(balance) || isNaN(risk) || isNaN(sl) || balance <= 0 || risk <= 0 || sl <= 0) {
+        warnTxt.textContent = 'Please enter valid numbers for all fields.';
+        warnEl.classList.remove('hidden');
+        feather.replace();
+        return;
+      }
+      if (risk > 5) {
+        warnTxt.textContent = 'Warning: risking more than 5% per trade is extremely dangerous.';
+        warnEl.classList.remove('hidden');
+        feather.replace();
+      }
+
+      const riskAmount = balance * (risk / 100);
+      const lotSize    = riskAmount / (sl * pipValue);
+
+      document.getElementById('rc_riskAmount').textContent = riskAmount.toFixed(2);
+      document.getElementById('rc_lots').textContent       = lotSize.toFixed(2);
+      document.getElementById('rc_disp_balance').textContent = `$${balance.toLocaleString()}`;
+      document.getElementById('rc_disp_risk').textContent    = `${risk}%`;
+      document.getElementById('rc_disp_sl').textContent      = `${sl} pips`;
+      document.getElementById('rc_disp_lots').textContent    = lotSize.toFixed(2);
+    }
 
     let TELEGRAM_BOT_USERNAME = 'PipsAttendantBot';
 

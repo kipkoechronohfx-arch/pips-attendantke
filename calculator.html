@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk & Lot Size Calculator | Pips Attendant</title>
+    
+    <meta name="theme-color" content="#050505">
+    <link rel="icon" type="image/png" href="avatar.png">
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#050505',
+                        secondary: 'rgba(255,255,255,0.04)',
+                        gold: '#D4AF37',
+                        'gold-hover': '#E5C158',
+                        surface: 'rgba(255,255,255,0.02)',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-primary text-gray-300 font-sans antialiased min-h-screen flex flex-col relative selection:bg-gold/30 selection:text-white pt-[46px]">
+
+    <!-- Parallax Background -->
+    <div class="parallax-bg"></div>
+    <div class="gradient-overlay"></div>
+
+    <!-- NAVBAR -->
+    <nav class="fixed top-[46px] left-0 w-full z-50 glass-panel border-b border-white/5 transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-full bg-surface border border-white/10 flex items-center justify-center overflow-hidden transition-transform group-hover:scale-105">
+                    <img src="avatar.png" alt="Logo" class="w-full h-full object-cover" onerror="this.style.display='none'">
+                </div>
+                <span class="text-white font-bold text-lg tracking-tight">Pips Attendant</span>
+            </a>
+            <a href="index.html" class="text-sm font-medium text-gray-400 hover:text-white transition-colors flex items-center gap-2">
+                <i data-feather="arrow-left" class="w-4 h-4"></i> Return to Home
+            </a>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow flex items-center justify-center pt-24 pb-12 px-6 relative z-10">
+        
+        <div class="w-full max-w-lg w-full animate-fade-in-up">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center mx-auto mb-6">
+                    <i data-feather="percent" class="w-6 h-6 text-gold"></i>
+                </div>
+                <h1 class="text-3xl font-extrabold text-white mb-2 tracking-tight">Risk Calculator</h1>
+                <p class="text-gray-400 text-sm">Calculate precise lot sizes to protect your capital.</p>
+            </div>
+
+            <div class="glass-card p-8">
+                <form id="calcForm" class="space-y-6">
+                    
+                    <div>
+                        <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Account Balance (USD)</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500">$</span>
+                            <input type="number" id="accountBalance" class="w-full bg-black/50 border border-white/10 rounded-lg pl-8 pr-4 py-3 text-white focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/50 transition-all placeholder-gray-600" placeholder="10000" required>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Risk (%)</label>
+                            <div class="relative">
+                                <input type="number" id="riskPercent" step="0.1" class="w-full bg-black/50 border border-white/10 rounded-lg pl-4 pr-8 py-3 text-white focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/50 transition-all placeholder-gray-600" placeholder="1.0" required>
+                                <span class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500">%</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Stop Loss (Pips)</label>
+                            <input type="number" id="stopLoss" class="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/50 transition-all placeholder-gray-600" placeholder="50" required>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Currency Pair</label>
+                        <select id="currencyPair" class="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/50 transition-all appearance-none">
+                            <option value="10">Standard Pairs (EURUSD, GBPUSD) - $10/pip</option>
+                            <option value="1">Indices (US30, NAS100) - Approx $1/pt</option>
+                            <option value="100">Gold (XAUUSD) - Approx $10/pip</option>
+                        </select>
+                    </div>
+
+                    <button type="button" onclick="calculateRisk()" class="w-full btn-gold py-3.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2">
+                        Calculate Risk <i data-feather="crosshair" class="w-4 h-4"></i>
+                    </button>
+                </form>
+
+                <!-- Results Section -->
+                <div id="resultsPanel" class="mt-8 pt-6 border-t border-white/5 hidden animate-fade-in-up">
+                    <h3 class="text-center text-xs font-bold uppercase tracking-widest text-gold mb-6">Calculation Results</h3>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="bg-black/40 border border-white/5 rounded-xl p-4 text-center">
+                            <p class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Amount at Risk</p>
+                            <p class="text-xl font-bold text-red-400">$<span id="resAmount">0.00</span></p>
+                        </div>
+                        <div class="bg-black/40 border border-gold/20 rounded-xl p-4 text-center shadow-[0_0_15px_rgba(212,175,55,0.1)]">
+                            <p class="text-[10px] text-gold uppercase tracking-wider mb-1">Recommended Lot</p>
+                            <p class="text-2xl font-black text-white" id="resLot">0.00</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="py-6 border-t border-white/5 mt-auto bg-black relative z-10">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <p class="text-xs text-gray-600">© 2026 Pips Attendant. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        feather.replace();
+
+        // Navbar Scroll Effect
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 20) {
+                nav.classList.add('bg-black/50', 'backdrop-blur-xl', 'shadow-lg');
+                nav.classList.remove('border-white/5');
+            } else {
+                nav.classList.remove('bg-black/50', 'backdrop-blur-xl', 'shadow-lg');
+                nav.classList.add('border-white/5');
+            }
+        });
+
+        // Calculator Logic
+        function calculateRisk() {
+            const balance = parseFloat(document.getElementById('accountBalance').value);
+            const risk = parseFloat(document.getElementById('riskPercent').value);
+            const sl = parseFloat(document.getElementById('stopLoss').value);
+            const pipValue = parseFloat(document.getElementById('currencyPair').value);
+
+            if (isNaN(balance) || isNaN(risk) || isNaN(sl) || sl <= 0 || balance <= 0 || risk <= 0) {
+                alert("Please enter valid positive numbers for all fields.");
+                return;
+            }
+
+            // Calculate Amount at Risk
+            const riskAmount = balance * (risk / 100);
+            
+            // Calculate Lot Size (Risk Amount / (Stop Loss * Pip Value per standard lot))
+            let lotSize = riskAmount / (sl * pipValue);
+            
+            // Format
+            document.getElementById('resAmount').innerText = riskAmount.toFixed(2);
+            document.getElementById('resLot').innerText = lotSize.toFixed(2);
+
+            // Show Panel
+            document.getElementById('resultsPanel').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
