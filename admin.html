@@ -3277,7 +3277,7 @@
 
     async function approveCryptoRequest(requestId) {
       const adminToken = localStorage.getItem('pa_admin_token');
-      if (!adminKey || !confirm('Approve this crypto payment and generate an access code?')) return;
+      if (!adminToken || !confirm('Approve this crypto payment and generate an access code?')) return;
 
       try {
         const res = await fetch('/api/admin/approve-crypto-request', {
@@ -3300,7 +3300,7 @@
 
     async function rejectCryptoRequest(requestId) {
       const adminToken = localStorage.getItem('pa_admin_token');
-      if (!adminKey || !confirm('Reject this crypto payment request?')) return;
+      if (!adminToken || !confirm('Reject this crypto payment request?')) return;
 
       try {
         const res = await fetch('/api/admin/reject-crypto-request', {
