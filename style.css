@@ -111,6 +111,21 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   background-color: #D4AF37;
 }
 
+/* Text Gradients */
+.hero-gradient-text {
+  background-image: linear-gradient(to right, #D4AF37, #E5C158, #9ca3af);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.secondary-gradient-text {
+  background-image: linear-gradient(to right, #D4AF37, #ffffff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 /* Animations */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
@@ -271,6 +286,8 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 [data-theme="light"] .text-gold { color: #b48600 !important; }
 [data-theme="light"] .text-red-400 { color: #dc2626 !important; }
 [data-theme="light"] .text-green-400 { color: #16a34a !important; }
+[data-theme="light"] .hero-gradient-text { background-image: linear-gradient(to right, #b48600, #d4af37, #64748b) !important; }
+[data-theme="light"] .secondary-gradient-text { background-image: linear-gradient(to right, #b48600, #1e293b) !important; }
 [data-theme="light"] .ambient-glow-1, [data-theme="light"] .ambient-glow-2 { opacity: 0.15; filter: blur(120px) invert(1); }
 [data-theme="light"] .parallax-bg { opacity: 0.15 !important; filter: grayscale(100%) contrast(120%) brightness(150%) !important; }
 [data-theme="light"] .gradient-overlay { background: linear-gradient(180deg, rgba(241,245,249,0.95) 0%, rgba(241,245,249,0.6) 40%, rgba(241,245,249,0.8) 70%, rgba(241,245,249,1) 100%) !important; }
