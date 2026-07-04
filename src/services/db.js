@@ -8,6 +8,7 @@ const SUBS_FILE    = path.join(DATA_DIR, 'subscribers.json');
 const VIP_DOCS_DIR = path.join(DATA_DIR, 'vip_documents');
 const CONFIG_FILE  = path.join(DATA_DIR, 'config.json');
 const PAYMENTS_FILE= path.join(DATA_DIR, 'payments.json');
+const PERFORMANCE_FILE = path.join(DATA_DIR, 'performance_logs.json');
 const TODAYS_SETUP_FILE = path.join(DATA_DIR, 'todays_setup.json');
 const TODAYS_SETUP_RESULTS_FILE = path.join(DATA_DIR, 'todays_setup_results.json');
 const WHATSAPP_FILE = path.join(DATA_DIR, 'whatsapp.json');
@@ -341,6 +342,14 @@ async function updateSignalOutcome(id, outcome) {
       console.error('[DB Update Signal Outcome Error]', err.message);
     }
   }
+  const signals = readJSON(SIGNALS_FILE);
+  const idx = signals.findIndex(s => String(s.id) === String(id) || s._id === id);
+  if (idx !== -1) {
+    signals[idx].outcome = outcome;
+    signals[idx].outcomeAt = new Date().toISOString();
+    writeJSON(SIGNALS_FILE, signals);
+    return true;
+  }
   return false;
 }
 
@@ -355,6 +364,13 @@ async function updateSignalCategory(id, category) {
     } catch (err) {
       console.error('[DB Update Signal Category Error]', err.message);
     }
+  }
+  const signals = readJSON(SIGNALS_FILE);
+  const idx = signals.findIndex(s => String(s.id) === String(id) || s._id === id);
+  if (idx !== -1) {
+    signals[idx].category = category;
+    writeJSON(SIGNALS_FILE, signals);
+    return true;
   }
   return false;
 }
@@ -757,7 +773,9 @@ async function saveUser(user) {
         const { ObjectId } = require('mongodb');
         const id = user._id;
         delete user._id;
-        await getUsersColl().updateOne({ _id: new ObjectId(id) }, { $set: user });
+        const isObjectId = /^[a-f\d]{24}$/i.test(String(id));
+        const filter = isObjectId ? { _id: new ObjectId(id) } : { $or: [{ _id: id }, { id: id }] };
+        await getUsersColl().updateOne(filter, { $set: user });
         user._id = id;
       } else {
         const result = await getUsersColl().insertOne(user);
@@ -822,8 +840,14 @@ async function saveCryptoRequest(req) {
 
 async function updateCryptoRequest(id, update) {
   if(db) {
-    const { ObjectId } = require('mongodb');
-    await getCryptoRequestsColl().updateOne({ _id: new ObjectId(id) }, { $set: update });
+    try {
+      const { ObjectId } = require('mongodb');
+      const isObjectId = /^[a-f\d]{24}$/i.test(String(id));
+      const filter = isObjectId ? { _id: new ObjectId(id) } : { _id: id };
+      await getCryptoRequestsColl().updateOne(filter, { $set: update });
+    } catch (err) {
+      console.error('[DB Crypto Request Update Error]', err.message);
+    }
   }
 }
 
@@ -860,7 +884,9 @@ async function saveTicket(ticket) {
     if(ticket._id) {
        const { ObjectId } = require('mongodb');
        const id = ticket._id; delete ticket._id;
-       await getTicketsColl().updateOne({ _id: new ObjectId(id) }, { $set: ticket });
+       const isObjectId = /^[a-f\d]{24}$/i.test(String(id));
+       const filter = isObjectId ? { _id: new ObjectId(id) } : { _id: id };
+       await getTicketsColl().updateOne(filter, { $set: ticket });
        ticket._id = id;
     } else {
        const res = await getTicketsColl().insertOne(ticket);
@@ -875,8 +901,12 @@ async function logPerformanceAction(log) {
   if (db) {
     try {
       await getPerformanceColl().insertOne({ ...log, timestamp: Date.now() });
+      return;
     } catch (err) {}
   }
+  const logs = readJSON(PERFORMANCE_FILE);
+  logs.push({ ...log, timestamp: Date.now() });
+  writeJSON(PERFORMANCE_FILE, logs);
 }
 
 async function getPerformanceLogs() {
@@ -885,7 +915,7 @@ async function getPerformanceLogs() {
       return await getPerformanceColl().find({}).sort({ timestamp: -1 }).toArray();
     } catch (err) {}
   }
-  return [];
+  return readJSON(PERFORMANCE_FILE).sort((a, b) => b.timestamp - a.timestamp);
 }
 
 async function getUsers() {
@@ -915,7 +945,9 @@ async function saveJournalEntry(entry) {
         const { ObjectId } = require('mongodb');
         const id = entry._id;
         delete entry._id;
-        await getJournalColl().updateOne({ _id: new ObjectId(id) }, { $set: entry });
+        const isObjectId = /^[a-f\d]{24}$/i.test(String(id));
+        const filter = isObjectId ? { _id: new ObjectId(id) } : { _id: id };
+        await getJournalColl().updateOne(filter, { $set: entry });
         entry._id = id;
       } else {
         const result = await getJournalColl().insertOne(entry);
