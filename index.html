@@ -1048,8 +1048,7 @@
                     const signals = all.filter(s => s.type === 'signal' || (s.text && /\b(BUY|SELL)\b/i.test(s.text))).slice(0, 8);
 
                     if (!signals.length) {
-                        container.innerHTML = '<p class="text-gray-500 text-sm py-6 text-center w-full">No signals yet — check back soon!</p>';
-                        return;
+                        throw new Error('No signals in database, falling back to dummy data');
                     }
 
                     container.innerHTML = signals.map(s => {
