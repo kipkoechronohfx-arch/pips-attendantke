@@ -1007,20 +1007,24 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize AOS
-            AOS.init({
-                duration: 800,
-                once: true,
-                offset: 80,
-                disable: false,
-            });
+            try {
+                AOS.init({
+                    duration: 800,
+                    once: true,
+                    offset: 80,
+                    disable: false,
+                });
+            } catch (e) { console.warn('AOS init failed', e); }
 
             // Initialize VanillaTilt on all glass-cards
-            VanillaTilt.init(document.querySelectorAll(".glass-card"), {
-                max: 5,
-                speed: 400,
-                glare: true,
-                "max-glare": 0.2,
-            });
+            try {
+                VanillaTilt.init(document.querySelectorAll(".glass-card"), {
+                    max: 5,
+                    speed: 400,
+                    glare: true,
+                    "max-glare": 0.2,
+                });
+            } catch (e) { console.warn('VanillaTilt init failed', e); }
 
             // ── Live Signals Results Cards ────────────────────────────────────────────
             async function loadLiveResults() {
