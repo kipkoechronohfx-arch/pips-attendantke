@@ -1029,12 +1029,14 @@
                     const res = await fetch('/api/signals');
                     if (!res.ok) throw new Error('API error');
                     const data = await res.json();
-                    const signals = (data.signals || data || [])
-                        .filter(s => s.outcome && s.outcome !== 'Running')
-                        .slice(0, 8);
+                    // Show resolved signals first, then include running ones as fill
+                    const all = data.signals || [];
+                    const resolved = all.filter(s => s.outcome && s.outcome !== 'Running' && s.outcome !== 'running');
+                    const running = all.filter(s => !s.outcome || s.outcome === 'Running' || s.outcome === 'running');
+                    const signals = [...resolved, ...running].slice(0, 8);
 
                     if (!signals.length) {
-                        container.innerHTML = '<p class="text-gray-500 text-sm py-6 text-center w-full">No resolved signals yet.</p>';
+                        container.innerHTML = '<p class="text-gray-500 text-sm py-6 text-center w-full col-span-full">No signals yet — check back soon!</p>';
                         return;
                     }
 
@@ -1042,16 +1044,20 @@
                         const isWin = s.outcome === 'TP Hit';
                         const isLoss = s.outcome === 'SL Hit';
                         const isBreak = s.outcome === 'Breakeven';
+                        const isRunning = !s.outcome || s.outcome === 'Running';
                         const badgeClass = isWin
                             ? 'bg-green-500/10 text-green-400 border-green-500/20'
                             : isLoss ? 'bg-red-500/10 text-red-400 border-red-500/20'
-                            : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
-                        const badgeIcon = isWin ? 'arrow-up-right' : isLoss ? 'x' : 'minus';
-                        const badgeText = isWin ? 'WIN' : isLoss ? 'LOSS' : 'B/E';
-                        const pipsClass = isWin ? 'text-gold' : isLoss ? 'text-red-400' : 'text-yellow-400';
+                            : isBreak ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                            : 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+                        const badgeIcon = isWin ? 'arrow-up-right' : isLoss ? 'x' : isBreak ? 'minus' : 'activity';
+                        const badgeText = isWin ? 'WIN' : isLoss ? 'LOSS' : isBreak ? 'B/E' : 'LIVE';
+                        const pipsClass = isWin ? 'text-gold' : isLoss ? 'text-red-400' : isBreak ? 'text-yellow-400' : 'text-blue-400';
                         const pipsPrefix = isWin ? '+' : isLoss ? '-' : '±';
-                        const pips = s.pips ? `${pipsPrefix}${s.pips} Pips` : '—';
-                        const date = s.createdAt ? new Date(s.createdAt).toLocaleDateString('en-GB', {day:'numeric', month:'short'}) : '';
+                        const pips = s.pips ? `${pipsPrefix}${s.pips} Pips` : (isRunning ? 'In Progress' : '—');
+                        const date = s.sentAt ? new Date(s.sentAt).toLocaleDateString('en-GB', {day:'numeric', month:'short'}) 
+                                   : s.createdAt ? new Date(s.createdAt).toLocaleDateString('en-GB', {day:'numeric', month:'short'}) : '';
+                        const tp = Array.isArray(s.tp) ? s.tp[0] : s.tp;
 
                         return `
                         <div class="min-w-[280px] md:min-w-[320px] glass-card p-6 snap-start flex-shrink-0">
@@ -1067,9 +1073,9 @@
                             <div class="space-y-2 text-sm text-gray-300 mb-4">
                                 <div class="flex justify-between"><span>Entry</span> <span class="font-mono">${s.entry || '—'}</span></div>
                                 <div class="flex justify-between"><span>SL</span> <span class="font-mono text-red-400/80">${s.sl || '—'}</span></div>
-                                <div class="flex justify-between"><span>TP</span> <span class="font-mono text-green-400/80">${Array.isArray(s.tp) ? s.tp[0] : (s.tp || '—')}</span></div>
+                                <div class="flex justify-between"><span>TP</span> <span class="font-mono text-green-400/80">${tp || '—'}</span></div>
                                 <div class="flex justify-between border-t border-white/5 pt-2 mt-2">
-                                    <span>${isWin ? 'Profit' : isLoss ? 'Loss' : 'Result'}</span>
+                                    <span>${isWin ? 'Profit' : isLoss ? 'Loss' : isRunning ? 'Status' : 'Result'}</span>
                                     <span class="font-bold ${pipsClass}">${pips}</span>
                                 </div>
                             </div>
@@ -1078,7 +1084,7 @@
                     }).join('');
                     feather.replace();
                 } catch (e) {
-                    // Fallback to static placeholder if API fails
+                    // Fallback static cards
                     container.innerHTML = `
                     <div class="min-w-[280px] md:min-w-[320px] glass-card p-6 snap-start flex-shrink-0">
                         <div class="flex justify-between items-start mb-4">
@@ -1107,15 +1113,25 @@
             }
             loadLiveResults();
 
-            // ── Also fetch live stats (win rate, total pips) ──────────────
+            // ── Also fetch live stats from /api/signals/stats ─────────────
             async function loadLiveStats() {
                 try {
-                    const res = await fetch('/api/public-stats');
+                    const res = await fetch('/api/signals/stats');
                     if (!res.ok) throw new Error('no stats');
-                    const { winRate, totalPips, totalSignals } = await res.json();
-                    if (winRate != null) document.getElementById('publicWinRate').setAttribute('data-target', winRate);
-                    if (totalPips != null) document.getElementById('publicTotalPips').setAttribute('data-target', totalPips > 999 ? Math.round(totalPips/1000) : totalPips);
-                    if (totalSignals != null) document.getElementById('publicTotalTrades').setAttribute('data-target', totalSignals);
+                    const data = await res.json();
+                    if (data.winRate != null) {
+                        const el = document.getElementById('publicWinRate');
+                        if (el) el.setAttribute('data-target', Math.round(data.winRate));
+                    }
+                    if (data.netPips != null) {
+                        const el = document.getElementById('publicTotalPips');
+                        const val = Math.abs(data.netPips) > 999 ? Math.round(Math.abs(data.netPips) / 1000) : Math.abs(data.netPips);
+                        if (el) el.setAttribute('data-target', val);
+                    }
+                    if (data.total != null) {
+                        const el = document.getElementById('publicTotalTrades');
+                        if (el) el.setAttribute('data-target', data.total);
+                    }
                 } catch(e) {}
             }
             loadLiveStats();
