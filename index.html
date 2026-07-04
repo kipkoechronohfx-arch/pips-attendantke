@@ -1011,8 +1011,6 @@
                 duration: 800,
                 once: true,
                 offset: 100,
-            });
-
             // Initialize VanillaTilt on all glass-cards
             VanillaTilt.init(document.querySelectorAll(".glass-card"), {
                 max: 5,
@@ -1021,7 +1019,19 @@
                 "max-glare": 0.2,
             });
 
-            // ── Live Signals Results Cards ────────────────────────────────
+            // ── Live Signals Results Cards ────────────────────────────────────────────
+            function parseSignalText(text) {
+                if (!text) return {};
+                const pair     = (text.match(/\b(XAUUSD|EURUSD|GBPUSD|USDJPY|GBPJPY|AUDUSD|US30|NAS100|USDCAD|USDCHF|NZDUSD|EURJPY|CADJPY|[A-Z]{6})\b/) || [])[1];
+                const dir      = (text.match(/\b(BUY|SELL)\b/i) || [])[1];
+                const entry    = (text.match(/[Ee]ntry[:\s]+([0-9]+\.?[0-9]*)/i) || [])[1];
+                const sl       = (text.match(/\bSL[:\s]+([0-9]+\.?[0-9]*)/i) || [])[1];
+                const tp1      = (text.match(/\bTP1?[:\s]+([0-9]+\.?[0-9]*)/i) || [])[1];
+                const tp2      = (text.match(/\bTP2[:\s]+([0-9]+\.?[0-9]*)/i) || [])[1];
+                const pips     = (text.match(/\+?([0-9]+)\s*(?:pips?)/i) || [])[1];
+                return { pair, direction: dir ? dir.toUpperCase() : null, entry, sl, tp: tp1 || null, tp2, pips };
+            }
+
             async function loadLiveResults() {
                 const container = document.getElementById('results-scroll');
                 if (!container) return;
@@ -1029,14 +1039,13 @@
                     const res = await fetch('/api/signals');
                     if (!res.ok) throw new Error('API error');
                     const data = await res.json();
-                    // Show resolved signals first, then include running ones as fill
                     const all = data.signals || [];
-                    const resolved = all.filter(s => s.outcome && s.outcome !== 'Running' && s.outcome !== 'running');
-                    const running = all.filter(s => !s.outcome || s.outcome === 'Running' || s.outcome === 'running');
-                    const signals = [...resolved, ...running].slice(0, 8);
+
+                    // Filter to signals only (not engagement/general broadcasts)
+                    const signals = all.filter(s => s.type === 'signal' || (s.text && /\b(BUY|SELL)\b/i.test(s.text))).slice(0, 8);
 
                     if (!signals.length) {
-                        container.innerHTML = '<p class="text-gray-500 text-sm py-6 text-center w-full col-span-full">No signals yet — check back soon!</p>';
+                        container.innerHTML = '<p class="text-gray-500 text-sm py-6 text-center w-full">No signals yet — check back soon!</p>';
                         return;
                     }
 
