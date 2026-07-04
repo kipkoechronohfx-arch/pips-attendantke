@@ -274,3 +274,5 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 [data-theme="light"] .ambient-glow-1, [data-theme="light"] .ambient-glow-2 { opacity: 0.15; filter: blur(120px) invert(1); }
 [data-theme="light"] .parallax-bg { opacity: 0.15 !important; filter: grayscale(100%) contrast(120%) brightness(150%) !important; }
 [data-theme="light"] .gradient-overlay { background: linear-gradient(180deg, rgba(241,245,249,0.95) 0%, rgba(241,245,249,0.6) 40%, rgba(241,245,249,0.8) 70%, rgba(241,245,249,1) 100%) !important; }
+
+[data-theme="light"] .tv-widget-invert { filter: invert(1) hue-rotate(180deg) !important; }
