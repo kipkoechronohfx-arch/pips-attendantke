@@ -292,4 +292,5 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 [data-theme="light"] .parallax-bg { opacity: 0.15 !important; filter: grayscale(100%) contrast(120%) brightness(150%) !important; }
 [data-theme="light"] .gradient-overlay { background: linear-gradient(180deg, rgba(241,245,249,0.95) 0%, rgba(241,245,249,0.6) 40%, rgba(241,245,249,0.8) 70%, rgba(241,245,249,1) 100%) !important; }
 
-[data-theme="light"] .tv-widget-invert { filter: invert(1) hue-rotate(180deg) !important; }
+[data-theme="light"] .tv-widget-invert, [data-theme="light"] .tradingview-widget-container { filter: invert(1) hue-rotate(180deg) !important; background-color: transparent !important; }
+[data-theme="light"] #news .glass-card > div { background: #ffffff !important; }
