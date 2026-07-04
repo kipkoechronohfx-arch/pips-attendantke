@@ -16,6 +16,11 @@ const CHAT_FILE = path.join(DATA_DIR, 'chat.json');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const JOURNAL_FILE = path.join(DATA_DIR, 'journal.json');
 const PROP_FIRM_FILE = path.join(DATA_DIR, 'prop_firm_accounts.json');
+const PUSH_SUBS_FILE = path.join(DATA_DIR, 'push_subscriptions.json');
+const CRYPTO_REQ_FILE = path.join(DATA_DIR, 'crypto_requests.json');
+const PROMOS_FILE = path.join(DATA_DIR, 'promos.json');
+const TICKETS_FILE = path.join(DATA_DIR, 'support_tickets.json');
+const RECEIPTS_FILE = path.join(DATA_DIR, 'receipts.json');
 
 // Ensure local fallback folders exist
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
@@ -807,16 +812,22 @@ async function getPushSubscriptions() {
       console.error('[DB Push Subs Error]', err.message);
     }
   }
-  return [];
+  return readJSON(PUSH_SUBS_FILE);
 }
 
 async function addPushSubscription(sub) {
   if (db) {
     try {
       await getPushSubsColl().insertOne(sub);
+      return;
     } catch (err) {
       console.error('[DB Add Push Sub Error]', err.message);
     }
+  }
+  const subs = readJSON(PUSH_SUBS_FILE);
+  if (!subs.find(s => s.endpoint === sub.endpoint)) {
+    subs.push(sub);
+    writeJSON(PUSH_SUBS_FILE, subs);
   }
 }
 
@@ -824,18 +835,35 @@ async function deletePushSubscription(sub) {
   if (db) {
     try {
       await getPushSubsColl().deleteOne({ endpoint: sub.endpoint });
+      return;
     } catch (err) {
       console.error('[DB Delete Push Sub Error]', err.message);
     }
   }
+  let subs = readJSON(PUSH_SUBS_FILE);
+  subs = subs.filter(s => s.endpoint !== sub.endpoint);
+  writeJSON(PUSH_SUBS_FILE, subs);
 }
 
 async function getCryptoRequests() {
-  if(db) return await getCryptoRequestsColl().find({}).sort({ timestamp: -1 }).toArray();
-  return [];
+  if(db) {
+    try {
+      return await getCryptoRequestsColl().find({}).sort({ timestamp: -1 }).toArray();
+    } catch (err) {}
+  }
+  return readJSON(CRYPTO_REQ_FILE).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 }
+
 async function saveCryptoRequest(req) {
-  if(db) await getCryptoRequestsColl().insertOne(req);
+  if(db) {
+    try {
+      await getCryptoRequestsColl().insertOne(req);
+      return;
+    } catch (err) {}
+  }
+  const requests = readJSON(CRYPTO_REQ_FILE);
+  requests.push(req);
+  writeJSON(CRYPTO_REQ_FILE, requests);
 }
 
 async function updateCryptoRequest(id, update) {
@@ -845,38 +873,76 @@ async function updateCryptoRequest(id, update) {
       const isObjectId = /^[a-f\d]{24}$/i.test(String(id));
       const filter = isObjectId ? { _id: new ObjectId(id) } : { _id: id };
       await getCryptoRequestsColl().updateOne(filter, { $set: update });
+      return;
     } catch (err) {
       console.error('[DB Crypto Request Update Error]', err.message);
     }
   }
+  const requests = readJSON(CRYPTO_REQ_FILE);
+  const idx = requests.findIndex(r => r.id === id || r._id === id);
+  if (idx !== -1) {
+    requests[idx] = { ...requests[idx], ...update };
+    writeJSON(CRYPTO_REQ_FILE, requests);
+  }
 }
 
 async function getPromos() {
-  if(db) return await getPromosColl().find({}).toArray();
-  return [];
+  if(db) {
+    try { return await getPromosColl().find({}).toArray(); } catch(err) {}
+  }
+  return readJSON(PROMOS_FILE);
 }
 
 async function savePromo(promo) {
-  if(db) await getPromosColl().updateOne({ code: promo.code }, { $set: promo }, { upsert: true });
+  if(db) {
+    try {
+      await getPromosColl().updateOne({ code: promo.code }, { $set: promo }, { upsert: true });
+      return;
+    } catch(err) {}
+  }
+  const promos = readJSON(PROMOS_FILE);
+  const idx = promos.findIndex(p => p.code === promo.code);
+  if (idx !== -1) promos[idx] = promo;
+  else promos.push(promo);
+  writeJSON(PROMOS_FILE, promos);
 }
 
 async function getPromoByCode(code) {
-  if(db) return await getPromosColl().findOne({ code });
-  return null;
+  if(db) {
+    try { return await getPromosColl().findOne({ code }); } catch(err) {}
+  }
+  return readJSON(PROMOS_FILE).find(p => p.code === code) || null;
 }
 
 async function deletePromo(code) {
-  if(db) await getPromosColl().deleteOne({ code });
+  if(db) {
+    try {
+      await getPromosColl().deleteOne({ code });
+      return;
+    } catch(err) {}
+  }
+  let promos = readJSON(PROMOS_FILE);
+  promos = promos.filter(p => p.code !== code);
+  writeJSON(PROMOS_FILE, promos);
 }
 
 async function getTickets() {
-  if(db) return await getTicketsColl().find({}).sort({ createdAt: -1 }).toArray();
-  return [];
+  if(db) {
+    try {
+      return await getTicketsColl().find({}).sort({ createdAt: -1 }).toArray();
+    } catch(err) {}
+  }
+  return readJSON(TICKETS_FILE).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 }
 
 async function getUserTickets(email) {
-  if(db) return await getTicketsColl().find({ userEmail: email }).sort({ createdAt: -1 }).toArray();
-  return [];
+  if(db) {
+    try {
+      return await getTicketsColl().find({ userEmail: email }).sort({ createdAt: -1 }).toArray();
+    } catch(err) {}
+  }
+  const tickets = readJSON(TICKETS_FILE);
+  return tickets.filter(t => t.userEmail === email).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 }
 
 async function saveTicket(ticket) {
@@ -894,6 +960,16 @@ async function saveTicket(ticket) {
     }
     return ticket;
   }
+  const tickets = readJSON(TICKETS_FILE);
+  if(ticket._id) {
+    const idx = tickets.findIndex(t => String(t._id) === String(ticket._id));
+    if (idx !== -1) tickets[idx] = ticket;
+    else tickets.push(ticket);
+  } else {
+    ticket._id = Date.now().toString() + Math.random().toString(36).substring(2, 8);
+    tickets.push(ticket);
+  }
+  writeJSON(TICKETS_FILE, tickets);
   return ticket;
 }
 
@@ -1103,7 +1179,12 @@ async function saveReceipt(ref, receiptData) {
       console.error('[DB Receipt Save Error]', err.message);
     }
   }
-  return false;
+  const receipts = readJSON(RECEIPTS_FILE);
+  const idx = receipts.findIndex(r => r.ref === ref);
+  if (idx !== -1) receipts[idx] = { ...receipts[idx], ...receiptData, savedAt: new Date().toISOString() };
+  else receipts.push({ ref, ...receiptData, savedAt: new Date().toISOString() });
+  writeJSON(RECEIPTS_FILE, receipts);
+  return true;
 }
 
 async function getReceipt(ref) {
@@ -1115,7 +1196,8 @@ async function getReceipt(ref) {
       console.error('[DB Receipt Get Error]', err.message);
     }
   }
-  return null;
+  const receipts = readJSON(RECEIPTS_FILE);
+  return receipts.find(r => r.ref === ref) || null;
 }
 
 module.exports = {
