@@ -11,7 +11,10 @@
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- AOS Animation CSS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -39,9 +42,20 @@
 </head>
 <body class="bg-primary text-gray-300 font-sans antialiased min-h-screen flex flex-col relative selection:bg-gold/30 selection:text-white pt-[46px]">
 
+    <!-- Ambient Glows -->
+    <div class="ambient-glow-1"></div>
+    <div class="ambient-glow-2"></div>
+
     <!-- Parallax Background -->
     <div class="parallax-bg"></div>
     <div class="gradient-overlay"></div>
+
+    <!-- Theme Toggle Button -->
+    <div class="fixed top-[86px] md:top-[60px] right-4 z-[90]">
+        <button onclick="toggleTheme()" class="flex items-center justify-center w-10 h-10 rounded-full glass-card border border-white/10 hover:border-gold/50 hover:bg-gold/10 hover:text-gold text-gray-400 transition duration-300 cursor-pointer shadow-lg" title="Toggle Theme">
+            <i data-feather="sun" id="themeIcon" class="w-5 h-5"></i>
+        </button>
+    </div>
 
     <!-- NAVBAR -->
     <nav class="fixed top-0 left-0 w-full z-50 glass-panel border-b border-white/5 transition-all duration-300" id="navbar">
@@ -64,15 +78,15 @@
     <main class="container mx-auto px-4 py-12 max-w-2xl relative z-10">
 
     <!-- Header -->
-    <div class="text-center mb-10">
+    <div class="text-center mb-10" data-aos="fade-up">
       <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-tr from-gold-hover to-yellow-300 text-4xl mb-5 shadow-[0_0_30px_rgba(251,191,36,0.3)]">🔒</div>
-      <h1 class="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-gold via-yellow-300 to-gold mb-3">VIP Resources</h1>
-      <p class="text-gray-400 text-sm max-w-sm mx-auto">Exclusive strategies, indicators, and guides reserved for Pips_attendant VIP members.</p>
+      <h1 class="text-4xl font-bold tracking-tight mb-3 font-heading"><span class="hero-gradient-text">VIP Resources</span></h1>
+      <p class="text-gray-400 text-sm max-w-sm mx-auto" data-aos="fade-up" data-aos-delay="100">Exclusive strategies, indicators, and guides reserved for Pips_attendant VIP members.</p>
     </div>
 
     <!-- AUTH PANEL -->
-    <div id="authPanel">
-      <div class="glass-card border border-gold/20 rounded-2xl p-8 max-w-sm mx-auto">
+    <div id="authPanel" data-aos="zoom-in" data-aos-delay="200">
+      <div class="glass-card border border-gold/20 rounded-2xl p-8 max-w-sm mx-auto" data-tilt data-tilt-max="3" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.1">
         <div class="flex gap-2 mb-6">
           <button id="tabLogin" onclick="switchAuthTab('login')" class="flex-1 py-2 rounded-xl text-xs font-bold border border-gold-hover/40 bg-gold-hover/10 text-gold transition cursor-pointer">Login</button>
           <button id="tabRegister" onclick="switchAuthTab('register')" class="flex-1 py-2 rounded-xl text-xs font-bold border border-white/5 bg-white/5 text-gray-400 hover:text-gold transition cursor-pointer">Register</button>
@@ -2291,6 +2305,47 @@
 
   <!-- Pips Assistant AI Support Widget -->
   <script src="/chat-widget.js"></script>
+
+  <!-- VanillaTilt & AOS JS -->
+  <script src="https://unpkg.com/vanilla-tilt@1.8.1/dist/vanilla-tilt.min.js"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    // Initialize AOS
+    try {
+        AOS.init({ duration: 700, once: true, easing: 'ease-out-cubic', offset: 40 });
+    } catch (e) { console.warn('AOS init failed', e); }
+
+    // Initialize VanillaTilt on cards
+    try {
+        VanillaTilt.init(document.querySelectorAll('[data-tilt]'), { max: 3, speed: 400, glare: true, 'max-glare': 0.1 });
+    } catch(e) {}
+
+    // ── Theme Toggle Logic ────────────────────────────────────────
+    function toggleTheme() {
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        const newTheme = isLight ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('pips_theme', newTheme);
+        const icon = document.getElementById('themeIcon');
+        if (icon) {
+            icon.setAttribute('data-feather', newTheme === 'light' ? 'moon' : 'sun');
+            if (typeof feather !== 'undefined') feather.replace();
+        }
+    }
+
+    // Apply saved theme on load
+    (function() {
+        const savedTheme = localStorage.getItem('pips_theme');
+        if (savedTheme === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+            document.addEventListener('DOMContentLoaded', () => {
+                const icon = document.getElementById('themeIcon');
+                if (icon) icon.setAttribute('data-feather', 'moon');
+                if (typeof feather !== 'undefined') feather.replace();
+            });
+        }
+    })();
+  </script>
 </body>
 </html>
 
