@@ -1111,24 +1111,24 @@
             }
             loadLiveResults();
 
-            // ── Also fetch live stats from /api/signals/stats ─────────────
+            // ── Also fetch live stats from /api/performance/stats ─────────────
             async function loadLiveStats() {
                 try {
-                    const res = await fetch('/api/signals/stats');
+                    const res = await fetch('/api/performance/stats');
                     if (!res.ok) throw new Error('no stats');
                     const data = await res.json();
                     if (data.winRate != null) {
                         const el = document.getElementById('publicWinRate');
                         if (el) el.setAttribute('data-target', Math.round(data.winRate));
                     }
-                    if (data.netPips != null) {
+                    if (data.totalPips != null) {
                         const el = document.getElementById('publicTotalPips');
-                        const val = Math.abs(data.netPips) > 999 ? Math.round(Math.abs(data.netPips) / 1000) : Math.abs(data.netPips);
+                        const val = Math.abs(data.totalPips) > 999 ? Math.round(Math.abs(data.totalPips) / 1000) : Math.abs(data.totalPips);
                         if (el) el.setAttribute('data-target', val);
                     }
-                    if (data.total != null) {
+                    if (data.totalTrades != null) {
                         const el = document.getElementById('publicTotalTrades');
-                        if (el) el.setAttribute('data-target', data.total);
+                        if (el) el.setAttribute('data-target', data.totalTrades);
                     }
                 } catch(e) {}
             }
