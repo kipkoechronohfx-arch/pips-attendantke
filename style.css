@@ -10,12 +10,17 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+h1, h2, h3, h4, h5, h6, .font-heading {
+  font-family: 'Outfit', sans-serif;
+}
+
 /* Glassmorphism Utilities */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.015);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.02);
 }
 
 .glass-card {
@@ -61,14 +66,37 @@ body {
   background: #D4AF37;
   color: #050505;
   font-weight: 600;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.btn-gold::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,0.4), rgba(255,255,255,0));
+  transform: skewX(-25deg);
+  transition: all 0.5s ease;
+  z-index: -1;
+}
+
+.btn-gold:hover::after {
+  left: 200%;
 }
 
 .btn-gold:hover {
   background: #E5C158;
-  box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
-  transform: scale(1.02);
+  box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+  transform: translateY(-2px);
+}
+.btn-gold:active {
+  transform: translateY(1px);
 }
 
 .text-gold {
@@ -164,6 +192,40 @@ body {
   z-index: -1;
   background: linear-gradient(180deg, rgba(5,5,5,0.7) 0%, rgba(5,5,5,0.1) 40%, rgba(5,5,5,0.1) 70%, rgba(5,5,5,0.95) 100%);
   pointer-events: none;
+}
+
+/* Ambient Glows */
+.ambient-glow-1, .ambient-glow-2 {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: -1;
+  animation: float-glow 10s infinite ease-in-out alternate;
+}
+
+.ambient-glow-1 {
+  background: rgba(212, 175, 55, 0.2);
+  width: 600px;
+  height: 600px;
+  top: -100px;
+  left: -200px;
+}
+
+.ambient-glow-2 {
+  background: rgba(124, 58, 237, 0.15); /* Deep Violet */
+  width: 500px;
+  height: 500px;
+  bottom: -50px;
+  right: -100px;
+  animation-duration: 12s;
+  animation-delay: -5s;
+}
+
+@keyframes float-glow {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(50px, 50px) scale(1.1); }
 }
 
 /* --- CHAT WIDGET CUSTOM STYLES (Preserved) --- */
