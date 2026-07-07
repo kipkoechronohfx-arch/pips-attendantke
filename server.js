@@ -97,6 +97,8 @@ app.use(helmet({
 // ── CORS ────────────────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
   'https://pips-attendantke.onrender.com',
+  'https://pipsattendant.com',
+  'https://www.pipsattendant.com',
   'https://pipsattendant.top',
   'https://www.pipsattendant.top',
   'https://admin.pipsattendant.top',
