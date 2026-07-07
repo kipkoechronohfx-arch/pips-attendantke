@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Tell Tailwind to scan all HTML files for classes */
+@source "./*.html";
+@source "./src/**/*.{js,html}";
+
 @theme {
   --color-primary: #050505;
   --color-secondary: rgba(255, 255, 255, 0.04);
