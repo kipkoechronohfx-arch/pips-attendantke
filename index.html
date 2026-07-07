@@ -45,28 +45,17 @@
     <!-- AOS Animation CSS -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     
-    <!-- Tailwind CSS (CDN for rapid prototyping as before) -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Analytics 4 (GA4) - Replace G-XXXXXXXXXX with your actual Measurement ID -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#050505',
-                        secondary: 'rgba(255,255,255,0.04)',
-                        gold: '#D4AF37',
-                        'gold-hover': '#E5C158',
-                        surface: 'rgba(255,255,255,0.02)',
-                        'surface-hover': 'rgba(255,255,255,0.05)',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        heading: ['Outfit', 'sans-serif'],
-                    }
-                }
-            }
-        }
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
     </script>
+    
+    <!-- Tailwind CSS (Compiled Static File) -->
+    <link rel="stylesheet" href="dist.css">
     
     <!-- Feather Icons -->
     <script src="https://unpkg.com/feather-icons"></script>

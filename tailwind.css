@@ -1,8 +1,18 @@
 @import "tailwindcss";
 
 @theme {
+  --color-primary: #050505;
+  --color-secondary: rgba(255, 255, 255, 0.04);
+  --color-gold: #D4AF37;
+  --color-gold-hover: #E5C158;
+  --color-surface: rgba(255, 255, 255, 0.02);
+  --color-surface-hover: rgba(255, 255, 255, 0.05);
+  
   --color-dark-navy: #0d0800;
   --color-neon-blue: #f59e0b;
   --color-neon-purple: #d97706;
+  
+  --font-sans: "Inter", sans-serif;
+  --font-heading: "Outfit", sans-serif;
   --font-inter: "Inter", "Poppins", sans-serif;
 }

@@ -25,26 +25,17 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Analytics 4 (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#050505',
-                        secondary: 'rgba(255,255,255,0.04)',
-                        gold: '#D4AF37',
-                        'gold-hover': '#E5C158',
-                        surface: 'rgba(255,255,255,0.02)',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    }
-                }
-            }
-        }
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
     </script>
+
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="dist.css">
     
     <script src="https://unpkg.com/feather-icons"></script>
     <link rel="stylesheet" href="style.css">

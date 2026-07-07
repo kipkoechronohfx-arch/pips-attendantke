@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "test": "jest --detectOpenHandles --forceExit"
+    "test": "jest --detectOpenHandles --forceExit",
+    "build:css": "npx @tailwindcss/cli -i tailwind.css -o dist.css --minify",
+    "watch:css": "npx @tailwindcss/cli -i tailwind.css -o dist.css --watch"
   },
   "dependencies": {
     "@tailwindcss/cli": "^4.3.1",
