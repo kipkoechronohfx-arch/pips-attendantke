@@ -1,4 +1,4 @@
-﻿
+
 >   <script>
       tailwind.config = {
         theme: {
@@ -82,7 +82,7 @@ duration-300 cursor-pointer" title="Toggle Theme">
       <!-- Header -->
       <div class="text-center mb-10">
         <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-tr from-amber-500 
-to-yellow-300 text-4xl mb-5 shadow-[0_0_30px_rgba(251,191,36,0.3)]">ðŸ”’</div>
+to-yellow-300 text-4xl mb-5 shadow-[0_0_30px_rgba(251,191,36,0.3)]">🔒</div>
         <h1 class="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-amber-400 
 via-yellow-300 to-amber-400 mb-3">VIP Resources</h1>
         <p class="text-gray-400 text-sm max-w-sm mx-auto">Exclusive strategies, indicators, and guides reserved for 
@@ -118,7 +118,7 @@ bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 
 text-amber-400 hover:underline bg-transparent border-none cursor-pointer">Forgot Password?</button>
               </div>
               <div class="relative">
-                <input type="password" id="authPassword" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" class="w-full px-4 
+                <input type="password" id="authPassword" placeholder="••••••••" class="w-full px-4 
 py-3 pr-10 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-amber-400/50 
 focus:outline-none transition" />
                 <button type="button" onclick="togglePasswordVisibility('authPassword', 'authPwIcon')" class="absolute 
@@ -131,7 +131,7 @@ inset-y-0 right-3 flex items-center text-gray-500 hover:text-amber-400 transitio
             <button type="button" id="authBtn" onclick="handleAuth(event)" class="w-full py-3.5 rounded-xl font-bold 
 bg-gradient-to-r from-amber-500 to-yellow-400 text-dark-navy hover:brightness-110 active:scale-95 transition 
 duration-300 cursor-pointer text-sm shadow-[0_0_20px_rgba(251,191,36,0.3)]">
-              Log In ðŸ”“
+              Log In 🔓
             </button>
           </form>
         </div>
@@ -180,7 +180,7 @@ transition-transform duration-300">
             <div>
               <label class="block text-[10px] text-gray-500 mb-1">New Password</label>
               <div class="relative">
-                <input type="password" id="newResetPassword" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required 
+                <input type="password" id="newResetPassword" placeholder="••••••••" required 
 class="w-full px-4 py-3 pr-10 rounded-xl bg-black/40 border border-white/10 text-white text-sm 
 focus:border-emerald-400/50 focus:outline-none transition" />
                 <button type="button" onclick="togglePasswordVisibility('newResetPassword', 'resetPwIcon')" 
@@ -205,12 +205,12 @@ hover:brightness-110 active:scale-95 transition duration-300 cursor-pointer text
           <button id="tabMpesa" onclick="switchPayTab('mpesa')"
             class="flex-1 py-2.5 rounded-xl text-xs font-bold border border-emerald-500/40 bg-emerald-500/10 
 text-emerald-400 transition duration-200 cursor-pointer">
-            ðŸ“± M-Pesa
+            📱 M-Pesa
           </button>
           <button id="tabCrypto" onclick="switchPayTab('crypto')"
             class="flex-1 py-2.5 rounded-xl text-xs font-bold border border-amber-500/20 bg-white/5 text-gray-400 
 hover:border-amber-500/40 hover:text-amber-400 transition duration-200 cursor-pointer">
-            â‚¿ Crypto (USDT)
+            ₿ Crypto (USDT)
           </button>
         </div>
   
@@ -280,7 +280,7 @@ border-white/10 text-emerald-400 text-xs font-bold hover:bg-white/10 transition 
             <button onclick="payMpesa()" id="payBtn" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r 
 from-emerald-500 to-emerald-300 text-dark-navy hover:brightness-110 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] 
 active:scale-95 transition duration-300 cursor-pointer text-sm">
-              Pay KES 5,000 via M-Pesa ðŸ’¸
+              Pay KES 5,000 via M-Pesa 💸
             </button>
           </div>
   
@@ -297,10 +297,10 @@ rgba(251,191,36,0.06) 0%, transparent 70%);"></div>
               <div class="flex items-center gap-3 mb-4">
                 <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style="background: 
 linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.08)); border: 1px solid 
-rgba(251,191,36,0.3);">â‚¿</div>
+rgba(251,191,36,0.3);">₿</div>
                 <div>
                   <h2 class="text-white font-bold text-base leading-tight">Pay with Crypto</h2>
-                  <p class="text-amber-400/70 text-[11px] font-medium">USDT â€” VIP Access</p>
+                  <p class="text-amber-400/70 text-[11px] font-medium">USDT — VIP Access</p>
                 </div>
                 <div class="ml-auto text-right">
                   <p id="cryptoPriceDisplay" class="text-2xl font-black text-amber-400">$50</p>
@@ -373,7 +373,7 @@ bg-amber-400/10 border border-amber-400/20 hover:bg-amber-400/20 transition curs
                     <i data-feather="copy" class="w-3.5 h-3.5 text-amber-400"></i>
                   </button>
                 </div>
-                <p id="cryptoNetworkNote" class="text-gray-500 text-[10px] mt-1.5 text-center">âšï¸ Only send USDT on 
+                <p id="cryptoNetworkNote" class="text-gray-500 text-[10px] mt-1.5 text-center">�️ Only send USDT on 
 the <span class="text-amber-400 font-bold">TRC20 (TRON)</span> network to this address</p>
               </div>
   
@@ -419,7 +419,7 @@ border-white/10 text-amber-400 text-xs font-bold hover:bg-white/10 transition cu
                 <button id="cryptoSubmitBtn" onclick="submitCryptoPayment()" class="w-full py-3.5 rounded-xl font-bold 
 text-sm text-dark-navy hover:brightness-110 active:scale-95 transition duration-300 cursor-pointer" style="background: 
 linear-gradient(135deg, #fbbf24, #f59e0b); box-shadow: 0 0 20px rgba(251,191,36,0.25);">
-                  Submit Payment Proof âœ…
+                  Submit Payment Proof ✅
                 </button>
               </div>
             </div>
@@ -448,7 +448,7 @@ focus:border-amber-400/50 focus:outline-none transition font-mono uppercase trac
           <button id="unlockBtn" onclick="redeemCode()" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r 
 from-amber-500 to-yellow-400 text-dark-navy hover:brightness-110 hover:shadow-[0_0_20px_rgba(251,191,36,0.4)] 
 active:scale-95 transition duration-300 cursor-pointer text-sm">
-            Redeem ðŸ”“
+            Redeem 🔓
           </button>
         </div>
         
@@ -476,11 +476,11 @@ border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
           <h2 class="text-white font-bold text-xl mb-2">Subscription Activated!</h2>
           <p class="text-gray-400 text-sm mb-6">Your VIP subscription has been successfully activated.</p>
           <p id="codeExpiryText" class="text-emerald-400/80 text-xs font-medium mb-8 bg-emerald-500/10 inline-block 
-px-3 py-1.5 rounded-full border border-emerald-500/20">â± Valid for 30 days</p>
+px-3 py-1.5 rounded-full border border-emerald-500/20">⏱ Valid for 30 days</p>
           <button onclick="enterVIPFromSavePanel()" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r 
 from-emerald-500 to-emerald-300 text-dark-navy hover:brightness-110 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] 
 active:scale-95 transition duration-300 cursor-pointer">
-            Enter VIP Area Now ðŸ”“
+            Enter VIP Area Now 🔓
           </button>
         </div>
       </div>
@@ -493,7 +493,7 @@ active:scale-95 transition duration-300 cursor-pointer">
 sm:items-center gap-4">
           <div class="flex items-center gap-4 w-full sm:w-auto">
             <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center 
-justify-center text-2xl flex-shrink-0">ðŸ†</div>
+justify-center text-2xl flex-shrink-0">🏆</div>
             <div class="flex-1">
               <h2 class="text-white font-bold" id="vipWelcomeText">Welcome, VIP Member!</h2>
               <p class="text-gray-400 text-xs mt-0.5" id="vipExpiryText">You now have full access to all exclusive 
@@ -684,7 +684,7 @@ cursor-pointer">I have linked my account (Refresh)</button>
         </div>
   
         <div id="vipMainContent">
-        <!-- â± Live Signal Countdown Timer -->
+        <!-- ⏱ Live Signal Countdown Timer -->
         <div id="countdownSection" class="mb-6 hidden">
           <div class="glass-card border border-amber-400/30 rounded-2xl p-5 relative overflow-hidden">
             <!-- Glow bg -->
@@ -697,7 +697,7 @@ rgba(251,191,36,0.06) 0%, transparent 70%);"></div>
                   <i data-feather="clock" class="w-5 h-5 text-amber-400"></i>
                 </div>
                 <div>
-                  <h3 class="text-white font-bold text-sm">â± Next Signal Entry</h3>
+                  <h3 class="text-white font-bold text-sm">⏱ Next Signal Entry</h3>
                   <p id="countdownLabel" class="text-gray-400 text-[11px]">Counting down to entry...</p>
                 </div>
               </div>
@@ -728,7 +728,7 @@ tracking-tight">--</span>
   
             <!-- Entry reached state (hidden by default) -->
             <div id="countdownFired" class="hidden text-center py-4">
-              <div class="text-3xl mb-2">ðŸš€</div>
+              <div class="text-3xl mb-2">🚀</div>
               <p class="text-emerald-400 font-bold text-lg">Entry Time!</p>
               <p class="text-gray-400 text-xs mt-1">Check the signal details and prepare your trade.</p>
             </div>
@@ -737,13 +737,13 @@ tracking-tight">--</span>
   
         <!-- VIP Signals Card -->
         <div class="mb-8">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400 mb-3">â­ VIP Signals</h3>
+          <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400 mb-3">⭐ VIP Signals</h3>
           <a id="vipTelegramLink" href="#" data-telegram-link="true" target="_blank" class="premium-card border 
 border-amber-400/20 bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-400/40 rounded-2xl p-5 flex items-center 
 justify-between gap-4 transition-all duration-300 cursor-pointer shadow-[0_0_15px_rgba(251,191,36,0.1)] group">
             <div class="flex items-center gap-4">
               <div class="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-400/30 flex items-center 
-justify-center text-xl flex-shrink-0 shadow-inner group-hover:scale-110 transition-transform">â</div>
+justify-center text-xl flex-shrink-0 shadow-inner group-hover:scale-110 transition-transform">�</div>
               <div>
                 <h4 class="text-white font-bold text-sm">Join VIP Signals Channel</h4>
                 <p class="text-gray-400 text-xs mt-0.5">Click here to generate your personal 1-time invite link.</p>
@@ -816,7 +816,7 @@ border border-dashed border-amber-400/20 bg-amber-500/5 text-center">
                   <i data-feather="image" class="w-8 h-8 text-amber-400/50"></i>
                 </div>
                 <p class="text-amber-400/70 font-bold text-sm">Today's Setup Coming Soon</p>
-                <p class="text-gray-500 text-xs mt-1">Check back soon â€” the admin uploads fresh analysis daily.</p>
+                <p class="text-gray-500 text-xs mt-1">Check back soon — the admin uploads fresh analysis daily.</p>
               </div>
               <!-- Actual image (hidden until loaded) -->
               <img id="todaysSetupImage" src="" alt="Today's Analysis" class="hidden max-w-full h-auto rounded-xl 
@@ -992,13 +992,13 @@ x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></poly
   
         <!-- Resource Cards -->
         <div class="space-y-4 mb-10">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400 mb-3">ðŸ“‚ PDF Strategy Guides</h3>
+          <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400 mb-3">📂 PDF Strategy Guides</h3>
   
           <!-- Resource 1 -->
           <div class="premium-card border rounded-2xl p-5 flex items-center justify-between gap-4">
             <div class="flex items-center gap-4">
               <div class="w-12 h-12 rounded-xl bg-amber-400/10 border border-amber-400/20 flex items-center 
-justify-center text-xl flex-shrink-0">ðŸ“„</div>
+justify-center text-xl flex-shrink-0">📄</div>
               <div>
                 <h4 class="text-white font-bold text-sm">Smart Money Concepts Guide</h4>
                 <p class="text-gray-400 text-xs mt-0.5">Advanced ICT & SMC strategy breakdown. 42 pages.</p>
@@ -1014,7 +1014,7 @@ border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50
           <div class="premium-card border rounded-2xl p-5 flex items-center justify-between gap-4">
             <div class="flex items-center gap-4">
               <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center 
-justify-center text-xl flex-shrink-0">ðŸ“Š</div>
+justify-center text-xl flex-shrink-0">📊</div>
               <div>
                 <h4 class="text-white font-bold text-sm">Risk Management Workbook</h4>
                 <p class="text-gray-400 text-xs mt-0.5">Position sizing, lot calculator, drawdown rules. 18 pages.</p>
@@ -1030,7 +1030,7 @@ border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50
           <div class="premium-card border rounded-2xl p-5 flex items-center justify-between gap-4">
             <div class="flex items-center gap-4">
               <div class="w-12 h-12 rounded-xl bg-neon-blue/10 border border-neon-blue/20 flex items-center 
-justify-center text-xl flex-shrink-0">ðŸ“ˆ</div>
+justify-center text-xl flex-shrink-0">📈</div>
               <div>
                 <h4 class="text-white font-bold text-sm">High Probability Setups Playbook</h4>
                 <p class="text-gray-400 text-xs mt-0.5">My personal top 5 trade setups with real examples.</p>
@@ -1042,14 +1042,14 @@ border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50
             </span>
           </div>
   
-          <h3 class="text-xs font-bold uppercase tracking-wider text-neon-purple mt-8 mb-3">ðŸ”§ Indicator 
+          <h3 class="text-xs font-bold uppercase tracking-wider text-neon-purple mt-8 mb-3">🔧 Indicator 
 Settings</h3>
   
           <!-- Resource 4 -->
           <div class="premium-card border rounded-2xl p-5 flex items-center justify-between gap-4">
             <div class="flex items-center gap-4">
               <div class="w-12 h-12 rounded-xl bg-neon-purple/10 border border-neon-purple/20 flex items-center 
-justify-center text-xl flex-shrink-0">âš™ï¸</div>
+justify-center text-xl flex-shrink-0">⚙️</div>
               <div>
                 <h4 class="text-white font-bold text-sm">Custom EMA Settings Pack</h4>
                 <p class="text-gray-400 text-xs mt-0.5">My exact EMA periods and color settings for TradingView.</p>
@@ -1065,7 +1065,7 @@ border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50
           <div class="premium-card border rounded-2xl p-5 flex items-center justify-between gap-4">
             <div class="flex items-center gap-4">
               <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center 
-justify-center text-xl flex-shrink-0">ðŸŽ¯</div>
+justify-center text-xl flex-shrink-0">🎯</div>
               <div>
                 <h4 class="text-white font-bold text-sm">Session Kill Zones Cheat Sheet</h4>
                 <p class="text-gray-400 text-xs mt-0.5">Key trading times for London, NY & Asian overlap sessions.</p>
@@ -1117,8 +1117,8 @@ members. Do not distribute.</p>
               const tgStatus = document.getElementById('telegramLinkStatus');
               if (tgStatus) {
                 tgStatus.textContent = telegramId
-                  ? `âœ… Linked (TG ID: ${telegramId})`
-                  : 'âš ï¸ Not linked â€” click below to link.';
+                  ? `✅ Linked (TG ID: ${telegramId})`
+                  : '⚠️ Not linked — click below to link.';
                 tgStatus.className = telegramId ? 'text-emerald-400 text-[11px] mb-3' : 'text-amber-400 text-[11px] 
 mb-3';
               }
@@ -1140,12 +1140,12 @@ mb-3';
         const msgEl = document.getElementById('referralCopyMsg');
         if (!input || !input.value) return;
         navigator.clipboard.writeText(input.value).then(() => {
-          msgEl.textContent = 'âœ… Referral link copied!';
+          msgEl.textContent = '✅ Referral link copied!';
           setTimeout(() => { msgEl.textContent = ''; }, 3000);
         }).catch(() => {
           input.select();
           document.execCommand('copy');
-          msgEl.textContent = 'âœ… Copied!';
+          msgEl.textContent = '✅ Copied!';
           setTimeout(() => { msgEl.textContent = ''; }, 3000);
         });
       }
@@ -1166,7 +1166,7 @@ mb-3';
         const msgEl = document.getElementById('ticketSubmitMsg');
   
         if (!subject || !message) {
-          if (msgEl) { msgEl.className = 'text-rose-400 text-xs min-h-[14px]'; msgEl.textContent = 'âŒ Please fill in 
+          if (msgEl) { msgEl.className = 'text-rose-400 text-xs min-h-[14px]'; msgEl.textContent = '❌ Please fill in 
 all fields.'; }
           return;
         }
@@ -1179,7 +1179,7 @@ all fields.'; }
           });
           const data = await res.json();
           if (data.ok) {
-            if (msgEl) { msgEl.className = 'text-emerald-400 text-xs min-h-[14px]'; msgEl.textContent = 'âœ… Ticket 
+            if (msgEl) { msgEl.className = 'text-emerald-400 text-xs min-h-[14px]'; msgEl.textContent = '✅ Ticket 
 submitted! We\'ll reply soon.'; }
             document.getElementById('ticketSubject').value = '';
             document.getElementById('ticketMessage').value = '';
@@ -1189,11 +1189,11 @@ submitted! We\'ll reply soon.'; }
             }, 2500);
             fetchUserTickets();
           } else {
-            if (msgEl) { msgEl.className = 'text-rose-400 text-xs min-h-[14px]'; msgEl.textContent = `âŒ 
+            if (msgEl) { msgEl.className = 'text-rose-400 text-xs min-h-[14px]'; msgEl.textContent = `❌ 
 ${data.error}`; }
           }
         } catch (err) {
-          if (msgEl) { msgEl.className = 'text-rose-400 text-xs min-h-[14px]'; msgEl.textContent = 'âŒ Server error. 
+          if (msgEl) { msgEl.className = 'text-rose-400 text-xs min-h-[14px]'; msgEl.textContent = '❌ Server error. 
 Please try again.'; }
         }
       }
@@ -1253,17 +1253,17 @@ ${lastMsg.text}</p>` : ''}
           const data = await res.json();
           if (data.ok) {
             errorEl.className = 'text-emerald-400 text-[11px] min-h-[14px]';
-            errorEl.textContent = 'âœ… Profile updated!';
+            errorEl.textContent = '✅ Profile updated!';
             document.getElementById('vipWelcomeText').textContent = `Welcome, ${data.name}!`;
             localStorage.setItem('pa_vip_user_name', data.name);
             setTimeout(() => { errorEl.textContent = ''; }, 3000);
           } else {
             errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
-            errorEl.textContent = `âŒ ${data.error}`;
+            errorEl.textContent = `❌ ${data.error}`;
           }
         } catch (err) {
           errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
-          errorEl.textContent = 'âŒ Server error.';
+          errorEl.textContent = '❌ Server error.';
         } finally {
           btn.innerHTML = origText;
           btn.disabled = false;
@@ -1293,25 +1293,25 @@ ${lastMsg.text}</p>` : ''}
           const data = await res.json();
           if (data.ok) {
             errorEl.className = 'text-emerald-400 text-[11px] min-h-[14px]';
-            errorEl.textContent = 'âœ… Password changed successfully!';
+            errorEl.textContent = '✅ Password changed successfully!';
             document.getElementById('oldPassword').value = '';
             document.getElementById('newPassword').value = '';
             setTimeout(() => { errorEl.textContent = ''; }, 3000);
           } else {
             errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
-            errorEl.textContent = `âŒ ${data.error}`;
+            errorEl.textContent = `❌ ${data.error}`;
           }
         } catch (err) {
           errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
-          errorEl.textContent = 'âŒ Server error.';
+          errorEl.textContent = '❌ Server error.';
         } finally {
           btn.innerHTML = origText;
           btn.disabled = false;
         }
       }
   
-      // â”€â”€ File Management â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── File Management ─────────────────────────────
+───────────
       let pollInterval;
       let selectedNetwork = 'TRC20';
       let selectedMpesaPlan = '1month';
@@ -1347,7 +1347,7 @@ text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg">POPULAR</div>';
         });
         const kes = PLAN_KES[plan];
         const btn = document.getElementById('payBtn');
-        if (btn) btn.textContent = `Pay KES ${kes.toLocaleString()} via M-Pesa ðŸ’¸`;
+        if (btn) btn.textContent = `Pay KES ${kes.toLocaleString()} via M-Pesa 💸`;
       }
   
       function selectCryptoPlan(plan) {
@@ -1376,8 +1376,8 @@ text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg">POPULAR</div>';
         if (priceEl) priceEl.textContent = `$${usdt}`;
       }
   
-      // â”€â”€ Crypto Wallet Addresses per network â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-      // Fallback defaults â€” overridden by server on load
+      // ── Crypto Wallet Addresses per network ───────────────────
+      // Fallback defaults — overridden by server on load
       const cryptoWallets = {
         TRC20: '',
         BEP20: '',
@@ -1406,8 +1406,8 @@ text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg">POPULAR</div>';
         ERC20: 'ERC20 (ETH)'
       };
   
-      // â”€â”€ Payment Tab Switching 
-â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── Payment Tab Switching 
+──────────────────────────────────
       function switchPayTab(tab) {
         const mpesaPanel = document.getElementById('mpesaPanel');
         const cryptoPanel = document.getElementById('cryptoPanel');
@@ -1432,8 +1432,8 @@ text-gray-400 hover:border-emerald-500/40 hover:text-emerald-400 transition dura
         }
       }
   
-      // â”€â”€ Crypto Network Selection 
-â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── Crypto Network Selection 
+───────────────────────────────
       function selectNetwork(net) {
         selectedNetwork = net;
         const networks = ['TRC20', 'BEP20', 'ERC20'];
@@ -1450,15 +1450,15 @@ hover:border-amber-400/30 hover:text-amber-300 transition cursor-pointer';
         });
         // Update wallet address display
         const addrEl = document.getElementById('cryptoWalletAddress');
-        if (addrEl) addrEl.textContent = cryptoWallets[net] || 'â€”';
+        if (addrEl) addrEl.textContent = cryptoWallets[net] || '—';
         // Update warning note
         const noteEl = document.getElementById('cryptoNetworkNote');
-        if (noteEl) noteEl.innerHTML = `âšï¸ Only send USDT on the <span class="text-amber-400 
+        if (noteEl) noteEl.innerHTML = `�️ Only send USDT on the <span class="text-amber-400 
 font-bold">${networkNames[net]}</span> network to this address`;
       }
   
-      // â”€â”€ Copy Crypto Wallet Address 
-â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── Copy Crypto Wallet Address 
+─────────────────────────────
       function copyCryptoAddress() {
         const address = cryptoWallets[selectedNetwork];
         if (!address) return;
@@ -1484,8 +1484,8 @@ font-bold">${networkNames[net]}</span> network to this address`;
         });
       }
   
-      // â”€â”€ Submit Crypto Payment Proof 
-â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── Submit Crypto Payment Proof 
+────────────────────────────
       async function submitCryptoPayment() {
         const txHash = document.getElementById('cryptoTxHash').value.trim();
         const contact = document.getElementById('cryptoContact').value.trim();
@@ -1494,13 +1494,13 @@ font-bold">${networkNames[net]}</span> network to this address`;
   
         errorEl.textContent = '';
   
-        if (!txHash) { errorEl.textContent = 'âŒ Please enter your transaction hash.'; return; }
-        if (txHash.length < 10) { errorEl.textContent = 'âŒ Transaction hash looks too short. Double check.'; return; 
+        if (!txHash) { errorEl.textContent = '❌ Please enter your transaction hash.'; return; }
+        if (txHash.length < 10) { errorEl.textContent = '❌ Transaction hash looks too short. Double check.'; return; 
 }
-        if (!contact) { errorEl.textContent = 'âŒ Please enter your Telegram or email to receive the code.'; return; }
+        if (!contact) { errorEl.textContent = '❌ Please enter your Telegram or email to receive the code.'; return; }
   
         const origText = btn.textContent;
-        btn.textContent = 'â³ Submitting...';
+        btn.textContent = '⏳ Submitting...';
         btn.disabled = true;
   
         try {
@@ -1521,20 +1521,20 @@ promoCode })
           if (data.ok) {
             // Show success state
             errorEl.className = 'text-emerald-400 text-[11px] min-h-[14px]';
-            errorEl.innerHTML = 'âœ… Submitted successfully! We\'ll verify and send your access code within 24 hours.';
-            btn.textContent = 'âœ… Submitted!';
+            errorEl.innerHTML = '✅ Submitted successfully! We\'ll verify and send your access code within 24 hours.';
+            btn.textContent = '✅ Submitted!';
             btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
             document.getElementById('cryptoTxHash').value = '';
             document.getElementById('cryptoContact').value = '';
           } else {
             errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
-            errorEl.textContent = `âŒ ${data.error || 'Submission failed. Please try again.'}`;
+            errorEl.textContent = `❌ ${data.error || 'Submission failed. Please try again.'}`;
             btn.textContent = origText;
             btn.disabled = false;
           }
         } catch {
           errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
-          errorEl.textContent = 'âŒ Network error. Please try again.';
+          errorEl.textContent = '❌ Network error. Please try again.';
           btn.textContent = origText;
           btn.disabled = false;
         }
@@ -1544,7 +1544,7 @@ promoCode })
         document.getElementById('passwordForm').classList.toggle('hidden');
       }
   
-      // â”€â”€ Update download & Telegram links with session token â”€â”€â”€â”€
+      // ── Update download & Telegram links with session token ────
       function updateDownloadLinks() {
         const token = sessionStorage.getItem('vip_session_token');
         if (!token) return;
@@ -1558,14 +1558,14 @@ promoCode })
   
   
   
-      // â”€â”€ Show "Success" panel after payment â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── Show "Success" panel after payment ──────────────
       function showSuccessPanel() {
         document.getElementById('paymentPanel').style.display = 'none';
         document.getElementById('saveCodePanel').classList.remove('hidden');
         feather.replace();
       }
   
-      // â”€â”€ Transition from Success panel â†’ VIP Content â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── Transition from Success panel → VIP Content ─────────
       function enterVIPFromSavePanel() {
         document.getElementById('saveCodePanel').classList.add('hidden');
         document.getElementById('contentPanel').classList.remove('hidden');
@@ -1575,14 +1575,14 @@ promoCode })
         feather.replace();
       }
   
-      // â”€â”€ M-Pesa Payment Flow 
-â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── M-Pesa Payment Flow 
+────────────────────────────────────
       async function payMpesa() {
         const phone = document.getElementById('mpesaPhone').value.trim();
         const error = document.getElementById('mpesaError');
         const btn   = document.getElementById('payBtn');
   
-        if (!phone) { error.textContent = 'âŒ Please enter a phone number.'; return; }
+        if (!phone) { error.textContent = '❌ Please enter a phone number.'; return; }
   
         const originalText = btn.innerHTML;
         btn.innerHTML = '<span class="animate-pulse flex items-center justify-center gap-2"><i data-feather="loader" 
@@ -1606,20 +1606,20 @@ class="w-4 h-4 animate-spin"></i> Initiating STK Push...</span>';
   
           if (data.ok) {
             error.className = 'text-emerald-400 text-xs min-h-[16px]';
-            error.textContent = 'âœ… STK Push sent! Enter your M-Pesa PIN on your phone.';
+            error.textContent = '✅ STK Push sent! Enter your M-Pesa PIN on your phone.';
             btn.innerHTML = '<span class="animate-pulse flex items-center justify-center gap-2"><i 
 data-feather="loader" class="w-4 h-4 animate-spin"></i> Waiting for payment...</span>';
             feather.replace();
             pollPayment(data.reference, btn, originalText, error);
           } else {
             error.className = 'text-rose-400 text-xs min-h-[16px]';
-            error.textContent = `âŒ ${data.error}`;
+            error.textContent = `❌ ${data.error}`;
             btn.innerHTML = originalText;
             btn.disabled = false;
           }
         } catch {
           error.className = 'text-rose-400 text-xs min-h-[16px]';
-          error.textContent = 'âŒ Server error. Please try again later.';
+          error.textContent = '❌ Server error. Please try again later.';
           btn.innerHTML = originalText;
           btn.disabled = false;
         }
@@ -1645,24 +1645,24 @@ data-feather="loader" class="w-4 h-4 animate-spin"></i> Waiting for payment...</
           
           if (data.ok) {
             errorEl.className = 'text-emerald-400 text-xs min-h-[16px]';
-            errorEl.textContent = `âœ… Promo applied: ${data.discountPercentage}% off!`;
+            errorEl.textContent = `✅ Promo applied: ${data.discountPercentage}% off!`;
             
             if (type === 'mpesa') {
               const baseAmount = PLAN_KES[selectedMpesaPlan];
               const newAmount = Math.floor(baseAmount * (1 - (data.discountPercentage / 100)));
-              btn.innerHTML = `Pay KES ${newAmount.toLocaleString()} via M-Pesa ðŸ’¸`;
+              btn.innerHTML = `Pay KES ${newAmount.toLocaleString()} via M-Pesa 💸`;
             } else {
               const baseAmount = PLAN_USDT[selectedCryptoPlan];
               const newAmount = Math.floor(baseAmount * (1 - (data.discountPercentage / 100)));
-              btn.innerHTML = `Submit Payment Proof ($${newAmount} USDT) âœ…`;
+              btn.innerHTML = `Submit Payment Proof ($${newAmount} USDT) ✅`;
             }
           } else {
             errorEl.className = 'text-rose-400 text-xs min-h-[16px]';
-            errorEl.textContent = `âŒ ${data.error}`;
+            errorEl.textContent = `❌ ${data.error}`;
           }
         } catch (err) {
           errorEl.className = 'text-rose-400 text-xs min-h-[16px]';
-          errorEl.textContent = 'âŒ Failed to validate promo.';
+          errorEl.textContent = '❌ Failed to validate promo.';
         }
       }
   
@@ -1674,7 +1674,7 @@ data-feather="loader" class="w-4 h-4 animate-spin"></i> Waiting for payment...</
           if (++attempts > 60) {
             clearInterval(pollInterval);
             errorEl.className = 'text-rose-400 text-xs min-h-[16px]';
-            errorEl.textContent = 'âŒ Payment timed out. Please try again.';
+            errorEl.textContent = '❌ Payment timed out. Please try again.';
             btn.innerHTML = originalText;
             btn.disabled = false;
             return;
@@ -1704,7 +1704,7 @@ data-feather="loader" class="w-4 h-4 animate-spin"></i> Waiting for payment...</
             } else if (data.ok && data.status === 'Failed') {
               clearInterval(pollInterval);
               errorEl.className = 'text-rose-400 text-xs min-h-[16px]';
-              errorEl.textContent = 'âŒ Payment failed or was cancelled.';
+              errorEl.textContent = '❌ Payment failed or was cancelled.';
               btn.innerHTML = originalText;
               btn.disabled  = false;
             }
@@ -1712,8 +1712,8 @@ data-feather="loader" class="w-4 h-4 animate-spin"></i> Waiting for payment...</
         }, 3000);
       }
   
-      // â”€â”€ User Authentication 
-â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── User Authentication 
+────────────────────────────────────
       function switchAuthTab(mode) {
         authMode = mode;
         const btnLogin = document.getElementById('tabLogin');
@@ -1730,14 +1730,14 @@ text-amber-400 transition cursor-pointer';
           btnRegister.className = 'flex-1 py-2 rounded-xl text-xs font-bold border border-white/5 bg-white/5 
 text-gray-400 hover:text-amber-400 transition cursor-pointer';
           nameGroup.classList.add('hidden');
-          btnSubmit.innerHTML = 'Log In ðŸ”“';
+          btnSubmit.innerHTML = 'Log In 🔓';
         } else {
           btnRegister.className = 'flex-1 py-2 rounded-xl text-xs font-bold border border-amber-500/40 bg-amber-500/10 
 text-amber-400 transition cursor-pointer';
           btnLogin.className = 'flex-1 py-2 rounded-xl text-xs font-bold border border-white/5 bg-white/5 
 text-gray-400 hover:text-amber-400 transition cursor-pointer';
           nameGroup.classList.remove('hidden');
-          btnSubmit.innerHTML = 'Create Account ðŸš€';
+          btnSubmit.innerHTML = 'Create Account 🚀';
         }
       }
       
@@ -1778,7 +1778,7 @@ text-gray-400 hover:text-amber-400 transition cursor-pointer';
         if (authMode === 'register') {
           const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
           if (!passwordRegex.test(password)) {
-            errorEl.textContent = 'âŒ Password must be at least 8 characters long and include an uppercase letter, a 
+            errorEl.textContent = '❌ Password must be at least 8 characters long and include an uppercase letter, a 
 lowercase letter, a number, and a special character.';
             return;
           }
@@ -1816,10 +1816,10 @@ undefined };
             }
             checkUserAccess();
           } else {
-            errorEl.textContent = `âŒ ${data.error || 'Authentication failed'}`;
+            errorEl.textContent = `❌ ${data.error || 'Authentication failed'}`;
           }
         } catch (err) {
-          errorEl.textContent = 'âŒ Server error. Please try again.';
+          errorEl.textContent = '❌ Server error. Please try again.';
         } finally {
           btn.innerHTML = origText;
           btn.disabled = false;
@@ -1859,15 +1859,15 @@ undefined };
           const data = await res.json();
           if (data.ok) {
             errorEl.className = 'text-emerald-400 text-[11px] min-h-[14px]';
-            errorEl.textContent = 'âœ… If that email is registered, a reset link has been sent.';
+            errorEl.textContent = '✅ If that email is registered, a reset link has been sent.';
             setTimeout(closeForgotPasswordModal, 3000);
           } else {
             errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
-            errorEl.textContent = `âŒ ${data.error || 'Failed to send reset link.'}`;
+            errorEl.textContent = `❌ ${data.error || 'Failed to send reset link.'}`;
           }
         } catch (err) {
           errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
-          errorEl.textContent = 'âŒ Server error.';
+          errorEl.textContent = '❌ Server error.';
         } finally {
           btn.innerHTML = origText;
           btn.disabled = false;
@@ -1899,17 +1899,17 @@ undefined };
           
           if (data.ok) {
             errorEl.className = 'text-emerald-400 text-[11px] min-h-[14px]';
-            errorEl.textContent = 'âœ… Password updated successfully! Redirecting to login...';
+            errorEl.textContent = '✅ Password updated successfully! Redirecting to login...';
             setTimeout(() => {
               window.location.href = window.location.pathname; // Remove query params
             }, 2000);
           } else {
             errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
-            errorEl.textContent = `âŒ ${data.error || 'Failed to reset password.'}`;
+            errorEl.textContent = `❌ ${data.error || 'Failed to reset password.'}`;
           }
         } catch (err) {
           errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
-          errorEl.textContent = 'âŒ Server error.';
+          errorEl.textContent = '❌ Server error.';
         } finally {
           btn.innerHTML = origText;
           btn.disabled = false;
@@ -1939,10 +1939,10 @@ undefined };
           if (data.ok) {
             checkUserAccess();
           } else {
-            error.textContent = `âŒ ${data.error || 'Invalid code'}`;
+            error.textContent = `❌ ${data.error || 'Invalid code'}`;
           }
         } catch (err) {
-          error.textContent = 'âŒ Server error';
+          error.textContent = '❌ Server error';
         } finally {
           btn.innerHTML = origText;
           btn.disabled = false;
@@ -1994,7 +1994,7 @@ chat')) {
           
           const msgHtml = `
             <div class="flex flex-col ${isSelf ? 'items-end' : 'items-start'} w-full mt-2 animate-fade-in-up">
-              <span class="text-[10px] text-gray-500 mb-1 ml-1">${msg.author} â€¢ ${timeStr}</span>
+              <span class="text-[10px] text-gray-500 mb-1 ml-1">${msg.author} • ${timeStr}</span>
               <div class="max-w-[80%] rounded-2xl px-4 py-2 text-sm ${isSelf ? 'bg-amber-500/20 border 
 border-amber-500/30 text-amber-50' : 'bg-white/10 border border-white/5 text-gray-200'}">
                 ${msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
@@ -2064,7 +2064,7 @@ border-amber-500/30 text-amber-50' : 'bg-white/10 border border-white/5 text-gra
               if (tgStatus && tgBtnAcc) {
                 if (data.user.telegramId) {
                   tgStatus.className = 'text-emerald-400 text-[11px] mb-3';
-                  tgStatus.innerHTML = 'âœ… Linked successfully';
+                  tgStatus.innerHTML = '✅ Linked successfully';
                   tgBtnAcc.classList.add('hidden');
                 } else {
                   tgStatus.className = 'text-gray-400 text-[11px] mb-3';
@@ -2231,8 +2231,8 @@ border-amber-500/30 text-amber-50' : 'bg-white/10 border border-white/5 text-gra
         } catch (err) { console.error('Failed to load setup:', err); }
       }
   
-      // â”€â”€ Load Countdown from Latest Signal 
-â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── Load Countdown from Latest Signal 
+──────────────────────────
       async function loadCountdownFromSignals() {
         try {
           const res = await fetch('/api/signals/history');
@@ -2253,7 +2253,7 @@ border-amber-500/30 text-amber-50' : 'bg-white/10 border border-white/5 text-gra
         }
       }
   
-      // â”€â”€ Load Today's Setup Results image (VIP only) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── Load Today's Setup Results image (VIP only) ────────────────
       async function loadTodaysSetupResults() {
         const token = sessionStorage.getItem('vip_session_token');
         if (!token) return;
@@ -2274,8 +2274,8 @@ border-amber-500/30 text-amber-50' : 'bg-white/10 border border-white/5 text-gra
         } catch (err) { console.error('Failed to load setup results:', err); }
       }
   
-      // â”€â”€ VIP Chat Wall Logic â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── VIP Chat Wall Logic ───────────────────────────�
+�────────────
       
       function switchChatRoom(room) {
         currentRoom = room;
@@ -2342,7 +2342,7 @@ messages yet. Say hello!</p></div>';
                 const isSelf = msg.author === (localStorage.getItem('pa_vip_user_name') || 'VIP Member');
                 return `
                   <div class="flex flex-col ${isSelf ? 'items-end' : 'items-start'} w-full">
-                    <span class="text-[10px] text-gray-500 mb-1 ml-1">${msg.author} â€¢ ${timeStr}</span>
+                    <span class="text-[10px] text-gray-500 mb-1 ml-1">${msg.author} • ${timeStr}</span>
                     <div class="max-w-[80%] rounded-2xl px-4 py-2 text-sm ${isSelf ? 'bg-amber-500/20 border 
 border-amber-500/30 text-amber-50' : 'bg-white/10 border border-white/5 text-gray-200'}">
                       ${msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
