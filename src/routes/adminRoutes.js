@@ -442,6 +442,17 @@ router.post('/approve-crypto-request', validateAdminSession, async (req, res) =>
           user.subscriptionTier = tier;
         }
         await db.saveUser(user);
+        
+        // ── Referral Program: Credit Referrer 5 Days ────────────
+        if (user.referredBy) {
+          const referrer = await db.getUserById(user.referredBy);
+          if (referrer && referrer.subscriptionExpiry) {
+            referrer.subscriptionExpiry += 5 * 24 * 60 * 60 * 1000; // 5 days
+            await db.saveUser(referrer);
+          }
+        }
+        // ───────────────────────────────────────────────────────
+
         userEmail = user.email;
         userName = user.name;
       }
