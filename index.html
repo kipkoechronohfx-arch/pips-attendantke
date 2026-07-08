@@ -127,7 +127,11 @@
             </div>
 
             <!-- CTA -->
-            <div class="hidden md:block">
+            <div class="hidden md:flex items-center gap-3">
+                <button id="pwa-install-btn" onclick="triggerPwaInstall()" class="hidden items-center gap-2 px-4 py-2 rounded-full text-xs font-bold border border-amber-400/40 text-amber-400 hover:bg-amber-400/10 transition-all">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13M8 11l4 4 4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+                  Install App
+                </button>
                 <a href="premium.html" class="btn-gold px-6 py-2.5 rounded-full text-sm">Join VIP</a>
             </div>
 
@@ -1215,6 +1219,7 @@
         })();
         
         // Register Service Worker for PWA
+        let deferredInstallPrompt = null;
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
@@ -1226,6 +1231,33 @@
                 });
             });
         }
+
+        // Capture the install prompt and show the button
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredInstallPrompt = e;
+            const btn = document.getElementById('pwa-install-btn');
+            if (btn) btn.classList.replace('hidden', 'flex');
+        });
+
+        function triggerPwaInstall() {
+            if (!deferredInstallPrompt) return;
+            deferredInstallPrompt.prompt();
+            deferredInstallPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    const btn = document.getElementById('pwa-install-btn');
+                    if (btn) btn.classList.add('hidden');
+                }
+                deferredInstallPrompt = null;
+            });
+        }
+
+        // Hide the button once installed
+        window.addEventListener('appinstalled', () => {
+            const btn = document.getElementById('pwa-install-btn');
+            if (btn) btn.classList.add('hidden');
+            deferredInstallPrompt = null;
+        });
     </script>
 </body>
 </html>

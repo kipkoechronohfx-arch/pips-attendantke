@@ -17,14 +17,23 @@ function notifyAdminPaymentError(context, error) {
 }
 
 const PLANS = {
-  '1month':  { days: 30,  kesPrice: 5000,  usdtPrice: 50  },
-  '2months': { days: 60,  kesPrice: 9500,  usdtPrice: 95  },
-  '3months': { days: 90,  kesPrice: 14000, usdtPrice: 140 },
-  '6months': { days: 180, kesPrice: 25000, usdtPrice: 250 }
+  // ── Gold (Standard) Plans ────────────────────────────────
+  '1month':           { days: 30,  kesPrice: 5000,  usdtPrice: 50,  tier: 'Gold' },
+  '2months':          { days: 60,  kesPrice: 9500,  usdtPrice: 95,  tier: 'Gold' },
+  '3months':          { days: 90,  kesPrice: 14000, usdtPrice: 140, tier: 'Gold' },
+  '6months':          { days: 180, kesPrice: 25000, usdtPrice: 250, tier: 'Gold' },
+  // ── Platinum (Premium) Plans ──────────────────────────────
+  '1month_platinum':  { days: 30,  kesPrice: 9500,  usdtPrice: 90,  tier: 'Platinum' },
+  '3months_platinum': { days: 90,  kesPrice: 25000, usdtPrice: 240, tier: 'Platinum' },
+  'lifetime_platinum':{ days: 36500, kesPrice: 65000, usdtPrice: 499, tier: 'Platinum' }
 };
 
 function getDaysForPlan(plan) {
   return (PLANS[plan] || PLANS['1month']).days;
+}
+
+function getTierForPlan(plan) {
+  return (PLANS[plan] || PLANS['1month']).tier || 'Gold';
 }
 
 router.post('/pay-vip', validateUserSession, async (req, res) => {
@@ -147,8 +156,13 @@ router.get('/check-payment/:ref', validateUserSession, async (req, res) => {
       const user = await db.getUserById(currentUserId);
       if (user) {
         const days = getDaysForPlan(payment.plan || '1month');
+        const tier = getTierForPlan(payment.plan || '1month');
         const currentExpiry = user.subscriptionExpiry && user.subscriptionExpiry > Date.now() ? user.subscriptionExpiry : Date.now();
         user.subscriptionExpiry = currentExpiry + days * 24 * 60 * 60 * 1000;
+        // Upgrade tier: once Platinum, always keep Platinum unless plan changes back to Gold
+        if (tier === 'Platinum' || user.subscriptionTier !== 'Platinum') {
+          user.subscriptionTier = tier;
+        }
         await db.saveUser(user);
         
         payment.processedForUser = true;
@@ -191,7 +205,7 @@ router.get('/check-payment/:ref', validateUserSession, async (req, res) => {
       ok: true,
       status: 'Success',
       sessionToken,
-      user: { id: user._id || user.id, email: user.email, name: user.name, subscriptionExpiry: user.subscriptionExpiry }
+      user: { id: user._id || user.id, email: user.email, name: user.name, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier || 'Gold' }
     });
   } else {
     res.json({ ok: true, status: payment.status });
