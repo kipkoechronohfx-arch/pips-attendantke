@@ -126,7 +126,7 @@ router.post('/login', authLimiter, async (req, res) => {
   }
 
   const sessionToken = generateUserToken(user);
-  res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, subscriptionExpiry: user.subscriptionExpiry, telegramId: user.telegramId } });
+  res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier, telegramId: user.telegramId } });
 });
 
 router.get('/me', validateUserSession, (req, res) => {
@@ -137,6 +137,7 @@ router.get('/me', validateUserSession, (req, res) => {
       email: req.user.email,
       name: req.user.name,
       subscriptionExpiry: req.user.subscriptionExpiry,
+      subscriptionTier: req.user.subscriptionTier,
       telegramId: req.user.telegramId
     }
   });
