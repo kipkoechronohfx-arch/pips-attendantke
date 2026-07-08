@@ -6,6 +6,15 @@ const crypto = require('crypto');
 const db = require('../services/db');
 const { validateUserSession, JWT_SECRET } = require('../middleware/auth');
 const { sendEmail, buildReceiptHtml } = require('../services/emailService');
+const { sendTelegramMessage } = require('../services/telegramBot');
+const logger = require('../utils/logger');
+
+function notifyAdminPaymentError(context, error) {
+  const adminChatId = process.env.TELEGRAM_CHAT_ID;
+  if (!adminChatId) return;
+  const msg = `⚠️ *Payment Error*\n\n*Context:* ${context}\n*Error:* ${error}`;
+  sendTelegramMessage(adminChatId, msg).catch(() => {});
+}
 
 const PLANS = {
   '1month':  { days: 30,  kesPrice: 5000,  usdtPrice: 50  },
@@ -74,7 +83,8 @@ router.post('/pay-vip', validateUserSession, async (req, res) => {
       throw new Error(data.message || 'Payment initiation failed');
     }
   } catch (error) {
-    console.error('[payhero error]', error);
+    logger.error(`[Payhero] Payment initiation failed for user ${req.user?.email}: ${error.message}`);
+    notifyAdminPaymentError(`M-Pesa payment initiation — User: ${req.user?.email}, Plan: ${selectedPlan}`, error.message);
     res.status(500).json({ ok: false, error: 'Failed to initiate payment. Please try again.' });
   }
 });
@@ -99,7 +109,8 @@ router.post('/payhero-webhook', async (req, res) => {
     }
     res.status(200).json({ received: true });
   } catch (err) {
-    console.error('[webhook error]', err);
+    logger.error(`[Payhero Webhook Error] ${err.message}`);
+    notifyAdminPaymentError('Payhero webhook processing', err.message);
     res.status(500).send('Error');
   }
 });

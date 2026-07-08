@@ -60,6 +60,11 @@ async function closeDB() {
   }
 }
 
+async function ping() {
+  if (!client || !db) throw new Error('No DB connection');
+  await db.command({ ping: 1 });
+}
+
 async function ensureIndexes() {
   if (!db) return;
   try {
@@ -1219,5 +1224,6 @@ module.exports = {
   logPerformanceAction, getPerformanceLogs,
   getJournalEntries, saveJournalEntry, deleteJournalEntry, syncJournalEntries, getLeaderboardData,
   getPropFirmAccount, getAllPropFirmAccounts, savePropFirmAccount, deletePropFirmAccount,
-  saveReceipt, getReceipt
+  saveReceipt, getReceipt,
+  ping
 };

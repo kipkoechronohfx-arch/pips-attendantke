@@ -150,6 +150,28 @@ app.use('/api/journal', journalRoutes);
 app.use('/api', chatRoutes);
 app.use('/api/propfirm', propfirmRoutes);
 
+// ── Health Check Endpoint ──────────────────────────────────────
+// Used by Render, UptimeRobot, or any monitoring service
+app.get('/health', async (req, res) => {
+  const uptime = process.uptime();
+  const memUsed = Math.round(process.memoryUsage().heapUsed / 1024 / 1024);
+  let dbStatus = 'unknown';
+  try {
+    await db.ping(); // Will work if db.js exposes a ping method
+    dbStatus = 'ok';
+  } catch {
+    dbStatus = 'error';
+  }
+  const status = dbStatus === 'ok' ? 200 : 503;
+  res.status(status).json({
+    status: status === 200 ? 'ok' : 'degraded',
+    uptime: `${Math.floor(uptime / 60)}m ${Math.floor(uptime % 60)}s`,
+    memoryMB: memUsed,
+    db: dbStatus,
+    timestamp: new Date().toISOString()
+  });
+});
+
 // ── SPA Fallback ───────────────────────────────────────────────
 app.get('*', (req, res) => {
   // If request looks like a page (no extension or .html), try to serve it or 404
