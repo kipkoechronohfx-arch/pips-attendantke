@@ -7,6 +7,8 @@ const { authLimiter, passwordResetLimiter } = require('../middleware/rateLimiter
 const { validateUserSession, JWT_SECRET } = require('../middleware/auth');
 const { getUserByEmail, getUserById, saveUser, getPaymentByAccessCode } = require('../services/db');
 const { sendEmail } = require('../services/emailService');
+const { sendTelegramMessage } = require('../services/telegramBot');
+const logger = require('../utils/logger');
 
 function hashPassword(password) {
   return bcrypt.hashSync(password, 10);
@@ -65,19 +67,43 @@ router.post('/register', authLimiter, async (req, res) => {
   const sessionToken = generateUserToken(user);
   
   try {
-    const welcomeHtml = `
-      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-        <h2 style="color: #fbbf24;">Welcome to Pips Attendant VIP! 🚀</h2>
-        <p>Hi ${user.name || 'Trader'},</p>
-        <p>Your account has been successfully created. We are thrilled to have you on board!</p>
-        <p>To get started, please log in and select a subscription plan. Once subscribed, you will receive exclusive access to our VIP Telegram signals.</p>
-        <p>Happy Trading!</p>
-        <p>- The Pips Attendant Team</p>
-      </div>
-    `;
-    sendEmail(user.email, 'Welcome to Pips Attendant VIP! 🚀', welcomeHtml).catch(console.error);
+    const appUrl = process.env.APP_URL || 'https://pipsattendant.top';
+    const welcomeHtml = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#0a0a0a;font-family:'Segoe UI',Arial,sans-serif;">
+<div style="max-width:580px;margin:0 auto;background:#111827;border-radius:16px;border:1px solid rgba(251,191,36,0.2);overflow:hidden;">
+  <div style="background:linear-gradient(135deg,#92400e,#b45309,#d97706);padding:36px 32px;text-align:center;">
+    <div style="font-size:48px;margin-bottom:8px;">🚀</div>
+    <h1 style="color:#fff;margin:0;font-size:26px;font-weight:800;letter-spacing:-0.5px;">Welcome to Pips Attendant!</h1>
+    <p style="color:rgba(255,255,255,0.8);margin:8px 0 0;font-size:14px;">Your trading edge starts here</p>
+  </div>
+  <div style="padding:32px;">
+    <p style="color:#d1d5db;font-size:15px;margin:0 0 12px;">Hi <strong style="color:#fbbf24;">${user.name || 'Trader'}</strong>,</p>
+    <p style="color:#9ca3af;font-size:14px;line-height:1.7;margin:0 0 24px;">Your account has been successfully created. We are thrilled to have you on board with the Pips Attendant community!</p>
+    <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:12px;padding:20px;margin-bottom:24px;">
+      <p style="color:#fbbf24;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:1px;margin:0 0 12px;">What's Next?</p>
+      <p style="color:#d1d5db;font-size:13px;margin:0 0 8px;">✅ Log in and select a VIP subscription plan</p>
+      <p style="color:#d1d5db;font-size:13px;margin:0 0 8px;">✅ Get access to exclusive Telegram signals</p>
+      <p style="color:#d1d5db;font-size:13px;margin:0;">✅ Join a community of profitable traders</p>
+    </div>
+    <div style="text-align:center;margin-bottom:24px;">
+      <a href="${appUrl}/premium.html" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#0d0800;font-weight:700;padding:14px 32px;border-radius:12px;text-decoration:none;display:inline-block;font-size:15px;">View Subscription Plans →</a>
+    </div>
+    <p style="color:#6b7280;font-size:12px;text-align:center;margin:0;">Questions? Reply to this email or reach us at <a href="mailto:Support@pipsattendant.com" style="color:#fbbf24;">Support@pipsattendant.com</a></p>
+  </div>
+  <div style="padding:16px 32px;border-top:1px solid rgba(255,255,255,0.06);text-align:center;">
+    <p style="color:#374151;font-size:11px;margin:0;">© ${new Date().getFullYear()} Pips Attendant. Happy Trading!</p>
+  </div>
+</div>
+</body></html>`;
+    sendEmail(user.email, 'Welcome to Pips Attendant VIP! 🚀', welcomeHtml).catch(e => logger.error('[Email] Welcome email failed: ' + e.message));
+    // Notify admin on Telegram
+    const adminChatId = process.env.TELEGRAM_CHAT_ID;
+    if (adminChatId) {
+      sendTelegramMessage(adminChatId, `🎉 *New User Registered*\n\n👤 Name: ${user.name || 'N/A'}\n📧 Email: ${user.email}\n🕐 ${new Date().toUTCString()}`).catch(() => {});
+    }
   } catch (err) {
-    console.error('[Email] Failed to send welcome email', err);
+    logger.error('[Email] Failed to send welcome email: ' + err.message);
   }
 
   res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, subscriptionExpiry: user.subscriptionExpiry, telegramId: user.telegramId } });

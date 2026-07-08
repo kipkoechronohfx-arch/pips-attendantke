@@ -57,7 +57,8 @@ router.post('/pay-vip', validateUserSession, async (req, res) => {
     
     const protocol = req.headers['x-forwarded-proto'] || req.protocol;
     const host = req.headers.host;
-    const callback_url = `${protocol}://${host}/api/payhero-webhook`;
+    const webhookSecret = process.env.PAYHERO_WEBHOOK_SECRET || 'fallback_secret_123';
+    const callback_url = `${protocol}://${host}/api/payhero-webhook?secret=${webhookSecret}`;
 
     const response = await fetch('https://backend.payhero.co.ke/api/v2/payments', {
       method: 'POST',
@@ -91,6 +92,14 @@ router.post('/pay-vip', validateUserSession, async (req, res) => {
 
 router.post('/payhero-webhook', async (req, res) => {
   try {
+    const { secret } = req.query;
+    const expectedSecret = process.env.PAYHERO_WEBHOOK_SECRET || 'fallback_secret_123';
+    
+    if (secret !== expectedSecret) {
+      logger.warn(`[Payhero Webhook] Unauthorized attempt from IP ${req.ip}`);
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
     const body = req.body;
     console.log('[Payhero Webhook Received]', body);
 
