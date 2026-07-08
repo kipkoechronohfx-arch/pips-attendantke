@@ -1139,21 +1139,31 @@
                     const res = await fetch('/api/performance/stats');
                     if (!res.ok) throw new Error('no stats');
                     const data = await res.json();
+                    
                     if (data.winRate != null) {
                         const el = document.getElementById('publicWinRate');
-                        if (el) el.setAttribute('data-target', Math.round(data.winRate));
+                        if (el) {
+                            el.setAttribute('data-target', Math.round(data.winRate));
+                            animateCounter(el, Math.round(data.winRate));
+                        }
                     }
                     if (data.totalPips != null) {
                         const el = document.getElementById('publicTotalPips');
-                        const val = Math.abs(data.totalPips) > 999 ? Math.round(Math.abs(data.totalPips) / 1000) : Math.abs(data.totalPips);
-                        if (el) el.setAttribute('data-target', val);
+                        const pips = Math.abs(data.totalPips);
+                        const val = pips > 999 ? Math.round(pips / 1000) : pips;
+                        const suffix = pips > 999 ? 'k' : '';
+                        if (el) {
+                            el.setAttribute('data-target', val);
+                            el.setAttribute('data-suffix', suffix);
+                            animateCounter(el, val, suffix);
+                        }
                     }
-                    if (data.totalTrades != null) {
-                        const el = document.getElementById('publicTotalTrades');
-                        if (el) el.setAttribute('data-target', data.totalTrades);
-                    }
-                } catch(e) {}
+                    // Do not update the "Years Experience" card with totalTrades!
+                } catch(e) {
+                    console.log('Error fetching stats', e);
+                }
             }
+            // Expose a way to re-trigger if needed, but run it now.
             loadLiveStats();
 
             // ── Animated Number Counter ───────────────────────────────────
@@ -1176,7 +1186,10 @@
                     if (!entry.isIntersecting) return;
                     const el = entry.target;
                     const target = parseInt(el.getAttribute('data-target') || el.textContent.replace(/\D/g, ''), 10);
-                    if (!isNaN(target)) animateCounter(el, target);
+                    const defaultSuffix = el.textContent.includes('k') ? 'k' : '';
+                    const suffix = el.getAttribute('data-suffix') !== null ? el.getAttribute('data-suffix') : defaultSuffix;
+                    
+                    if (!isNaN(target)) animateCounter(el, target, suffix);
                     statsObserver.unobserve(el);
                 });
             }, { threshold: 0.5 });
