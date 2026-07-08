@@ -277,12 +277,17 @@
               onkeydown="if(event.key==='Enter') payMpesa()" />
           </div>
           
-          <div id="mpesaPromoContainer" class="hidden flex gap-2">
-            <input type="text" id="mpesaPromo" placeholder="Promo Code (Optional)"
-              class="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-emerald-400/50 focus:outline-none transition font-mono uppercase tracking-wider" />
-            <button onclick="applyPromo('mpesa')" type="button" class="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-emerald-400 text-xs font-bold hover:bg-white/10 transition cursor-pointer">
-              Apply
-            </button>
+          <div id="mpesaPromoContainer" class="hidden space-y-2">
+            <div class="flex gap-2">
+              <input type="text" id="mpesaPromo" placeholder="Promo Code (Optional)"
+                class="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-emerald-400/50 focus:outline-none transition font-mono uppercase tracking-wider"
+                onkeydown="if(event.key==='Enter') applyPromo('mpesa')" />
+              <button onclick="applyPromo('mpesa')" type="button" id="mpesaPromoBtn"
+                class="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-emerald-400 text-xs font-bold hover:bg-white/10 transition cursor-pointer whitespace-nowrap">
+                Apply
+              </button>
+            </div>
+            <div id="mpesaPromoMsg" class="text-xs min-h-[16px]"></div>
           </div>
           
           <div id="mpesaError" class="text-rose-400 text-xs min-h-[16px]"></div>
@@ -408,12 +413,17 @@
                 <input type="text" id="cryptoContact" placeholder="Where should we send your code?" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-gold/50 focus:outline-none transition" />
               </div>
 
-              <div id="cryptoPromoContainer" class="hidden flex gap-2 mt-2">
-                <input type="text" id="cryptoPromo" placeholder="Promo Code (Optional)"
-                  class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-gold/50 focus:outline-none transition font-mono uppercase tracking-wider" />
-                <button onclick="applyPromo('crypto')" type="button" class="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-gold text-xs font-bold hover:bg-white/10 transition cursor-pointer">
-                  Apply
-                </button>
+              <div id="cryptoPromoContainer" class="hidden space-y-2 mt-2">
+                <div class="flex gap-2">
+                  <input type="text" id="cryptoPromo" placeholder="Promo Code (Optional)"
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-gold/50 focus:outline-none transition font-mono uppercase tracking-wider"
+                    onkeydown="if(event.key==='Enter') applyPromo('crypto')" />
+                  <button onclick="applyPromo('crypto')" type="button" id="cryptoPromoBtn"
+                    class="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-gold text-xs font-bold hover:bg-white/10 transition cursor-pointer whitespace-nowrap">
+                    Apply
+                  </button>
+                </div>
+                <div id="cryptoPromoMsg" class="text-xs min-h-[16px]"></div>
               </div>
 
               <div id="cryptoFormError" class="text-rose-400 text-[11px] min-h-[14px]"></div>
@@ -1737,40 +1747,40 @@
       const codeInput = document.getElementById(type + 'Promo');
       if (!codeInput) return;
       const code = codeInput.value.trim();
-      const errorEl = document.getElementById(type === 'mpesa' ? 'mpesaError' : 'cryptoFormError');
-      const btn = document.getElementById(type === 'mpesa' ? 'payBtn' : 'cryptoSubmitBtn');
-      
+      const msgEl = document.getElementById(type + 'PromoMsg');
+      const token = sessionStorage.getItem('vip_session_token');
+
       if (!code) {
-        errorEl.className = 'text-rose-400 text-xs min-h-[16px]';
-        errorEl.textContent = 'Please enter a promo code.';
+        if (msgEl) { msgEl.className = 'text-rose-400 text-xs'; msgEl.textContent = 'Please enter a promo code.'; }
         return;
       }
+      if (msgEl) { msgEl.className = 'text-gray-400 text-xs'; msgEl.textContent = 'Validating…'; }
 
-      errorEl.textContent = 'Validating...';
       try {
-        const res = await fetch(`/api/promos/validate/${code}`);
+        const plan = type === 'mpesa' ? selectedMpesaPlan : selectedCryptoPlan;
+        const res = await fetch('/api/payment/validate-promo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-vip-token': token || '' },
+          body: JSON.stringify({ promoCode: code, plan })
+        });
         const data = await res.json();
-        
+
         if (data.ok) {
-          errorEl.className = 'text-emerald-400 text-xs min-h-[16px]';
-          errorEl.textContent = `✅ Promo applied: ${data.discountPercentage}% off!`;
-          
-          if (type === 'mpesa') {
-            const baseAmount = PLAN_KES[selectedMpesaPlan];
-            const newAmount = Math.floor(baseAmount * (1 - (data.discountPercentage / 100)));
-            btn.innerHTML = `Pay KES ${newAmount.toLocaleString()} via M-Pesa 💸`;
-          } else {
-            const baseAmount = PLAN_USDT[selectedCryptoPlan];
-            const newAmount = Math.floor(baseAmount * (1 - (data.discountPercentage / 100)));
-            btn.innerHTML = `Submit Payment Proof ($${newAmount} USDT) ✅`;
+          if (msgEl) {
+            msgEl.className = 'text-emerald-400 text-xs font-bold';
+            msgEl.innerHTML = `🎉 ${data.discount}% discount applied!`;
+          }
+          const payBtn = document.getElementById(type === 'mpesa' ? 'payBtn' : 'cryptoSubmitBtn');
+          if (type === 'mpesa' && payBtn) {
+            payBtn.innerHTML = `Pay KES ${Number(data.finalKes).toLocaleString()} via M-Pesa 💸`;
+          } else if (payBtn) {
+            payBtn.innerHTML = `Submit Payment Proof ($${data.finalUsd} USDT) ✅`;
           }
         } else {
-          errorEl.className = 'text-rose-400 text-xs min-h-[16px]';
-          errorEl.textContent = `❌ ${data.error}`;
+          if (msgEl) { msgEl.className = 'text-rose-400 text-xs'; msgEl.textContent = `❌ ${data.error}`; }
         }
       } catch (err) {
-        errorEl.className = 'text-rose-400 text-xs min-h-[16px]';
-        errorEl.textContent = '❌ Failed to validate promo.';
+        if (msgEl) { msgEl.className = 'text-rose-400 text-xs'; msgEl.textContent = '❌ Failed to validate promo.'; }
       }
     }
 
