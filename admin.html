@@ -3254,7 +3254,10 @@
 
           const actionBtns = req.status === 'Pending'
             ? `<div class="flex gap-2 justify-end">
-                <button onclick="approveCryptoRequest('${req.id || req._id}')" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25 transition cursor-pointer">✅ Approve</button>
+                <div class="flex gap-2">
+                  <button onclick="approveCryptoRequest('${req.id || req._id}', false)" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25 transition cursor-pointer">✅ Approve</button>
+                  <button onclick="approveCryptoRequest('${req.id || req._id}', true)" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-violet-500/15 border border-violet-500/30 text-violet-400 hover:bg-violet-500/25 transition cursor-pointer">💎 Platinum</button>
+                </div>
                 <button onclick="rejectCryptoRequest('${req.id || req._id}')" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 transition cursor-pointer">✗ Reject</button>
                </div>`
             : `<span class="text-gray-600 text-[10px]">${req.status}</span>`;
@@ -3275,15 +3278,18 @@
       }
     }
 
-    async function approveCryptoRequest(requestId) {
+    async function approveCryptoRequest(requestId, upgradeToPlatinum = false) {
       const adminToken = localStorage.getItem('pa_admin_token');
-      if (!adminToken || !confirm('Approve this crypto payment and generate an access code?')) return;
+      const msg = upgradeToPlatinum 
+        ? 'Approve this crypto payment and UPGRADE user to Platinum tier?' 
+        : 'Approve this crypto payment (Standard/Gold)?';
+      if (!adminToken || !confirm(msg)) return;
 
       try {
         const res = await fetch('/api/admin/approve-crypto-request', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
-          body: JSON.stringify({ requestId })
+          body: JSON.stringify({ requestId, upgradeToPlatinum })
         });
         const data = await res.json();
 

@@ -400,7 +400,7 @@ router.get('/crypto-requests', validateAdminSession, async (req, res) => {
 });
 
 router.post('/approve-crypto-request', validateAdminSession, async (req, res) => {
-  const { requestId } = req.body;
+  const { requestId, upgradeToPlatinum } = req.body;
   if (!requestId) return res.status(400).json({ ok: false, error: 'Request ID required.' });
   try {
     const requests = await db.getCryptoRequests();
@@ -408,7 +408,27 @@ router.post('/approve-crypto-request', validateAdminSession, async (req, res) =>
     if (!found) return res.status(404).json({ ok: false, error: 'Request not found.' });
 
     const userId = found.userId;
-    const days = found.plan === '3months' ? 90 : (found.plan === '2months' ? 60 : 30);
+    
+    const PLANS = {
+      '1month':           { days: 30,  tier: 'Gold' },
+      '2months':          { days: 60,  tier: 'Gold' },
+      '3months':          { days: 90,  tier: 'Gold' },
+      '6months':          { days: 180, tier: 'Gold' },
+      '1month_platinum':  { days: 30,  tier: 'Platinum' },
+      '3months_platinum': { days: 90,  tier: 'Platinum' },
+      'lifetime_platinum':{ days: 36500, tier: 'Platinum' }
+    };
+    
+    let finalPlan = found.plan || '1month';
+    if (upgradeToPlatinum && !finalPlan.includes('platinum')) {
+      if (finalPlan === '1month' || finalPlan === '2months') finalPlan = '1month_platinum';
+      else if (finalPlan === '3months' || finalPlan === '6months') finalPlan = '3months_platinum';
+      else finalPlan = 'lifetime_platinum';
+    }
+    
+    const planInfo = PLANS[finalPlan] || PLANS['1month'];
+    const days = planInfo.days;
+    const tier = planInfo.tier;
 
     let userEmail = null;
     let userName = null;
@@ -418,6 +438,9 @@ router.post('/approve-crypto-request', validateAdminSession, async (req, res) =>
       if (user) {
         const currentExpiry = user.subscriptionExpiry && user.subscriptionExpiry > Date.now() ? user.subscriptionExpiry : Date.now();
         user.subscriptionExpiry = currentExpiry + days * 24 * 60 * 60 * 1000;
+        if (tier === 'Platinum' || user.subscriptionTier !== 'Platinum') {
+          user.subscriptionTier = tier;
+        }
         await db.saveUser(user);
         userEmail = user.email;
         userName = user.name;
@@ -429,7 +452,7 @@ router.post('/approve-crypto-request', validateAdminSession, async (req, res) =>
     
     await db.savePayment('CRYPTO_' + ref, {
       status: 'Success', method: 'crypto', txHash: found.txHash, network: found.network,
-      contactInfo: found.contactInfo, userId, plan: found.plan || '1month',
+      contactInfo: found.contactInfo, userId, plan: finalPlan,
       processedForUser: !!userId, approvedAt: new Date().toISOString(), timestamp: new Date().toISOString(),
       accessCode: generatedAccessCode
     });
