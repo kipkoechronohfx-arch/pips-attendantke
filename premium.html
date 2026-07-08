@@ -52,12 +52,7 @@
     <div class="parallax-bg"></div>
     <div class="gradient-overlay"></div>
 
-    <!-- Theme Toggle Button -->
-    <div class="fixed top-[86px] md:top-[60px] right-4 z-[90]">
-        <button onclick="toggleTheme()" class="flex items-center justify-center w-10 h-10 rounded-full glass-card border border-white/10 hover:border-gold/50 hover:bg-gold/10 hover:text-gold text-gray-400 transition duration-300 cursor-pointer shadow-lg" title="Toggle Theme">
-            <i data-feather="sun" id="themeIcon" class="w-5 h-5"></i>
-        </button>
-    </div>
+
 
     <!-- NAVBAR -->
     <nav class="fixed top-0 left-0 w-full z-50 glass-panel border-b border-white/5 transition-all duration-300" id="navbar">
@@ -2382,25 +2377,7 @@
       countdownInterval = setInterval(tick, 1000);
     }
 
-    // --- THEME TOGGLE ---
-    function initTheme() {
-      const savedTheme = localStorage.getItem('theme');
-      if (savedTheme === 'primary') {
-        document.body.classList.add('primary-mode');
-        const icon = document.getElementById('themeIcon');
-        if (icon) icon.setAttribute('data-feather', 'moon');
-      }
-    }
 
-    function toggleTheme() {
-      const isDarkNavy = document.body.classList.toggle('primary-mode');
-      localStorage.setItem('theme', isDarkNavy ? 'primary' : 'gold');
-      const icon = document.getElementById('themeIcon');
-      if (icon) {
-        icon.setAttribute('data-feather', isDarkNavy ? 'moon' : 'sun');
-        feather.replace();
-      }
-    }
 
     // INITIALIZATION
     window.addEventListener('DOMContentLoaded', () => {
@@ -2413,7 +2390,6 @@
       }
 
       feather.replace();
-      initTheme();
       checkUserAccess();
     });
 
@@ -2612,31 +2588,7 @@
         VanillaTilt.init(document.querySelectorAll('[data-tilt]'), { max: 3, speed: 400, glare: true, 'max-glare': 0.1 });
     } catch(e) {}
 
-    // ── Theme Toggle Logic ────────────────────────────────────────
-    function toggleTheme() {
-        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-        const newTheme = isLight ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-theme', newTheme);
-        localStorage.setItem('pips_theme', newTheme);
-        const icon = document.getElementById('themeIcon');
-        if (icon) {
-            icon.setAttribute('data-feather', newTheme === 'light' ? 'moon' : 'sun');
-            if (typeof feather !== 'undefined') feather.replace();
-        }
-    }
 
-    // Apply saved theme on load
-    (function() {
-        const savedTheme = localStorage.getItem('pips_theme');
-        if (savedTheme === 'light') {
-            document.documentElement.setAttribute('data-theme', 'light');
-            document.addEventListener('DOMContentLoaded', () => {
-                const icon = document.getElementById('themeIcon');
-                if (icon) icon.setAttribute('data-feather', 'moon');
-                if (typeof feather !== 'undefined') feather.replace();
-            });
-        }
-    })();
   </script>
 
   <!-- Live Toast Notifications Container -->

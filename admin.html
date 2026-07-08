@@ -198,9 +198,7 @@
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           Ready to Post
         </span>
-        <button onclick="toggleTheme()" class="flex items-center justify-center w-8 h-8 rounded-full bg-white/5 border border-white/10 hover:border-neon-blue/50 hover:bg-neon-blue/10 hover:text-neon-blue text-gray-400 transition duration-300 cursor-pointer" title="Toggle Theme">
-          <i data-feather="sun" id="themeIcon" class="w-4 h-4"></i>
-        </button>
+
         <button onclick="resetCredentials()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:border-rose-500/50 hover:bg-rose-500/10 hover:text-rose-400 text-gray-400 text-xs font-medium transition duration-300 cursor-pointer">
           <i data-feather="settings" class="w-3.5 h-3.5"></i>
           Setup Credentials
@@ -1730,28 +1728,7 @@
     // State variables
     let currentTemplate = 'buy';
     
-    // --- THEME TOGGLE (Gold Dubai vs Clean Dark Navy) ---
-    function initTheme() {
-      const savedTheme = localStorage.getItem('theme');
-      if (savedTheme === 'dark-navy') {
-        document.body.classList.add('dark-navy-mode');
-        const icon = document.getElementById('themeIcon');
-        if (icon) icon.setAttribute('data-feather', 'moon');
-      }
-    }
-
-    function toggleTheme() {
-      const isDarkNavy = document.body.classList.toggle('dark-navy-mode');
-      localStorage.setItem('theme', isDarkNavy ? 'dark-navy' : 'gold');
-      const icon = document.getElementById('themeIcon');
-      if (icon) {
-        icon.setAttribute('data-feather', isDarkNavy ? 'moon' : 'sun');
-        feather.replace();
-      }
-    }
-
     window.addEventListener('DOMContentLoaded', () => {
-      initTheme();
       // Set current mock time
       updateMockTime();
       setInterval(updateMockTime, 60000);
