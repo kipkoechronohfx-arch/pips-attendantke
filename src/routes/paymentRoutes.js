@@ -114,6 +114,13 @@ router.post('/payhero-webhook', async (req, res) => {
         payment.status = isSuccess ? 'Success' : 'Failed';
         payment.rawWebhook = body;
         await db.savePayment(ref, payment);
+
+        if (isSuccess && payment.userId) {
+          const io = req.app.get('io');
+          if (io) {
+            io.emit('paymentSuccess', { userId: payment.userId, message: 'VIP Payment Successful!' });
+          }
+        }
       }
     }
     res.status(200).json({ received: true });

@@ -126,6 +126,95 @@ router.post('/2fa/reset', validateAdminKey, async (req, res) => {
   }
 });
 
+// ── Analytics Overview ──────────────────────────────────────────
+router.get('/analytics', validateAdminSession, async (req, res) => {
+  try {
+    const users = await db.getUsers();
+    const payments = await db.getPayments();
+    
+    const now = Date.now();
+    const activeVIPs = users.filter(u => u.subscriptionExpiry && u.subscriptionExpiry > now).length;
+    const expiredUsers = users.filter(u => u.subscriptionExpiry && u.subscriptionExpiry <= now).length;
+    const conversionRate = users.length > 0 ? Math.round(((activeVIPs + expiredUsers) / users.length) * 100) : 0;
+    
+    const successfulPayments = payments.filter(p => p.status === 'Success');
+    const kesPayments = successfulPayments.filter(p => !p.network); // USDT payments have a 'network' field
+    const usdtPayments = successfulPayments.filter(p => p.network);
+
+    const totalKES = kesPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+    const totalUSDT = usdtPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+
+    // Calculate MRR (payments in the last 30 days)
+    const thirtyDaysAgoMs = now - 30 * 24 * 60 * 60 * 1000;
+    const recentKES = kesPayments.filter(p => {
+      const t = p.createdAt ? new Date(p.createdAt).getTime() : 0;
+      return t >= thirtyDaysAgoMs;
+    });
+    const recentUSDT = usdtPayments.filter(p => {
+      const t = p.timestamp ? new Date(p.timestamp).getTime() : 0;
+      return t >= thirtyDaysAgoMs;
+    });
+    
+    const mrrKES = recentKES.reduce((sum, p) => sum + (p.amount || 0), 0);
+    const mrrUSDT = recentUSDT.reduce((sum, p) => sum + (p.amount || 0), 0);
+
+    // Group users by date for last 30 days
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    thirtyDaysAgo.setHours(0, 0, 0, 0);
+
+    const usersByDate = {};
+    const revByDate = {};
+    for(let i = 0; i < 30; i++) {
+      const d = new Date(thirtyDaysAgo);
+      d.setDate(d.getDate() + i);
+      const ds = d.toISOString().split('T')[0];
+      usersByDate[ds] = 0;
+      revByDate[ds] = { kes: 0, usdt: 0 };
+    }
+
+    users.forEach(u => {
+      // Assuming user.createdAt or use Date.now for mock
+      const dateStr = (u.createdAt || new Date(now).toISOString()).split('T')[0];
+      if (usersByDate[dateStr] !== undefined) usersByDate[dateStr]++;
+    });
+
+    kesPayments.forEach(p => {
+      const dateStr = (p.createdAt || new Date().toISOString()).split('T')[0];
+      if (revByDate[dateStr]) revByDate[dateStr].kes += (p.amount || 0);
+    });
+    usdtPayments.forEach(p => {
+      const dateStr = (p.timestamp || p.createdAt || new Date().toISOString()).split('T')[0];
+      if (revByDate[dateStr]) revByDate[dateStr].usdt += (p.amount || 0);
+    });
+
+    const labels = Object.keys(usersByDate);
+
+    res.json({
+      ok: true,
+      totalUsers: users.length,
+      activeVIPs,
+      expiredUsers,
+      conversionRate,
+      totalKES,
+      totalUSDT,
+      mrrKES,
+      mrrUSDT,
+      chartData: {
+        labels,
+        values: Object.values(usersByDate)
+      },
+      revenueChart: {
+        labels,
+        kesData: labels.map(l => revByDate[l].kes),
+        usdtData: labels.map(l => revByDate[l].usdt)
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // ── Send Test Email ─────────────────────────────────────────────
 router.post('/test-email', validateAdminSession, async (req, res) => {
   const { to } = req.body;

@@ -70,6 +70,17 @@ function startCronJobs() {
     }
   }, { timezone: 'Africa/Nairobi' });
 
+  // ── Daily Database Backup ──────────────────────────────────────
+  // Runs every day at 02:00 EAT
+  cron.schedule('0 2 * * *', async () => {
+    try {
+      const { runBackup } = require('./backupService');
+      await runBackup();
+    } catch (err) {
+      console.error('[Cron] Backup failed:', err.message);
+    }
+  }, { timezone: 'Africa/Nairobi' });
+
   // Weekly report (Sunday at 23:59 EAT)
   cron.schedule('59 23 * * 0', async () => {
     if (!process.env.TELEGRAM_BOT_TOKEN || !process.env.TELEGRAM_CHAT_ID) return;

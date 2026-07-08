@@ -1903,6 +1903,19 @@
         socket.emit('joinRoom', currentRoom);
       });
 
+      socket.on('paymentSuccess', (data) => {
+        const userId = localStorage.getItem('pa_user_id');
+        if (data.userId === userId) {
+          showToast('Payment Successful', data.message || 'VIP Access Unlocked! Please refresh if the page doesn\'t automatically update.', 'success');
+          // Optionally trigger a silent reload of the user's data here
+          setTimeout(() => window.location.reload(), 3000);
+        }
+      });
+
+      socket.on('newSignal', (data) => {
+        showToast('New Trade Signal ⚡', 'A new signal has been posted to the VIP group!', 'info');
+      });
+
       socket.on('newMessage', (msg) => {
         // If message is for another room, show badge
         if (msg.room && msg.room !== currentRoom) {
@@ -2348,6 +2361,40 @@
         }
     })();
   </script>
+
+  <!-- Live Toast Notifications Container -->
+  <div id="toastContainer" class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
+  <style>
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+    .toast-enter { animation: slideIn 0.3s ease-out forwards; }
+    .toast-exit { animation: fadeOut 0.3s ease-out forwards; }
+  </style>
+  <script>
+    function showToast(title, message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      
+      let icon = '✅';
+      let border = 'border-emerald-500/50';
+      if (type === 'error') { icon = '❌'; border = 'border-rose-500/50'; }
+      if (type === 'info') { icon = '⚡'; border = 'border-neon-blue/50'; }
+      
+      toast.className = `glass-card p-4 rounded-xl shadow-2xl border ${border} text-white w-72 flex items-start gap-3 toast-enter pointer-events-auto`;
+      toast.innerHTML = `
+        <div class="text-xl mt-0.5">${icon}</div>
+        <div class="flex-1">
+          <h4 class="font-bold text-sm text-white mb-0.5">${title}</h4>
+          <p class="text-xs text-gray-300 leading-tight">${message}</p>
+        </div>
+      `;
+      container.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.classList.replace('toast-enter', 'toast-exit');
+        setTimeout(() => toast.remove(), 300);
+      }, 5000);
+    }
+  </script>
 </body>
 </html>
-

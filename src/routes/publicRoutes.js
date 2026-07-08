@@ -221,6 +221,12 @@ router.post('/broadcast', async (req, res) => {
       await Promise.all(pushPromises);
     } catch (pushErr) {}
 
+    // Emit live socket.io notification for active users
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('newSignal', { message: 'A new signal has been posted.' });
+    }
+
     res.json({ ok: true, message: 'Broadcast processed' + (telegramError ? ` (Telegram failed: ${telegramError})` : '.') });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });

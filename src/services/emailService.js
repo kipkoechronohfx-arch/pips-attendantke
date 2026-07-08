@@ -7,7 +7,7 @@ const logger = require('../utils/logger');
  * @param {string} subject - Email subject
  * @param {string} htmlContent - HTML body
  */
-async function sendEmail(to, subject, htmlContent) {
+async function sendEmail(to, subject, htmlContent, attachments = []) {
   const apiKey = process.env.SENDGRID_API_KEY;
   const fromEmail = process.env.SENDGRID_FROM_EMAIL;
 
@@ -24,12 +24,16 @@ async function sendEmail(to, subject, htmlContent) {
   sgMail.setApiKey(apiKey);
 
   try {
-    await sgMail.send({
+    const msg = {
       to,
       from: fromEmail,
       subject,
       html: htmlContent,
-    });
+    };
+    if (attachments && attachments.length > 0) {
+      msg.attachments = attachments;
+    }
+    await sgMail.send(msg);
     logger.info(`[SendGrid] Email sent to ${to} — ${subject}`);
     return { ok: true };
   } catch (error) {
