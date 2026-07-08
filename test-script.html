@@ -41,7 +41,7 @@
   
     <!-- Dubai Golden Background Image -->
     <div class="fixed inset-0 z-0 pointer-events-none" style="
-      background-image: url('dubai_bg.png');
+      background-image: url('dubai_bg.webp');
       background-size: cover;
       background-position: center bottom;
       background-repeat: no-repeat;
@@ -373,7 +373,7 @@ bg-amber-400/10 border border-amber-400/20 hover:bg-amber-400/20 transition curs
                     <i data-feather="copy" class="w-3.5 h-3.5 text-amber-400"></i>
                   </button>
                 </div>
-                <p id="cryptoNetworkNote" class="text-gray-500 text-[10px] mt-1.5 text-center">�️ Only send USDT on 
+                <p id="cryptoNetworkNote" class="text-gray-500 text-[10px] mt-1.5 text-center">�️ Only send USDT on 
 the <span class="text-amber-400 font-bold">TRC20 (TRON)</span> network to this address</p>
               </div>
   
@@ -743,7 +743,7 @@ border-amber-400/20 bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-400/
 justify-between gap-4 transition-all duration-300 cursor-pointer shadow-[0_0_15px_rgba(251,191,36,0.1)] group">
             <div class="flex items-center gap-4">
               <div class="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-400/30 flex items-center 
-justify-center text-xl flex-shrink-0 shadow-inner group-hover:scale-110 transition-transform">�</div>
+justify-center text-xl flex-shrink-0 shadow-inner group-hover:scale-110 transition-transform">�</div>
               <div>
                 <h4 class="text-white font-bold text-sm">Join VIP Signals Channel</h4>
                 <p class="text-gray-400 text-xs mt-0.5">Click here to generate your personal 1-time invite link.</p>
@@ -1453,7 +1453,7 @@ hover:border-amber-400/30 hover:text-amber-300 transition cursor-pointer';
         if (addrEl) addrEl.textContent = cryptoWallets[net] || '—';
         // Update warning note
         const noteEl = document.getElementById('cryptoNetworkNote');
-        if (noteEl) noteEl.innerHTML = `�️ Only send USDT on the <span class="text-amber-400 
+        if (noteEl) noteEl.innerHTML = `�️ Only send USDT on the <span class="text-amber-400 
 font-bold">${networkNames[net]}</span> network to this address`;
       }
   
@@ -2274,8 +2274,8 @@ border-amber-500/30 text-amber-50' : 'bg-white/10 border border-white/5 text-gra
         } catch (err) { console.error('Failed to load setup results:', err); }
       }
   
-      // ── VIP Chat Wall Logic ───────────────────────────�
-�────────────
+      // ── VIP Chat Wall Logic ───────────────────────────�
+�────────────
       
       function switchChatRoom(room) {
         currentRoom = room;

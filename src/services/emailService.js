@@ -1,4 +1,5 @@
 const sgMail = require('@sendgrid/mail');
+const logger = require('../utils/logger');
 
 /**
  * Send an email via SendGrid. Falls back to console logging in dev/missing config.
@@ -16,9 +17,7 @@ async function sendEmail(to, subject, htmlContent) {
     apiKey === 'your_sendgrid_api_key_here' ||
     fromEmail === 'your_verified_sender@email.com'
   ) {
-    console.log('\n========================================');
-    console.log('[Email Simulation] To: ' + to + '\nSubject: ' + subject);
-    console.log('========================================\n');
+    logger.warn(`[Email Simulation] No API key set. Skipping email to: ${to} | Subject: ${subject}`);
     return;
   }
 
@@ -31,11 +30,11 @@ async function sendEmail(to, subject, htmlContent) {
       subject,
       html: htmlContent,
     });
-    console.log(`[SendGrid] Email sent to ${to} — ${subject}`);
+    logger.info(`[SendGrid] Email sent to ${to} — ${subject}`);
     return { ok: true };
   } catch (error) {
     const errorMsg = error.response?.body?.errors ? JSON.stringify(error.response.body.errors) : error.message || error;
-    console.error('[SendGrid Error]', errorMsg);
+    logger.error(`[SendGrid Error] to=${to} subject="${subject}" error=${errorMsg}`);
     throw new Error(`SendGrid API Error: ${errorMsg}`);
   }
 }

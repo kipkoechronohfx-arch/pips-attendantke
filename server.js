@@ -7,6 +7,7 @@ const compression = require('compression');
 const morgan = require('morgan');
 const path = require('path');
 const db = require('./src/services/db');
+const logger = require('./src/utils/logger');
 const { startCronJobs, notifyVIPsNewSignal } = require('./src/services/cronJobs');
 const { registerTelegramWebhook, handleTelegramUpdate } = require('./src/services/telegramBot');
 const { initializeSocket } = require('./src/services/socketService');
@@ -27,7 +28,7 @@ const REQUIRED_ENV = ['MONGODB_URI', 'JWT_SECRET', 'ADMIN_KEY'];
 const RECOMMENDED_ENV = [
   'TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID',
   'PAYHERO_API_USER', 'PAYHERO_API_PASS', 'PAYHERO_CHANNEL_ID',
-  'RESEND_API_KEY', 'RESEND_FROM_EMAIL',
+  'SENDGRID_API_KEY', 'SENDGRID_FROM_EMAIL',
   'VAPID_PUBLIC_KEY', 'VAPID_PRIVATE_KEY'
 ];
 
@@ -121,9 +122,9 @@ app.use(compression());
 // ── Request Logging ────────────────────────────────────────────
 app.use(morgan(IS_PRODUCTION ? 'combined' : 'dev'));
 
-// ── Static Files ───────────────────────────────────────────────
-app.use(express.static(path.join(__dirname)));
-app.use(express.static(path.join(__dirname, 'admin')));
+// Cache static assets for 1 day to improve load speed
+app.use(express.static(path.join(__dirname), { maxAge: '1d' }));
+app.use(express.static(path.join(__dirname, 'admin'), { maxAge: '1d' }));
 
 // ── Telegram Webhook (before body parser — needs immediate 200 ACK) ──
 app.post('/telegram-webhook', express.json(), async (req, res) => {
@@ -222,6 +223,15 @@ async function startServer() {
 }
 
 startServer().catch(err => {
-  console.error('[Startup Error]', err);
+  logger.error(`[Startup Error] ${err.message || err}`, err);
+  process.exit(1);
+});
+
+// ── Global Error Handlers ─────────────────────────────────────
+process.on('unhandledRejection', (reason) => {
+  logger.error(`[UnhandledRejection] ${reason}`);
+});
+process.on('uncaughtException', (err) => {
+  logger.error(`[UncaughtException] ${err.message}`, err);
   process.exit(1);
 });

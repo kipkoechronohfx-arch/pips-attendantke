@@ -3,7 +3,7 @@ const path = require('path');
 const sharp = require('sharp');
 
 const dir = __dirname;
-const images = ['avatar.png', 'dubai_bg.png', 'favicon.png', 'justmarkets.png', 'xm.png', 'preview.png'];
+const images = ['avatar.png', 'dubai_bg.png', 'favicon.png', 'justmarkets.png', 'xm.png', 'preview.png', 'image.png'];
 
 async function optimizeImages() {
   for (const file of images) {
@@ -13,22 +13,18 @@ async function optimizeImages() {
       continue;
     }
     
-    // We will overwrite the PNG files with optimized ones, and also create WebP versions.
-    // For drop-in replacement without editing all HTML files immediately, let's compress the PNGs heavily first.
-    // Sharp can heavily compress PNGs.
-    const tempPath = path.join(dir, 'temp_' + file);
+    const ext = path.extname(file);
+    const base = path.basename(file, ext);
+    const tempPath = path.join(dir, base + '.webp');
     try {
       await sharp(filePath)
-        .png({ quality: 70, compressionLevel: 9 })
+        .webp({ quality: 80 })
         .toFile(tempPath);
       
       const origStats = fs.statSync(filePath);
       const newStats = fs.statSync(tempPath);
       
-      console.log(`${file}: ${(origStats.size / 1024).toFixed(1)}KB -> ${(newStats.size / 1024).toFixed(1)}KB`);
-      
-      // Replace original
-      fs.renameSync(tempPath, filePath);
+      console.log(`${file}: ${(origStats.size / 1024).toFixed(1)}KB -> ${base}.webp: ${(newStats.size / 1024).toFixed(1)}KB`);
     } catch (err) {
       console.error(`Error processing ${file}:`, err);
     }

@@ -11,6 +11,7 @@
     "watch:css": "npx @tailwindcss/cli -i tailwind.css -o dist.css --watch"
   },
   "dependencies": {
+    "@sendgrid/mail": "^8.1.4",
     "@tailwindcss/cli": "^4.3.1",
     "bcryptjs": "^3.0.3",
     "compression": "^1.8.1",
@@ -26,12 +27,12 @@
     "node-cron": "^4.2.1",
     "node-fetch": "^2.7.0",
     "qrcode": "^1.5.4",
-    "@sendgrid/mail": "^8.1.4",
     "sharp": "^0.35.1",
     "socket.io": "^4.8.3",
     "speakeasy": "^2.0.0",
     "tailwindcss": "^4.3.1",
-    "web-push": "^3.6.7"
+    "web-push": "^3.6.7",
+    "winston": "^3.19.0"
   },
   "engines": {
     "node": ">=18.0.0"

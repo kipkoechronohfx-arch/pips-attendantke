@@ -11,7 +11,7 @@
     
     <!-- Icons -->
     <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="apple-touch-icon" href="avatar.png">
+    <link rel="apple-touch-icon" href="avatar.webp">
     
     <!-- Google Fonts: Inter & Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -97,7 +97,7 @@
         <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
             <a href="index.html" class="flex items-center gap-3 group">
                 <div class="w-10 h-10 rounded-full bg-surface border border-white/10 flex items-center justify-center overflow-hidden transition-transform group-hover:scale-105">
-                    <img src="avatar.png" alt="Logo" class="w-full h-full object-cover">
+                    <img src="avatar.webp" alt="Logo" class="w-full h-full object-cover">
                 </div>
                 <span class="text-white font-bold text-lg tracking-tight">Pips Attendant</span>
             </a>
@@ -204,11 +204,11 @@
             <p class="text-xs text-gray-500 uppercase tracking-[0.2em] mb-6">Trusted Partners</p>
             <div class="flex flex-wrap justify-center items-center gap-16 opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
                 <a href="https://one.justmarkets.link/a/by21d0s1wd" target="_blank" class="flex flex-col items-center gap-3 group">
-                    <img src="justmarkets.png" alt="JustMarkets Logo" class="h-8 md:h-10 object-contain group-hover:scale-105 transition-transform cursor-pointer" onerror="this.src='https://via.placeholder.com/150x50?text=JustMarkets'">
+                    <img src="justmarkets.webp" alt="JustMarkets Logo" class="h-8 md:h-10 object-contain group-hover:scale-105 transition-transform cursor-pointer" onerror="this.src='https://via.placeholder.com/150x50?text=JustMarkets'">
                     <span class="text-sm font-semibold text-gray-400 tracking-wide">JustMarkets</span>
                 </a>
                 <a href="https://clicks.pipaffiliates.com/c?c=768946&l=en&p=1" target="_blank" class="flex flex-col items-center gap-3 group">
-                    <img src="xm.png" alt="XM Logo" class="h-8 md:h-10 object-contain group-hover:scale-105 transition-transform cursor-pointer" onerror="this.src='https://via.placeholder.com/150x50?text=XM'">
+                    <img src="xm.webp" alt="XM Logo" class="h-8 md:h-10 object-contain group-hover:scale-105 transition-transform cursor-pointer" onerror="this.src='https://via.placeholder.com/150x50?text=XM'">
                     <span class="text-sm font-semibold text-gray-400 tracking-wide">XM</span>
                 </a>
             </div>
@@ -383,10 +383,10 @@
                                 <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Instrument / Pair</label>
                                 <select id="rc_pair"
                                     class="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/30 transition-all appearance-none cursor-pointer">
-                                    <option value="10">Forex Majors (EURUSD, GBPUSDGÇª) GÇö $10/pip</option>
-                                    <option value="100">Gold (XAUUSD) GÇö $10/pip per 0.1 lot</option>
-                                    <option value="1">Indices (US30, NAS100) GÇö $1/pt per 0.01 lot</option>
-                                    <option value="5">Forex Minors/Exotics GÇö $5/pip</option>
+                                    <option value="10">Forex Majors (EURUSD, GBPUSDGÇª) Gï¿½ï¿½ $10/pip</option>
+                                    <option value="100">Gold (XAUUSD) Gï¿½ï¿½ $10/pip per 0.1 lot</option>
+                                    <option value="1">Indices (US30, NAS100) Gï¿½ï¿½ $1/pt per 0.01 lot</option>
+                                    <option value="5">Forex Minors/Exotics Gï¿½ï¿½ $5/pip</option>
                                 </select>
                             </div>
 
@@ -403,12 +403,12 @@
                                 <div class="bg-black/60 backdrop-blur-md border border-white/10 rounded-2xl p-5 text-center flex flex-col justify-center hover:border-red-500/30 transition-all duration-300 hover:shadow-[0_0_20px_rgba(248,113,113,0.1)] group/risk relative overflow-hidden">
                                     <div class="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent opacity-0 group-hover/risk:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
                                     <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-2 font-semibold group-hover/risk:text-red-400/70 transition-colors relative z-10">Amount at Risk</p>
-                                    <p class="text-2xl font-black text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.3)] relative z-10">$<span id="rc_riskAmount">GÇö</span></p>
+                                    <p class="text-2xl font-black text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.3)] relative z-10">$<span id="rc_riskAmount">Gï¿½ï¿½</span></p>
                                 </div>
                                 <div class="bg-black/60 backdrop-blur-md border border-gold/40 rounded-2xl p-5 text-center flex flex-col justify-center relative overflow-hidden transition-all duration-500 hover:shadow-[0_0_30px_rgba(212,175,55,0.2)] hover:scale-[1.02] hover:border-gold/60 group/lot">
                                     <div class="absolute inset-0 bg-gradient-to-br from-gold/10 to-transparent group-hover/lot:opacity-80 transition-opacity duration-500"></div>
                                     <p class="text-[10px] text-gold uppercase tracking-widest mb-2 font-semibold relative z-10">Recommended Lot</p>
-                                    <p class="text-4xl font-black text-white relative z-10 drop-shadow-[0_0_12px_rgba(255,255,255,0.2)] group-hover/lot:text-gold transition-colors duration-300" id="rc_lots">GÇö</p>
+                                    <p class="text-4xl font-black text-white relative z-10 drop-shadow-[0_0_12px_rgba(255,255,255,0.2)] group-hover/lot:text-gold transition-colors duration-300" id="rc_lots">Gï¿½ï¿½</p>
                                 </div>
                             </div>
 
@@ -416,20 +416,20 @@
                                 <div class="absolute inset-0 bg-gradient-to-br from-gold/5 to-transparent opacity-0 group-hover/results:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
                                 <div class="flex justify-between items-center text-sm relative z-10">
                                     <span class="text-gray-400 font-medium group-hover/results:text-gray-300 transition-colors">Account Balance</span>
-                                    <span class="text-white font-mono tracking-wider" id="rc_disp_balance">GÇö</span>
+                                    <span class="text-white font-mono tracking-wider" id="rc_disp_balance">Gï¿½ï¿½</span>
                                 </div>
                                 <div class="flex justify-between items-center text-sm relative z-10">
                                     <span class="text-gray-400 font-medium group-hover/results:text-gray-300 transition-colors">Risk Percentage</span>
-                                    <span class="text-white font-mono tracking-wider" id="rc_disp_risk">GÇö</span>
+                                    <span class="text-white font-mono tracking-wider" id="rc_disp_risk">Gï¿½ï¿½</span>
                                 </div>
                                 <div class="flex justify-between items-center text-sm relative z-10">
                                     <span class="text-gray-400 font-medium group-hover/results:text-gray-300 transition-colors">Stop Loss Size</span>
-                                    <span class="text-white font-mono tracking-wider" id="rc_disp_sl">GÇö</span>
+                                    <span class="text-white font-mono tracking-wider" id="rc_disp_sl">Gï¿½ï¿½</span>
                                 </div>
                                 <div class="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent my-3 relative z-10"></div>
                                 <div class="flex justify-between items-center relative z-10">
                                     <span class="text-gray-200 font-bold tracking-wide">Optimal Position</span>
-                                    <span class="text-gold font-black text-xl font-mono tracking-wider drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]" id="rc_disp_lots">GÇö</span>
+                                    <span class="text-gold font-black text-xl font-mono tracking-wider drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]" id="rc_disp_lots">Gï¿½ï¿½</span>
                                 </div>
                             </div>
 
@@ -511,12 +511,12 @@
                 <div class="w-16 h-16 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center mx-auto mb-6">
                     <i data-feather="zap" class="w-6 h-6 text-gold"></i>
                 </div>
-                <h2 class="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight">=ƒôà Upcoming <span class="text-transparent bg-clip-text bg-gradient-to-r from-gold to-white">High-Impact News</span></h2>
+                <h2 class="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight">=ï¿½ï¿½ï¿½ Upcoming <span class="text-transparent bg-clip-text bg-gradient-to-r from-gold to-white">High-Impact News</span></h2>
                 <p class="text-gray-400 max-w-2xl mx-auto text-sm md:text-base">Know before you trade. Real-time high-impact economic events that move the markets.</p>
 
                 <!-- Impact legend & Myfxbook link -->
                 <div class="flex flex-wrap justify-center gap-3 mt-6">
-                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-red-500/15 text-red-400 border border-red-500/20">=ƒö¦ High Impact Only</span>
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-red-500/15 text-red-400 border border-red-500/20">=ï¿½ï¿½ï¿½ High Impact Only</span>
                     <span class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-500/15 text-gray-400 border border-gray-500/20">USD -+ EUR -+ GBP -+ JPY -+ CNY</span>
                     <a href="https://www.myfxbook.com/forex-economic-calendar" target="_blank" class="px-3 py-1 rounded-full text-xs font-semibold bg-gold/15 text-gold border border-gold/20 hover:bg-gold/25 transition-colors flex items-center gap-1">
                         <i data-feather="external-link" class="w-3 h-3"></i> Full calendar on Myfxbook
@@ -726,7 +726,7 @@
                 <div class="md:col-span-2">
                     <div class="flex items-center gap-3 mb-6">
                         <div class="w-8 h-8 rounded-full bg-surface border border-white/10 flex items-center justify-center overflow-hidden">
-                            <img src="avatar.png" alt="Logo" class="w-full h-full object-cover">
+                            <img src="avatar.webp" alt="Logo" class="w-full h-full object-cover">
                         </div>
                         <span class="text-white font-bold text-lg">Pips Attendant</span>
                     </div>
@@ -757,7 +757,7 @@
             </div>
             
             <div class="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                <p class="text-xs text-gray-600">-¬ 2026 Pips Attendant. All rights reserved.</p>
+                <p class="text-xs text-gray-600">-ï¿½ 2026 Pips Attendant. All rights reserved.</p>
                 <div class="flex gap-4">
                     <a href="https://instagram.com/pips_attendant" target="_blank" class="text-gray-500 hover:text-[#E1306C] transition-colors"><i data-feather="instagram" class="w-4 h-4"></i></a>
                     <a href="https://t.me/pips_attendant" target="_blank" class="text-gray-500 hover:text-[#0088cc] transition-colors"><i data-feather="send" class="w-4 h-4"></i></a>
@@ -912,7 +912,7 @@
             });
         });
 
-        // GöÇGöÇ Risk / Lot Size Calculator GöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇ
+        // Gï¿½ï¿½Gï¿½ï¿½ Risk / Lot Size Calculator Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½
         function openCalculatorModal(e) {
             if (e) e.preventDefault();
             const modal = document.getElementById('calculatorModal');
@@ -1021,7 +1021,7 @@
                 "max-glare": 0.2,
             });
 
-            // GöÇGöÇ Live Signals Results Cards GöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇ
+            // Gï¿½ï¿½Gï¿½ï¿½ Live Signals Results Cards Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½
             async function loadLiveResults() {
                 const container = document.getElementById('results-scroll');
                 if (!container) return;
@@ -1036,7 +1036,7 @@
                     const signals = [...resolved, ...running].slice(0, 8);
 
                     if (!signals.length) {
-                        container.innerHTML = '<p class="text-gray-500 text-sm py-6 text-center w-full col-span-full">No signals yet GÇö check back soon!</p>';
+                        container.innerHTML = '<p class="text-gray-500 text-sm py-6 text-center w-full col-span-full">No signals yet Gï¿½ï¿½ check back soon!</p>';
                         return;
                     }
 
@@ -1053,8 +1053,8 @@
                         const badgeIcon = isWin ? 'arrow-up-right' : isLoss ? 'x' : isBreak ? 'minus' : 'activity';
                         const badgeText = isWin ? 'WIN' : isLoss ? 'LOSS' : isBreak ? 'B/E' : 'LIVE';
                         const pipsClass = isWin ? 'text-gold' : isLoss ? 'text-red-400' : isBreak ? 'text-yellow-400' : 'text-blue-400';
-                        const pipsPrefix = isWin ? '+' : isLoss ? '-' : '-¦';
-                        const pips = s.pips ? `${pipsPrefix}${s.pips} Pips` : (isRunning ? 'In Progress' : 'GÇö');
+                        const pipsPrefix = isWin ? '+' : isLoss ? '-' : '-ï¿½';
+                        const pips = s.pips ? `${pipsPrefix}${s.pips} Pips` : (isRunning ? 'In Progress' : 'Gï¿½ï¿½');
                         const date = s.sentAt ? new Date(s.sentAt).toLocaleDateString('en-GB', {day:'numeric', month:'short'}) 
                                    : s.createdAt ? new Date(s.createdAt).toLocaleDateString('en-GB', {day:'numeric', month:'short'}) : '';
                         const tp = Array.isArray(s.tp) ? s.tp[0] : s.tp;
@@ -1071,9 +1071,9 @@
                                 </span>
                             </div>
                             <div class="space-y-2 text-sm text-gray-300 mb-4">
-                                <div class="flex justify-between"><span>Entry</span> <span class="font-mono">${s.entry || 'GÇö'}</span></div>
-                                <div class="flex justify-between"><span>SL</span> <span class="font-mono text-red-400/80">${s.sl || 'GÇö'}</span></div>
-                                <div class="flex justify-between"><span>TP</span> <span class="font-mono text-green-400/80">${tp || 'GÇö'}</span></div>
+                                <div class="flex justify-between"><span>Entry</span> <span class="font-mono">${s.entry || 'Gï¿½ï¿½'}</span></div>
+                                <div class="flex justify-between"><span>SL</span> <span class="font-mono text-red-400/80">${s.sl || 'Gï¿½ï¿½'}</span></div>
+                                <div class="flex justify-between"><span>TP</span> <span class="font-mono text-green-400/80">${tp || 'Gï¿½ï¿½'}</span></div>
                                 <div class="flex justify-between border-t border-white/5 pt-2 mt-2">
                                     <span>${isWin ? 'Profit' : isLoss ? 'Loss' : isRunning ? 'Status' : 'Result'}</span>
                                     <span class="font-bold ${pipsClass}">${pips}</span>
@@ -1113,7 +1113,7 @@
             }
             loadLiveResults();
 
-            // GöÇGöÇ Also fetch live stats from /api/signals/stats GöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇ
+            // Gï¿½ï¿½Gï¿½ï¿½ Also fetch live stats from /api/signals/stats Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½
             async function loadLiveStats() {
                 try {
                     const res = await fetch('/api/signals/stats');
@@ -1136,7 +1136,7 @@
             }
             loadLiveStats();
 
-            // GöÇGöÇ Animated Number Counter GöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇGöÇ
+            // Gï¿½ï¿½Gï¿½ï¿½ Animated Number Counter Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½Gï¿½ï¿½
             function animateCounter(el, target, suffix) {
                 let start = 0;
                 const duration = 1800;
