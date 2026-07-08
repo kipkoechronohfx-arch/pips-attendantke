@@ -53,8 +53,14 @@ router.post('/pay-vip', validateUserSession, async (req, res) => {
       finalAmount = Math.floor(finalAmount * 0.90);
     } else {
       const promo = await db.getPromoByCode(promoCode.toUpperCase());
-      if (promo && promo.active) {
+      const now = Date.now();
+      const notExpired = !promo?.expiresAt || promo.expiresAt > now;
+      const withinLimit = !promo?.usageLimit || (promo.usageCount || 0) < promo.usageLimit;
+      if (promo && promo.active && notExpired && withinLimit) {
         finalAmount = Math.floor(finalAmount * (1 - (promo.discountPercentage / 100)));
+        // Increment usage count
+        promo.usageCount = (promo.usageCount || 0) + 1;
+        await db.savePromo(promo);
       }
     }
   }
@@ -210,6 +216,33 @@ router.get('/check-payment/:ref', validateUserSession, async (req, res) => {
   } else {
     res.json({ ok: true, status: payment.status });
   }
+});
+// ── Validate Promo Code (live preview) ───────────────────────
+router.post('/validate-promo', validateUserSession, async (req, res) => {
+  const { promoCode, plan } = req.body;
+  if (!promoCode) return res.status(400).json({ ok: false, error: 'No code provided.' });
+
+  const baseKes = PLANS[plan]?.kesPrice || PLANS['1month'].kesPrice;
+  const baseUsd = PLANS[plan]?.usdPrice || PLANS['1month'].usdPrice;
+  const code = promoCode.toUpperCase();
+  const now = Date.now();
+
+  if (code === 'COMEBACK10') {
+    return res.json({ ok: true, discount: 10, finalKes: Math.floor(baseKes * 0.90), finalUsd: (baseUsd * 0.90).toFixed(2) });
+  }
+
+  const promo = await db.getPromoByCode(code);
+  if (!promo || !promo.active) return res.status(404).json({ ok: false, error: 'Invalid promo code.' });
+  if (promo.expiresAt && promo.expiresAt < now) return res.status(400).json({ ok: false, error: 'Promo code has expired.' });
+  if (promo.usageLimit && (promo.usageCount || 0) >= promo.usageLimit) return res.status(400).json({ ok: false, error: 'Promo code usage limit reached.' });
+
+  const factor = 1 - (promo.discountPercentage / 100);
+  res.json({
+    ok: true,
+    discount: promo.discountPercentage,
+    finalKes: Math.floor(baseKes * factor),
+    finalUsd: (baseUsd * factor).toFixed(2)
+  });
 });
 
 router.post('/crypto-pay', validateUserSession, async (req, res) => {

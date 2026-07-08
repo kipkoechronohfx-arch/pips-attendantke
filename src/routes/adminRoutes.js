@@ -552,9 +552,17 @@ router.post('/toggle-promo-codes', validateAdminSession, async (req, res) => {
 });
 
 router.post('/promos', validateAdminSession, async (req, res) => {
-  const { code, discountPercentage } = req.body;
+  const { code, discountPercentage, expiresAt, usageLimit } = req.body;
   if (!code || !discountPercentage) return res.status(400).json({ ok: false, error: 'Missing fields' });
-  await db.savePromo({ code: code.toUpperCase(), discountPercentage: Number(discountPercentage), active: true, createdAt: Date.now() });
+  await db.savePromo({
+    code: code.toUpperCase(),
+    discountPercentage: Number(discountPercentage),
+    active: true,
+    createdAt: Date.now(),
+    expiresAt: expiresAt ? new Date(expiresAt).getTime() : null,
+    usageLimit: usageLimit ? Number(usageLimit) : null,
+    usageCount: 0
+  });
   res.json({ ok: true });
 });
 
