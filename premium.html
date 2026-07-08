@@ -717,6 +717,27 @@
         </div>
       </div>
 
+      <!-- SOFT TELEGRAM WARNING (shown during 48hr grace period) -->
+      <div id="telegramSoftWarning" class="hidden mb-6">
+        <div class="flex items-start gap-4 p-4 rounded-2xl border border-amber-400/30 bg-amber-400/10 relative overflow-hidden">
+          <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(ellipse at left, rgba(251,191,36,0.08) 0%, transparent 70%);"></div>
+          <div class="w-9 h-9 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center flex-shrink-0 relative z-10">
+            <i data-feather="alert-triangle" class="w-4 h-4 text-amber-400"></i>
+          </div>
+          <div class="relative z-10 flex-1 min-w-0">
+            <p class="text-amber-300 font-bold text-sm">⚠️ Link your Telegram account to keep access</p>
+            <p id="telegramWarningText" class="text-amber-400/80 text-xs mt-0.5">You have 48 hours left to link your Telegram before access is restricted.</p>
+            <a id="softWarningTelegramBtn" href="#" target="_blank"
+               class="inline-flex items-center gap-1.5 mt-2 px-4 py-1.5 rounded-xl text-xs font-bold bg-sky-500/20 border border-sky-400/30 text-sky-300 hover:bg-sky-500 hover:text-white transition cursor-pointer">
+              <i data-feather="send" class="w-3.5 h-3.5"></i> Link Telegram Now
+            </a>
+          </div>
+          <button onclick="document.getElementById('telegramSoftWarning').classList.add('hidden')" class="relative z-10 text-gray-500 hover:text-white transition flex-shrink-0 cursor-pointer" title="Dismiss">
+            <i data-feather="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
       <div id="vipMainContent">
       <!-- 📈 Economic Calendar -->
       <div id="economicCalendarCard" class="mb-6">
@@ -2194,12 +2215,34 @@
             
             // Show Telegram Blocker if telegramId is not linked
             if (!data.user.telegramId) {
-              document.getElementById('telegramBlocker').classList.remove('hidden');
-              document.getElementById('vipMainContent').classList.add('hidden');
-              
-              // Build link for the blocker button
+              // 48-hour grace period for new members
+              const GRACE_HOURS = 48;
+              const createdAt = data.user.createdAt ? new Date(data.user.createdAt).getTime() : Date.now();
+              const hoursSinceCreation = (Date.now() - createdAt) / (1000 * 60 * 60);
+
+              // Build Telegram link for all buttons
+              const tgLink = `https://t.me/${TELEGRAM_BOT_USERNAME}?start=${data.user.id}`;
               const tgBtn = document.getElementById('blockerTelegramLinkBtn');
-              if (tgBtn) tgBtn.href = `https://t.me/${TELEGRAM_BOT_USERNAME}?start=${data.user.id}`;
+              if (tgBtn) tgBtn.href = tgLink;
+              const softTgBtn = document.getElementById('softWarningTelegramBtn');
+              if (softTgBtn) softTgBtn.href = tgLink;
+
+              if (hoursSinceCreation < GRACE_HOURS) {
+                // Within grace period: show resources with a soft warning banner
+                document.getElementById('telegramBlocker').classList.add('hidden');
+                document.getElementById('vipMainContent').classList.remove('hidden');
+                const softWarning = document.getElementById('telegramSoftWarning');
+                if (softWarning) {
+                  const hoursLeft = Math.ceil(GRACE_HOURS - hoursSinceCreation);
+                  const warningText = document.getElementById('telegramWarningText');
+                  if (warningText) warningText.textContent = `You have ${hoursLeft} hour${hoursLeft !== 1 ? 's' : ''} left to link your Telegram before access is restricted.`;
+                  softWarning.classList.remove('hidden');
+                }
+              } else {
+                // Grace period expired: show hard blocker
+                document.getElementById('telegramBlocker').classList.remove('hidden');
+                document.getElementById('vipMainContent').classList.add('hidden');
+              }
             } else {
               document.getElementById('telegramBlocker').classList.add('hidden');
               document.getElementById('vipMainContent').classList.remove('hidden');
