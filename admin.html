@@ -1626,6 +1626,28 @@
       </div>
     </div>
 
+    <!-- 📅 MENTORSHIP BOOKINGS PANEL -->
+    <div id="bookingsPanel" class="hidden container mx-auto px-4 max-w-5xl mb-12">
+      <div class="flex items-center gap-4 mb-6">
+        <div class="flex-1 h-px bg-white/10"></div>
+        <div class="flex items-center gap-2 px-4 py-2 rounded-full border border-violet-500/30 bg-violet-500/5">
+          <span class="w-2 h-2 rounded-full bg-violet-500 animate-pulse"></span>
+          <span class="text-violet-400 text-xs font-bold tracking-[0.2em] uppercase">Mentorship Bookings</span>
+        </div>
+        <div class="flex-1 h-px bg-white/10"></div>
+      </div>
+
+      <div class="glass-card rounded-2xl p-6 border border-white/10 flex flex-col min-h-[350px]">
+        <div class="flex items-center justify-between border-b border-white/5 pb-3 mb-3">
+          <h3 class="text-white font-bold text-sm">Booking Requests</h3>
+          <button onclick="fetchBookings()" class="text-[10px] text-neon-blue hover:underline cursor-pointer">Refresh</button>
+        </div>
+        <div id="bookingsListBody" class="flex-1 overflow-y-auto space-y-3">
+          <p class="text-gray-500 text-xs text-center py-4">Loading bookings...</p>
+        </div>
+      </div>
+    </div>
+
     <!-- 🎫 SUPPORT TICKETS PANEL -->
     <div id="ticketsPanel" class="hidden container mx-auto px-4 max-w-5xl mb-12">
       <div class="flex items-center gap-4 mb-6">
@@ -1774,6 +1796,7 @@
         document.getElementById('analyticsPanel').classList.remove('hidden');
         document.getElementById('usersPanel').classList.remove('hidden');
         document.getElementById('promosPanel').classList.remove('hidden');
+        document.getElementById('bookingsPanel').classList.remove('hidden');
         document.getElementById('ticketsPanel').classList.remove('hidden');
         document.getElementById('paymentsPanel').classList.remove('hidden');
         document.getElementById('signalsPanel').classList.remove('hidden');
@@ -1792,6 +1815,7 @@
         fetchUsers();
         fetchAnalytics();
         fetchPromos();
+        fetchBookings();
         fetchAdminTickets();
         fetchPayments();
         fetchSignalsHistory();
@@ -1806,6 +1830,7 @@
         document.getElementById('analyticsPanel').classList.add('hidden');
         document.getElementById('usersPanel').classList.add('hidden');
         document.getElementById('promosPanel').classList.add('hidden');
+        document.getElementById('bookingsPanel').classList.add('hidden');
         document.getElementById('ticketsPanel').classList.add('hidden');
         document.getElementById('paymentsPanel').classList.add('hidden');
         document.getElementById('signalsPanel').classList.add('hidden');
@@ -1822,7 +1847,7 @@
     }
 
     function switchTab(panelId) {
-      const panels = ['dashboardPanel', 'engagementPanel', 'livePanel', 'perfPanel', 'vipPanel', 'cryptoRequestsPanel', 'analyticsPanel', 'usersPanel', 'promosPanel', 'ticketsPanel', 'paymentsPanel', 'signalsPanel'];
+      const panels = ['dashboardPanel', 'engagementPanel', 'livePanel', 'perfPanel', 'vipPanel', 'cryptoRequestsPanel', 'analyticsPanel', 'usersPanel', 'promosPanel', 'bookingsPanel', 'ticketsPanel', 'paymentsPanel', 'signalsPanel'];
       panels.forEach(p => {
         const el = document.getElementById(p);
         if (el) el.classList.add('hidden');
@@ -1833,6 +1858,7 @@
       if (panelId === 'usersPanel') fetchUsers();
       if (panelId === 'cryptoRequestsPanel') fetchCryptoRequests();
       if (panelId === 'promosPanel') fetchPromos();
+      if (panelId === 'bookingsPanel') fetchBookings();
       if (panelId === 'ticketsPanel') fetchAdminTickets();
       if (panelId === 'paymentsPanel') fetchPayments();
       if (panelId === 'signalsPanel') fetchSignalsHistory();
@@ -3606,6 +3632,76 @@
       } catch (err) {
         msgEl.className = 'text-rose-400 text-[11px] min-h-[14px] mb-3 text-center';
         msgEl.textContent = '❌ Server error. Check your connection and try again.';
+      }
+    }
+    // ── Mentorship Bookings ─────────────────────────────────────
+    async function fetchBookings() {
+      const token = localStorage.getItem('pa_admin_token');
+      if (!token) return;
+      const container = document.getElementById('bookingsListBody');
+      if (!container) return;
+      container.innerHTML = '<p class="text-gray-500 text-xs text-center py-4">Loading...</p>';
+      
+      try {
+        const res = await fetch('/api/admin/bookings?token=' + encodeURIComponent(token));
+        const data = await res.json();
+        if (data.ok && data.bookings) {
+          if (data.bookings.length === 0) {
+            container.innerHTML = '<p class="text-gray-500 text-xs text-center py-4">No bookings found.</p>';
+            return;
+          }
+          container.innerHTML = data.bookings.map(b => {
+            const statusColor = b.status === 'Accepted' ? 'text-emerald-400'
+              : b.status === 'Completed' ? 'text-gold'
+              : b.status === 'Cancelled' ? 'text-rose-400'
+              : 'text-gray-400';
+            return `
+              <div class="p-4 rounded-xl bg-white/5 border border-white/10 group">
+                <div class="flex items-start justify-between gap-3 mb-2">
+                  <div>
+                    <h4 class="text-white text-xs font-bold">${b.userName} <span class="text-[10px] text-gray-500 font-normal">(${b.userEmail})</span></h4>
+                    <p class="text-[11px] text-violet-300 font-semibold mt-0.5">${b.date} at ${b.time} (UTC)</p>
+                  </div>
+                  <span class="shrink-0 text-[10px] font-bold ${statusColor} px-2 py-1 rounded border border-current/20 bg-current/10">${b.status}</span>
+                </div>
+                <div class="bg-black/30 p-2 rounded border border-white/5 text-[11px] text-gray-300 mb-3">
+                  <span class="font-bold text-gray-500">Topic:</span> ${b.topic}
+                </div>
+                <div class="flex items-center gap-2">
+                  ${b.status === 'Pending' ? `<button onclick="updateBookingStatus('${b._id}', 'Accepted')" class="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500 hover:text-white transition cursor-pointer text-[10px] font-bold">Accept</button>` : ''}
+                  ${['Pending', 'Accepted'].includes(b.status) ? `<button onclick="updateBookingStatus('${b._id}', 'Completed')" class="px-3 py-1.5 rounded-lg bg-gold/10 border border-gold/30 text-gold hover:bg-gold hover:text-dark-navy transition cursor-pointer text-[10px] font-bold">Mark Completed</button>` : ''}
+                  ${['Pending', 'Accepted'].includes(b.status) ? `<button onclick="updateBookingStatus('${b._id}', 'Cancelled')" class="px-3 py-1.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 hover:bg-rose-500 hover:text-white transition cursor-pointer text-[10px] font-bold">Cancel</button>` : ''}
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      } catch (err) {
+        container.innerHTML = '<p class="text-rose-400 text-xs text-center py-4">Failed to load bookings</p>';
+      }
+    }
+
+    async function updateBookingStatus(id, status) {
+      if (!confirm(`Mark this booking as ${status}?`)) return;
+      const token = localStorage.getItem('pa_admin_token');
+      try {
+        const res = await fetch(`/api/admin/bookings/${id}/status?token=` + encodeURIComponent(token), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          if (typeof showToast !== 'undefined') showToast('Updated', `Booking marked as ${status}`);
+          else alert(`Booking marked as ${status}`);
+          fetchBookings();
+        } else {
+          if (typeof showToast !== 'undefined') showToast('Error', data.error || 'Failed to update status', 'error');
+          else alert(data.error || 'Failed to update status');
+        }
+      } catch (err) {
+        if (typeof showToast !== 'undefined') showToast('Error', 'Server error', 'error');
+        else alert('Server error');
       }
     }
 

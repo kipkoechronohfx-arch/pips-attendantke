@@ -540,12 +540,34 @@
                 <p class="text-gray-400 text-[10px]">Message your mentor directly on Telegram</p>
               </div>
             </div>
-            <a href="https://t.me/pipsattendant" target="_blank" rel="noopener"
-              class="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold text-sm text-white cursor-pointer transition hover:brightness-110 active:scale-95"
-              style="background: linear-gradient(135deg, #7c3aed, #a855f7);">
-              <i data-feather="message-circle" class="w-4 h-4"></i>
-              Book My Mentorship Session
-            </a>
+            <div id="bookingFormContainer" class="bg-black/30 border border-white/5 rounded-xl p-4">
+              <h4 class="text-white text-sm font-bold mb-3 flex items-center gap-2"><i data-feather="calendar" class="w-4 h-4 text-violet-400"></i> Request a Session</h4>
+              <form id="bookingForm" onsubmit="handleMentorshipBooking(event)" class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-[10px] text-gray-500 mb-1">Date</label>
+                    <input type="date" id="bookingDate" required class="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-violet-500/50 focus:outline-none transition [color-scheme:dark]" />
+                  </div>
+                  <div>
+                    <label class="block text-[10px] text-gray-500 mb-1">Time (UTC)</label>
+                    <input type="time" id="bookingTime" required class="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-violet-500/50 focus:outline-none transition [color-scheme:dark]" />
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-[10px] text-gray-500 mb-1">Topic / Questions</label>
+                  <input type="text" id="bookingTopic" required placeholder="What do you want to cover?" class="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-violet-500/50 focus:outline-none transition" />
+                </div>
+                <div id="bookingError" class="text-[11px] min-h-[14px]"></div>
+                <button type="submit" id="bookingBtn" class="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl font-bold text-xs text-white cursor-pointer transition hover:brightness-110 active:scale-95" style="background: linear-gradient(135deg, #7c3aed, #a855f7);">
+                  <i data-feather="send" class="w-3.5 h-3.5"></i> Submit Request
+                </button>
+              </form>
+            </div>
+            
+            <div id="myBookingsContainer" class="mt-4 hidden">
+              <h4 class="text-white text-xs font-bold mb-2">My Bookings</h4>
+              <div id="bookingsList" class="space-y-2"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -612,6 +634,30 @@
                 <div>
                   <label class="block text-[10px] text-gray-500 mb-1">Display Name</label>
                   <input type="text" id="profileName" required class="w-full px-3 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-gold/50 focus:outline-none transition" />
+                </div>
+                
+                <div>
+                  <label class="block text-[10px] text-gray-500 mb-1">Chat Avatar</label>
+                  <div class="flex items-center gap-3">
+                    <div id="avatarPreview" class="w-12 h-12 rounded-full border border-white/10 bg-black/40 flex items-center justify-center overflow-hidden text-2xl">
+                      <i data-feather="user" class="w-5 h-5 text-gray-500"></i>
+                    </div>
+                    <div class="flex flex-col gap-1.5 flex-1">
+                      <div class="flex gap-1 overflow-x-auto pb-1 scrollbar-thin">
+                        <button type="button" onclick="setAvatar('🦁')" class="w-8 h-8 rounded bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-lg">🦁</button>
+                        <button type="button" onclick="setAvatar('🦊')" class="w-8 h-8 rounded bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-lg">🦊</button>
+                        <button type="button" onclick="setAvatar('🐼')" class="w-8 h-8 rounded bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-lg">🐼</button>
+                        <button type="button" onclick="setAvatar('🦅')" class="w-8 h-8 rounded bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-lg">🦅</button>
+                        <button type="button" onclick="setAvatar('🚀')" class="w-8 h-8 rounded bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-lg">🚀</button>
+                        <button type="button" onclick="setAvatar('💎')" class="w-8 h-8 rounded bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-lg">💎</button>
+                      </div>
+                      <label class="cursor-pointer text-[10px] text-gold hover:text-gold-hover transition flex items-center gap-1 w-fit bg-gold/10 px-2 py-1 rounded">
+                        <i data-feather="upload" class="w-3 h-3"></i> Upload Custom Image
+                        <input type="file" id="avatarUpload" accept="image/png, image/jpeg, image/gif, image/webp" class="hidden" onchange="handleAvatarUpload(event)" />
+                      </label>
+                    </div>
+                  </div>
+                  <input type="hidden" id="profileAvatar" value="" />
                 </div>
                 <div id="profileError" class="text-[11px] min-h-[14px]"></div>
                 <button type="submit" id="profileBtn" class="w-full py-2.5 rounded-xl font-bold border border-gold-hover/40 bg-gold-hover/10 text-gold hover:bg-gold-hover hover:text-primary transition cursor-pointer text-xs">
@@ -1415,9 +1461,114 @@
       }
     }
 
+    function setAvatar(avatarStr) {
+      document.getElementById('profileAvatar').value = avatarStr;
+      
+      const preview = document.getElementById('avatarPreview');
+      if (avatarStr.startsWith('data:image')) {
+        preview.innerHTML = `<img src="${avatarStr}" class="w-full h-full object-cover rounded-full" />`;
+      } else {
+        preview.innerHTML = avatarStr;
+      }
+    }
+
+    function handleAvatarUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      if (file.size > 300000) {
+        alert("Image is too large. Please choose an image under 300KB.");
+        event.target.value = '';
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        setAvatar(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function handleMentorshipBooking(e) {
+      e.preventDefault();
+      const date = document.getElementById('bookingDate').value;
+      const time = document.getElementById('bookingTime').value;
+      const topic = document.getElementById('bookingTopic').value.trim();
+      const errorEl = document.getElementById('bookingError');
+      const btn = document.getElementById('bookingBtn');
+      const token = sessionStorage.getItem('vip_session_token');
+
+      const origText = btn.innerHTML;
+      btn.innerHTML = '<span class="animate-pulse">Submitting...</span>';
+      btn.disabled = true;
+      errorEl.textContent = '';
+      errorEl.className = 'text-[11px] min-h-[14px]';
+
+      try {
+        const res = await fetch('/api/book-mentorship', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-vip-token': token },
+          body: JSON.stringify({ date, time, topic })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          errorEl.className = 'text-emerald-400 text-[11px] min-h-[14px]';
+          errorEl.textContent = '✅ Session requested successfully!';
+          document.getElementById('bookingForm').reset();
+          loadMyBookings();
+          setTimeout(() => { errorEl.textContent = ''; }, 3000);
+        } else {
+          errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
+          errorEl.textContent = `❌ ${data.error}`;
+        }
+      } catch (err) {
+        errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
+        errorEl.textContent = '❌ Server error.';
+      } finally {
+        btn.innerHTML = origText;
+        btn.disabled = false;
+      }
+    }
+
+    async function loadMyBookings() {
+      const token = sessionStorage.getItem('vip_session_token');
+      if (!token) return;
+      const container = document.getElementById('bookingsList');
+      const wrapper = document.getElementById('myBookingsContainer');
+      if (!container || !wrapper) return;
+      
+      try {
+        const res = await fetch('/api/bookings', { headers: { 'x-vip-token': token } });
+        const data = await res.json();
+        if (data.ok && data.bookings && data.bookings.length > 0) {
+          wrapper.classList.remove('hidden');
+          container.innerHTML = data.bookings.map(b => {
+            const statusColor = b.status === 'Accepted' ? 'text-emerald-400'
+              : b.status === 'Completed' ? 'text-gold'
+              : b.status === 'Cancelled' ? 'text-rose-400'
+              : 'text-gray-400';
+            return `
+              <div class="rounded-xl border border-white/10 bg-white/5 p-3">
+                <div class="flex items-center justify-between gap-2 mb-1">
+                  <p class="text-white text-xs font-semibold truncate flex-1">${b.date} at ${b.time} (UTC)</p>
+                  <span class="shrink-0 text-[9px] font-bold ${statusColor} px-2 py-0.5 rounded border border-current/20 bg-current/10">${b.status}</span>
+                </div>
+                <p class="text-gray-400 text-[10px] italic truncate">Topic: ${b.topic}</p>
+              </div>
+            `;
+          }).join('');
+        } else {
+          wrapper.classList.add('hidden');
+        }
+      } catch (err) {
+        console.error('Failed to load bookings');
+      }
+    }
+
     async function handleUpdateProfile(e) {
       e.preventDefault();
       const name = document.getElementById('profileName').value.trim();
+      const avatar = document.getElementById('profileAvatar').value;
       const errorEl = document.getElementById('profileError');
       const btn = document.getElementById('profileBtn');
       const token = sessionStorage.getItem('vip_session_token');
@@ -1429,10 +1580,13 @@
       errorEl.className = 'text-[11px] min-h-[14px]';
 
       try {
+        const payload = { name };
+        if (avatar) payload.avatar = avatar;
+
         const res = await fetch('/api/update-profile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-vip-token': token },
-          body: JSON.stringify({ name })
+          body: JSON.stringify(payload)
         });
         const data = await res.json();
         if (data.ok) {
@@ -1440,6 +1594,10 @@
           errorEl.textContent = '✅ Profile updated!';
           document.getElementById('vipWelcomeText').textContent = `Welcome, ${data.name}!`;
           localStorage.setItem('pa_vip_user_name', data.name);
+          if (data.avatar) {
+             localStorage.setItem('pa_vip_user_avatar', data.avatar);
+             setAvatar(data.avatar);
+          }
           setTimeout(() => { errorEl.textContent = ''; }, 3000);
         } else {
           errorEl.className = 'text-rose-400 text-[11px] min-h-[14px]';
@@ -2187,15 +2345,30 @@
         const timeStr = new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         const isSelf = msg.author === (localStorage.getItem('pa_vip_user_name') || 'VIP Member');
         
+        let avatarHtml = '';
+        if (msg.avatar) {
+          if (msg.avatar.startsWith('data:image')) {
+            avatarHtml = `<img src="${msg.avatar}" class="w-5 h-5 rounded-full object-cover shrink-0 border border-white/10" />`;
+          } else {
+            avatarHtml = `<div class="w-5 h-5 rounded-full bg-white/5 flex items-center justify-center text-[10px] shrink-0 border border-white/10">${msg.avatar}</div>`;
+          }
+        } else {
+          avatarHtml = `<div class="w-5 h-5 rounded-full bg-white/5 flex items-center justify-center shrink-0 border border-white/10"><i data-feather="user" class="w-2.5 h-2.5 text-gray-500"></i></div>`;
+        }
+
         const msgHtml = `
           <div class="flex flex-col ${isSelf ? 'items-end' : 'items-start'} w-full mt-2 animate-fade-in-up">
-            <span class="text-[10px] text-gray-500 mb-1 ml-1">${msg.author} • ${timeStr}</span>
-            <div class="max-w-[80%] rounded-2xl px-4 py-2 text-sm ${isSelf ? 'bg-gold-hover/20 border border-gold-hover/30 text-amber-50' : 'bg-white/10 border border-white/5 text-gray-200'}">
+            <div class="flex items-center gap-1.5 mb-1 ${isSelf ? 'flex-row-reverse' : ''}">
+              ${avatarHtml}
+              <span class="text-[10px] text-gray-500">${msg.author} • ${timeStr}</span>
+            </div>
+            <div class="max-w-[80%] rounded-2xl px-4 py-2 text-sm ${isSelf ? 'bg-gold-hover/20 border border-gold-hover/30 text-amber-50 rounded-tr-sm' : 'bg-white/10 border border-white/5 text-gray-200 rounded-tl-sm'}">
               ${msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
             </div>
           </div>
         `;
         chatContainer.insertAdjacentHTML('afterbegin', msgHtml);
+        if (typeof feather !== 'undefined') feather.replace();
       });
       
       socket.on('error', (err) => console.error('Socket error:', err));
@@ -2286,6 +2459,7 @@
               if (isPlatinum) {
                 mentorCard.classList.remove('hidden');
                 mentorLock.classList.add('hidden');
+                loadMyBookings();
                 document.querySelectorAll('.platinum-resource-badge').forEach(el => {
                   el.innerHTML = '<i data-feather="clock" class="w-3.5 h-3.5"></i> Coming Soon';
                   el.className = 'platinum-resource-badge flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700/30 border border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50';
@@ -2335,6 +2509,10 @@
 
             feather.replace();
             document.getElementById('profileName').value = data.user.name || '';
+            if (data.user.avatar) {
+              setAvatar(data.user.avatar);
+              localStorage.setItem('pa_vip_user_avatar', data.user.avatar);
+            }
             
             const tgStatus = document.getElementById('telegramLinkStatus');
             const tgBtnAcc = document.getElementById('telegramLinkBtn');
@@ -2581,15 +2759,31 @@
             chatContainer.innerHTML = reversed.map(msg => {
               const timeStr = new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
               const isSelf = msg.author === (localStorage.getItem('pa_vip_user_name') || 'VIP Member');
+              
+              let avatarHtml = '';
+              if (msg.avatar) {
+                if (msg.avatar.startsWith('data:image')) {
+                  avatarHtml = `<img src="${msg.avatar}" class="w-5 h-5 rounded-full object-cover shrink-0 border border-white/10" />`;
+                } else {
+                  avatarHtml = `<div class="w-5 h-5 rounded-full bg-white/5 flex items-center justify-center text-[10px] shrink-0 border border-white/10">${msg.avatar}</div>`;
+                }
+              } else {
+                avatarHtml = `<div class="w-5 h-5 rounded-full bg-white/5 flex items-center justify-center shrink-0 border border-white/10"><i data-feather="user" class="w-2.5 h-2.5 text-gray-500"></i></div>`;
+              }
+
               return `
-                <div class="flex flex-col ${isSelf ? 'items-end' : 'items-start'} w-full">
-                  <span class="text-[10px] text-gray-500 mb-1 ml-1">${msg.author} • ${timeStr}</span>
-                  <div class="max-w-[80%] rounded-2xl px-4 py-2 text-sm ${isSelf ? 'bg-gold-hover/20 border border-gold-hover/30 text-amber-50' : 'bg-white/10 border border-white/5 text-gray-200'}">
+                <div class="flex flex-col ${isSelf ? 'items-end' : 'items-start'} w-full mt-2">
+                  <div class="flex items-center gap-1.5 mb-1 ${isSelf ? 'flex-row-reverse' : ''}">
+                    ${avatarHtml}
+                    <span class="text-[10px] text-gray-500">${msg.author} • ${timeStr}</span>
+                  </div>
+                  <div class="max-w-[80%] rounded-2xl px-4 py-2 text-sm ${isSelf ? 'bg-gold-hover/20 border border-gold-hover/30 text-amber-50 rounded-tr-sm' : 'bg-white/10 border border-white/5 text-gray-200 rounded-tl-sm'}">
                     ${msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
                   </div>
                 </div>
               `;
             }).join('');
+            if (typeof feather !== 'undefined') feather.replace();
           }
         }
       } catch (err) {
