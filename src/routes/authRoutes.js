@@ -59,6 +59,7 @@ router.post('/register', authLimiter, async (req, res) => {
     passwordHash: hashPassword(password),
     registeredAt: new Date().toISOString(),
     subscriptionExpiry: null,
+    subscriptionTier: 'Gold',
     referredBy: referredByUserId || null,
     telegramId: null
   };
@@ -141,7 +142,7 @@ router.get('/me', validateUserSession, (req, res) => {
       name: req.user.name,
       avatar: req.user.avatar,
       subscriptionExpiry: req.user.subscriptionExpiry,
-      subscriptionTier: req.user.subscriptionTier,
+      subscriptionTier: req.user.subscriptionTier || 'Gold',
       telegramId: req.user.telegramId,
       badges: req.user.badges || [],
       completedModules: req.user.completedModules || [],
