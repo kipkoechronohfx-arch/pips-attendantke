@@ -261,12 +261,26 @@ router.post('/redeem-code', validateUserSession, async (req, res) => {
     user.subscriptionExpiry = now;
   }
   
-  // PLANS['1month'] logic
-  let daysToAdd = 30;
-  if (payment.plan === '2months') daysToAdd = 60;
-  if (payment.plan === '3months') daysToAdd = 90;
-  
+  // Determine days and tier from the payment's plan
+  const PLAN_MAP = {
+    '1month':           { days: 30,  tier: 'Gold' },
+    '2months':          { days: 60,  tier: 'Gold' },
+    '3months':          { days: 90,  tier: 'Gold' },
+    '6months':          { days: 180, tier: 'Gold' },
+    '1month_platinum':  { days: 30,  tier: 'Platinum' },
+    '3months_platinum': { days: 90,  tier: 'Platinum' },
+    'lifetime_platinum':{ days: 36500, tier: 'Platinum' }
+  };
+  const planInfo = PLAN_MAP[payment.plan] || PLAN_MAP['1month'];
+  const daysToAdd = planInfo.days;
+  const tierToSet = planInfo.tier;
+
   user.subscriptionExpiry += daysToAdd * 24 * 60 * 60 * 1000;
+
+  // Set the correct tier (never downgrade Platinum to Gold)
+  if (tierToSet === 'Platinum' || user.subscriptionTier !== 'Platinum') {
+    user.subscriptionTier = tierToSet;
+  }
   
   // Mark code as used
   payment.usedBy = user._id || user.id;
@@ -328,7 +342,7 @@ router.post('/redeem-code', validateUserSession, async (req, res) => {
   await saveUser(user);
   // -----------------------------------
 
-  res.json({ ok: true, message: 'Subscription successfully activated!', subscriptionExpiry: user.subscriptionExpiry });
+  res.json({ ok: true, message: 'Subscription successfully activated!', subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier });
 });
 
 router.get('/public-config', async (req, res) => {
