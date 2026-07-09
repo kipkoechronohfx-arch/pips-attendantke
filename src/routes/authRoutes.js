@@ -126,7 +126,7 @@ router.post('/login', authLimiter, async (req, res) => {
   }
 
   const sessionToken = generateUserToken(user);
-  res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier, telegramId: user.telegramId } });
+  res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, avatar: user.avatar, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier, telegramId: user.telegramId } });
 });
 
 router.get('/me', validateUserSession, (req, res) => {
@@ -136,6 +136,7 @@ router.get('/me', validateUserSession, (req, res) => {
       id: req.user._id || req.user.id,
       email: req.user.email,
       name: req.user.name,
+      avatar: req.user.avatar,
       subscriptionExpiry: req.user.subscriptionExpiry,
       subscriptionTier: req.user.subscriptionTier,
       telegramId: req.user.telegramId
@@ -219,15 +220,23 @@ router.post('/change-password', validateUserSession, authLimiter, async (req, re
 });
 
 router.post('/update-profile', validateUserSession, async (req, res) => {
-  const { name } = req.body;
+  const { name, avatar } = req.body;
   if (!name || name.trim() === '') return res.status(400).json({ ok: false, error: 'Name cannot be empty.' });
 
   const user = await getUserById(req.user._id || req.user.id);
   if (!user) return res.status(404).json({ ok: false, error: 'User not found.' });
 
   user.name = name.trim();
+  if (avatar !== undefined) {
+    // Basic validation to prevent huge payloads (limit to ~200kb base64 string or short emoji string)
+    if (avatar.length > 300000) {
+       return res.status(400).json({ ok: false, error: 'Avatar file is too large.' });
+    }
+    user.avatar = avatar;
+  }
+
   await saveUser(user);
-  res.json({ ok: true, message: 'Profile updated successfully.', name: user.name });
+  res.json({ ok: true, message: 'Profile updated successfully.', name: user.name, avatar: user.avatar });
 });
 
 router.post('/leaderboard-optin', validateUserSession, async (req, res) => {
@@ -354,6 +363,44 @@ router.get('/public-config', async (req, res) => {
       promoCodesEnabled: config?.promoCodesEnabled || false
     }
   });
+});
+router.post('/book-mentorship', validateUserSession, async (req, res) => {
+  const { date, time, topic } = req.body;
+  if (!date || !time || !topic) {
+    return res.status(400).json({ ok: false, error: 'Date, time, and topic are required.' });
+  }
+
+  const user = await getUserById(req.user._id || req.user.id);
+  if (!user) return res.status(404).json({ ok: false, error: 'User not found.' });
+
+  const tier = (user.subscriptionTier || '').toLowerCase();
+  if (!tier.includes('platinum')) {
+    return res.status(403).json({ ok: false, error: 'Mentorship booking is only available for Platinum members.' });
+  }
+
+  const { saveBooking } = require('../services/db');
+  const booking = await saveBooking({
+    userId: user._id || user.id,
+    userEmail: user.email,
+    userName: user.name,
+    date,
+    time,
+    topic,
+    status: 'Pending',
+    createdAt: new Date().toISOString()
+  });
+
+  res.json({ ok: true, message: 'Mentorship session requested successfully.', booking });
+});
+router.get('/bookings', validateUserSession, async (req, res) => {
+  try {
+    const { getUserBookings } = require('../services/db');
+    const user = req.user;
+    const bookings = await getUserBookings(user.email);
+    res.json({ ok: true, bookings });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: 'Failed to fetch bookings.' });
+  }
 });
 
 module.exports = router;
