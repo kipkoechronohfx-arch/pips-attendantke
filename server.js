@@ -8,7 +8,7 @@ const morgan = require('morgan');
 const path = require('path');
 const db = require('./src/services/db');
 const logger = require('./src/utils/logger');
-const { startCronJobs, notifyVIPsNewSignal } = require('./src/services/cronJobs');
+const { startCronJobs, computeAndSaveBadges } = require('./src/services/cronJobs');
 const { registerTelegramWebhook, handleTelegramUpdate } = require('./src/services/telegramBot');
 const { initializeSocket } = require('./src/services/socketService');
 

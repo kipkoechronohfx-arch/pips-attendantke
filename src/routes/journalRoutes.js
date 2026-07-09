@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { validateUserSession } = require('../middleware/auth');
 const db = require('../services/db');
+const { computeAndSaveBadges } = require('../services/cronJobs');
 
 // GET all journal entries for logged-in user
 router.get('/', validateUserSession, async (req, res) => {
@@ -49,6 +50,8 @@ router.post('/', validateUserSession, async (req, res) => {
     };
 
     const savedEntry = await db.saveJournalEntry(newEntry);
+    // Recompute badges asynchronously (non-blocking)
+    computeAndSaveBadges(userId).catch(() => {});
     res.json({ ok: true, entry: savedEntry });
   } catch (err) {
     console.error('[Journal POST error]', err);

@@ -775,6 +775,36 @@
         </div>
       </div>
 
+      <!-- ── Signal History Archive ─────────────────────────────── -->
+      <div id="signalArchiveSection" class="mb-8">
+        <div class="relative rounded-2xl overflow-hidden border border-sky-500/20" style="background:linear-gradient(135deg,rgba(14,165,233,0.08) 0%,rgba(17,24,39,1) 60%);">
+          <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-sky-500 via-blue-400 to-indigo-500"></div>
+          <div class="p-5">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center text-base" style="background:rgba(14,165,233,0.2);border:1px solid rgba(14,165,233,0.4);">📜</div>
+                <div>
+                  <h3 class="text-white font-black text-sm">Signal Archive</h3>
+                  <p class="text-sky-400 text-[10px] font-medium">Full history of all signals</p>
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <select id="archiveFilter" onchange="filterArchive()" class="text-xs bg-black/40 border border-white/10 text-gray-300 rounded-lg px-2 py-1.5 cursor-pointer focus:border-sky-400 outline-none">
+                  <option value="">All</option>
+                  <option value="TP Hit">Wins ✅</option>
+                  <option value="SL Hit">Losses ❌</option>
+                  <option value="Breakeven">Breakeven ➖</option>
+                  <option value="Running">Running 🔄</option>
+                </select>
+              </div>
+            </div>
+            <div id="signalArchiveList" class="space-y-2 max-h-80 overflow-y-auto custom-scrollbar pr-1">
+              <p class="text-gray-500 text-[11px] text-center py-4">Loading archive...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- ── NOTICES PANEL ──────────────────────────────────────── -->
       <div id="noticesPanel" class="hidden fixed inset-y-0 right-0 z-50 w-full sm:max-w-sm" style="transition: transform 0.3s ease;">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm sm:hidden" onclick="toggleNoticesPanel()"></div>
@@ -825,6 +855,12 @@
             </div>
 
             <div class="border-t border-white/5"></div>
+
+            <!-- Badges -->
+            <div id="badgesSection" class="hidden">
+              <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">🏅 Achievements</h3>
+              <div id="badgesList" class="flex flex-wrap gap-2"></div>
+            </div>
 
             <!-- Profile Update -->
             <div>
@@ -1200,6 +1236,67 @@
       </div>
 
       <div id="vipMainContent">
+
+      <!-- ── Daily Market Brief ─────────────────────────────────── -->
+      <div id="dailyBriefSection" class="mb-8 hidden">
+        <div class="relative rounded-2xl overflow-hidden border border-cyan-500/30" style="background: linear-gradient(135deg, rgba(6,182,212,0.12) 0%, rgba(17,24,39,1) 60%); box-shadow: 0 0 40px rgba(6,182,212,0.12);">
+          <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 via-sky-400 to-blue-500"></div>
+          <div class="p-5">
+            <div class="flex items-start gap-3">
+              <div class="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0" style="background:rgba(6,182,212,0.2);border:1px solid rgba(6,182,212,0.4);">📋</div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-cyan-400 text-[10px] font-black uppercase tracking-widest">Daily Market Brief</span>
+                  <span id="briefPostedTime" class="text-gray-600 text-[9px]"></span>
+                </div>
+                <div class="flex flex-wrap items-center gap-3 mb-2">
+                  <span class="text-white font-black text-sm">Bias:</span>
+                  <span id="briefBias" class="px-3 py-0.5 rounded-full text-xs font-black border"></span>
+                </div>
+                <p id="briefKeyLevels" class="text-gray-400 text-xs mb-1 hidden"><span class="text-gray-500 font-bold">Key Levels:</span> <span id="briefKeyLevelsText"></span></p>
+                <p id="briefNote" class="text-gray-300 text-xs leading-relaxed hidden"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Signal Performance Stats ───────────────────────────── -->
+      <div id="signalStatsSection" class="mb-8">
+        <div class="relative rounded-2xl overflow-hidden border border-violet-500/20" style="background:linear-gradient(135deg,rgba(139,92,246,0.08) 0%,rgba(17,24,39,1) 60%);">
+          <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-500 via-purple-400 to-fuchsia-500"></div>
+          <div class="p-5">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center text-base" style="background:rgba(139,92,246,0.2);border:1px solid rgba(139,92,246,0.4);">📊</div>
+                <div>
+                  <h3 class="text-white font-black text-sm">Signal Performance</h3>
+                  <p class="text-violet-400 text-[10px] font-medium">Live tracked accuracy</p>
+                </div>
+              </div>
+            </div>
+            <div class="grid grid-cols-4 gap-3">
+              <div class="bg-black/30 rounded-xl p-3 text-center border border-white/5">
+                <div id="statWinRate" class="text-emerald-400 font-black text-xl">--</div>
+                <div class="text-gray-500 text-[9px] font-bold uppercase tracking-wider mt-0.5">Win Rate</div>
+              </div>
+              <div class="bg-black/30 rounded-xl p-3 text-center border border-white/5">
+                <div id="statNetPips" class="text-amber-400 font-black text-xl">--</div>
+                <div class="text-gray-500 text-[9px] font-bold uppercase tracking-wider mt-0.5">Net Pips</div>
+              </div>
+              <div class="bg-black/30 rounded-xl p-3 text-center border border-white/5">
+                <div id="statTotalSignals" class="text-white font-black text-xl">--</div>
+                <div class="text-gray-500 text-[9px] font-bold uppercase tracking-wider mt-0.5">Signals</div>
+              </div>
+              <div class="bg-black/30 rounded-xl p-3 text-center border border-white/5">
+                <div id="statWins" class="text-emerald-400 font-black text-xl">--<span class="text-rose-400 text-sm font-bold" id="statLosses"></span></div>
+                <div class="text-gray-500 text-[9px] font-bold uppercase tracking-wider mt-0.5">W / L</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- 📈 Economic Calendar -->
       <div class="mb-10">
         <div class="glass-card border border-cyan-400/20 rounded-2xl overflow-hidden">
@@ -1921,6 +2018,157 @@
         btn.innerHTML = origText;
         btn.disabled = false;
       }
+    }
+
+    // ── Signal Performance Stats ───────────────────────────────────
+    async function loadSignalStats() {
+      const token = localStorage.getItem('vip_token');
+      if (!token) return;
+      try {
+        const res = await fetch('/api/signals/stats', { headers: { 'x-vip-token': token } });
+        const data = await res.json();
+        if (data.ok && data.stats) {
+          const s = data.stats;
+          document.getElementById('statWinRate').textContent = s.winRate + '%';
+          document.getElementById('statNetPips').textContent = (s.netPips > 0 ? '+' : '') + s.netPips;
+          document.getElementById('statTotalSignals').textContent = s.total;
+          document.getElementById('statWins').innerHTML = `<span class="text-emerald-400">${s.wins}</span>/<span class="text-rose-400">${s.losses}</span>`;
+        }
+      } catch (e) {}
+    }
+
+    // ── Daily Market Brief ────────────────────────────────────────
+    async function loadDailyBrief() {
+      const token = localStorage.getItem('vip_token');
+      if (!token) return;
+      try {
+        const res = await fetch('/api/daily-brief', { headers: { 'x-vip-token': token } });
+        const data = await res.json();
+        if (data.ok && data.brief) {
+          const brief = data.brief;
+          const section = document.getElementById('dailyBriefSection');
+          if (section) section.classList.remove('hidden');
+          const biasEl = document.getElementById('briefBias');
+          if (biasEl) {
+            biasEl.textContent = brief.bias;
+            const biasLower = brief.bias.toLowerCase();
+            if (biasLower.includes('bull')) {
+              biasEl.className = 'px-3 py-0.5 rounded-full text-xs font-black border text-emerald-400 border-emerald-400/40 bg-emerald-400/10';
+            } else if (biasLower.includes('bear')) {
+              biasEl.className = 'px-3 py-0.5 rounded-full text-xs font-black border text-rose-400 border-rose-400/40 bg-rose-400/10';
+            } else {
+              biasEl.className = 'px-3 py-0.5 rounded-full text-xs font-black border text-amber-400 border-amber-400/40 bg-amber-400/10';
+            }
+          }
+          if (brief.keyLevels) {
+            document.getElementById('briefKeyLevels').classList.remove('hidden');
+            document.getElementById('briefKeyLevelsText').textContent = brief.keyLevels;
+          }
+          if (brief.note) {
+            const noteEl = document.getElementById('briefNote');
+            noteEl.classList.remove('hidden');
+            noteEl.textContent = brief.note;
+          }
+          if (brief.postedAt) {
+            document.getElementById('briefPostedTime').textContent = '· ' + new Date(brief.postedAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+          }
+        }
+      } catch (e) {}
+    }
+
+    // ── Signal Archive ────────────────────────────────────────────
+    let _signalArchiveCache = [];
+    async function loadSignalArchive() {
+      const token = localStorage.getItem('vip_token');
+      const container = document.getElementById('signalArchiveList');
+      if (!container || !token) return;
+      try {
+        const res = await fetch('/api/signals?limit=100', { headers: { 'x-vip-token': token } });
+        const data = await res.json();
+        if (data.ok && data.signals) {
+          _signalArchiveCache = data.signals;
+          renderArchive(_signalArchiveCache);
+        } else {
+          container.innerHTML = '<p class="text-gray-500 text-[11px] text-center py-4">No signals found.</p>';
+        }
+      } catch (e) {
+        container.innerHTML = '<p class="text-rose-400 text-[11px] text-center py-4">Error loading archive.</p>';
+      }
+    }
+    function filterArchive() {
+      const filter = document.getElementById('archiveFilter')?.value || '';
+      const filtered = filter ? _signalArchiveCache.filter(s => (s.outcome || 'Running') === filter) : _signalArchiveCache;
+      renderArchive(filtered);
+    }
+    function renderArchive(signals) {
+      const container = document.getElementById('signalArchiveList');
+      if (!container) return;
+      if (!signals.length) { container.innerHTML = '<p class="text-gray-500 text-[11px] text-center py-4">No signals match this filter.</p>'; return; }
+      const outcomeMap = { 'TP Hit': ['text-emerald-400','✅'], 'SL Hit': ['text-rose-400','❌'], 'Breakeven': ['text-amber-400','➖'], 'Running': ['text-sky-400','🔄'] };
+      container.innerHTML = signals.map(s => {
+        const [cls, icon] = outcomeMap[s.outcome || 'Running'] || ['text-gray-400','—'];
+        const date = s.postedAt ? new Date(s.postedAt).toLocaleDateString() : '';
+        return `<div class="flex items-center justify-between py-2 px-3 rounded-xl bg-black/30 border border-white/5 hover:bg-white/5 transition">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-[9px] text-gray-500 font-bold uppercase tracking-wider w-12 shrink-0">${s.category || 'FX'}</span>
+            <span class="text-white text-xs font-bold truncate">${s.title || s.type || 'Signal'}</span>
+          </div>
+          <div class="flex items-center gap-2 shrink-0 ml-2">
+            <span class="text-gray-600 text-[9px]">${date}</span>
+            <span class="${cls} text-xs font-bold">${icon} ${s.outcome || 'Running'}</span>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // ── Badges ───────────────────────────────────────────────────
+    function renderBadges(badges) {
+      const section = document.getElementById('badgesSection');
+      const list = document.getElementById('badgesList');
+      if (!list) return;
+      if (!badges || badges.length === 0) { if (section) section.classList.add('hidden'); return; }
+      if (section) section.classList.remove('hidden');
+      list.innerHTML = badges.map(b => `
+        <div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-amber-400/10 border border-amber-400/20 text-amber-300" title="${b.description}">
+          <span class="text-base">${b.icon}</span>
+          <span class="text-[10px] font-black">${b.name}</span>
+        </div>`).join('');
+    }
+
+    // ── PWA Install Prompt ────────────────────────────────────────
+    let _pwaPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      _pwaPrompt = e;
+      if (!localStorage.getItem('pwa_dismissed')) showPwaBanner();
+    });
+    function showPwaBanner() {
+      if (document.getElementById('pwaBanner')) return;
+      const banner = document.createElement('div');
+      banner.id = 'pwaBanner';
+      banner.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:9999;width:calc(100% - 32px);max-width:440px;';
+      banner.innerHTML = `
+        <div style="background:linear-gradient(135deg,#1c1020,#111827);border:1px solid rgba(251,191,36,0.3);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 10px 40px rgba(0,0,0,0.6);">
+          <span style="font-size:24px;flex-shrink:0;">📲</span>
+          <div style="flex:1;min-width:0;">
+            <p style="color:#fff;font-weight:800;font-size:12px;margin:0 0 2px;">Add to Home Screen</p>
+            <p style="color:#9ca3af;font-size:10px;margin:0;">Get faster access & better notifications</p>
+          </div>
+          <button onclick="installPwa()" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#0d0800;font-weight:800;font-size:11px;border:none;border-radius:8px;padding:8px 14px;cursor:pointer;flex-shrink:0;">Install</button>
+          <button onclick="dismissPwa()" style="background:none;border:none;color:#6b7280;cursor:pointer;font-size:18px;padding:4px;flex-shrink:0;">×</button>
+        </div>`;
+      document.body.appendChild(banner);
+    }
+    async function installPwa() {
+      if (!_pwaPrompt) return;
+      _pwaPrompt.prompt();
+      const { outcome } = await _pwaPrompt.userChoice;
+      if (outcome === 'accepted') localStorage.setItem('pwa_dismissed', '1');
+      document.getElementById('pwaBanner')?.remove();
+    }
+    function dismissPwa() {
+      localStorage.setItem('pwa_dismissed', '1');
+      document.getElementById('pwaBanner')?.remove();
     }
 
     async function loadLeaderboard() {
@@ -2884,6 +3132,10 @@
             loadTodaysSetup();
             loadTodaysSetupResults();
             loadLeaderboard();
+            loadSignalStats();
+            loadDailyBrief();
+            loadSignalArchive();
+            if (data.user.badges) renderBadges(data.user.badges);
             loadChatMessages();
             initSocket(token); // Init real-time chat
             loadCountdownFromSignals();

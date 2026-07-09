@@ -116,7 +116,7 @@ router.post('/payhero-webhook', async (req, res) => {
     }
 
     const body = req.body;
-    console.log('[Payhero Webhook Received]', body);
+    console.log('[Payhero Webhook Received]', JSON.stringify(body));
 
     const ref = body.external_reference || (body.response && body.response.ExternalReference);
     const status = body.status || (body.response && body.response.Status) || 'Failed';
@@ -130,10 +130,77 @@ router.post('/payhero-webhook', async (req, res) => {
         payment.rawWebhook = body;
         await db.savePayment(ref, payment);
 
+        // ── Auto-Upgrade User Immediately on Success ─────────────────
+        if (isSuccess && payment.userId && !payment.processedForUser) {
+          try {
+            const user = await db.getUserById(payment.userId);
+            if (user) {
+              const days = getDaysForPlan(payment.plan || '1month');
+              const tier = getTierForPlan(payment.plan || '1month');
+              const currentExpiry = user.subscriptionExpiry && user.subscriptionExpiry > Date.now() ? user.subscriptionExpiry : Date.now();
+              user.subscriptionExpiry = currentExpiry + days * 24 * 60 * 60 * 1000;
+
+              // Preserve Platinum if already set
+              if (tier === 'Platinum' || user.subscriptionTier !== 'Platinum') {
+                user.subscriptionTier = tier;
+              }
+              await db.saveUser(user);
+
+              payment.processedForUser = true;
+              await db.savePayment(ref, payment);
+
+              // Referral bonus: +5 days for referrer
+              if (user.referredBy) {
+                try {
+                  const referrer = await db.getUserById(user.referredBy);
+                  if (referrer && referrer.subscriptionExpiry) {
+                    referrer.subscriptionExpiry += 5 * 24 * 60 * 60 * 1000;
+                    await db.saveUser(referrer);
+                    logger.info(`[Referral] +5 days awarded to referrer ${referrer.email}`);
+                  }
+                } catch (refErr) {
+                  logger.warn(`[Referral] Failed to award referral bonus: ${refErr.message}`);
+                }
+              }
+
+              // Send receipt email
+              if (user.email) {
+                try {
+                  const plan = payment.plan || '1month';
+                  const expiryDate = new Date(user.subscriptionExpiry).toDateString();
+                  const amount = payment.amount || PLANS[plan]?.kesPrice || 5000;
+                  const receiptHtml = buildReceiptHtml({
+                    ref,
+                    userName: user.name,
+                    userEmail: user.email,
+                    plan,
+                    amount,
+                    currency: 'KES',
+                    method: 'M-Pesa (Payhero)',
+                    days,
+                    expiryDate
+                  });
+                  await db.saveReceipt(ref, { html: receiptHtml, userId: payment.userId, plan, amount, createdAt: new Date().toISOString() });
+                  await sendEmail(user.email, `🧾 Your VIP Receipt — Pips Attendant`, receiptHtml);
+                  logger.info(`[Webhook] Receipt sent to ${user.email} for ref ${ref}`);
+                } catch (emailErr) {
+                  logger.warn(`[Webhook] Receipt email failed: ${emailErr.message}`);
+                }
+              }
+
+              logger.info(`[Webhook] ✅ Auto-upgraded user ${user.email} to ${user.subscriptionTier} via ref ${ref}`);
+            }
+          } catch (upgradeErr) {
+            logger.error(`[Webhook] Auto-upgrade failed for ref ${ref}: ${upgradeErr.message}`);
+            notifyAdminPaymentError(`Webhook auto-upgrade — ref ${ref}`, upgradeErr.message);
+          }
+        }
+
+        // Notify connected browser sessions via Socket.io
         if (isSuccess && payment.userId) {
           const io = req.app.get('io');
           if (io) {
-            io.emit('paymentSuccess', { userId: payment.userId, message: 'VIP Payment Successful!' });
+            io.emit('paymentSuccess', { userId: String(payment.userId), message: 'VIP Payment Successful! Your account has been upgraded.' });
           }
         }
       }
@@ -145,6 +212,7 @@ router.post('/payhero-webhook', async (req, res) => {
     res.status(500).send('Error');
   }
 });
+
 
 router.get('/check-payment/:ref', validateUserSession, async (req, res) => {
   const { ref } = req.params;

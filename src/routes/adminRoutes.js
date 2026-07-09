@@ -1005,5 +1005,53 @@ router.get('/analytics', validateAdminSession, async (req, res) => {
     res.status(500).json({ ok: false, error: 'Failed to load analytics.' });
   }
 });
+// ── Daily Market Brief ─────────────────────────────────────────
+router.post('/daily-brief', validateAdminSession, async (req, res) => {
+  try {
+    const { bias, keyLevels, note } = req.body;
+    if (!bias) return res.status(400).json({ ok: false, error: 'Bias is required.' });
+    const conf = await db.getAppConfig();
+    conf.dailyBrief = {
+      bias: bias.trim(),
+      keyLevels: keyLevels ? keyLevels.trim() : '',
+      note: note ? note.trim() : '',
+      postedAt: new Date().toISOString()
+    };
+    await db.saveAppConfig(conf);
+    res.json({ ok: true, brief: conf.dailyBrief });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: 'Failed to save daily brief.' });
+  }
+});
+
+// ── Bulk Email Blast ────────────────────────────────────────────
+router.post('/email-blast', validateAdminSession, async (req, res) => {
+  try {
+    const { subject, htmlBody, tierFilter } = req.body;
+    if (!subject || !htmlBody) return res.status(400).json({ ok: false, error: 'Subject and body are required.' });
+
+    let users = await db.getUsers();
+    if (tierFilter && tierFilter !== 'all') {
+      users = users.filter(u => {
+        const tier = String(u.subscriptionTier || '').toLowerCase();
+        if (tierFilter === 'platinum') return tier.includes('platinum');
+        if (tierFilter === 'gold') return !tier.includes('platinum');
+        return true;
+      });
+    }
+    const targets = users.filter(u => u.email);
+    let sent = 0, failed = 0;
+    for (const user of targets) {
+      try {
+        const personalised = htmlBody.replace(/{{name}}/g, user.name || 'Trader');
+        await sendEmail(user.email, subject, personalised);
+        sent++;
+      } catch (e) { failed++; }
+    }
+    res.json({ ok: true, sent, failed, total: targets.length });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: 'Email blast failed: ' + err.message });
+  }
+});
 
 module.exports = router;

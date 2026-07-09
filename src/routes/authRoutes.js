@@ -126,48 +126,26 @@ router.post('/login', authLimiter, async (req, res) => {
   }
 
   const sessionToken = generateUserToken(user);
-  res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, avatar: user.avatar, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier, telegramId: user.telegramId } });
+  res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, avatar: user.avatar, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier, telegramId: user.telegramId, badges: user.badges || [] } });
 });
 
-router.get('/me', validateUserSession, async (req, res) => {
-  try {
-    const { getUserById, getUserByEmail } = require('../services/db');
-    const id = req.user._id || req.user.id;
-    let freshUser = null;
-    if (id) freshUser = await getUserById(id);
-    if (!freshUser) freshUser = await getUserByEmail(req.user.email);
-    
-    if (freshUser) {
-      res.json({
-        ok: true,
-        user: {
-          id: freshUser._id || freshUser.id,
-          email: freshUser.email,
-          name: freshUser.name,
-          avatar: freshUser.avatar,
-          subscriptionExpiry: freshUser.subscriptionExpiry,
-          subscriptionTier: freshUser.subscriptionTier,
-          telegramId: freshUser.telegramId
-        }
-      });
-    } else {
-      // Fallback to token payload if not found
-      res.json({
-        ok: true,
-        user: {
-          id: req.user._id || req.user.id,
-          email: req.user.email,
-          name: req.user.name,
-          avatar: req.user.avatar,
-          subscriptionExpiry: req.user.subscriptionExpiry,
-          subscriptionTier: req.user.subscriptionTier,
-          telegramId: req.user.telegramId
-        }
-      });
+router.get('/me', validateUserSession, (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.json({
+    ok: true,
+    user: {
+      id: req.user._id || req.user.id,
+      email: req.user.email,
+      name: req.user.name,
+      avatar: req.user.avatar,
+      subscriptionExpiry: req.user.subscriptionExpiry,
+      subscriptionTier: req.user.subscriptionTier,
+      telegramId: req.user.telegramId,
+      badges: req.user.badges || []
     }
-  } catch (err) {
-    res.status(500).json({ ok: false, error: 'Failed to fetch user data.' });
-  }
+  });
 });
 
 const resetTokens = new Map();
@@ -438,6 +416,16 @@ router.get('/announcements', validateUserSession, async (req, res) => {
   } catch (err) {
     logger.error('Fetch announcements error:', err);
     res.status(500).json({ ok: false, error: 'Failed to fetch announcements.' });
+  }
+});
+// ── Daily Market Brief (VIP fetch) ─────────────────────────────
+router.get('/daily-brief', validateUserSession, async (req, res) => {
+  try {
+    const config = await db.getAppConfig();
+    const brief = config.dailyBrief || null;
+    res.json({ ok: true, brief });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: 'Failed to fetch daily brief.' });
   }
 });
 

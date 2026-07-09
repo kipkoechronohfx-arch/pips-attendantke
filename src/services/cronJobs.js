@@ -1,211 +1,121 @@
-const cron = require('node-cron');
-const db = require('./db');
-const { kickUserFromTelegram, sendTelegramMessage } = require('./telegramBot');
-const { sendEmail } = require('./emailService');
+const cron = require("node-cron");
+const db = require("./db");
+const { sendEmail } = require("./emailService");
+const logger = require("../utils/logger");
 
-
-
-function startCronJobs() {
-  // ── Daily Auto-Kick Expired VIP Users ────────────────────────
-  // Runs every day at 01:00 EAT
-  cron.schedule('0 1 * * *', async () => {
-    console.log('[Cron] Checking for expired VIP users to kick...');
-    try {
-      const users = await db.getUsers();
-      const now = Date.now();
-      let kickCount = 0;
-
-      for (const user of users) {
-        if (!user.subscriptionExpiry) continue;
-
-        const timeUntilExpiry = user.subscriptionExpiry - now;
-        const daysUntilExpiry = Math.ceil(timeUntilExpiry / (1000 * 60 * 60 * 24));
-
-        // 1. Send "Expiring Soon" Emails
-        if (daysUntilExpiry === 3 && user.email) {
-          const html = '<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">' +
-            '<h2 style="color: #fbbf24;">Your VIP Access is Expiring Soon! \u23f0</h2>' +
-            '<p>Hi ' + (user.name || 'Trader') + ',</p>' +
-            "<p>Just a quick reminder that your VIP subscription will expire in exactly 3 days.</p>" +
-            "<p>Don't miss out on upcoming signals! Log in and renew your plan to keep the profits rolling.</p>" +
-            '<p>- The Pips Attendant Team</p>' +
-            '</div>';
-          sendEmail(user.email, 'VIP Expiring Soon \u23f0', html).catch(() => {});
-        }
-
-        // 1-day last chance reminder
-        if (daysUntilExpiry === 1 && user.email) {
-          const html = '<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background:#111827; padding:24px; border-radius:12px; color:#f9fafb;">' +
-            '<h2 style="color: #ef4444;">\u26a0\ufe0f Last Chance — VIP Expires Tomorrow!</h2>' +
-            '<p style="color:#d1d5db;">Hi ' + (user.name || 'Trader') + ',</p>' +
-            '<p style="color:#d1d5db;">Your VIP subscription expires <strong>tomorrow</strong>. Renew now to avoid losing access to premium signals and the VIP chat room.</p>' +
-            '<div style="text-align:center;margin:24px 0;"><a href="' + (process.env.APP_URL || 'https://pipsattendant.top') + '/premium.html" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#0d0800;font-weight:700;padding:14px 28px;border-radius:12px;text-decoration:none;display:inline-block;">Renew VIP Access</a></div>' +
-            '<p style="color:#6b7280;font-size:12px;">- The Pips Attendant Team</p>' +
-            '</div>';
-          sendEmail(user.email, '\u26a0\ufe0f Last Chance: VIP Expires Tomorrow!', html).catch(() => {});
-        }
-
-        // 2. Auto-Kick Expired Users
-        if (user.telegramId && user.subscriptionExpiry < now) {
-          await kickUserFromTelegram(user.telegramId);
-          console.log('[Auto-Kick] Kicked ' + user.email + ' (TG: ' + user.telegramId + ') from VIP group.');
-          kickCount++;
-        }
-
-        // 3. Win-Back Campaign (Exactly 7 days after expiry)
-        if (daysUntilExpiry === -7 && user.email) {
-          const html = '<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">' +
-            '<h2 style="color: #fbbf24;">We Miss You! Here\'s 10% Off \ud83c\udf81</h2>' +
-            '<p>Hi ' + (user.name || 'Trader') + ',</p>' +
-            "<p>It's been a week since your VIP access expired. The markets have been crazy, and we want you back!</p>" +
-            '<p>Use the promo code <strong>COMEBACK10</strong> at checkout to get 10% off your next subscription plan.</p>' +
-            '<p>- The Pips Attendant Team</p>' +
-            '</div>';
-          sendEmail(user.email, "We Miss You! Here's 10% Off \ud83c\udf81", html).catch(() => {});
-        }
-      }
-      console.log('[Cron] Auto-kick and Drip Campaigns complete. Kicked ' + kickCount + ' user(s).');
-    } catch (err) {
-      console.error('[Cron] Auto-kick failed:', err.message);
-    }
-  }, { timezone: 'Africa/Nairobi' });
-
-  // ── Daily Database Backup ──────────────────────────────────────
-  // Runs every day at 02:00 EAT
-  cron.schedule('0 2 * * *', async () => {
-    try {
-      const { runBackup } = require('./backupService');
-      await runBackup();
-    } catch (err) {
-      console.error('[Cron] Backup failed:', err.message);
-    }
-  }, { timezone: 'Africa/Nairobi' });
-
-  // Weekly report (Sunday at 23:59 EAT)
-  cron.schedule('59 23 * * 0', async () => {
-    if (!process.env.TELEGRAM_BOT_TOKEN || !process.env.TELEGRAM_CHAT_ID) return;
-    console.log('[Cron] Running weekly performance report...');
-    try {
-      const logs = await db.getPerformanceLogs();
-      const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-      const weeklyLogs = logs.filter(l => {
-        const t = typeof l.date === 'string' ? new Date(l.date).getTime() : (l.timestamp || 0);
-        return t >= oneWeekAgo;
-      });
-      let pipsGained = 0, pipsLost = 0, wins = 0, losses = 0;
-      weeklyLogs.forEach(l => {
-        if (l.result === 'Win') { wins++; pipsGained += (l.pips || 0); }
-        else if (l.result === 'Loss') { losses++; pipsLost += (l.pips || 0); }
-      });
-      const totalPips = pipsGained + pipsLost;
-      const winRate = totalPips > 0 ? Math.round((pipsGained / totalPips) * 100) : 0;
-      const netPips = pipsGained - pipsLost;
-      const netStr = netPips > 0 ? ('+' + netPips) : String(netPips);
-      const msg = '\ud83c\udfc6 *Weekly Performance Report* \ud83c\udfc6\n\nTrades this week: ' + (wins + losses) +
-        '\nWin Rate (Pips): ' + winRate + '%\nNet Pips Gained: ' + netStr + ' pips\n\nLet\'s crush the coming week! \ud83d\ude80';
-      await sendTelegramMessage(process.env.TELEGRAM_CHAT_ID, msg);
-
-      // Also send Email to all active VIP users
-      const users = await db.getUsers();
-      const now = Date.now();
-      const activeVIPs = users.filter(u => u.subscriptionExpiry && u.subscriptionExpiry > now && u.email);
-      
-      // Find best trade
-      let bestTradeStr = 'N/A';
-      if (weeklyLogs.length > 0) {
-        const sorted = [...weeklyLogs].sort((a, b) => (b.pips || 0) - (a.pips || 0));
-        if (sorted[0] && sorted[0].pips > 0) {
-          bestTradeStr = `${sorted[0].asset || 'Trade'} (+${sorted[0].pips} pips)`;
-        }
-      }
-      
-      const emailHtml = `
-      <div style="font-family: 'Inter', sans-serif; background-color: #0d0800; color: #fff; padding: 30px; max-width: 600px; margin: 0 auto; border-radius: 16px; border: 1px solid rgba(251,191,36,0.2);">
-        <h2 style="color: #fbbf24; text-align: center; margin-bottom: 30px;">🏆 Weekly Performance Report 🏆</h2>
-        <p style="color: #d1d5db; text-align: center; margin-bottom: 20px;">Here is how we did this week in the VIP group.</p>
-        
-        <div style="background-color: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin-bottom: 30px;">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
-            <span style="color: #9ca3af; font-weight: bold;">Total Trades</span>
-            <span style="color: #fff; font-weight: bold; font-size: 1.2rem;">${wins + losses}</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
-            <span style="color: #9ca3af; font-weight: bold;">Win Rate</span>
-            <span style="color: #10b981; font-weight: bold; font-size: 1.2rem;">${winRate}%</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
-            <span style="color: #9ca3af; font-weight: bold;">Net Pips</span>
-            <span style="color: ${netPips > 0 ? '#10b981' : (netPips < 0 ? '#ef4444' : '#fff')}; font-weight: bold; font-size: 1.2rem;">${netStr} pips</span>
-          </div>
-          <div style="display: flex; justify-content: space-between;">
-            <span style="color: #9ca3af; font-weight: bold;">Best Trade</span>
-            <span style="color: #fbbf24; font-weight: bold; font-size: 1.2rem;">${bestTradeStr}</span>
-          </div>
-        </div>
-        
-        <p style="color: #d1d5db; text-align: center; margin-bottom: 30px;">Let's keep crushing the markets! Prepare yourself for another profitable week ahead. 🚀</p>
-        
-        <div style="text-align: center;">
-          <a href="https://pipsattendant.com/premium.html" style="background: linear-gradient(135deg, #f59e0b, #fbbf24); color: #0d0800; font-weight: bold; padding: 14px 28px; border-radius: 12px; text-decoration: none; display: inline-block;">Access VIP Area</a>
-        </div>
+function buildRenewalReminderHtml({ userName, expiryDate, renewalUrl, daysLeft }) {
+  return `
+  <!DOCTYPE html>
+  <html>
+  <body style="margin:0;padding:0;background:#0d0800;font-family:Arial,sans-serif;">
+  <div style="max-width:560px;margin:0 auto;background:#111827;border-radius:16px;border:1px solid rgba(251,191,36,0.2);overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#f59e0b,#fbbf24);padding:28px 32px;text-align:center;">
+      <h1 style="margin:0;color:#0d0800;font-size:22px;font-weight:800;">&#x23F0; VIP Access Expiring Soon</h1>
+      <p style="margin:6px 0 0;color:#78350f;font-size:13px;">Pips Attendant VIP</p>
+    </div>
+    <div style="padding:32px;">
+      <p style="color:#9ca3af;font-size:14px;margin:0 0 16px;">Hello <strong style="color:#f9fafb;">${userName || "Trader"}</strong>,</p>
+      <p style="color:#9ca3af;font-size:14px;margin:0 0 24px;">
+        Your VIP access expires in <strong style="color:#fbbf24;">${daysLeft} day${daysLeft !== 1 ? "s" : ""}</strong> on <strong style="color:#f9fafb;">${expiryDate}</strong>.
+        Renew now to keep your full access to signals, tools, and the Platinum Lounge.
+      </p>
+      <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:12px;padding:20px;margin-bottom:28px;">
+        <p style="color:#fbbf24;font-size:13px;font-weight:700;margin:0 0 8px;">What you will lose access to:</p>
+        <ul style="color:#9ca3af;font-size:13px;margin:0;padding-left:18px;line-height:1.8;">
+          <li>Live Trading Signals (XAUUSD, Forex, Crypto)</li>
+          <li>Daily Market Brief and Analysis</li>
+          <li>Mentorship Bookings (Platinum)</li>
+          <li>VIP PDF Resources and Trade Journal</li>
+        </ul>
       </div>
-      `;
-
-      let emailsSent = 0;
-      for (const u of activeVIPs) {
-        await sendEmail(u.email, '🏆 Weekly Performance Report 🏆', emailHtml).catch(() => {});
-        emailsSent++;
-      }
-      console.log(`[Cron] Weekly report emailed to ${emailsSent} active VIP users.`);
-    } catch (err) {
-      console.error('[Cron] Weekly report failed:', err.message);
-    }
-  }, { timezone: 'Africa/Nairobi' });
-  // ── Keep-Alive Ping (Render Free Tier) ───────────────────────
-  const SELF_URL = process.env.RENDER_EXTERNAL_URL || 'https://pips-attendantke.onrender.com';
-  cron.schedule('*/14 * * * *', async () => {
-    try {
-      const fetch = require('node-fetch');
-      const res = await fetch(`${SELF_URL}/api/public-config`);
-      console.log('[Keep-Alive] Ping OK:', res.status);
-    } catch (err) {
-      console.warn('[Keep-Alive] Ping failed:', err.message);
-    }
-  });
+      <div style="text-align:center;">
+        <a href="${renewalUrl}" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#0d0800;font-weight:800;padding:14px 32px;border-radius:12px;text-decoration:none;display:inline-block;font-size:15px;">Renew My VIP Access</a>
+      </div>
+    </div>
+    <div style="padding:16px 32px;border-top:1px solid rgba(255,255,255,0.06);text-align:center;">
+      <p style="color:#4b5563;font-size:11px;margin:0;">Pips Attendant | support@pipsattendant.com</p>
+    </div>
+  </div>
+  </body></html>`;
 }
 
-// ── Signal Email Digest ── called externally when admin posts a signal ────
-async function notifyVIPsNewSignal(signalText) {
+async function runExpiryReminders() {
   try {
     const users = await db.getUsers();
     const now = Date.now();
-    const activeVIPs = users.filter(u => u.subscriptionExpiry && u.subscriptionExpiry > now && u.email);
-    if (!activeVIPs.length) return;
-
-    const preview = (signalText || '').slice(0, 300).replace(/\n/g, '<br/>');
-    const html = `
-    <div style="font-family:'Inter',Arial,sans-serif;max-width:600px;margin:0 auto;background:#111827;border-radius:16px;border:1px solid rgba(251,191,36,0.2);overflow:hidden;">
-      <div style="background:linear-gradient(135deg,#f59e0b,#fbbf24);padding:20px 28px;">
-        <h2 style="margin:0;color:#0d0800;font-size:18px;font-weight:800;">📡 New VIP Signal Alert</h2>
-      </div>
-      <div style="padding:24px;">
-        <p style="color:#9ca3af;font-size:13px;margin:0 0 16px;">A new signal has just been posted in the VIP group:</p>
-        <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:16px;color:#f9fafb;font-size:14px;line-height:1.6;">${preview}</div>
-        <div style="text-align:center;margin-top:24px;">
-          <a href="${process.env.APP_URL || 'https://pipsattendant.top'}/premium.html" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#0d0800;font-weight:700;padding:13px 26px;border-radius:12px;text-decoration:none;display:inline-block;">View Signal →</a>
-        </div>
-      </div>
-    </div>`;
-
+    const appUrl = process.env.APP_URL || "https://pipsattendant.top";
     let sent = 0;
-    for (const u of activeVIPs) {
-      await sendEmail(u.email, '📡 New VIP Signal — Pips Attendant', html).catch(() => {});
-      sent++;
+    for (const user of users) {
+      if (!user.email || !user.subscriptionExpiry) continue;
+      const expiry = user.subscriptionExpiry;
+      const daysLeft = Math.ceil((expiry - now) / (24 * 60 * 60 * 1000));
+      if (daysLeft === 3 || daysLeft === 1) {
+        const reminderKey = `reminder_${daysLeft}d_${expiry}`;
+        if (user[reminderKey]) continue;
+        try {
+          const html = buildRenewalReminderHtml({
+            userName: user.name,
+            expiryDate: new Date(expiry).toDateString(),
+            renewalUrl: `${appUrl}/premium.html`,
+            daysLeft
+          });
+          await sendEmail(user.email, `Your Pips Attendant VIP expires in ${daysLeft} day${daysLeft !== 1 ? "s" : ""}`, html);
+          user[reminderKey] = true;
+          await db.saveUser(user);
+          sent++;
+          logger.info(`[Cron] Expiry reminder sent to ${user.email} (${daysLeft} days left)`);
+        } catch (err) {
+          logger.warn(`[Cron] Failed to send reminder to ${user.email}: ${err.message}`);
+        }
+      }
     }
-    console.log(`[Signal Notify] Emailed ${sent} VIP users.`);
+    if (sent > 0) logger.info(`[Cron] Expiry reminders: sent ${sent} emails.`);
   } catch (err) {
-    console.error('[Signal Notify Error]', err.message);
+    logger.error(`[Cron] Expiry reminder job failed: ${err.message}`);
   }
 }
 
-module.exports = { startCronJobs, notifyVIPsNewSignal };
+const BADGE_DEFINITIONS = [
+  { id: "first_trade", name: "First Trade", icon: "??", description: "Logged your first trade", check: (e) => e.length >= 1 },
+  { id: "pips_100", name: "100 Pips Club", icon: "??", description: "Accumulated 100+ net pips", check: (e) => e.reduce((s, x) => s + (Number(x.pl) || 0), 0) >= 100 },
+  { id: "pips_500", name: "500 Pips Elite", icon: "??", description: "Accumulated 500+ net pips", check: (e) => e.reduce((s, x) => s + (Number(x.pl) || 0), 0) >= 500 },
+  {
+    id: "hot_streak", name: "Hot Streak", icon: "??", description: "5 consecutive winning trades",
+    check: (entries) => {
+      let streak = 0;
+      for (const e of [...entries].reverse()) {
+        if ((Number(e.pl) || 0) > 0) { streak++; if (streak >= 5) return true; } else streak = 0;
+      }
+      return false;
+    }
+  },
+  { id: "trades_25", name: "Active Trader", icon: "??", description: "Logged 25+ trades", check: (e) => e.length >= 25 },
+  { id: "profitable", name: "Profitable", icon: "?", description: "Positive net P&L overall", check: (e) => e.reduce((s, x) => s + (Number(x.pl) || 0), 0) > 0 }
+];
+
+async function computeAndSaveBadges(userId) {
+  try {
+    const user = await db.getUserById(userId);
+    if (!user) return [];
+    const entries = await db.getJournalEntries(userId);
+    const earnedBadges = BADGE_DEFINITIONS
+      .filter(b => b.check(entries))
+      .map(b => ({ id: b.id, name: b.name, icon: b.icon, description: b.description }));
+    user.badges = earnedBadges;
+    await db.saveUser(user);
+    return earnedBadges;
+  } catch (err) {
+    logger.warn(`[Badges] Failed to compute for ${userId}: ${err.message}`);
+    return [];
+  }
+}
+
+function startCronJobs() {
+  cron.schedule("0 5 * * *", () => {
+    logger.info("[Cron] Running daily VIP expiry reminder check...");
+    runExpiryReminders();
+  });
+  logger.info("[Cron] Jobs scheduled: VIP expiry reminders daily at 08:00 EAT");
+}
+
+module.exports = { startCronJobs, computeAndSaveBadges, BADGE_DEFINITIONS };
