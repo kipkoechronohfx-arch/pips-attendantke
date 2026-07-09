@@ -237,8 +237,6 @@ const server = http.createServer(app);
 const io = initializeSocket(server);
 // Expose io to routes so they can emit socket events
 app.set('io', io);
-// Expose notifyVIPsNewSignal to routes
-app.set('notifyVIPsNewSignal', notifyVIPsNewSignal);
 
 async function startServer() {
   validateEnv();
