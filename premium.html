@@ -490,7 +490,10 @@
         <div class="flex items-center gap-4 w-full sm:w-auto">
           <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-gold-hover to-yellow-300 flex items-center justify-center text-2xl flex-shrink-0">🏆</div>
           <div class="flex-1">
-            <h2 class="text-white font-bold" id="vipWelcomeText">Welcome, VIP Member!</h2>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h2 class="text-white font-bold" id="vipWelcomeText">Welcome, VIP Member!</h2>
+              <span id="tierBadge" class="text-[10px] font-black px-2.5 py-0.5 rounded-full border hidden"></span>
+            </div>
             <p class="text-gray-400 text-xs mt-0.5" id="vipExpiryText">You now have full access to all exclusive resources below.</p>
           </div>
         </div>
@@ -585,6 +588,23 @@
           </div>
           
           <div class="space-y-6">
+            <!-- Subscription Info -->
+            <div class="rounded-xl border border-white/10 bg-white/5 p-4">
+              <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Subscription</h3>
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-white text-xs font-bold" id="accountTierLabel">—</p>
+                  <p class="text-gray-500 text-[10px] mt-0.5">Current Plan</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-white text-xs font-bold" id="accountExpiryLabel">—</p>
+                  <p class="text-gray-500 text-[10px] mt-0.5">Expires</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="border-t border-white/5"></div>
+
             <!-- Profile Update -->
             <div>
               <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Profile</h3>
@@ -986,12 +1006,16 @@
               </div>
             </div>
             <!-- Room Tabs -->
-            <div class="flex items-center gap-2 mt-2 border-b border-white/10 pb-2">
+            <div class="flex items-center gap-2 mt-2 border-b border-white/10 pb-2 flex-wrap">
               <button onclick="switchChatRoom('general')" id="tab-room-general" class="px-4 py-1.5 rounded-full text-xs font-bold transition border border-white/10 bg-white/5 text-gray-400 hover:text-white">General</button>
               <button onclick="switchChatRoom('vip')" id="tab-room-vip" class="px-4 py-1.5 rounded-full text-xs font-bold transition border border-gold/40 bg-gold/10 text-gold">VIP Discussion</button>
               <button onclick="switchChatRoom('signals')" id="tab-room-signals" class="px-4 py-1.5 rounded-full text-xs font-bold transition border border-sky-400/20 bg-sky-400/5 text-gray-400 hover:text-sky-400 relative">
                 Signals Only
                 <span id="signalsUnreadBadge" class="hidden absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full animate-pulse"></span>
+              </button>
+              <!-- Platinum-only room tab: hidden for Gold users, shown by JS -->
+              <button onclick="switchChatRoom('platinum')" id="tab-room-platinum" class="hidden px-4 py-1.5 rounded-full text-xs font-bold transition border border-violet-500/40 bg-violet-500/10 text-violet-300 hover:bg-violet-500/20 relative">
+                💎 Platinum
               </button>
             </div>
           </div>
@@ -2253,12 +2277,13 @@
             initSocket(token); // Init real-time chat
             loadCountdownFromSignals();
 
-            // ── Show/Hide Platinum Mentorship Card ──────────────
+            // ── Show/Hide Platinum Mentorship Card + Tier UI ──────────────
             const tier = String(data.user.subscriptionTier || 'Gold').toLowerCase();
+            const isPlatinum = tier.includes('platinum');
             const mentorCard = document.getElementById('mentorshipCard');
             const mentorLock = document.getElementById('mentorshipLockCard');
             if (mentorCard && mentorLock) {
-              if (tier.includes('platinum')) {
+              if (isPlatinum) {
                 mentorCard.classList.remove('hidden');
                 mentorLock.classList.add('hidden');
                 document.querySelectorAll('.platinum-resource-badge').forEach(el => {
@@ -2273,6 +2298,39 @@
                   el.className = 'platinum-resource-badge flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-violet-500/20 border border-violet-500/30 text-violet-300 text-[10px] font-bold cursor-not-allowed';
                 });
               }
+            }
+
+            // ── Tier badge on welcome banner ──────────────────────────
+            const tierBadge = document.getElementById('tierBadge');
+            if (tierBadge) {
+              if (isPlatinum) {
+                tierBadge.textContent = '💎 Platinum';
+                tierBadge.className = 'text-[10px] font-black px-2.5 py-0.5 rounded-full border bg-violet-500/20 border-violet-400/40 text-violet-300';
+              } else {
+                tierBadge.textContent = '⭐ Gold';
+                tierBadge.className = 'text-[10px] font-black px-2.5 py-0.5 rounded-full border bg-gold/10 border-gold/30 text-gold';
+              }
+              tierBadge.classList.remove('hidden');
+            }
+
+            // ── Expiry date on welcome banner + account modal ─────────
+            const expiryEl = document.getElementById('vipExpiryText');
+            const accountExpiryEl = document.getElementById('accountExpiryLabel');
+            const accountTierEl = document.getElementById('accountTierLabel');
+            if (data.user.subscriptionExpiry) {
+              const expiryDate = new Date(data.user.subscriptionExpiry);
+              const daysLeft = Math.ceil((data.user.subscriptionExpiry - Date.now()) / (1000 * 60 * 60 * 24));
+              const expiryStr = expiryDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+              if (expiryEl) expiryEl.textContent = `Expires ${expiryStr} (${daysLeft} day${daysLeft !== 1 ? 's' : ''} left)`;
+              if (accountExpiryEl) accountExpiryEl.textContent = expiryStr;
+            }
+            if (accountTierEl) accountTierEl.textContent = isPlatinum ? '💎 VIP Platinum' : '⭐ VIP Gold';
+
+            // ── Platinum-only chat tab ────────────────────────────────
+            const platTab = document.getElementById('tab-room-platinum');
+            if (platTab) {
+              if (isPlatinum) platTab.classList.remove('hidden');
+              else platTab.classList.add('hidden');
             }
 
             feather.replace();
@@ -2293,17 +2351,7 @@
               }
             }
 
-            updateDownloadLinks();
-            loadTodaysSetup();
-            loadTodaysSetupResults();
-            loadChatMessages();
-            initSocket(token); // Init real-time chat
-            loadCountdownFromSignals();
             feather.replace();
-          } else {
-            // VIP expired or no VIP
-            document.getElementById('contentPanel').classList.add('hidden');
-            document.getElementById('paymentPanel').style.display = 'block';
           }
         } else {
           console.error('[checkUserAccess] Failed:', data);
@@ -2481,15 +2529,17 @@
       }
       
       // Update Tab Styles
-      ['general', 'vip', 'signals'].forEach(r => {
+      ['general', 'vip', 'signals', 'platinum'].forEach(r => {
         const btn = document.getElementById(`tab-room-${r}`);
         if (!btn) return;
         if (r === room) {
-          if(r==='vip') btn.className = 'px-4 py-1.5 rounded-full text-xs font-bold transition border border-gold/40 bg-gold/10 text-gold relative';
-          if(r==='general') btn.className = 'px-4 py-1.5 rounded-full text-xs font-bold transition border border-emerald-400/40 bg-emerald-400/10 text-emerald-400 relative';
-          if(r==='signals') btn.className = 'px-4 py-1.5 rounded-full text-xs font-bold transition border border-sky-400/40 bg-sky-400/10 text-sky-400 relative';
+          if(r==='vip')      btn.className = 'px-4 py-1.5 rounded-full text-xs font-bold transition border border-gold/40 bg-gold/10 text-gold relative';
+          if(r==='general')  btn.className = 'px-4 py-1.5 rounded-full text-xs font-bold transition border border-emerald-400/40 bg-emerald-400/10 text-emerald-400 relative';
+          if(r==='signals')  btn.className = 'px-4 py-1.5 rounded-full text-xs font-bold transition border border-sky-400/40 bg-sky-400/10 text-sky-400 relative';
+          if(r==='platinum') btn.className = 'px-4 py-1.5 rounded-full text-xs font-bold transition border border-violet-500/60 bg-violet-500/20 text-violet-300 relative';
         } else {
-          btn.className = 'px-4 py-1.5 rounded-full text-xs font-bold transition border border-white/10 bg-white/5 text-gray-400 hover:text-white relative';
+          if(r==='platinum') btn.className = 'px-4 py-1.5 rounded-full text-xs font-bold transition border border-violet-500/40 bg-violet-500/10 text-violet-300 hover:bg-violet-500/20 relative';
+          else btn.className = 'px-4 py-1.5 rounded-full text-xs font-bold transition border border-white/10 bg-white/5 text-gray-400 hover:text-white relative';
         }
       });
 
@@ -2499,7 +2549,7 @@
         if(badge) badge.classList.add('hidden');
       }
 
-      // Hide input if Signals room
+      // Hide input if Signals room; read-only notice
       if (room === 'signals') {
         document.getElementById('chatForm').classList.add('hidden');
         document.getElementById('readOnlyNotice').classList.remove('hidden');

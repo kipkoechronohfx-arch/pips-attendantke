@@ -1469,12 +1469,13 @@
                 <th class="py-2.5 px-3">Name</th>
                 <th class="py-2.5 px-3">Email</th>
                 <th class="py-2.5 px-3">Joined</th>
+                <th class="py-2.5 px-3 text-center">Tier</th>
                 <th class="py-2.5 px-3 text-right">VIP Status</th>
               </tr>
             </thead>
             <tbody id="userListBody">
               <tr>
-                <td colspan="4" class="py-8 text-center text-gray-500">Enter your Admin Key in credentials setup to view users.</td>
+                <td colspan="5" class="py-8 text-center text-gray-500">Enter your Admin Key in credentials setup to view users.</td>
               </tr>
             </tbody>
           </table>
@@ -3319,7 +3320,7 @@
 
         if (!data.ok || data.users.length === 0) {
           allUsersCache = [];
-          tbody.innerHTML = `<tr><td colspan="4" class="py-10 text-center text-gray-500">${data.ok ? 'No registered users yet.' : 'Error: ' + data.error}</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-gray-500">${data.ok ? 'No registered users yet.' : 'Error: ' + data.error}</td></tr>`;
           return;
         }
 
@@ -3327,7 +3328,7 @@
         filterUsers();
         feather.replace();
       } catch (err) {
-        tbody.innerHTML = '<tr><td colspan="4" class="py-6 text-center text-rose-400">Connection error loading users.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="py-6 text-center text-rose-400">Connection error loading users.</td></tr>';
       }
     }
 
@@ -3426,7 +3427,7 @@
         : allUsersCache;
 
       if (!filtered.length) {
-        tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-gray-500">No users match "${query}".</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-gray-500">No users match "${query}".</td></tr>`;
         return;
       }
 
@@ -3436,13 +3437,44 @@
         const statusSpan = isVip
           ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/10 border border-amber-400/20 text-amber-400">VIP</span>`
           : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-500/10 border border-gray-500/20 text-gray-400">Free</span>`;
+        
+        const tier = u.subscriptionTier || 'Gold';
+        const isPlatinum = tier.toLowerCase().includes('platinum');
+        const tierUI = isVip ? `
+          <div class="flex items-center justify-center gap-1">
+            <button onclick="setUserTier('${u.id}', 'Gold')" class="px-2 py-1 rounded text-[9px] font-bold transition ${!isPlatinum ? 'bg-gold/20 text-gold border border-gold/40' : 'bg-white/5 text-gray-500 hover:text-white'}">Gold</button>
+            <button onclick="setUserTier('${u.id}', 'Platinum')" class="px-2 py-1 rounded text-[9px] font-bold transition ${isPlatinum ? 'bg-violet-500/20 text-violet-300 border border-violet-500/40' : 'bg-white/5 text-gray-500 hover:text-white'}">Platinum</button>
+          </div>
+        ` : `<span class="text-gray-600 text-[10px] block text-center">—</span>`;
+
         return `<tr class="border-b border-white/5 hover:bg-white/3 transition">
           <td class="py-3 px-3 text-white text-xs">${u.name || '—'}</td>
           <td class="py-3 px-3 text-gray-400 text-xs">${u.email}</td>
           <td class="py-3 px-3 text-gray-500 font-mono text-[10px]">${date}</td>
+          <td class="py-3 px-3">${tierUI}</td>
           <td class="py-3 px-3 text-right">${statusSpan}</td>
         </tr>`;
       }).join('');
+    }
+
+    async function setUserTier(userId, newTier) {
+      if(!confirm(`Are you sure you want to change this user's tier to ${newTier}?`)) return;
+      const adminToken = localStorage.getItem('pa_admin_token');
+      try {
+        const res = await fetch(`/api/admin/users/${userId}/tier`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+          body: JSON.stringify({ tier: newTier })
+        });
+        const data = await res.json();
+        if(data.ok) {
+          fetchUsers(); // Refresh list
+        } else {
+          alert('Error: ' + data.error);
+        }
+      } catch (err) {
+        alert('Network error updating tier.');
+      }
     }
 
     // ── CSV Export ───────────────────────────────────────────────
@@ -3453,12 +3485,13 @@
       }
       const now = Date.now();
       const rows = [
-        ['Name', 'Email', 'Joined', 'VIP Status', 'Expiry Date', 'Telegram ID'],
+        ['Name', 'Email', 'Joined', 'VIP Status', 'Tier', 'Expiry Date', 'Telegram ID'],
         ...allUsersCache.map(u => [
           u.name || '',
           u.email,
           u.registeredAt ? new Date(u.registeredAt).toLocaleDateString() : '',
           u.subscriptionExpiry && u.subscriptionExpiry > now ? 'VIP' : 'Free',
+          u.subscriptionTier || 'Gold',
           u.subscriptionExpiry ? new Date(u.subscriptionExpiry).toLocaleDateString() : '',
           u.telegramId || ''
         ])

@@ -253,8 +253,25 @@ router.get('/system-status', validateAdminSession, async (req, res) => {
 router.get('/users', validateAdminSession, async (req, res) => {
   try {
     const users = await db.getUsers();
-    const safeUsers = users.map(u => ({ id: u._id || u.id, email: u.email, name: u.name, registeredAt: u.registeredAt, subscriptionExpiry: u.subscriptionExpiry }));
+    const safeUsers = users.map(u => ({ id: u._id || u.id, email: u.email, name: u.name, registeredAt: u.registeredAt, subscriptionExpiry: u.subscriptionExpiry, subscriptionTier: u.subscriptionTier || 'Gold' }));
     res.json({ ok: true, count: safeUsers.length, users: safeUsers });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/users/:id/tier', validateAdminSession, async (req, res) => {
+  try {
+    const { tier } = req.body;
+    if (!['Gold', 'Platinum'].includes(tier)) {
+      return res.status(400).json({ ok: false, error: 'Invalid tier specified.' });
+    }
+    const user = await db.getUserById(req.params.id);
+    if (!user) return res.status(404).json({ ok: false, error: 'User not found.' });
+    
+    user.subscriptionTier = tier;
+    await db.saveUser(user);
+    res.json({ ok: true, message: `User tier updated to ${tier}` });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
