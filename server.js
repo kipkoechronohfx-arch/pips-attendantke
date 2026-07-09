@@ -122,9 +122,19 @@ app.use(compression());
 // ── Request Logging ────────────────────────────────────────────
 app.use(morgan(IS_PRODUCTION ? 'combined' : 'dev'));
 
-// Cache static assets for 1 day to improve load speed
-app.use(express.static(path.join(__dirname), { maxAge: '1d' }));
-app.use(express.static(path.join(__dirname, 'admin'), { maxAge: '1d' }));
+// Cache static assets for 1 day, but explicitly DO NOT cache HTML files
+const staticOptions = {
+  maxAge: '1d',
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+  }
+};
+app.use(express.static(path.join(__dirname), staticOptions));
+app.use(express.static(path.join(__dirname, 'admin'), staticOptions));
 
 // ── Telegram Webhook (before body parser — needs immediate 200 ACK) ──
 app.post('/telegram-webhook', express.json(), async (req, res) => {
