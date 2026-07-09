@@ -1143,7 +1143,7 @@
               <p class="text-gray-400 text-xs mt-0.5">Advanced ICT & SMC strategy breakdown. 42 pages.</p>
             </div>
           </div>
-          <span class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700/30 border border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50">
+          <span class="platinum-resource-badge flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700/30 border border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50">
             <i data-feather="clock" class="w-3.5 h-3.5"></i> Coming Soon
           </span>
         </div>
@@ -1157,7 +1157,7 @@
               <p class="text-gray-400 text-xs mt-0.5">Position sizing, lot calculator, drawdown rules. 18 pages.</p>
             </div>
           </div>
-          <span class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700/30 border border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50">
+          <span class="platinum-resource-badge flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700/30 border border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50">
             <i data-feather="clock" class="w-3.5 h-3.5"></i> Coming Soon
           </span>
         </div>
@@ -1171,7 +1171,7 @@
               <p class="text-gray-400 text-xs mt-0.5">My personal top 5 trade setups with real examples.</p>
             </div>
           </div>
-          <span class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700/30 border border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50">
+          <span class="platinum-resource-badge flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700/30 border border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50">
             <i data-feather="clock" class="w-3.5 h-3.5"></i> Coming Soon
           </span>
         </div>
@@ -1187,7 +1187,7 @@
               <p class="text-gray-400 text-xs mt-0.5">My exact EMA periods and color settings for TradingView.</p>
             </div>
           </div>
-          <span class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700/30 border border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50">
+          <span class="platinum-resource-badge flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700/30 border border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50">
             <i data-feather="clock" class="w-3.5 h-3.5"></i> Coming Soon
           </span>
         </div>
@@ -1201,7 +1201,7 @@
               <p class="text-gray-400 text-xs mt-0.5">Key trading times for London, NY & Asian overlap sessions.</p>
             </div>
           </div>
-          <span class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700/30 border border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50">
+          <span class="platinum-resource-badge flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700/30 border border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50">
             <i data-feather="clock" class="w-3.5 h-3.5"></i> Coming Soon
           </span>
         </div>
@@ -2261,9 +2261,17 @@
               if (tier.includes('platinum')) {
                 mentorCard.classList.remove('hidden');
                 mentorLock.classList.add('hidden');
+                document.querySelectorAll('.platinum-resource-badge').forEach(el => {
+                  el.innerHTML = '<i data-feather="clock" class="w-3.5 h-3.5"></i> Coming Soon';
+                  el.className = 'platinum-resource-badge flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700/30 border border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50';
+                });
               } else {
                 mentorCard.classList.add('hidden');
                 mentorLock.classList.remove('hidden');
+                document.querySelectorAll('.platinum-resource-badge').forEach(el => {
+                  el.innerHTML = '🔒 Platinum Only';
+                  el.className = 'platinum-resource-badge flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-violet-500/20 border border-violet-500/30 text-violet-300 text-[10px] font-bold cursor-not-allowed';
+                });
               }
             }
 
