@@ -143,9 +143,44 @@ router.get('/me', validateUserSession, (req, res) => {
       subscriptionExpiry: req.user.subscriptionExpiry,
       subscriptionTier: req.user.subscriptionTier,
       telegramId: req.user.telegramId,
-      badges: req.user.badges || []
+      badges: req.user.badges || [],
+      completedModules: req.user.completedModules || [],
+      webhookUrl: req.user.webhookUrl || ''
     }
   });
+});
+
+// POST /api/academy/complete
+router.post('/academy/complete', validateUserSession, async (req, res) => {
+  try {
+    const { moduleId } = req.body;
+    if (!moduleId) return res.status(400).json({ error: 'Module ID is required' });
+    
+    let completed = req.user.completedModules || [];
+    if (!completed.includes(moduleId)) {
+      completed.push(moduleId);
+      await saveUser({ ...req.user, completedModules: completed });
+    }
+    res.json({ ok: true, completedModules: completed });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to mark module as complete' });
+  }
+});
+
+// POST /api/webhook-settings (For Copy Trading API)
+router.post('/webhook-settings', validateUserSession, async (req, res) => {
+  try {
+    const { webhookUrl } = req.body;
+    // Basic validation
+    if (webhookUrl && !webhookUrl.startsWith('http')) {
+      return res.status(400).json({ error: 'Invalid Webhook URL. Must start with http:// or https://' });
+    }
+    
+    await saveUser({ ...req.user, webhookUrl: webhookUrl || '' });
+    res.json({ ok: true, webhookUrl: webhookUrl || '' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to save webhook settings' });
+  }
 });
 
 const resetTokens = new Map();

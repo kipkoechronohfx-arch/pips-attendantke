@@ -678,6 +678,58 @@ router.post('/signals/:id/category', validateAdminSession, async (req, res) => {
   }
 });
 
+// ── Webhook Trigger (fire signal to all Platinum webhook URLs) ────
+router.post('/signals/:id/webhook-trigger', validateAdminSession, async (req, res) => {
+  try {
+    const signals = await db.getSignals(50);
+    const signal = signals.find(s => String(s._id || s.id) === req.params.id);
+    if (!signal) return res.status(404).json({ ok: false, error: 'Signal not found.' });
+
+    const users = await db.getUsers();
+    const platinumUsersWithWebhook = users.filter(u => {
+      const tier = String(u.subscriptionTier || '').toLowerCase();
+      return tier.includes('platinum') && u.webhookUrl && u.subscriptionExpiry > Date.now();
+    });
+
+    if (platinumUsersWithWebhook.length === 0) {
+      return res.json({ ok: true, message: 'No Platinum members with webhook URLs found.', sent: 0 });
+    }
+
+    const payload = {
+      type: 'signal',
+      source: 'PipsAttendant VIP',
+      signal: {
+        id: signal._id || signal.id,
+        pair: signal.pair,
+        action: signal.action,
+        entry: signal.entry,
+        tp: signal.tp,
+        sl: signal.sl,
+        outcome: signal.outcome,
+        timestamp: signal.createdAt || new Date().toISOString()
+      }
+    };
+
+    let successCount = 0;
+    const results = await Promise.allSettled(
+      platinumUsersWithWebhook.map(u =>
+        fetch(u.webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: AbortSignal.timeout(5000)
+        }).then(r => r.ok ? 'ok' : 'fail').catch(() => 'fail')
+      )
+    );
+
+    results.forEach(r => { if (r.status === 'fulfilled' && r.value === 'ok') successCount++; });
+
+    res.json({ ok: true, message: `Webhook sent to ${successCount}/${platinumUsersWithWebhook.length} Platinum members.`, sent: successCount, total: platinumUsersWithWebhook.length });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // ── Analytics ────────────────────────────────────────────────
 router.get('/analytics', validateAdminSession, async (req, res) => {
   try {

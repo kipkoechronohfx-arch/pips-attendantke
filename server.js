@@ -19,6 +19,7 @@ const paymentRoutes = require('./src/routes/paymentRoutes');
 const publicRoutes = require('./src/routes/publicRoutes');
 const journalRoutes = require('./src/routes/journalRoutes');
 const chatRoutes   = require('./src/routes/chatRoutes');
+const partnerRoutes = require('./src/routes/partnerRoutes');
 const propfirmRoutes = require('./src/routes/propfirmRoutes');
 
 // ── Environment Validation ─────────────────────────────────────
@@ -157,8 +158,9 @@ app.use('/api', vipRoutes);
 app.use('/api', paymentRoutes);
 app.use('/api', publicRoutes);
 app.use('/api/journal', journalRoutes);
-app.use('/api', chatRoutes);
+app.use('/api/partner', partnerRoutes);
 app.use('/api/propfirm', propfirmRoutes);
+app.use('/api', chatRoutes);
 
 // ── Health Check Endpoint ──────────────────────────────────────
 // Used by Render, UptimeRobot, or any monitoring service
