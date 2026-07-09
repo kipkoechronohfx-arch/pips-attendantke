@@ -129,19 +129,45 @@ router.post('/login', authLimiter, async (req, res) => {
   res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, avatar: user.avatar, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier, telegramId: user.telegramId } });
 });
 
-router.get('/me', validateUserSession, (req, res) => {
-  res.json({
-    ok: true,
-    user: {
-      id: req.user._id || req.user.id,
-      email: req.user.email,
-      name: req.user.name,
-      avatar: req.user.avatar,
-      subscriptionExpiry: req.user.subscriptionExpiry,
-      subscriptionTier: req.user.subscriptionTier,
-      telegramId: req.user.telegramId
+router.get('/me', validateUserSession, async (req, res) => {
+  try {
+    const { getUserById, getUserByEmail } = require('../services/db');
+    const id = req.user._id || req.user.id;
+    let freshUser = null;
+    if (id) freshUser = await getUserById(id);
+    if (!freshUser) freshUser = await getUserByEmail(req.user.email);
+    
+    if (freshUser) {
+      res.json({
+        ok: true,
+        user: {
+          id: freshUser._id || freshUser.id,
+          email: freshUser.email,
+          name: freshUser.name,
+          avatar: freshUser.avatar,
+          subscriptionExpiry: freshUser.subscriptionExpiry,
+          subscriptionTier: freshUser.subscriptionTier,
+          telegramId: freshUser.telegramId
+        }
+      });
+    } else {
+      // Fallback to token payload if not found
+      res.json({
+        ok: true,
+        user: {
+          id: req.user._id || req.user.id,
+          email: req.user.email,
+          name: req.user.name,
+          avatar: req.user.avatar,
+          subscriptionExpiry: req.user.subscriptionExpiry,
+          subscriptionTier: req.user.subscriptionTier,
+          telegramId: req.user.telegramId
+        }
+      });
     }
-  });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: 'Failed to fetch user data.' });
+  }
 });
 
 const resetTokens = new Map();
