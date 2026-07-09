@@ -403,4 +403,16 @@ router.get('/bookings', validateUserSession, async (req, res) => {
   }
 });
 
+// ── Announcements (user-facing) ──────────────────────────────────
+router.get('/announcements', validateUserSession, async (req, res) => {
+  try {
+    const { getAnnouncements } = require('../services/db');
+    const list = await getAnnouncements();
+    res.json({ ok: true, announcements: list });
+  } catch (err) {
+    logger.error('Fetch announcements error:', err);
+    res.status(500).json({ ok: false, error: 'Failed to fetch announcements.' });
+  }
+});
+
 module.exports = router;

@@ -854,5 +854,73 @@ router.get('/payments/export', validateAdminSession, async (req, res) => {
     res.status(500).json({ ok: false, error: err.message });
   }
 });
+router.get('/bookings', async (req, res) => {
+  try {
+    const { getBookings } = require('../services/db');
+    const bookings = await getBookings();
+    res.json({ ok: true, bookings });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: 'Failed to fetch bookings.' });
+  }
+});
+
+router.post('/bookings/:id/status', async (req, res) => {
+  try {
+    const { getBookings, saveBooking } = require('../services/db');
+    const bookings = await getBookings();
+    const booking = bookings.find(b => String(b._id) === req.params.id);
+    if (!booking) return res.status(404).json({ ok: false, error: 'Booking not found.' });
+
+    const { status } = req.body;
+    if (!['Pending', 'Accepted', 'Completed', 'Cancelled'].includes(status)) {
+      return res.status(400).json({ ok: false, error: 'Invalid status.' });
+    }
+
+    booking.status = status;
+    await saveBooking(booking);
+    res.json({ ok: true, message: 'Status updated', booking });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: 'Failed to update booking status.' });
+  }
+});
+
+// ── Announcements ────────────────────────────────────────────────
+const { getAnnouncements, saveAnnouncement, deleteAnnouncement } = require('../services/db');
+
+router.get('/announcements', validateAdminSession, async (req, res) => {
+  try {
+    const list = await getAnnouncements();
+    res.json({ ok: true, announcements: list });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: 'Failed to fetch announcements.' });
+  }
+});
+
+router.post('/announcements', validateAdminSession, async (req, res) => {
+  try {
+    const { title, message, type } = req.body;
+    if (!title || !message) {
+      return res.status(400).json({ ok: false, error: 'Title and message are required.' });
+    }
+    const announcement = await saveAnnouncement({
+      title: title.trim(),
+      message: message.trim(),
+      type: type || 'info', // 'info' | 'warning' | 'success'
+      createdAt: new Date().toISOString()
+    });
+    res.json({ ok: true, announcement });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: 'Failed to save announcement.' });
+  }
+});
+
+router.delete('/announcements/:id', validateAdminSession, async (req, res) => {
+  try {
+    await deleteAnnouncement(req.params.id);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: 'Failed to delete announcement.' });
+  }
+});
 
 module.exports = router;
