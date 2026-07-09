@@ -2254,11 +2254,11 @@
             loadCountdownFromSignals();
 
             // ── Show/Hide Platinum Mentorship Card ──────────────
-            const tier = data.user.subscriptionTier || 'Gold';
+            const tier = String(data.user.subscriptionTier || 'Gold').toLowerCase();
             const mentorCard = document.getElementById('mentorshipCard');
             const mentorLock = document.getElementById('mentorshipLockCard');
             if (mentorCard && mentorLock) {
-              if (tier === 'Platinum') {
+              if (tier.includes('platinum')) {
                 mentorCard.classList.remove('hidden');
                 mentorLock.classList.add('hidden');
               } else {
