@@ -3428,20 +3428,75 @@
         const res = await fetch('/api/admin/analytics', { headers: { 'x-admin-token': adminToken } });
         const data = await res.json();
         
-        if (data.ok) {
-          document.getElementById('statTotalUsers').textContent = data.totalUsers;
-          document.getElementById('statActiveVIPs').textContent = data.activeVIPs;
-          document.getElementById('statExpiredUsers').textContent = data.expiredUsers;
-          document.getElementById('statConversionRate').textContent = `${data.conversionRate}%`;
-          
-          if (data.totalKES !== undefined) {
-            document.getElementById('statTotalKES').textContent = data.totalKES.toLocaleString();
-            document.getElementById('statTotalUSDT').textContent = '$' + data.totalUSDT.toLocaleString();
-            document.getElementById('statMrrKES').textContent = data.mrrKES.toLocaleString();
-            document.getElementById('statMrrUSDT').textContent = '$' + data.mrrUSDT.toLocaleString();
+        if (data.ok && data.stats) {
+          const s = data.stats;
+
+          // Core user stats
+          document.getElementById('statTotalUsers').textContent = s.totalUsers ?? '--';
+          document.getElementById('statActiveVIPs').textContent = s.activeUsers ?? '--';
+          document.getElementById('statExpiredUsers').textContent = s.expiredUsers ?? '--';
+
+          const convRate = s.totalUsers > 0 ? Math.round((s.activeUsers / s.totalUsers) * 100) : 0;
+          document.getElementById('statConversionRate').textContent = `${convRate}%`;
+
+          // Revenue placeholders (not yet wired to payment data)
+          document.getElementById('statTotalKES').textContent = '--';
+          document.getElementById('statTotalUSDT').textContent = '--';
+          document.getElementById('statMrrKES').textContent = '--';
+          document.getElementById('statMrrUSDT').textContent = '--';
+
+          // Update extra detail badge if it already exists, or inject it
+          const analyticsPanel = document.getElementById('analyticsPanel');
+          let extraRow = document.getElementById('analyticsExtraRow');
+          if (!extraRow) {
+            extraRow = document.createElement('div');
+            extraRow.id = 'analyticsExtraRow';
+            extraRow.className = 'grid grid-cols-2 md:grid-cols-3 gap-6 mb-6';
+            extraRow.innerHTML = `
+              <div class="glass-card rounded-2xl p-6 border border-violet-500/20 bg-violet-500/5 flex flex-col justify-center items-center">
+                <span class="text-violet-400 text-[10px] uppercase tracking-wider mb-2 font-bold">Platinum Members</span>
+                <span id="statPlatinum" class="text-2xl font-black text-violet-400 font-mono">--</span>
+              </div>
+              <div class="glass-card rounded-2xl p-6 border border-amber-500/20 bg-amber-500/5 flex flex-col justify-center items-center">
+                <span class="text-amber-400 text-[10px] uppercase tracking-wider mb-2 font-bold">Gold Members</span>
+                <span id="statGold" class="text-2xl font-black text-amber-400 font-mono">--</span>
+              </div>
+              <div class="glass-card rounded-2xl p-6 border border-cyan-500/20 bg-cyan-500/5 flex flex-col justify-center items-center">
+                <span class="text-cyan-400 text-[10px] uppercase tracking-wider mb-2 font-bold">Pending Bookings</span>
+                <span id="statPendingBookings" class="text-2xl font-black text-cyan-400 font-mono">--</span>
+              </div>
+              <div class="glass-card rounded-2xl p-6 border border-emerald-500/20 bg-emerald-500/5 flex flex-col justify-center items-center">
+                <span class="text-emerald-400 text-[10px] uppercase tracking-wider mb-2 font-bold">Total Journal Trades</span>
+                <span id="statTrades" class="text-2xl font-black text-emerald-400 font-mono">--</span>
+              </div>
+            `;
+            // Insert before the charts grid
+            const chartsGrid = analyticsPanel.querySelector('.grid.grid-cols-1.md\\:grid-cols-2');
+            if (chartsGrid) analyticsPanel.insertBefore(extraRow, chartsGrid);
+            else analyticsPanel.appendChild(extraRow);
           }
 
-          renderChart(data.chartData);
+          document.getElementById('statPlatinum').textContent = s.platinumUsers ?? '--';
+          document.getElementById('statGold').textContent = s.goldUsers ?? '--';
+          document.getElementById('statPendingBookings').textContent = s.pendingBookings ?? '--';
+          document.getElementById('statTrades').textContent = s.totalTrades ?? '--';
+
+          // Build simple chart from registration dates if chartData is present
+          if (data.chartData) {
+            renderChart(data.chartData);
+          } else {
+            // Render a placeholder "no data" state gracefully
+            const canvas = document.getElementById('registrationsChart');
+            if (canvas) {
+              const ctx = canvas.getContext('2d');
+              if (regChartInstance) { regChartInstance.destroy(); regChartInstance = null; }
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              ctx.fillStyle = 'rgba(156,163,175,0.6)';
+              ctx.font = '12px Inter, sans-serif';
+              ctx.textAlign = 'center';
+              ctx.fillText('Chart data not available yet.', canvas.width / 2, canvas.height / 2 || 60);
+            }
+          }
           if (data.revenueChart) renderRevenueChart(data.revenueChart);
         }
       } catch (err) {

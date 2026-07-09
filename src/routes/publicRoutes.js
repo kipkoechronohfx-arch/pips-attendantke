@@ -22,6 +22,28 @@ if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   );
 }
 
+// ── Web Push Notification Routes ───────────────────────────────
+router.get('/vapidPublicKey', (req, res) => {
+  if (!process.env.VAPID_PUBLIC_KEY) {
+    return res.status(503).json({ ok: false, error: 'Push notifications are not configured.' });
+  }
+  res.json({ ok: true, key: process.env.VAPID_PUBLIC_KEY });
+});
+
+router.post('/push-subscribe', async (req, res) => {
+  const subscription = req.body;
+  if (!subscription || !subscription.endpoint) {
+    return res.status(400).json({ ok: false, error: 'Invalid subscription object.' });
+  }
+  try {
+    await db.addPushSubscription(subscription);
+    res.json({ ok: true, message: 'Subscribed to push notifications successfully.' });
+  } catch (err) {
+    console.error('Error saving push subscription:', err);
+    res.status(500).json({ ok: false, error: 'Failed to subscribe.' });
+  }
+});
+
 router.get('/health', (req, res) => {
   res.json({ status: 'ok', time: now(), service: 'pips-attendant-api', dbConnected: true });
 });

@@ -908,6 +908,39 @@ router.post('/announcements', validateAdminSession, async (req, res) => {
       type: type || 'info', // 'info' | 'warning' | 'success'
       createdAt: new Date().toISOString()
     });
+    
+    // Broadcast Push Notification
+    if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+      try {
+        const webpush = require('web-push');
+        const { getPushSubscriptions, deletePushSubscription } = require('../services/db');
+        webpush.setVapidDetails(
+          'mailto:support@pipsattendant.com',
+          process.env.VAPID_PUBLIC_KEY,
+          process.env.VAPID_PRIVATE_KEY
+        );
+        const subscriptions = await getPushSubscriptions();
+        const payload = JSON.stringify({
+          title: 'New Announcement: ' + title.trim(),
+          body: message.trim(),
+          icon: '/favicon.png',
+          badge: '/favicon.png',
+          tag: 'pips-announcement',
+          url: '/premium.html'
+        });
+        const promises = subscriptions.map(sub => 
+          webpush.sendNotification(sub, payload).catch(err => {
+            if (err.statusCode === 404 || err.statusCode === 410) {
+              return deletePushSubscription(sub);
+            }
+          })
+        );
+        await Promise.all(promises);
+      } catch (pushErr) {
+        console.error('Failed to send push notification for announcement:', pushErr);
+      }
+    }
+    
     res.json({ ok: true, announcement });
   } catch (err) {
     res.status(500).json({ ok: false, error: 'Failed to save announcement.' });
@@ -920,6 +953,56 @@ router.delete('/announcements/:id', validateAdminSession, async (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ ok: false, error: 'Failed to delete announcement.' });
+  }
+});
+
+// ── Analytics ──────────────────────────────────────────────────
+router.get('/analytics', validateAdminSession, async (req, res) => {
+  try {
+    const { getUsers, getBookings, getJournalColl, readJSON } = require('../services/db');
+    
+    // Users
+    const users = await getUsers();
+    const totalUsers = users.length;
+    const platinumUsers = users.filter(u => String(u.subscriptionTier || '').toLowerCase().includes('platinum')).length;
+    const goldUsers = totalUsers - platinumUsers;
+    const now = Date.now();
+    const activeUsers = users.filter(u => u.subscriptionExpiry && u.subscriptionExpiry > now).length;
+    
+    // Bookings
+    const bookings = await getBookings();
+    const pendingBookings = bookings.filter(b => b.status === 'pending').length;
+    
+    // Journal Entries (Total)
+    let totalTrades = 0;
+    try {
+      const dbInstance = require('../services/db').db;
+      if (dbInstance) {
+        totalTrades = await getJournalColl().countDocuments();
+      } else {
+        const path = require('path');
+        const JOURNAL_FILE = path.join(process.cwd(), 'data', 'journal.json');
+        totalTrades = readJSON(JOURNAL_FILE).length;
+      }
+    } catch (e) {
+      console.error('Error fetching journal stats', e);
+    }
+    
+    res.json({
+      ok: true,
+      stats: {
+        totalUsers,
+        platinumUsers,
+        goldUsers,
+        activeUsers,
+        expiredUsers: totalUsers - activeUsers,
+        pendingBookings,
+        totalTrades
+      }
+    });
+  } catch (err) {
+    console.error('Analytics Error:', err);
+    res.status(500).json({ ok: false, error: 'Failed to load analytics.' });
   }
 });
 

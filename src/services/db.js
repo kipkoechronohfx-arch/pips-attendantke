@@ -21,6 +21,8 @@ const CRYPTO_REQ_FILE = path.join(DATA_DIR, 'crypto_requests.json');
 const PROMOS_FILE = path.join(DATA_DIR, 'promos.json');
 const TICKETS_FILE = path.join(DATA_DIR, 'support_tickets.json');
 const RECEIPTS_FILE = path.join(DATA_DIR, 'receipts.json');
+const BOOKINGS_FILE = path.join(DATA_DIR, 'mentorship_bookings.json');
+const ANNOUNCEMENTS_FILE = path.join(DATA_DIR, 'announcements.json');
 
 // Ensure local fallback folders exist
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
@@ -100,6 +102,8 @@ const getPromosColl = () => db.collection('promo_codes');
 const getTicketsColl = () => db.collection('support_tickets');
 const getJournalColl = () => db.collection('journal_entries');
 const getPropFirmColl = () => db.collection('prop_firm_accounts');
+const getBookingsColl = () => db.collection('mentorship_bookings');
+const getAnnouncementsColl = () => db.collection('announcements');
 
 async function runMigrations() {
   console.log('[Migration] Checking for local data to migrate to MongoDB Atlas...');
@@ -776,6 +780,18 @@ async function getUserByEmail(email) {
   return users.find(u => u.email === email);
 }
 
+async function getUserByTelegramId(telegramId) {
+  if (db) {
+    try {
+      return await getUsersColl().findOne({ telegramId: String(telegramId) });
+    } catch (err) {
+      console.error('[DB Get User By TG Error]', err.message);
+    }
+  }
+  const users = readJSON(USERS_FILE);
+  return users.find(u => u.telegramId === String(telegramId));
+}
+
 async function saveUser(user) {
   if (db) {
     try {
@@ -1134,8 +1150,7 @@ async function deletePropFirmAccount(userId) {
 
 async function getLeaderboardData() {
   const users = await getUsers();
-  const optedInUsers = users.filter(u => u.leaderboardOptIn === true);
-  
+  const optedInUsers = users; // Include all users by default for now
   const leaderboard = [];
   
   for (const user of optedInUsers) {
@@ -1157,9 +1172,14 @@ async function getLeaderboardData() {
     const totalTrades = wins + losses;
     const winRate = totalTrades > 0 ? Math.round((wins / totalTrades) * 100) : 0;
     
+    let displayName = user.name || 'Anonymous Trader';
+    if (displayName !== 'Anonymous Trader' && displayName.includes(' ')) {
+      displayName = displayName.split(' ')[0] + ' ' + displayName.split(' ')[1][0] + '.';
+    }
+    
     leaderboard.push({
       userId,
-      name: user.name || 'Anonymous Trader',
+      name: displayName,
       netPL: totalPL,
       winRate,
       totalTrades
@@ -1205,6 +1225,107 @@ async function getReceipt(ref) {
   return receipts.find(r => r.ref === ref) || null;
 }
 
+// ── Mentorship Bookings ─────────────────────────────────────
+async function getBookings() {
+  if (db) {
+    try {
+      return await getBookingsColl().find({}).sort({ createdAt: -1 }).toArray();
+    } catch(err) {}
+  }
+  return readJSON(BOOKINGS_FILE).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+}
+
+async function getUserBookings(email) {
+  if (db) {
+    try {
+      return await getBookingsColl().find({ userEmail: email }).sort({ createdAt: -1 }).toArray();
+    } catch(err) {}
+  }
+  const bookings = readJSON(BOOKINGS_FILE);
+  return bookings.filter(b => b.userEmail === email).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+}
+
+async function saveBooking(booking) {
+  if (db) {
+    if (booking._id) {
+       const { ObjectId } = require('mongodb');
+       const id = booking._id; delete booking._id;
+       const isObjectId = /^[a-f\d]{24}$/i.test(String(id));
+       const filter = isObjectId ? { _id: new ObjectId(id) } : { _id: id };
+       await getBookingsColl().updateOne(filter, { $set: booking });
+       booking._id = id;
+    } else {
+       const res = await getBookingsColl().insertOne(booking);
+       booking._id = res.insertedId;
+    }
+    return booking;
+  }
+  const bookings = readJSON(BOOKINGS_FILE);
+  if (booking._id) {
+    const idx = bookings.findIndex(b => String(b._id) === String(booking._id));
+    if (idx !== -1) bookings[idx] = booking;
+    else bookings.push(booking);
+  } else {
+    booking._id = Date.now().toString() + Math.random().toString(36).substring(2, 8);
+    bookings.push(booking);
+  }
+  writeJSON(BOOKINGS_FILE, bookings);
+  return booking;
+}
+
+// ── Announcements ──────────────────────────────────────────
+async function getAnnouncements() {
+  if (db) {
+    try {
+      return await getAnnouncementsColl().find({}).sort({ createdAt: -1 }).toArray();
+    } catch(err) {}
+  }
+  return readJSON(ANNOUNCEMENTS_FILE).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+}
+
+async function saveAnnouncement(announcement) {
+  if (db) {
+    if (announcement._id) {
+       const { ObjectId } = require('mongodb');
+       const id = announcement._id; delete announcement._id;
+       const isObjectId = /^[a-f\d]{24}$/i.test(String(id));
+       const filter = isObjectId ? { _id: new ObjectId(id) } : { _id: id };
+       await getAnnouncementsColl().updateOne(filter, { $set: announcement });
+       announcement._id = id;
+    } else {
+       const res = await getAnnouncementsColl().insertOne(announcement);
+       announcement._id = res.insertedId;
+    }
+    return announcement;
+  }
+  const announcements = readJSON(ANNOUNCEMENTS_FILE);
+  if (announcement._id) {
+    const idx = announcements.findIndex(a => String(a._id) === String(announcement._id));
+    if (idx !== -1) announcements[idx] = announcement;
+    else announcements.push(announcement);
+  } else {
+    announcement._id = Date.now().toString() + Math.random().toString(36).substring(2, 8);
+    announcements.push(announcement);
+  }
+  writeJSON(ANNOUNCEMENTS_FILE, announcements);
+  return announcement;
+}
+
+async function deleteAnnouncement(id) {
+  if (db) {
+    try {
+      const { ObjectId } = require('mongodb');
+      const isObjectId = /^[a-f\d]{24}$/i.test(String(id));
+      const filter = isObjectId ? { _id: new ObjectId(id) } : { _id: id };
+      await getAnnouncementsColl().deleteOne(filter);
+      return;
+    } catch (err) {}
+  }
+  let announcements = readJSON(ANNOUNCEMENTS_FILE);
+  announcements = announcements.filter(a => String(a._id) !== String(id));
+  writeJSON(ANNOUNCEMENTS_FILE, announcements);
+}
+
 module.exports = {
   connectDB, closeDB,
   getAppConfig, saveAppConfig,
@@ -1216,7 +1337,7 @@ module.exports = {
   getTodaysSetup, getAdminTodaysSetup, saveTodaysSetup,
   getTodaysSetupResults, getAdminTodaysSetupResults, saveTodaysSetupResults,
   getVipDocuments, getVipDocument, saveVipDocument, deleteVipDocument,
-  getUserById, getUserByEmail, saveUser, getUsers,
+  getUserById, getUserByEmail, getUserByTelegramId, saveUser, getUsers,
   getPushSubscriptions, addPushSubscription, deletePushSubscription,
   getCryptoRequests, saveCryptoRequest, updateCryptoRequest,
   getPromos, savePromo, getPromoByCode, deletePromo,
@@ -1225,5 +1346,7 @@ module.exports = {
   getJournalEntries, saveJournalEntry, deleteJournalEntry, syncJournalEntries, getLeaderboardData,
   getPropFirmAccount, getAllPropFirmAccounts, savePropFirmAccount, deletePropFirmAccount,
   saveReceipt, getReceipt,
+  getBookings, getUserBookings, saveBooking,
+  getAnnouncements, saveAnnouncement, deleteAnnouncement,
   ping
 };
