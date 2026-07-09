@@ -514,7 +514,7 @@
 
       <!-- ── Platinum Mentorship Section ─────────────────────── -->
       <!-- Shown only to Platinum subscribers -->
-      <div id="mentorshipCard" class="mb-8">
+      <div id="mentorshipCard" class="mb-8 hidden">
         <div class="relative rounded-2xl overflow-hidden border border-violet-500/40" style="background: linear-gradient(135deg, rgba(124,58,237,0.18) 0%, rgba(17,24,39,1) 60%); box-shadow: 0 0 40px rgba(124,58,237,0.15);">
           <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-600 via-purple-400 to-fuchsia-500"></div>
           <div class="p-6">
@@ -551,7 +551,7 @@
                 <div class="grid grid-cols-2 gap-3">
                   <div>
                     <label class="block text-[10px] text-gray-500 mb-1">Date</label>
-                    <input type="date" id="bookingDate" required class="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-violet-500/50 focus:outline-none transition [color-scheme:dark]" />
+                    <input type="date" id="bookingDate" required onclick="this.showPicker()" class="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-violet-500/50 focus:outline-none transition [color-scheme:dark] cursor-pointer" />
                   </div>
                   <div>
                     <label class="block text-[10px] text-gray-500 mb-1">Time (UTC)</label>
@@ -1278,10 +1278,7 @@
                   </div>
                   <div class="flex justify-between text-xs">
                     <span class="text-gray-500">Stop Loss</span>
-                    <span class="text-white font-medium" id="rc_disp_sl">—</span>
-                  </div>
-                  <div class="h-px bg-white/5 my-1"></div>
-                  <div class="flex justify-between text-xs">
+            <div class="flex justify-between text-xs">
                     <span class="text-gray-400 font-semibold">Recommended Lot</span>
                     <span class="text-gold font-black" id="rc_disp_lots">—</span>
                   </div>
@@ -1300,79 +1297,104 @@
       <!-- Resource Cards -->
       <div class="space-y-4 mb-10">
 
-        <h3 class="text-xs font-bold uppercase tracking-wider text-gold mb-3">📂 PDF Strategy Guides</h3>
+        <!-- ── GOLD RESOURCES (Available to all VIPs) ── -->
+        <div id="goldResources" class="hidden space-y-4">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-gold mb-3 flex items-center gap-2">
+            <i data-feather="star" class="w-4 h-4"></i> Gold Resources
+          </h3>
 
-        <!-- Resource 1 -->
-        <div class="premium-card border rounded-2xl p-5 flex items-center justify-between gap-4">
-          <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center text-xl flex-shrink-0">📄</div>
-            <div>
-              <h4 class="text-white font-bold text-sm">Smart Money Concepts Guide</h4>
-              <p class="text-gray-400 text-xs mt-0.5">Advanced ICT & SMC strategy breakdown. 42 pages.</p>
+          <!-- Resource: Risk Management -->
+          <div class="premium-card border rounded-2xl p-5 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-xl flex-shrink-0">📊</div>
+              <div>
+                <h4 class="text-white font-bold text-sm">Risk Management Workbook</h4>
+                <p class="text-gray-400 text-xs mt-0.5">Position sizing, lot calculator, drawdown rules. 18 pages.</p>
+              </div>
             </div>
+            <button class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700/30 border border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50">
+              <i data-feather="clock" class="w-3.5 h-3.5"></i> Coming Soon
+            </button>
           </div>
-          <span class="platinum-resource-badge flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700/30 border border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50">
-            <i data-feather="clock" class="w-3.5 h-3.5"></i> Coming Soon
-          </span>
+
+          <!-- Resource: Psychology Checklist -->
+          <div class="premium-card border rounded-2xl p-5 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-xl flex-shrink-0">🧠</div>
+              <div>
+                <h4 class="text-white font-bold text-sm">Trading Psychology Checklist</h4>
+                <p class="text-gray-400 text-xs mt-0.5">Pre-trade mental check and emotion control guide.</p>
+              </div>
+            </div>
+            <button class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700/30 border border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50">
+              <i data-feather="clock" class="w-3.5 h-3.5"></i> Coming Soon
+            </button>
+          </div>
         </div>
 
-        <!-- Resource 2 -->
-        <div class="premium-card border rounded-2xl p-5 flex items-center justify-between gap-4">
-          <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-xl flex-shrink-0">📊</div>
-            <div>
-              <h4 class="text-white font-bold text-sm">Risk Management Workbook</h4>
-              <p class="text-gray-400 text-xs mt-0.5">Position sizing, lot calculator, drawdown rules. 18 pages.</p>
+        <!-- ── PLATINUM EXCLUSIVE RESOURCES ── -->
+        <div id="platinumResources" class="hidden space-y-4 mt-8">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-violet-400 mb-3 flex items-center gap-2">
+            <i data-feather="award" class="w-4 h-4"></i> Platinum Resources
+          </h3>
+
+          <!-- Resource: SMC Guide -->
+          <div class="premium-card border rounded-2xl p-5 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center text-xl flex-shrink-0">📄</div>
+              <div>
+                <h4 class="text-white font-bold text-sm">Smart Money Concepts Guide</h4>
+                <p class="text-gray-400 text-xs mt-0.5">Advanced ICT & SMC strategy breakdown. 42 pages.</p>
+              </div>
             </div>
+            <button class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700/30 border border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50">
+              <i data-feather="clock" class="w-3.5 h-3.5"></i> Coming Soon
+            </button>
           </div>
-          <span class="platinum-resource-badge flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700/30 border border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50">
-            <i data-feather="clock" class="w-3.5 h-3.5"></i> Coming Soon
-          </span>
+
+          <!-- Resource: High Probability Setups -->
+          <div class="premium-card border rounded-2xl p-5 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-neon-blue/10 border border-neon-blue/20 flex items-center justify-center text-xl flex-shrink-0">📈</div>
+              <div>
+                <h4 class="text-white font-bold text-sm">High Probability Setups Playbook</h4>
+                <p class="text-gray-400 text-xs mt-0.5">My personal top 5 trade setups with real examples.</p>
+              </div>
+            </div>
+            <button class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700/30 border border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50">
+              <i data-feather="clock" class="w-3.5 h-3.5"></i> Coming Soon
+            </button>
+          </div>
+
+          <!-- Resource: Custom EMA Settings -->
+          <div class="premium-card border rounded-2xl p-5 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-neon-purple/10 border border-neon-purple/20 flex items-center justify-center text-xl flex-shrink-0">⚙️</div>
+              <div>
+                <h4 class="text-white font-bold text-sm">Custom EMA Settings Pack</h4>
+                <p class="text-gray-400 text-xs mt-0.5">My exact EMA periods and color settings for TradingView.</p>
+              </div>
+            </div>
+            <button class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700/30 border border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50">
+              <i data-feather="clock" class="w-3.5 h-3.5"></i> Coming Soon
+            </button>
+          </div>
+          
+          <!-- Resource: Session Kill Zones -->
+          <div class="premium-card border rounded-2xl p-5 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-xl flex-shrink-0">🎯</div>
+              <div>
+                <h4 class="text-white font-bold text-sm">Session Kill Zones Cheat Sheet</h4>
+                <p class="text-gray-400 text-xs mt-0.5">Key trading times for London, NY & Asian overlap sessions.</p>
+              </div>
+            </div>
+            <button class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700/30 border border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50">
+              <i data-feather="clock" class="w-3.5 h-3.5"></i> Coming Soon
+            </button>
+          </div>
         </div>
 
-        <!-- Resource 3 -->
-        <div class="premium-card border rounded-2xl p-5 flex items-center justify-between gap-4">
-          <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-neon-blue/10 border border-neon-blue/20 flex items-center justify-center text-xl flex-shrink-0">📈</div>
-            <div>
-              <h4 class="text-white font-bold text-sm">High Probability Setups Playbook</h4>
-              <p class="text-gray-400 text-xs mt-0.5">My personal top 5 trade setups with real examples.</p>
-            </div>
-          </div>
-          <span class="platinum-resource-badge flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700/30 border border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50">
-            <i data-feather="clock" class="w-3.5 h-3.5"></i> Coming Soon
-          </span>
-        </div>
-
-        <h3 class="text-xs font-bold uppercase tracking-wider text-neon-purple mt-8 mb-3">🔧 Indicator Settings</h3>
-
-        <!-- Resource 4 -->
-        <div class="premium-card border rounded-2xl p-5 flex items-center justify-between gap-4">
-          <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-neon-purple/10 border border-neon-purple/20 flex items-center justify-center text-xl flex-shrink-0">⚙️</div>
-            <div>
-              <h4 class="text-white font-bold text-sm">Custom EMA Settings Pack</h4>
-              <p class="text-gray-400 text-xs mt-0.5">My exact EMA periods and color settings for TradingView.</p>
-            </div>
-          </div>
-          <span class="platinum-resource-badge flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700/30 border border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50">
-            <i data-feather="clock" class="w-3.5 h-3.5"></i> Coming Soon
-          </span>
-        </div>
-
-        <!-- Resource 5 -->
-        <div class="premium-card border rounded-2xl p-5 flex items-center justify-between gap-4">
-          <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-xl flex-shrink-0">🎯</div>
-            <div>
-              <h4 class="text-white font-bold text-sm">Session Kill Zones Cheat Sheet</h4>
-              <p class="text-gray-400 text-xs mt-0.5">Key trading times for London, NY & Asian overlap sessions.</p>
-            </div>
-          </div>
-          <span class="platinum-resource-badge flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700/30 border border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50">
-            <i data-feather="clock" class="w-3.5 h-3.5"></i> Coming Soon
-          </span>
-        </div>
       </div>
 
       <!-- Footer Note -->
@@ -2736,6 +2758,15 @@
                 mentorLock.classList.remove('hidden');
                 loadJournalEntries();
               }
+            }
+
+            // ── Show/Hide Resources ───────────────────────────────────────
+            const goldRes = document.getElementById('goldResources');
+            const platRes = document.getElementById('platinumResources');
+            if (goldRes) goldRes.classList.remove('hidden'); // Available to everyone
+            if (platRes) {
+              if (isPlatinum) platRes.classList.remove('hidden');
+              else platRes.classList.add('hidden');
             }
 
             // ── Tier badge on welcome banner ──────────────────────────
