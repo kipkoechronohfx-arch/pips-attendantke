@@ -6,7 +6,7 @@
 //    • Offline fallback → /offline.html for uncached pages
 // ═══════════════════════════════════════════════════════════
 
-const CACHE_NAME    = 'pips-attendant-v6';
+const CACHE_NAME    = 'pips-attendant-v7';
 const OFFLINE_URL   = '/offline.html';
 
 // Core shell — pre-cached on install
@@ -22,6 +22,7 @@ const PRECACHE_ASSETS = [
   '/style.css',
   '/dist.css',
   '/app.js',
+  '/premium.js',
   '/chat-widget.js',
   '/manifest.json',
   '/avatar.webp',
