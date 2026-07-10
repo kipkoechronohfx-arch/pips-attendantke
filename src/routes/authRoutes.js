@@ -153,7 +153,7 @@ router.post('/login', authLimiter, async (req, res) => {
 </body></html>`;
 
   try {
-    await sendEmail({ to: email, subject: '🔐 Your Pips Attendant Login Code', html: otpHtml });
+    await sendEmail(email, '🔐 Your Pips Attendant Login Code', otpHtml);
     logger.info(`[2FA] OTP sent to ${email}`);
   } catch (err) {
     logger.error('[2FA] Failed to send OTP email: ' + err.message);
