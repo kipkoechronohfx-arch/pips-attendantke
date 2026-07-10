@@ -919,6 +919,7 @@ router.get('/bookings', async (req, res) => {
 router.post('/bookings/:id/status', async (req, res) => {
   try {
     const { getBookings, saveBooking } = require('../services/db');
+    const { sendEmail } = require('../services/emailService');
     const bookings = await getBookings();
     const booking = bookings.find(b => String(b._id) === req.params.id);
     if (!booking) return res.status(404).json({ ok: false, error: 'Booking not found.' });
@@ -928,8 +929,33 @@ router.post('/bookings/:id/status', async (req, res) => {
       return res.status(400).json({ ok: false, error: 'Invalid status.' });
     }
 
+    const oldStatus = booking.status;
     booking.status = status;
     await saveBooking(booking);
+
+    // Send email notification on status change to Accepted or Cancelled (Declined)
+    if (oldStatus !== status && (status === 'Accepted' || status === 'Cancelled') && booking.userEmail) {
+      const isAccepted = status === 'Accepted';
+      const subject = isAccepted ? '✅ Mentorship Session Accepted' : '❌ Mentorship Session Declined';
+      const body = `
+        <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; background: #111827; padding: 32px; border-radius: 16px; color: #f9fafb;">
+          <h2 style="color: ${isAccepted ? '#10b981' : '#f43f5e'}; text-align: center; margin-bottom: 8px;">${subject}</h2>
+          <p style="text-align: center; color: #9ca3af; margin-bottom: 24px; font-size: 14px;">Update regarding your 1-on-1 session request</p>
+          <div style="background: #1f2937; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+            <p style="color: #d1d5db; margin: 0 0 10px 0;"><strong>Date:</strong> ${booking.date}</p>
+            <p style="color: #d1d5db; margin: 0 0 10px 0;"><strong>Time:</strong> ${booking.time} UTC</p>
+            <p style="color: #d1d5db; margin: 0;"><strong>Topic:</strong> ${booking.topic}</p>
+          </div>
+          <p style="text-align: center; color: #d1d5db;">
+            ${isAccepted 
+              ? 'Your session has been approved. Your mentor will connect with you via Telegram at the scheduled time.' 
+              : 'Unfortunately, your session request could not be accommodated at this time. Please try booking a different slot.'}
+          </p>
+        </div>
+      `;
+      sendEmail(booking.userEmail, subject, body).catch(e => console.error('Booking status email failed:', e));
+    }
+
     res.json({ ok: true, message: 'Status updated', booking });
   } catch (err) {
     res.status(500).json({ ok: false, error: 'Failed to update booking status.' });

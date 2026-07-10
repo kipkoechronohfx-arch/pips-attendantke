@@ -142,7 +142,7 @@
 
     <!-- MAIN CONTENT AND SCRIPTS FROM OLD -->
     <!-- TradingView Ticker Tape Widget -->
-    <div class="w-full border-y border-white/5 bg-black/40" id="tvTickerContainer" style="position:fixed; top:72px; left:0; right:0; height:46px; z-index:49;">
+    <div class="w-full border-y border-white/5 bg-black/40 hidden sm:block" id="tvTickerContainer" style="position:fixed; top:72px; left:0; right:0; height:46px; z-index:49;">
       <div class="tradingview-widget-container">
         <div class="tradingview-widget-container__widget"></div>
         <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
@@ -1496,7 +1496,7 @@
             </div>
           </div>
           <form onsubmit="sendChatMessage(event)" id="chatForm" class="p-4 border-t border-white/5 bg-black/40 flex gap-3">
-            <input type="text" id="chatInput" placeholder="Type your message..." required autocomplete="off"
+            <input type="text" id="chatInput" placeholder="Type your message..." required autocomplete="off" onclick="setTimeout(() => { const msgs = document.getElementById('chatMessages'); if (msgs) msgs.scrollTo({ top: msgs.scrollHeight, behavior: 'smooth' }); }, 300)"
               class="flex-1 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:border-gold/50 focus:outline-none transition" />
             <button type="submit" id="chatBtn" class="px-5 py-2.5 rounded-xl font-bold bg-gold text-primary hover:brightness-110 active:scale-95 transition flex items-center gap-2">
               Send <i data-feather="send" class="w-4 h-4"></i>
@@ -1649,10 +1649,10 @@
 
           <div class="premium-card border rounded-2xl p-5" id="mod_psychology">
             <div class="flex items-center gap-4 mb-3">
-              <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-xl flex-shrink-0">🧠</div>
+              <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-xl flex-shrink-0">🕐</div>
               <div>
-                <h4 class="text-white font-bold text-sm">Trading Psychology Checklist</h4>
-                <p class="text-gray-400 text-xs mt-0.5">Pre-trade mental check and emotion control guide.</p>
+                <h4 class="text-white font-bold text-sm">Session Kill Zones Cheat Sheet</h4>
+                <p class="text-gray-400 text-xs mt-0.5">Key trading times for London, NY &amp; Asian overlap sessions.</p>
               </div>
             </div>
             <div class="flex items-center gap-2">
@@ -1718,26 +1718,11 @@
             </div>
             <div class="flex items-center gap-2">
               <a data-filename="custom-ema-settings-pack.zip" href="#" class="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-violet-500/10 border border-violet-500/30 text-violet-400 text-xs font-bold transition hover:bg-violet-500 hover:text-white cursor-pointer">
-                <i data-feather="download" class="w-3.5 h-3.5"></i> Download PDF
+                <i data-feather="download" class="w-3.5 h-3.5"></i> Download ZIP
               </a>
               <button onclick="markModuleComplete('mod_ema')" class="academy-complete-btn flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold transition hover:bg-emerald-500 hover:text-white cursor-pointer">
                 <i data-feather="check-circle" class="w-3.5 h-3.5"></i>
               </button>
-            </div>
-          </div>
-          
-          <!-- Resource: Session Kill Zones -->
-          <div class="premium-card border rounded-2xl p-5 flex items-center justify-between gap-4">
-            <div class="flex items-center gap-4">
-              <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-xl flex-shrink-0">🎯</div>
-              <div>
-                <h4 class="text-white font-bold text-sm">Session Kill Zones Cheat Sheet</h4>
-                <p class="text-gray-400 text-xs mt-0.5">Key trading times for London, NY & Asian overlap sessions.</p>
-              </div>
-            </div>
-            <button class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700/30 border border-gray-600/30 text-gray-500 text-xs font-bold cursor-not-allowed opacity-50">
-              <i data-feather="clock" class="w-3.5 h-3.5"></i> Coming Soon
-            </button>
           </div>
         </div>
 
@@ -1752,6 +1737,15 @@
 
   <script>
     feather.replace();
+    
+    // Set min date for booking to today
+    document.addEventListener('DOMContentLoaded', () => {
+      const today = new Date().toISOString().split('T')[0];
+      const dateInput = document.getElementById('bookingDate');
+      if (dateInput) {
+        dateInput.setAttribute('min', today);
+      }
+    });
 
     // ── Risk / Lot Size Calculator ───────────────────────────────
     function runRiskCalc() {
@@ -2454,9 +2448,14 @@
       }
     }
     function filterArchive() {
+      _archivePage = 0;
       const filter = document.getElementById('archiveFilter')?.value || '';
       const filtered = filter ? _signalArchiveCache.filter(s => (s.outcome || 'Running') === filter) : _signalArchiveCache;
       renderArchive(filtered);
+    }
+    function archiveChangePage(delta) {
+      _archivePage += delta;
+      filterArchive();
     }
     function renderArchive(signals) {
       const container = document.getElementById('signalArchiveList');
@@ -2601,7 +2600,8 @@
             `;
           }).join('');
         } else {
-          wrapper.classList.add('hidden');
+          wrapper.classList.remove('hidden');
+          container.innerHTML = '<p class="text-gray-500 text-[11px] text-center py-3 italic">No sessions booked yet — request one above.</p>';
         }
       } catch (err) {
         console.error('Failed to load bookings');
@@ -3552,6 +3552,11 @@
               if (accountExpiryEl) accountExpiryEl.textContent = expiryStr;
             }
             if (accountTierEl) accountTierEl.textContent = isPlatinum ? '💎 VIP Platinum' : '⭐ VIP Gold';
+
+            // ── Expiry warning toast (≤7 days left) ────────────────
+            if (daysLeft <= 7 && daysLeft > 0) {
+              showToast('VIP Expiring Soon', `⚠️ Your VIP expires in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}! Renew now to keep access.`, 'info');
+            }
 
             // ── Platinum-only chat tab ────────────────────────────────
             const platTab = document.getElementById('tab-room-platinum');
