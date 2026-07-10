@@ -17,7 +17,37 @@ async function handleTelegramUpdate(update) {
   const chatId = msg.chat.id;
   const text = msg.text || '';
 
-  if (text.startsWith('/stats')) {
+  if (text.startsWith('/status')) {
+    try {
+      const { getUserByTelegramId } = require('./db');
+      const user = await getUserByTelegramId(String(chatId));
+      if (!user) {
+        await sendTelegramMessage(chatId, '❌ Your Telegram account is not linked to any Pips Attendant account.\n\nPlease log in to the portal and link your account.');
+        return;
+      }
+
+      const now = Date.now();
+      const isVip = user.subscriptionExpiry && user.subscriptionExpiry > now;
+      const tier = user.subscriptionTier || 'Gold';
+      
+      if (!isVip) {
+        await sendTelegramMessage(chatId, `⚠️ *VIP Expired*\n\nYour subscription has expired.\n[Renew here](${process.env.APP_URL || 'https://pipsattendant.top'}/premium.html)`);
+        return;
+      }
+
+      const expiryDate = new Date(user.subscriptionExpiry);
+      const daysLeft = Math.ceil((user.subscriptionExpiry - now) / (1000 * 60 * 60 * 24));
+      const expiryStr = expiryDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      
+      const tierIcon = tier.toLowerCase().includes('platinum') ? '💎 Platinum' : '⭐ Gold';
+      
+      const reply = `✅ *VIP Active*\n\n*Name:* ${user.name || user.email}\n*Tier:* ${tierIcon}\n*Expires:* ${expiryStr} (${daysLeft} day${daysLeft !== 1 ? 's' : ''} left)\n\n[Access Portal](${process.env.APP_URL || 'https://pipsattendant.top'}/premium.html)`;
+      
+      await sendTelegramMessage(chatId, reply);
+    } catch (err) {
+      await sendTelegramMessage(chatId, 'Could not fetch status at this time.');
+    }
+  } else if (text.startsWith('/stats')) {
     try {
       const logs = await getPerformanceLogs();
       let pipsGained = 0, pipsLost = 0;
@@ -46,7 +76,7 @@ async function handleTelegramUpdate(update) {
         return;
       }
     }
-    await sendTelegramMessage(chatId, '👋 Welcome to *Pips Attendant Bot*!\n\nCommands:\n/stats — View trading stats\n\nTo link your account, use the button in your Pips Attendant profile.', { parse_mode: 'Markdown' });
+    await sendTelegramMessage(chatId, '👋 Welcome to *Pips Attendant Bot*!\n\nCommands:\n/status — Check your VIP subscription\n/stats — View trading stats\n\nTo link your account, use the button in your Pips Attendant profile.', { parse_mode: 'Markdown' });
   }
 }
 

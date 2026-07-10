@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const db = require('./db');
 const { JWT_SECRET } = require('../middleware/auth');
 
-const VALID_ROOMS = ['general', 'vip', 'signals'];
+const VALID_ROOMS = ['general', 'vip', 'signals', 'platinum'];
 
 function initializeSocket(server) {
   const io = socketIo(server, {
@@ -20,7 +20,7 @@ function initializeSocket(server) {
   });
 
   // Authenticate connections (optional token — unauthenticated can use general room only)
-  io.use((socket, next) => {
+  io.use(async (socket, next) => {
     const token = socket.handshake.auth.token;
     if (!token) {
       socket.user = null; // unauthenticated — general room only
@@ -29,6 +29,12 @@ function initializeSocket(server) {
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
       socket.user = decoded;
+      // Fetch latest user data for avatar/tier
+      const user = await db.getUserById(decoded.id || decoded._id);
+      if (user) {
+        socket.user.avatar = user.avatar;
+        socket.user.subscriptionTier = user.subscriptionTier;
+      }
       next();
     } catch (err) {
       socket.user = null;
@@ -49,6 +55,14 @@ function initializeSocket(server) {
         }
       }
 
+      if (room === 'platinum') {
+        const tier = (socket.user && socket.user.subscriptionTier) ? socket.user.subscriptionTier.toLowerCase() : '';
+        if (!tier.includes('platinum')) {
+          socket.emit('roomError', { room, error: 'Platinum subscription required.' });
+          return;
+        }
+      }
+
       // Leave any other rooms first (except the socket's own room)
       VALID_ROOMS.forEach(r => {
         if (r !== room) socket.leave(`room:${r}`);
@@ -64,6 +78,7 @@ function initializeSocket(server) {
         if (!data || !data.text) return;
         const room = VALID_ROOMS.includes(data.room) ? data.room : 'general';
         const author = data.author || (socket.user?.name) || 'Member';
+        const avatar = socket.user?.avatar || null;
 
         // Signals room is admin-only
         if (room === 'signals') {
@@ -81,7 +96,16 @@ function initializeSocket(server) {
           }
         }
 
-        const msg = await db.addChatMessage({ author, text: data.text, room });
+        // Platinum room requires Platinum tier
+        if (room === 'platinum') {
+           const tier = (socket.user && socket.user.subscriptionTier) ? socket.user.subscriptionTier.toLowerCase() : '';
+           if (!tier.includes('platinum')) {
+              socket.emit('error', 'Platinum subscription required.');
+              return;
+           }
+        }
+
+        const msg = await db.addChatMessage({ author, text: data.text, room, avatar });
         io.to(`room:${room}`).emit('newMessage', msg);
       } catch (err) {
         socket.emit('error', 'Failed to send message');
