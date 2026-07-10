@@ -10,6 +10,9 @@ const { sendEmail } = require('../services/emailService');
 const { sendTelegramMessage } = require('../services/telegramBot');
 const logger = require('../utils/logger');
 
+// In-memory 2FA OTP store: { email -> { otp, expiresAt, userId } }
+const _otpStore = new Map();
+
 function hashPassword(password) {
   return bcrypt.hashSync(password, 10);
 }
@@ -126,7 +129,65 @@ router.post('/login', authLimiter, async (req, res) => {
       await saveUser(user);
   }
 
+  // === Email 2FA ===
+  const otp = String(Math.floor(100000 + Math.random() * 900000)); // 6-digit OTP
+  const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+  _otpStore.set(email, { otp, expiresAt, userId: String(user._id || user.id) });
+
+  const otpHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#0a0a0a;font-family:'Segoe UI',Arial,sans-serif;">
+<div style="max-width:480px;margin:40px auto;background:#111827;border-radius:16px;border:1px solid rgba(251,191,36,0.2);overflow:hidden;">
+  <div style="background:linear-gradient(135deg,#92400e,#b45309);padding:28px 24px;text-align:center;">
+    <div style="font-size:42px;">🔐</div>
+    <h1 style="color:#fff;margin:8px 0 0;font-size:22px;font-weight:800;">Verify Your Login</h1>
+    <p style="color:rgba(255,255,255,0.75);margin:4px 0 0;font-size:13px;">Pips Attendant Security Code</p>
+  </div>
+  <div style="padding:32px 28px;">
+    <p style="color:#d1d5db;font-size:14px;margin:0 0 20px;">Your 6-digit one-time login code is:</p>
+    <div style="background:#0a0a0a;border:2px solid rgba(251,191,36,0.4);border-radius:12px;padding:20px;text-align:center;letter-spacing:12px;">
+      <span style="font-size:38px;font-weight:900;color:#fbbf24;font-family:monospace;">${otp}</span>
+    </div>
+    <p style="color:#6b7280;font-size:12px;margin:16px 0 0;text-align:center;">This code expires in <strong style="color:#fbbf24;">10 minutes</strong>. Never share it with anyone.</p>
+  </div>
+</div>
+</body></html>`;
+
+  try {
+    await sendEmail({ to: email, subject: '🔐 Your Pips Attendant Login Code', html: otpHtml });
+    logger.info(`[2FA] OTP sent to ${email}`);
+  } catch (err) {
+    logger.error('[2FA] Failed to send OTP email: ' + err.message);
+    // Fallback: return token directly if email fails (graceful degradation)
+    const sessionToken = generateUserToken(user);
+    return res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, avatar: user.avatar, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier, telegramId: user.telegramId, badges: user.badges || [] } });
+  }
+
+  // Return 2FA pending response — no token yet
+  res.json({ ok: true, twoFaRequired: true, message: 'OTP sent to your email. Please check your inbox.' });
+});
+
+// POST /api/auth/verify-2fa — verify OTP and return session token
+router.post('/verify-2fa', authLimiter, async (req, res) => {
+  const { email: rawEmail, otp } = req.body;
+  if (!rawEmail || !otp) return res.status(400).json({ ok: false, error: 'Email and OTP required.' });
+  const email = rawEmail.toLowerCase().trim();
+
+  const record = _otpStore.get(email);
+  if (!record) return res.status(401).json({ ok: false, error: 'No OTP found. Please login again.' });
+  if (Date.now() > record.expiresAt) {
+    _otpStore.delete(email);
+    return res.status(401).json({ ok: false, error: 'OTP has expired. Please login again.' });
+  }
+  if (record.otp !== String(otp).trim()) {
+    return res.status(401).json({ ok: false, error: 'Incorrect code. Please try again.' });
+  }
+
+  _otpStore.delete(email); // consume OTP
+  const user = await getUserByEmail(email);
+  if (!user) return res.status(404).json({ ok: false, error: 'User not found.' });
+
   const sessionToken = generateUserToken(user);
+  logger.info(`[2FA] User ${email} verified successfully.`);
   res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, avatar: user.avatar, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier, telegramId: user.telegramId, badges: user.badges || [] } });
 });
 
@@ -260,13 +321,14 @@ router.post('/change-password', validateUserSession, authLimiter, async (req, re
 });
 
 router.post('/update-profile', validateUserSession, async (req, res) => {
-  const { name, avatar } = req.body;
+  const { name, avatar, leaderboardOptOut } = req.body;
   if (!name || name.trim() === '') return res.status(400).json({ ok: false, error: 'Name cannot be empty.' });
 
   const user = await getUserById(req.user._id || req.user.id);
   if (!user) return res.status(404).json({ ok: false, error: 'User not found.' });
 
   user.name = name.trim();
+  user.leaderboardOptOut = !!leaderboardOptOut;
   if (avatar !== undefined) {
     // Basic validation to prevent huge payloads (limit to ~200kb base64 string or short emoji string)
     if (avatar.length > 300000) {
@@ -276,7 +338,7 @@ router.post('/update-profile', validateUserSession, async (req, res) => {
   }
 
   await saveUser(user);
-  res.json({ ok: true, message: 'Profile updated successfully.', name: user.name, avatar: user.avatar });
+  res.json({ ok: true, message: 'Profile updated successfully.', name: user.name, avatar: user.avatar, leaderboardOptOut: user.leaderboardOptOut });
 });
 
 router.post('/leaderboard-optin', validateUserSession, async (req, res) => {

@@ -181,7 +181,7 @@
   <main class="container mx-auto px-4 max-w-5xl relative z-10">
     
     <!-- Top Navigation / Header -->
-    <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-8 pb-4 border-b border-white/10">
+    <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-4 pb-4 border-b border-white/10">
       <div class="flex items-center gap-3">
         <a href="index.html" class="flex items-center justify-center w-10 h-10 rounded-full border border-white/10 bg-white/5 hover:bg-neon-blue/10 hover:border-neon-blue transition duration-300">
           <i data-feather="arrow-left" class="w-5 h-5 text-gray-400 hover:text-neon-blue"></i>
@@ -206,6 +206,16 @@
           Setup Credentials
         </button>
       </div>
+    </div>
+
+    <!-- Admin Tabs -->
+    <div id="adminTabs" class="hidden flex gap-4 mb-8">
+      <button onclick="switchAdminTab('broadcast')" id="tab-broadcast" class="px-5 py-2 rounded-xl text-sm font-bold bg-neon-blue/20 text-neon-blue border border-neon-blue/50 transition">
+        Broadcaster
+      </button>
+      <button onclick="switchAdminTab('propfirm')" id="tab-propfirm" class="px-5 py-2 rounded-xl text-sm font-bold bg-black/40 text-gray-400 border border-white/10 hover:text-white transition">
+        Prop Firm Mgmt
+      </button>
     </div>
 
     <!-- 🔒 1. SETUP / CONFIGURATION PANEL (Shows if no localStorage) -->
@@ -1360,6 +1370,83 @@
       </div>
     </div>
 
+    <!-- 🏦 3. PROP FIRM MANAGEMENT PANEL -->
+    <div id="propfirmPanel" class="hidden">
+      <div class="glass-card rounded-2xl p-6 border border-white/10">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-bold text-white">Prop Firm Accounts</h2>
+          <button onclick="loadPropFirmAccounts()" class="text-neon-blue text-xs hover:underline flex items-center gap-1"><i data-feather="refresh-cw" class="w-3 h-3"></i> Refresh</button>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+          <!-- Update Form -->
+          <div class="md:col-span-4 space-y-4">
+            <h3 class="text-sm font-bold text-amber-400 border-b border-white/10 pb-2">Assign / Update Account</h3>
+            <form id="propFirmForm" onsubmit="savePropFirmAccount(event)" class="space-y-3">
+              <div>
+                <label class="block text-[10px] text-gray-400 mb-1">User ID</label>
+                <input type="text" id="pfUserId" required placeholder="MongoDB User ID" class="w-full text-xs bg-black/40 border border-white/10 text-white rounded-lg px-3 py-2 outline-none focus:border-amber-400">
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[10px] text-gray-400 mb-1">Firm</label>
+                  <input type="text" id="pfFirm" required placeholder="e.g. FTMO" class="w-full text-xs bg-black/40 border border-white/10 text-white rounded-lg px-3 py-2 outline-none focus:border-amber-400">
+                </div>
+                <div>
+                  <label class="block text-[10px] text-gray-400 mb-1">Phase</label>
+                  <select id="pfPhase" class="w-full text-xs bg-black/40 border border-white/10 text-white rounded-lg px-3 py-2 outline-none focus:border-amber-400">
+                    <option value="Phase 1">Phase 1</option>
+                    <option value="Phase 2">Phase 2</option>
+                    <option value="Funded">Funded</option>
+                  </select>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[10px] text-gray-400 mb-1">Acc Size ($)</label>
+                  <input type="number" id="pfSize" required value="10000" class="w-full text-xs bg-black/40 border border-white/10 text-white rounded-lg px-3 py-2 outline-none focus:border-amber-400">
+                </div>
+                <div>
+                  <label class="block text-[10px] text-gray-400 mb-1">Status</label>
+                  <select id="pfStatus" class="w-full text-xs bg-black/40 border border-white/10 text-white rounded-lg px-3 py-2 outline-none focus:border-amber-400">
+                    <option value="active">Active</option>
+                    <option value="passed">Passed</option>
+                    <option value="failed">Failed</option>
+                  </select>
+                </div>
+              </div>
+              <div class="grid grid-cols-3 gap-2">
+                <div>
+                  <label class="block text-[10px] text-gray-400 mb-1">Target %</label>
+                  <input type="number" step="0.1" id="pfTarget" required value="8" class="w-full text-xs bg-black/40 border border-white/10 text-white rounded-lg px-2 py-2 outline-none focus:border-amber-400">
+                </div>
+                <div>
+                  <label class="block text-[10px] text-gray-400 mb-1">Current %</label>
+                  <input type="number" step="0.1" id="pfCurrent" required value="0" class="w-full text-xs bg-black/40 border border-white/10 text-white rounded-lg px-2 py-2 outline-none focus:border-amber-400">
+                </div>
+                <div>
+                  <label class="block text-[10px] text-gray-400 mb-1">Max DD %</label>
+                  <input type="number" step="0.1" id="pfDrawdown" required value="5" class="w-full text-xs bg-black/40 border border-white/10 text-white rounded-lg px-2 py-2 outline-none focus:border-amber-400">
+                </div>
+              </div>
+              <div>
+                <label class="block text-[10px] text-gray-400 mb-1">Admin Notes</label>
+                <input type="text" id="pfNotes" placeholder="Optional notes..." class="w-full text-xs bg-black/40 border border-white/10 text-white rounded-lg px-3 py-2 outline-none focus:border-amber-400">
+              </div>
+              <button type="submit" class="w-full py-2 bg-amber-500/20 text-amber-400 hover:bg-amber-500 hover:text-black rounded-lg text-xs font-bold transition">Save Account</button>
+            </form>
+          </div>
+
+          <!-- Accounts List -->
+          <div class="md:col-span-8 space-y-4">
+            <h3 class="text-sm font-bold text-white border-b border-white/10 pb-2">Active Tracker Accounts</h3>
+            <div id="pfList" class="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
+              <p class="text-xs text-gray-500 text-center py-4">Loading accounts...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 
     <!-- 📈 ANALYTICS PANEL -->
@@ -4600,6 +4687,146 @@
         showSocialToast('❌ Could not reach Discord. Check your connection.', '#f87171');
       }
     }
+    // ==========================================
+    // 🏦 PROP FIRM MANAGEMENT LOGIC
+    // ==========================================
+
+    function switchAdminTab(tab) {
+      document.getElementById('dashboardPanel').classList.add('hidden');
+      document.getElementById('propfirmPanel').classList.add('hidden');
+      document.getElementById('tab-broadcast').classList.replace('bg-neon-blue/20', 'bg-black/40');
+      document.getElementById('tab-broadcast').classList.replace('text-neon-blue', 'text-gray-400');
+      document.getElementById('tab-propfirm').classList.replace('bg-neon-blue/20', 'bg-black/40');
+      document.getElementById('tab-propfirm').classList.replace('text-neon-blue', 'text-gray-400');
+      
+      if (tab === 'broadcast') {
+        document.getElementById('dashboardPanel').classList.remove('hidden');
+        document.getElementById('tab-broadcast').classList.replace('bg-black/40', 'bg-neon-blue/20');
+        document.getElementById('tab-broadcast').classList.replace('text-gray-400', 'text-neon-blue');
+      } else if (tab === 'propfirm') {
+        document.getElementById('propfirmPanel').classList.remove('hidden');
+        document.getElementById('tab-propfirm').classList.replace('bg-black/40', 'bg-neon-blue/20');
+        document.getElementById('tab-propfirm').classList.replace('text-gray-400', 'text-neon-blue');
+        loadPropFirmAccounts();
+      }
+    }
+
+    async function loadPropFirmAccounts() {
+      const adminKey = localStorage.getItem('pa_admin_key');
+      const list = document.getElementById('pfList');
+      list.innerHTML = '<p class="text-xs text-gray-500 text-center py-4">Loading...</p>';
+      
+      try {
+        const res = await fetch('/api/propfirm/admin/all', { headers: { 'x-admin-key': adminKey } });
+        const data = await res.json();
+        if (data.ok) {
+          if (!data.accounts.length) {
+            list.innerHTML = '<p class="text-xs text-gray-500 text-center py-4">No active prop firm accounts found.</p>';
+            return;
+          }
+          list.innerHTML = data.accounts.map(acc => `
+            <div class="bg-black/40 border border-white/5 rounded-xl p-3 flex justify-between items-center hover:border-white/10 transition">
+              <div>
+                <p class="text-[11px] font-bold text-white">${acc.userName || acc.userEmail}</p>
+                <p class="text-[10px] text-gray-400">${acc.firm} • ${acc.phase} • $${acc.accountSize}</p>
+                <div class="flex gap-2 mt-1 text-[10px]">
+                  <span class="text-amber-400 font-bold">Target: ${acc.currentPercent}% / ${acc.targetPercent}%</span>
+                  <span class="text-rose-400 font-bold">DD: ${acc.maxDrawdown}%</span>
+                </div>
+              </div>
+              <div class="flex flex-col gap-1 items-end">
+                <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase ${acc.status === 'passed' ? 'bg-emerald-500/20 text-emerald-400' : acc.status === 'failed' ? 'bg-rose-500/20 text-rose-400' : 'bg-sky-500/20 text-sky-400'}">${acc.status}</span>
+                <div class="flex gap-1 mt-1">
+                  <button onclick="editPropFirm('${acc.userId}')" class="text-xs text-neon-blue hover:underline">Edit</button>
+                  <button onclick="deletePropFirm('${acc.userId}')" class="text-xs text-rose-400 hover:underline">Del</button>
+                </div>
+              </div>
+            </div>
+          `).join('');
+          window._pfAccounts = data.accounts; // store for editing
+        } else {
+          list.innerHTML = `<p class="text-xs text-rose-500 text-center py-4">${data.error}</p>`;
+        }
+      } catch (e) {
+        list.innerHTML = `<p class="text-xs text-rose-500 text-center py-4">Error loading accounts.</p>`;
+      }
+    }
+
+    function editPropFirm(userId) {
+      const acc = window._pfAccounts?.find(a => a.userId === userId);
+      if (!acc) return;
+      document.getElementById('pfUserId').value = acc.userId;
+      document.getElementById('pfFirm').value = acc.firm;
+      document.getElementById('pfPhase').value = acc.phase;
+      document.getElementById('pfSize').value = acc.accountSize;
+      document.getElementById('pfStatus').value = acc.status;
+      document.getElementById('pfTarget').value = acc.targetPercent;
+      document.getElementById('pfCurrent').value = acc.currentPercent;
+      document.getElementById('pfDrawdown').value = acc.maxDrawdown;
+      document.getElementById('pfNotes').value = acc.notes || '';
+    }
+
+    async function savePropFirmAccount(e) {
+      e.preventDefault();
+      const adminKey = localStorage.getItem('pa_admin_key');
+      const payload = {
+        userId: document.getElementById('pfUserId').value,
+        firm: document.getElementById('pfFirm').value,
+        phase: document.getElementById('pfPhase').value,
+        accountSize: Number(document.getElementById('pfSize').value),
+        status: document.getElementById('pfStatus').value,
+        targetPercent: Number(document.getElementById('pfTarget').value),
+        currentPercent: Number(document.getElementById('pfCurrent').value),
+        maxDrawdown: Number(document.getElementById('pfDrawdown').value),
+        notes: document.getElementById('pfNotes').value
+      };
+      
+      const btn = e.target.querySelector('button[type="submit"]');
+      const oldText = btn.innerText;
+      btn.innerText = 'Saving...';
+      
+      try {
+        const res = await fetch('/api/propfirm/admin/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showToast('Prop firm account updated!');
+          loadPropFirmAccounts();
+        } else {
+          alert('Error: ' + data.error);
+        }
+      } catch (err) {
+        alert('Network error.');
+      }
+      btn.innerText = oldText;
+    }
+
+    async function deletePropFirm(userId) {
+      if (!confirm('Are you sure you want to delete this prop firm tracking account?')) return;
+      const adminKey = localStorage.getItem('pa_admin_key');
+      try {
+        const res = await fetch(`/api/propfirm/admin/${userId}`, {
+          method: 'DELETE',
+          headers: { 'x-admin-key': adminKey }
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showToast('Account deleted');
+          loadPropFirmAccounts();
+        }
+      } catch (err) {}
+    }
+    
+    // Auto-show tabs if logged in
+    document.addEventListener("DOMContentLoaded", () => {
+      const k = localStorage.getItem('pa_admin_key');
+      if(k) {
+         document.getElementById('adminTabs').classList.remove('hidden');
+      }
+    });
 
   </script>
 </body>
