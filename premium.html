@@ -3876,9 +3876,10 @@
             const expiryEl = document.getElementById('vipExpiryText');
             const accountExpiryEl = document.getElementById('accountExpiryLabel');
             const accountTierEl = document.getElementById('accountTierLabel');
+            let daysLeft = null;
             if (data.user.subscriptionExpiry) {
               const expiryDate = new Date(data.user.subscriptionExpiry);
-              const daysLeft = Math.ceil((data.user.subscriptionExpiry - Date.now()) / (1000 * 60 * 60 * 24));
+              daysLeft = Math.ceil((data.user.subscriptionExpiry - Date.now()) / (1000 * 60 * 60 * 24));
               const expiryStr = expiryDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
               if (expiryEl) expiryEl.textContent = `Expires ${expiryStr} (${daysLeft} day${daysLeft !== 1 ? 's' : ''} left)`;
               if (accountExpiryEl) accountExpiryEl.textContent = expiryStr;
@@ -3886,7 +3887,7 @@
             if (accountTierEl) accountTierEl.textContent = isPlatinum ? '💎 VIP Platinum' : '⭐ VIP Gold';
 
             // ── Expiry warning toast (≤7 days left) ────────────────
-            if (daysLeft <= 7 && daysLeft > 0) {
+            if (daysLeft !== null && daysLeft <= 7 && daysLeft > 0) {
               showToast('VIP Expiring Soon', `⚠️ Your VIP expires in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}! Renew now to keep access.`, 'info');
             }
 
