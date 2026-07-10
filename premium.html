@@ -1441,14 +1441,14 @@
           </div>
           <div class="p-4 bg-black/30">
             <!-- TradingView Technical Analysis Widget -->
-            <div class="tradingview-widget-container" style="height:400px; width:100%;">
-              <div class="tradingview-widget-container__widget" style="height:calc(100% - 32px); width:100%"></div>
+            <div class="tradingview-widget-container" style="height:430px; width:100%;">
+              <div class="tradingview-widget-container__widget" style="height:100%; width:100%;"></div>
               <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" async>
               {
                 "interval": "1h",
-                "width": "100%",
+                "autosize": true,
                 "isTransparent": true,
-                "height": 400,
+                "height": 430,
                 "symbol": "OANDA:XAUUSD",
                 "showIntervalTabs": true,
                 "displayMode": "single",
