@@ -3456,8 +3456,12 @@
       }
     }
 
+    let isAuthenticating = false;
     async function handleAuth(e) {
       e.preventDefault();
+      if (isAuthenticating) return;
+      isAuthenticating = true;
+
       const email = document.getElementById('authEmail').value.trim();
       const password = document.getElementById('authPassword').value;
       const name = document.getElementById('authName').value.trim();
@@ -3468,12 +3472,12 @@
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
         if (!passwordRegex.test(password)) {
           errorEl.textContent = '❌ Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.';
+          isAuthenticating = false;
           return;
         }
       }
 
       const endpoint = authMode === 'login' ? '/api/login' : '/api/register';
-      // Pass referral code from URL if present during registration
       const urlRef = new URLSearchParams(window.location.search).get('ref');
       const body = authMode === 'login' ? { email, password } : { email, password, name, referralCode: urlRef || undefined };
       
@@ -3481,6 +3485,14 @@
       btn.innerHTML = '<span class="animate-pulse">Processing...</span>';
       btn.disabled = true;
       errorEl.textContent = '';
+      errorEl.style.color = '';
+
+      const wakeTimeout = setTimeout(() => {
+        if (btn.disabled && !errorEl.textContent) {
+          errorEl.style.color = '#fbbf24'; // text-yellow-400
+          errorEl.textContent = 'Server is waking up (can take up to 60s). Please wait...';
+        }
+      }, 5000);
       
       try {
         const res = await fetch(endpoint, {
@@ -3511,13 +3523,17 @@
           }
           checkUserAccess();
         } else {
+          errorEl.style.color = '';
           errorEl.textContent = `❌ ${data.error || 'Authentication failed'}`;
         }
       } catch (err) {
+        errorEl.style.color = '';
         errorEl.textContent = '❌ Server error. Please try again.';
       } finally {
+        clearTimeout(wakeTimeout);
         btn.innerHTML = origText;
         btn.disabled = false;
+        isAuthenticating = false;
       }
     }
 
