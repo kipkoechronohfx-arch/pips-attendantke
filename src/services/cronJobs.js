@@ -110,12 +110,43 @@ async function computeAndSaveBadges(userId) {
   }
 }
 
+async function autoArchiveSignals() {
+  try {
+    const signals = await db.getSignals(100);
+    const now = Date.now();
+    const TTL_MS = 48 * 60 * 60 * 1000; // 48 hours
+    let archivedCount = 0;
+    
+    for (const s of signals) {
+      if (s.type === 'signal' && (!s.outcome || s.outcome === 'Running')) {
+        const sentTime = typeof s.sentAt === 'string' ? new Date(s.sentAt).getTime() : Number(s.sentAt);
+        if (now - sentTime > TTL_MS) {
+          await db.updateSignalOutcome(s.id || s._id, 'Expired');
+          archivedCount++;
+        }
+      }
+    }
+    if (archivedCount > 0) {
+      logger.info(`[Cron] Auto-archived ${archivedCount} expired signals.`);
+    }
+  } catch (err) {
+    logger.error(`[Cron] Auto-archive failed: ${err.message}`);
+  }
+}
+
 function startCronJobs() {
   cron.schedule("0 5 * * *", () => {
     logger.info("[Cron] Running daily VIP expiry reminder check...");
     runExpiryReminders();
   });
-  logger.info("[Cron] Jobs scheduled: VIP expiry reminders daily at 08:00 EAT");
+  
+  // Run every hour to check for expired signals (older than 48 hours)
+  cron.schedule("0 * * * *", () => {
+    logger.info("[Cron] Checking for expired signals...");
+    autoArchiveSignals();
+  });
+  
+  logger.info("[Cron] Jobs scheduled: VIP expiry daily, Signal Auto-Archive hourly");
 }
 
-module.exports = { startCronJobs, computeAndSaveBadges, BADGE_DEFINITIONS };
+module.exports = { startCronJobs, computeAndSaveBadges, BADGE_DEFINITIONS, autoArchiveSignals };
