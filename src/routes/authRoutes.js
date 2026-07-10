@@ -154,12 +154,11 @@ router.post('/login', authLimiter, async (req, res) => {
 
   try {
     await sendEmail(email, '🔐 Your Pips Attendant Login Code', otpHtml);
-    logger.info(`[2FA] OTP sent to ${email}`);
+    logger.info(`[2FA] OTP ${otp} sent to ${email}`);
   } catch (err) {
     logger.error('[2FA] Failed to send OTP email: ' + err.message);
-    // Fallback: return token directly if email fails (graceful degradation)
     const sessionToken = generateUserToken(user);
-    return res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, avatar: user.avatar, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier, telegramId: user.telegramId, badges: user.badges || [] } });
+    return res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, avatar: user.avatar, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier, telegramId: user.telegramId, badges: user.badges || [], role: user.role || 'user' } });
   }
 
   // Return 2FA pending response — no token yet
@@ -188,7 +187,7 @@ router.post('/verify-2fa', authLimiter, async (req, res) => {
 
   const sessionToken = generateUserToken(user);
   logger.info(`[2FA] User ${email} verified successfully.`);
-  res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, avatar: user.avatar, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier, telegramId: user.telegramId, badges: user.badges || [] } });
+  res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, avatar: user.avatar, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier, telegramId: user.telegramId, badges: user.badges || [], role: user.role || 'user' } });
 });
 
 router.get('/me', validateUserSession, (req, res) => {
@@ -207,7 +206,8 @@ router.get('/me', validateUserSession, (req, res) => {
       telegramId: req.user.telegramId,
       badges: req.user.badges || [],
       completedModules: req.user.completedModules || [],
-      webhookUrl: req.user.webhookUrl || ''
+      webhookUrl: req.user.webhookUrl || '',
+      role: req.user.role || 'user'
     }
   });
 });
