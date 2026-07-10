@@ -129,22 +129,42 @@ router.post('/login', authLimiter, async (req, res) => {
       await saveUser(user);
   }
 
-  // === 2FA is temporarily disabled until SendGrid is configured on Render ===
-  // To re-enable: set SENDGRID_FROM_EMAIL and SENDGRID_API_KEY env vars, then
-  // uncomment the block below and remove the direct login lines.
-  // --- START 2FA DISABLED BLOCK ---
-  /*
-  const otp = String(Math.floor(100000 + Math.random() * 900000));
-  const expiresAt = Date.now() + 10 * 60 * 1000;
+  // === Email 2FA ===
+  const otp = String(Math.floor(100000 + Math.random() * 900000)); // 6-digit OTP
+  const expiresAt = Date.now() + 15 * 60 * 1000; // 15 minutes
   _otpStore.set(email, { otp, expiresAt, userId: String(user._id || user.id) });
-  // ... send OTP email and return twoFaRequired: true ...
-  */
-  // --- END 2FA DISABLED BLOCK ---
 
-  logger.info(`[Login] Direct login (2FA disabled) for ${email}`);
-  const sessionToken = generateUserToken(user);
-  return res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, avatar: user.avatar, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier, telegramId: user.telegramId, badges: user.badges || [], role: user.role || 'user' } });
+  const otpHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#0a0a0a;font-family:'Segoe UI',Arial,sans-serif;">
+<div style="max-width:480px;margin:40px auto;background:#111827;border-radius:16px;border:1px solid rgba(251,191,36,0.2);overflow:hidden;">
+  <div style="background:linear-gradient(135deg,#92400e,#b45309);padding:28px 24px;text-align:center;">
+    <div style="font-size:42px;">🔐</div>
+    <h1 style="color:#fff;margin:8px 0 0;font-size:22px;font-weight:800;">Verify Your Login</h1>
+    <p style="color:rgba(255,255,255,0.75);margin:4px 0 0;font-size:13px;">Pips Attendant Security Code</p>
+  </div>
+  <div style="padding:32px 28px;">
+    <p style="color:#d1d5db;font-size:14px;margin:0 0 20px;">Your 6-digit one-time login code is:</p>
+    <div style="background:#0a0a0a;border:2px solid rgba(251,191,36,0.4);border-radius:12px;padding:20px;text-align:center;letter-spacing:12px;">
+      <span style="font-size:38px;font-weight:900;color:#fbbf24;font-family:monospace;">${otp}</span>
+    </div>
+    <p style="color:#6b7280;font-size:12px;margin:16px 0 0;text-align:center;">This code expires in <strong style="color:#fbbf24;">15 minutes</strong>. Never share it with anyone.</p>
+  </div>
+</div>
+</body></html>`;
+
+  try {
+    await sendEmail(email, '🔐 Your Pips Attendant Login Code', otpHtml);
+    logger.info(`[2FA] OTP sent to ${email}`);
+    // Return 2FA pending response — session token will be issued after OTP verification
+    return res.json({ ok: true, twoFaRequired: true, message: 'OTP sent to your email. Please check your inbox.' });
+  } catch (err) {
+    // If email fails for any reason, fall back to direct login so users are never locked out
+    logger.error('[2FA] Failed to send OTP email — falling back to direct login: ' + err.message);
+    const sessionToken = generateUserToken(user);
+    return res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, avatar: user.avatar, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier, telegramId: user.telegramId, badges: user.badges || [], role: user.role || 'user' } });
+  }
 });
+
 
 // POST /api/auth/verify-2fa — verify OTP and return session token
 router.post('/verify-2fa', authLimiter, async (req, res) => {
