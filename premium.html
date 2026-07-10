@@ -1924,47 +1924,7 @@
       modal.classList.remove('hidden');
       setTimeout(() => modal.classList.remove('opacity-0'), 10);
       fetchPropFirmStatus();
-    }
     
-    async function fetchPropFirmStatus() {
-      try {
-        const res = await fetch('/api/propfirm/status', {
-          headers: { 'Authorization': 'Bearer ' + _token }
-        });
-        const data = await res.json();
-        if (data.ok && data.account) {
-          const acc = data.account;
-          document.getElementById('propFirmSection').classList.remove('hidden');
-          document.getElementById('propFirmDivider').classList.remove('hidden');
-          
-          document.getElementById('pfUserFirm').innerText = acc.firm;
-          document.getElementById('pfUserPhase').innerText = acc.phase;
-          document.getElementById('pfUserSize').innerText = '$' + acc.accountSize.toLocaleString();
-          document.getElementById('pfUserCurrent').innerText = acc.currentPercent;
-          document.getElementById('pfUserTarget').innerText = acc.targetPercent;
-          
-          let progress = (acc.currentPercent / acc.targetPercent) * 100;
-          if (progress < 0) progress = 0;
-          if (progress > 100) progress = 100;
-          document.getElementById('pfUserProgress').style.width = progress + '%';
-          
-          document.getElementById('pfUserDrawdown').innerText = acc.maxDrawdown + '%';
-          
-          const statusEl = document.getElementById('pfUserStatus');
-          statusEl.innerText = acc.status;
-          if (acc.status === 'passed') { statusEl.className = 'text-xs font-bold uppercase text-emerald-400'; }
-          else if (acc.status === 'failed') { statusEl.className = 'text-xs font-bold uppercase text-rose-400'; }
-          else { statusEl.className = 'text-xs font-bold uppercase text-amber-400'; }
-          
-          if (acc.notes) {
-            document.getElementById('pfUserNotes').innerText = '"' + acc.notes + '"';
-            document.getElementById('pfUserNotes').classList.remove('hidden');
-          } else {
-            document.getElementById('pfUserNotes').classList.add('hidden');
-          }
-        }
-      } catch(err) { console.error('PropFirm error:', err); }
-    }
 
       // Populate referral link with the user's ID
       const token = sessionStorage.getItem('vip_session_token');
@@ -2009,6 +1969,45 @@
       }
       fetchUserTickets();
       feather.replace();
+    }
+    async function fetchPropFirmStatus() {
+      try {
+        const res = await fetch('/api/propfirm/status', {
+          headers: { 'Authorization': 'Bearer ' + _token }
+        });
+        const data = await res.json();
+        if (data.ok && data.account) {
+          const acc = data.account;
+          document.getElementById('propFirmSection').classList.remove('hidden');
+          document.getElementById('propFirmDivider').classList.remove('hidden');
+          
+          document.getElementById('pfUserFirm').innerText = acc.firm;
+          document.getElementById('pfUserPhase').innerText = acc.phase;
+          document.getElementById('pfUserSize').innerText = '$' + acc.accountSize.toLocaleString();
+          document.getElementById('pfUserCurrent').innerText = acc.currentPercent;
+          document.getElementById('pfUserTarget').innerText = acc.targetPercent;
+          
+          let progress = (acc.currentPercent / acc.targetPercent) * 100;
+          if (progress < 0) progress = 0;
+          if (progress > 100) progress = 100;
+          document.getElementById('pfUserProgress').style.width = progress + '%';
+          
+          document.getElementById('pfUserDrawdown').innerText = acc.maxDrawdown + '%';
+          
+          const statusEl = document.getElementById('pfUserStatus');
+          statusEl.innerText = acc.status;
+          if (acc.status === 'passed') { statusEl.className = 'text-xs font-bold uppercase text-emerald-400'; }
+          else if (acc.status === 'failed') { statusEl.className = 'text-xs font-bold uppercase text-rose-400'; }
+          else { statusEl.className = 'text-xs font-bold uppercase text-amber-400'; }
+          
+          if (acc.notes) {
+            document.getElementById('pfUserNotes').innerText = '"' + acc.notes + '"';
+            document.getElementById('pfUserNotes').classList.remove('hidden');
+          } else {
+            document.getElementById('pfUserNotes').classList.add('hidden');
+          }
+        }
+      } catch(err) { console.error('PropFirm error:', err); }
     }
 
     async function handleWebhookSave(e) {
