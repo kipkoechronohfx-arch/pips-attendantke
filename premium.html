@@ -10,6 +10,7 @@
     <meta name="theme-color" content="#050505">
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="apple-touch-icon" href="favicon.png">
+    <link rel="manifest" href="/manifest.json">
     
     <!-- Open Graph / Social Media Meta Tags -->
     <meta property="og:title" content="VIP Access | Pips Attendant">
@@ -45,6 +46,16 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-primary text-gray-300 font-sans antialiased min-h-screen flex flex-col relative selection:bg-gold/30 selection:text-white pt-[118px]">
+
+    <!-- ── Offline Banner ── -->
+    <div id="offlineBanner" style="position:fixed;top:0;left:0;right:0;z-index:9999;transform:translateY(-200%);transition:transform 0.4s cubic-bezier(0.4,0,0.2,1);" class="translate-y-[-200%]">
+      <div style="background:linear-gradient(90deg,#b45309,#d97706);padding:8px 16px;display:flex;align-items:center;justify-content:center;gap:10px;font-family:inherit;font-size:13px;font-weight:600;color:#fff;">
+        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#fff;animation:blink-anim 1.4s ease-in-out infinite;"></span>
+        You're offline — some features may be limited. Cached data is available.
+        <a href="/offline.html" style="color:#fef3c7;text-decoration:underline;margin-left:8px;font-size:12px;">View offline page</a>
+      </div>
+    </div>
+    <style>@keyframes blink-anim{0%,100%{opacity:1}50%{opacity:0.3}}</style>
 
     <!-- Ambient Glows -->
     <div class="ambient-glow-1"></div>
@@ -127,6 +138,32 @@
 
       // Check if we should show the button
       window.addEventListener('load', async () => {
+        // ── Register Service Worker (PWA) ─────────────────────
+        if ('serviceWorker' in navigator) {
+          try {
+            await navigator.serviceWorker.register('/sw.js');
+          } catch (e) {
+            console.warn('[SW] Registration failed:', e);
+          }
+        }
+
+        // ── Offline / Online banner ────────────────────────────
+        const banner = document.getElementById('offlineBanner');
+        function setOnlineState(online) {
+          if (!banner) return;
+          if (online) {
+            banner.classList.add('translate-y-[-200%]');
+            banner.classList.remove('translate-y-0');
+          } else {
+            banner.classList.remove('translate-y-[-200%]');
+            banner.classList.add('translate-y-0');
+          }
+        }
+        window.addEventListener('online',  () => setOnlineState(true));
+        window.addEventListener('offline', () => setOnlineState(false));
+        setOnlineState(navigator.onLine);
+
+        // ── Push button visibility ────────────────────────────
         if ('serviceWorker' in navigator && 'PushManager' in window) {
           const registration = await navigator.serviceWorker.ready;
           const subscription = await registration.pushManager.getSubscription();
@@ -759,6 +796,10 @@
                   <label class="block text-[10px] text-gray-500 mb-1">Notes</label>
                   <input type="text" id="jNotes" placeholder="Why you took this trade, what happened..." class="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-xs focus:border-emerald-500/50 focus:outline-none transition" />
                 </div>
+                <div>
+                  <label class="block text-[10px] text-gray-500 mb-1">Screenshot (Optional)</label>
+                  <input type="file" id="jImage" accept="image/*" class="w-full text-xs text-gray-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-500/10 file:text-emerald-400 hover:file:bg-emerald-500/20" />
+                </div>
                 <div id="journalFormError" class="text-[11px] min-h-[14px]"></div>
                 <button type="submit" id="journalSubmitBtn" class="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl font-bold text-xs text-white transition hover:brightness-110 active:scale-95" style="background: linear-gradient(135deg, #059669, #34d399);">
                   <i data-feather="plus-circle" class="w-3.5 h-3.5"></i> Log Trade
@@ -773,6 +814,9 @@
                 <div id="journalSummary" class="flex items-center gap-3 text-[10px] hidden">
                   <span class="text-gray-500">Total: <span id="journalTotalTrades" class="text-white font-bold">0</span></span>
                   <span class="text-gray-500">Pips: <span id="journalTotalPips" class="font-bold">0</span></span>
+                  <button onclick="exportJournalCSV()" class="ml-2 flex items-center gap-1 text-emerald-400 hover:text-emerald-300 transition" title="Export to CSV">
+                    <i data-feather="download" class="w-3 h-3"></i> Export
+                  </button>
                 </div>
               </div>
               <div id="journalList" class="space-y-2 max-h-64 overflow-y-auto custom-scrollbar pr-1">
@@ -864,6 +908,7 @@
                 </div>
               </div>
               <div class="flex gap-2">
+                <input type="search" id="archiveSearch" oninput="filterArchive()" placeholder="Search pair..." class="text-xs bg-black/40 border border-white/10 text-white rounded-lg px-2 py-1.5 focus:border-sky-400 outline-none w-28" />
                 <select id="archiveFilter" onchange="filterArchive()" class="text-xs bg-black/40 border border-white/10 text-gray-300 rounded-lg px-2 py-1.5 cursor-pointer focus:border-sky-400 outline-none">
                   <option value="">All</option>
                   <option value="TP Hit">Wins ✅</option>
@@ -1004,6 +1049,12 @@
                   </div>
                   <input type="hidden" id="profileAvatar" value="" />
                 </div>
+                
+                <div class="flex items-center gap-2 mt-2">
+                  <input type="checkbox" id="leaderboardOptOut" class="w-3.5 h-3.5 rounded bg-black/40 border border-white/10 text-gold focus:ring-gold/50 cursor-pointer" />
+                  <label for="leaderboardOptOut" class="text-[10px] text-gray-400 cursor-pointer">Hide my profile from the Community Leaderboard</label>
+                </div>
+
                 <div id="profileError" class="text-[11px] min-h-[14px]"></div>
                 <button type="submit" id="profileBtn" class="w-full py-2.5 rounded-xl font-bold border border-gold-hover/40 bg-gold-hover/10 text-gold hover:bg-gold-hover hover:text-primary transition cursor-pointer text-xs">
                   Update Profile
@@ -2063,6 +2114,7 @@
       const exitPrice = document.getElementById('jExit').value;
       const pips = document.getElementById('jPips').value;
       const notes = document.getElementById('jNotes').value.trim();
+      const imageFile = document.getElementById('jImage').files[0];
       const errEl = document.getElementById('journalFormError');
       const btn = document.getElementById('journalSubmitBtn');
       const token = sessionStorage.getItem('vip_session_token');
@@ -2073,11 +2125,20 @@
       errEl.textContent = '';
       errEl.className = 'text-[11px] min-h-[14px]';
 
+      let imageData = null;
+      if (imageFile) {
+        imageData = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = e => resolve(e.target.result);
+          reader.readAsDataURL(imageFile);
+        });
+      }
+
       try {
         const res = await fetch('/api/journal', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-vip-token': token },
-          body: JSON.stringify({ asset, type, entry: entryPrice, exit: exitPrice, pl: pips, date: Date.now() })
+          body: JSON.stringify({ asset, type, entry: entryPrice, exit: exitPrice, pl: pips, date: Date.now(), notes, image: imageData })
         });
         const data = await res.json();
         if (data.ok) {
@@ -2117,6 +2178,7 @@
           }
 
           // Compute summary
+          _journalCache = data.entries;
           const totalPips = data.entries.reduce((acc, j) => acc + (parseFloat(j.pl) || 0), 0);
           updateJournalAnalytics(data.entries);
           if (summary) {
@@ -2141,6 +2203,7 @@
                     <span class="text-[9px] text-gray-500 ml-auto">${date}</span>
                   </div>
                   ${j.notes || j.pl !== undefined ? `<p class="text-gray-500 text-[10px] truncate mt-0.5 italic">${j.notes || (j.entry ? `Entry: ${j.entry} → Exit: ${j.exit}` : '')}</p>` : ''}
+                  ${j.image ? `<a href="${j.image}" target="_blank" class="inline-flex items-center gap-1 mt-1 text-[10px] text-emerald-400 hover:text-emerald-300"><i data-feather="image" class="w-3 h-3"></i> View Chart</a>` : ''}
                 </div>
                 <div class="shrink-0 text-right">
                   <p class="font-bold text-sm ${pipsColor}">${pips >= 0 ? '+' : ''}${pips} <span class="text-[9px] font-normal">pips</span></p>
@@ -2151,10 +2214,35 @@
               </div>
             `;
           }).join('');
+          feather.replace();
         }
       } catch (err) {
         list.innerHTML = '<p class="text-rose-400 text-[11px] text-center py-4">Failed to load journal</p>';
       }
+    }
+
+    function exportJournalCSV() {
+      if (!_journalCache || _journalCache.length === 0) {
+        showToast('Export Failed', 'No trades to export.', 'error');
+        return;
+      }
+      
+      const headers = ['Date', 'Asset', 'Position', 'Entry', 'Exit', 'Pips', 'Notes', 'Has Chart'];
+      const rows = _journalCache.map(j => {
+        const date = new Date(j.date).toLocaleDateString('en-GB');
+        const notes = (j.notes || '').replace(/"/g, '""');
+        return `"${date}","${j.asset}","${j.type}","${j.entry || ''}","${j.exit || ''}","${j.pl || 0}","${notes}","${j.image ? 'Yes' : 'No'}"`;
+      });
+      
+      const csvContent = [headers.join(','), ...rows].join('\\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `trade_journal_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
 
     let equityChartInstance = null;
@@ -2361,6 +2449,7 @@
 
     // ── Signal Archive ────────────────────────────────────────────
     let _signalArchiveCache = [];
+    let _journalCache = [];
     // ── Academy Modules ──
     function renderCompletedModules(modules) {
       if (!modules || !Array.isArray(modules)) return;
@@ -2450,7 +2539,22 @@
     function filterArchive() {
       _archivePage = 0;
       const filter = document.getElementById('archiveFilter')?.value || '';
-      const filtered = filter ? _signalArchiveCache.filter(s => (s.outcome || 'Running') === filter) : _signalArchiveCache;
+      const search = (document.getElementById('archiveSearch')?.value || '').toLowerCase();
+      
+      let filtered = _signalArchiveCache;
+      
+      if (filter) {
+        filtered = filtered.filter(s => (s.outcome || 'Running') === filter);
+      }
+      
+      if (search) {
+        filtered = filtered.filter(s => {
+          const text = (s.text || '').toLowerCase();
+          const category = (s.category || '').toLowerCase();
+          return text.includes(search) || category.includes(search);
+        });
+      }
+      
       renderArchive(filtered);
     }
     function archiveChangePage(delta) {
@@ -2612,6 +2716,7 @@
       e.preventDefault();
       const name = document.getElementById('profileName').value.trim();
       const avatar = document.getElementById('profileAvatar').value;
+      const leaderboardOptOut = document.getElementById('leaderboardOptOut').checked;
       const errorEl = document.getElementById('profileError');
       const btn = document.getElementById('profileBtn');
       const token = sessionStorage.getItem('vip_session_token');
@@ -2623,7 +2728,7 @@
       errorEl.className = 'text-[11px] min-h-[14px]';
 
       try {
-        const payload = { name };
+        const payload = { name, leaderboardOptOut };
         if (avatar) payload.avatar = avatar;
 
         const res = await fetch('/api/update-profile', {
@@ -3567,6 +3672,7 @@
 
             feather.replace();
             document.getElementById('profileName').value = data.user.name || '';
+            document.getElementById('leaderboardOptOut').checked = !!data.user.leaderboardOptOut;
             if (data.user.avatar) {
               setAvatar(data.user.avatar);
               localStorage.setItem('pa_vip_user_avatar', data.user.avatar);

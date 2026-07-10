@@ -6,7 +6,7 @@
 //    • Offline fallback → /offline.html for uncached pages
 // ═══════════════════════════════════════════════════════════
 
-const CACHE_NAME    = 'pips-attendant-v5';
+const CACHE_NAME    = 'pips-attendant-v6';
 const OFFLINE_URL   = '/offline.html';
 
 // Core shell — pre-cached on install
@@ -17,18 +17,19 @@ const PRECACHE_ASSETS = [
   '/journal.html',
   '/propfirm.html',
   '/history.html',
+  '/calculator.html',
   '/offline.html',
   '/style.css',
   '/dist.css',
   '/app.js',
   '/chat-widget.js',
   '/manifest.json',
-  '/avatar.png',
-  '/favicon.png',
-  '/dubai_bg.png',
-  '/justmarkets.png',
-  '/xm.png',
-  '/image.png'
+  '/avatar.webp',
+  '/favicon.webp',
+  '/dubai_bg.webp',
+  '/justmarkets.webp',
+  '/xm.webp',
+  '/image.webp'
 ];
 
 // Static asset extensions → Cache-First

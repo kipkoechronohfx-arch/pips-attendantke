@@ -129,6 +129,7 @@ router.post('/2fa/reset', validateAdminKey, async (req, res) => {
 // ── Analytics Overview ──────────────────────────────────────────
 router.get('/analytics', validateAdminSession, async (req, res) => {
   try {
+    const { startDate, endDate } = req.query;
     const users = await db.getUsers();
     const payments = await db.getPayments();
     
@@ -144,29 +145,37 @@ router.get('/analytics', validateAdminSession, async (req, res) => {
     const totalKES = kesPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
     const totalUSDT = usdtPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
 
-    // Calculate MRR (payments in the last 30 days)
-    const thirtyDaysAgoMs = now - 30 * 24 * 60 * 60 * 1000;
+    // Date range setup
+    let endObj = endDate ? new Date(endDate) : new Date();
+    endObj.setHours(23, 59, 59, 999);
+    
+    let startObj = startDate ? new Date(startDate) : new Date(endObj.getTime() - 29 * 24 * 60 * 60 * 1000);
+    startObj.setHours(0, 0, 0, 0);
+
+    const startMs = startObj.getTime();
+    const endMs = endObj.getTime();
+
+    // Calculate MRR based on the period selected
     const recentKES = kesPayments.filter(p => {
       const t = p.createdAt ? new Date(p.createdAt).getTime() : 0;
-      return t >= thirtyDaysAgoMs;
+      return t >= startMs && t <= endMs;
     });
     const recentUSDT = usdtPayments.filter(p => {
       const t = p.timestamp ? new Date(p.timestamp).getTime() : 0;
-      return t >= thirtyDaysAgoMs;
+      return t >= startMs && t <= endMs;
     });
     
     const mrrKES = recentKES.reduce((sum, p) => sum + (p.amount || 0), 0);
     const mrrUSDT = recentUSDT.reduce((sum, p) => sum + (p.amount || 0), 0);
 
-    // Group users by date for last 30 days
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    thirtyDaysAgo.setHours(0, 0, 0, 0);
-
+    // Group users by date for the period
+    const diffDays = Math.max(1, Math.ceil((endMs - startMs) / (1000 * 60 * 60 * 24)));
     const usersByDate = {};
     const revByDate = {};
-    for(let i = 0; i < 30; i++) {
-      const d = new Date(thirtyDaysAgo);
+    
+    // Initialize all dates in range to 0
+    for(let i = 0; i < diffDays; i++) {
+      const d = new Date(startMs);
       d.setDate(d.getDate() + i);
       const ds = d.toISOString().split('T')[0];
       usersByDate[ds] = 0;

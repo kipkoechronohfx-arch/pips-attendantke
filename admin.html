@@ -1411,7 +1411,14 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div class="glass-card rounded-2xl p-6 border border-white/10">
-          <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-6">User Registrations (Last 30 Days)</h3>
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">User Registrations</h3>
+            <div class="flex items-center gap-2">
+              <input type="date" id="analyticsStartDate" onchange="fetchAnalytics()" class="text-xs bg-black/40 border border-white/10 text-white rounded-lg px-2 py-1 focus:border-sky-400 outline-none" />
+              <span class="text-gray-500 text-xs">to</span>
+              <input type="date" id="analyticsEndDate" onchange="fetchAnalytics()" class="text-xs bg-black/40 border border-white/10 text-white rounded-lg px-2 py-1 focus:border-sky-400 outline-none" />
+            </div>
+          </div>
           <div class="w-full h-64">
             <canvas id="registrationsChart"></canvas>
           </div>
@@ -3496,26 +3503,37 @@
       const adminToken = localStorage.getItem('pa_admin_token');
       if (!adminToken) return;
 
+      const startDate = document.getElementById('analyticsStartDate')?.value || '';
+      const endDate = document.getElementById('analyticsEndDate')?.value || '';
+
       try {
-        const res = await fetch('/api/admin/analytics', { headers: { 'x-admin-token': adminToken } });
+        let url = '/api/admin/analytics';
+        const params = new URLSearchParams();
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
+        if (startDate || endDate) url += '?' + params.toString();
+
+        const res = await fetch(url, { headers: { 'x-admin-token': adminToken } });
         const data = await res.json();
         
-        if (data.ok && data.stats) {
-          const s = data.stats;
+        if (data.ok) {
+          // If the backend returns data.stats from a different endpoint, handle it:
+          const s = data.stats || data; 
 
           // Core user stats
           document.getElementById('statTotalUsers').textContent = s.totalUsers ?? '--';
-          document.getElementById('statActiveVIPs').textContent = s.activeUsers ?? '--';
+          const activeCount = s.activeUsers ?? s.activeVIPs ?? 0;
+          document.getElementById('statActiveVIPs').textContent = activeCount ?? '--';
           document.getElementById('statExpiredUsers').textContent = s.expiredUsers ?? '--';
 
-          const convRate = s.totalUsers > 0 ? Math.round((s.activeUsers / s.totalUsers) * 100) : 0;
+          const convRate = s.totalUsers > 0 ? Math.round((activeCount / s.totalUsers) * 100) : 0;
           document.getElementById('statConversionRate').textContent = `${convRate}%`;
 
-          // Revenue placeholders (not yet wired to payment data)
-          document.getElementById('statTotalKES').textContent = '--';
-          document.getElementById('statTotalUSDT').textContent = '--';
-          document.getElementById('statMrrKES').textContent = '--';
-          document.getElementById('statMrrUSDT').textContent = '--';
+          // Revenue population
+          document.getElementById('statTotalKES').textContent = `KES ${s.totalKES?.toLocaleString() ?? '--'}`;
+          document.getElementById('statTotalUSDT').textContent = `$${s.totalUSDT?.toLocaleString() ?? '--'}`;
+          document.getElementById('statMrrKES').textContent = `KES ${s.mrrKES?.toLocaleString() ?? '--'}`;
+          document.getElementById('statMrrUSDT').textContent = `$${s.mrrUSDT?.toLocaleString() ?? '--'}`;
 
           // Update extra detail badge if it already exists, or inject it
           const analyticsPanel = document.getElementById('analyticsPanel');

@@ -1,24 +1,63 @@
 {
-  "name": "Pips Attendant",
-  "short_name": "PipsAttendant",
-  "description": "Professional Forex Trading, Signals & Mentorship Tracker",
-  "start_url": "/",
+  "name": "Pips Attendant VIP",
+  "short_name": "PipsVIP",
+  "description": "Professional Forex Trading Signals, Journal & Mentorship — VIP Access",
+  "start_url": "/premium.html",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#0a0f1c",
-  "theme_color": "#0a0f1c",
+  "theme_color": "#f59e0b",
   "orientation": "portrait-primary",
+  "lang": "en",
+  "categories": ["finance", "education"],
+  "prefer_related_applications": false,
   "icons": [
+    {
+      "src": "/favicon.webp",
+      "sizes": "192x192",
+      "type": "image/webp",
+      "purpose": "any"
+    },
     {
       "src": "/favicon.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
+    },
+    {
+      "src": "/avatar.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any"
     },
     {
       "src": "/avatar.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Live Signals",
+      "short_name": "Signals",
+      "description": "View live VIP trading signals",
+      "url": "/premium.html#signals",
+      "icons": [{ "src": "/favicon.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Trade Journal",
+      "short_name": "Journal",
+      "description": "Log and review your trades",
+      "url": "/premium.html#journal",
+      "icons": [{ "src": "/favicon.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Pip Calculator",
+      "short_name": "Calculator",
+      "description": "Calculate pip values and position sizes",
+      "url": "/calculator.html",
+      "icons": [{ "src": "/favicon.png", "sizes": "192x192" }]
     }
   ]
 }
