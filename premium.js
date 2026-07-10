@@ -2135,8 +2135,8 @@ feather.replace();
 
 
 
-    // INITIALIZATION
-    window.addEventListener('DOMContentLoaded', () => {
+    // INITIALIZATION — safe whether script loads before or after DOMContentLoaded
+    function initPremiumDashboard() {
       // Check for reset password token
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.has('resetToken')) {
@@ -2147,7 +2147,14 @@ feather.replace();
 
       feather.replace();
       checkUserAccess();
-    });
+    }
+
+    if (document.readyState === 'loading') {
+      window.addEventListener('DOMContentLoaded', initPremiumDashboard);
+    } else {
+      // DOM already loaded (script is at bottom of body) — run immediately
+      initPremiumDashboard();
+    }
 
     async function loadTodaysSetup() {
       const token = sessionStorage.getItem('vip_session_token');
