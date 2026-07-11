@@ -844,15 +844,29 @@ feather.replace();
       _archivePage += delta;
       filterArchive();
     }
+    const _ARCHIVE_PAGE_SIZE = 15;
     function renderArchive(signals) {
       const container = document.getElementById('signalArchiveList');
+      const pagination = document.getElementById('archivePagination');
+      const prevBtn = document.getElementById('archivePrevBtn');
+      const nextBtn = document.getElementById('archiveNextBtn');
+      const pageInfo = document.getElementById('archivePageInfo');
       if (!container) return;
-      if (!signals.length) { container.innerHTML = '<p class="text-gray-500 text-[11px] text-center py-4">No signals match this filter.</p>'; return; }
+      if (!signals.length) {
+        container.innerHTML = '<p class="text-gray-500 text-[11px] text-center py-4">No signals match this filter.</p>';
+        if (pagination) pagination.classList.add('hidden');
+        return;
+      }
+      const totalPages = Math.ceil(signals.length / _ARCHIVE_PAGE_SIZE);
+      if (_archivePage >= totalPages) _archivePage = totalPages - 1;
+      if (_archivePage < 0) _archivePage = 0;
+      const start = _archivePage * _ARCHIVE_PAGE_SIZE;
+      const paginated = signals.slice(start, start + _ARCHIVE_PAGE_SIZE);
       const outcomeMap = { 'TP Hit': ['text-emerald-400','✅'], 'SL Hit': ['text-rose-400','❌'], 'Breakeven': ['text-amber-400','➖'], 'Running': ['text-sky-400','🔄'] };
-      container.innerHTML = signals.map(s => {
+      container.innerHTML = paginated.map(s => {
         const [cls, icon] = outcomeMap[s.outcome || 'Running'] || ['text-gray-400','—'];
         const date = s.postedAt ? new Date(s.postedAt).toLocaleDateString() : '';
-        return `<div class="flex items-center justify-between py-2 px-3 rounded-xl bg-black/30 border border-white/5 hover:bg-white/5 transition">
+        return `<div class="flex items-center justify-between py-1.5 px-3 rounded-xl bg-black/30 border border-white/5 hover:bg-white/5 transition">
           <div class="flex items-center gap-2 min-w-0">
             <span class="text-[9px] text-gray-500 font-bold uppercase tracking-wider w-12 shrink-0">${s.category || 'FX'}</span>
             <span class="text-white text-xs font-bold truncate">${s.title || s.type || 'Signal'}</span>
