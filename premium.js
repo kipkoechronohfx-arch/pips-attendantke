@@ -798,6 +798,8 @@ feather.replace();
       }
     }
     let _archiveCategoryFilter = '';
+    let _archivePage = 0;
+
 
     function setArchiveCategory(cat) {
       _archiveCategoryFilter = cat;
@@ -861,7 +863,7 @@ feather.replace();
       const nextBtn = document.getElementById('archiveNextBtn');
       const pageInfo = document.getElementById('archivePageInfo');
       if (!container) return;
-      if (!signals.length) {
+      if (!signals || !signals.length) {
         container.innerHTML = '<p class="text-gray-500 text-[11px] text-center py-4">No signals match this filter.</p>';
         if (pagination) pagination.classList.add('hidden');
         return;
@@ -874,11 +876,14 @@ feather.replace();
       const outcomeMap = { 'TP Hit': ['text-emerald-400','✅'], 'SL Hit': ['text-rose-400','❌'], 'Breakeven': ['text-amber-400','➖'], 'Running': ['text-sky-400','🔄'] };
       container.innerHTML = paginated.map(s => {
         const [cls, icon] = outcomeMap[s.outcome || 'Running'] || ['text-gray-400','—'];
-        const date = s.postedAt ? new Date(s.postedAt).toLocaleDateString() : '';
+        // Use postedAt or sentAt (whichever exists)
+        const rawDate = s.postedAt || s.sentAt;
+        const date = rawDate ? new Date(rawDate).toLocaleDateString() : '';
+        const pair = s.title || s.type || s.pair || s.text?.slice(0, 20) || 'Signal';
         return `<div class="flex items-center justify-between py-1.5 px-3 rounded-xl bg-black/30 border border-white/5 hover:bg-white/5 transition">
           <div class="flex items-center gap-2 min-w-0">
             <span class="text-[9px] text-gray-500 font-bold uppercase tracking-wider w-12 shrink-0">${s.category || 'FX'}</span>
-            <span class="text-white text-xs font-bold truncate">${s.title || s.type || 'Signal'}</span>
+            <span class="text-white text-xs font-bold truncate">${pair}</span>
           </div>
           <div class="flex items-center gap-2 shrink-0 ml-2">
             <span class="text-gray-600 text-[9px]">${date}</span>
@@ -886,7 +891,20 @@ feather.replace();
           </div>
         </div>`;
       }).join('');
+
+      // Update pagination controls
+      if (pagination) {
+        if (totalPages > 1) {
+          pagination.classList.remove('hidden');
+          if (pageInfo) pageInfo.textContent = `Page ${_archivePage + 1} of ${totalPages}`;
+          if (prevBtn) prevBtn.disabled = (_archivePage === 0);
+          if (nextBtn) nextBtn.disabled = (_archivePage >= totalPages - 1);
+        } else {
+          pagination.classList.add('hidden');
+        }
+      }
     }
+
 
     // ── Badges ───────────────────────────────────────────────────
     function renderBadges(badges) {
