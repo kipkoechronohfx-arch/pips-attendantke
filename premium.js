@@ -938,7 +938,7 @@ feather.replace();
 
       try {
         container.innerHTML = '<p class="text-gray-500 text-[11px] text-center py-4">Loading leaderboard...</p>';
-        const res = await fetch('/api/leaderboard', { headers: { 'x-vip-token': token } });
+        const res = await fetch('/api/journal/leaderboard', { headers: { 'x-vip-token': token } });
         const data = await res.json();
         
         if (data.ok && data.leaderboard && data.leaderboard.length > 0) {

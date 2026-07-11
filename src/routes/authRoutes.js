@@ -521,10 +521,10 @@ router.get('/announcements', validateUserSession, async (req, res) => {
 router.get('/daily-brief', validateUserSession, async (req, res) => {
   try {
     const config = await db.getAppConfig();
-    const brief = config.dailyBrief || null;
+    const brief = (config && config.dailyBrief) ? config.dailyBrief : null;
     res.json({ ok: true, brief });
   } catch (err) {
-    res.status(500).json({ ok: false, error: 'Failed to fetch daily brief.' });
+    res.json({ ok: true, brief: null }); // Gracefully return empty rather than 500
   }
 });
 
