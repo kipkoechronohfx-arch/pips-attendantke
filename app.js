@@ -227,3 +227,11 @@ function calculateRisk() {
   document.getElementById('calcResults').classList.add('flex');
 }
 
+// --- INTERACTIVE AMBIENT GLOWS (MOUSE PARALLAX) ---
+window.addEventListener('mousemove', (e) => {
+  // Move opposite to mouse direction
+  const x = (e.clientX / window.innerWidth - 0.5) * -150;
+  const y = (e.clientY / window.innerHeight - 0.5) * -150;
+  document.documentElement.style.setProperty('--mouse-x', `${x}px`);
+  document.documentElement.style.setProperty('--mouse-y', `${y}px`);
+});

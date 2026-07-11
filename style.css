@@ -218,6 +218,7 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   pointer-events: none;
   z-index: -1;
   animation: float-glow 10s infinite ease-in-out alternate;
+  will-change: transform;
 }
 
 .ambient-glow-1 {
@@ -239,8 +240,8 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 }
 
 @keyframes float-glow {
-  0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(50px, 50px) scale(1.1); }
+  0% { transform: translate(var(--mouse-x, 0px), var(--mouse-y, 0px)) scale(1); }
+  100% { transform: translate(calc(var(--mouse-x, 0px) + 50px), calc(var(--mouse-y, 0px) + 50px)) scale(1.1); }
 }
 
 /* --- CHAT WIDGET CUSTOM STYLES (Preserved) --- */
