@@ -1,6 +1,9 @@
 /* --- PREMIUM UI STYLES --- */
 
 /* Base & Typography */
+html {
+  overflow-x: hidden;
+}
 body {
   background-color: #050505;
   color: #f8fafc;
