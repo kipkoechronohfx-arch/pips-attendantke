@@ -263,21 +263,67 @@ router.post('/engagement', async (req, res) => {
   res.redirect(307, '/api/broadcast');
 });
 
+// Helper: extract trading pair from Telegram signal text
+function parsePairFromText(text) {
+  if (!text) return null;
+  // Match common patterns like "ANALYSIS: XAUUSD" or "SIGNAL: EURUSD/USD"
+  const colonMatch = text.match(/(?:ANALYSIS|SIGNAL|UPDATE|ALERT|TRADE)[:\s*]+([A-Z]{3,10}(?:\/[A-Z]{3,10})?)/i);
+  if (colonMatch) return colonMatch[1];
+  // Fallback: match any known Forex/crypto pair
+  const pairMatch = text.match(/\b(XAUUSD|XAGUSD|BTCUSD|ETHUSD|EURUSD|GBPUSD|USDJPY|USDCHF|AUDUSD|NZDUSD|USDCAD|GBPJPY|EURJPY|US30|NAS100|SPX500|US100|OIL|GER40)\b/i);
+  if (pairMatch) return pairMatch[1].toUpperCase();
+  return null;
+}
+
+// Helper: normalise outcome to display-friendly label
+function normaliseOutcome(outcome) {
+  if (!outcome) return 'Running';
+  const o = outcome.toLowerCase();
+  if (o === 'tp hit' || o === 'tp1 hit' || o === 'tp2 hit') return 'TP Hit';
+  if (o === 'sl hit') return 'SL Hit';
+  if (o === 'breakeven') return 'Breakeven';
+  if (o === 'expired') return 'Expired';
+  return outcome;
+}
+
 router.get('/signals', async (req, res) => {
   try {
     const { category } = req.query;
-    const signals = await db.getSignals(100);
-    let filtered = signals;
+    const raw = await db.getSignals(200);
+
+    // Only show real signal/analysis messages (exclude engagement, polls, etc.)
+    let filtered = raw.filter(s => {
+      const t = (s.type || '').toLowerCase();
+      return !t || t === 'signal' || t === 'analysis' || t === 'trade_update';
+    });
+
+    // Enrich each signal with parsed pair and normalised outcome
+    filtered = filtered.map(s => ({
+      ...s,
+      pair: s.pair || parsePairFromText(s.text) || 'N/A',
+      outcome: normaliseOutcome(s.outcome),
+      // Derive category from pair if missing
+      category: s.category || (
+        (s.text || '').match(/XAU|GOLD|XAG|SILVER/i) ? 'Gold' :
+        (s.text || '').match(/BTC|ETH|CRYPTO/i) ? 'Crypto' :
+        (s.text || '').match(/US30|NAS|SPX|GER|INDEX/i) ? 'Indices' :
+        (s.text || '').match(/OIL|GAS|COMMODIT/i) ? 'Commodities' : 'Forex'
+      )
+    }));
+
     if (category && category !== 'All') {
-      filtered = signals.filter(s => (s.category || 'Uncategorized').toLowerCase() === category.toLowerCase());
+      filtered = filtered.filter(s => s.category.toLowerCase() === category.toLowerCase());
     }
+
     filtered.sort((a, b) => {
       const ta = typeof a.sentAt === 'string' ? new Date(a.sentAt).getTime() : Number(a.sentAt);
       const tb = typeof b.sentAt === 'string' ? new Date(b.sentAt).getTime() : Number(b.sentAt);
       return tb - ta;
     });
+
     res.json({ ok: true, count: filtered.length, signals: filtered });
   } catch (err) {
+    console.error('[/api/signals Error]', err.message);
     res.status(500).json({ ok: false, error: err.message });
   }
 });

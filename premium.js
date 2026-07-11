@@ -873,21 +873,31 @@ feather.replace();
       if (_archivePage < 0) _archivePage = 0;
       const start = _archivePage * _ARCHIVE_PAGE_SIZE;
       const paginated = signals.slice(start, start + _ARCHIVE_PAGE_SIZE);
-      const outcomeMap = { 'TP Hit': ['text-emerald-400','✅'], 'SL Hit': ['text-rose-400','❌'], 'Breakeven': ['text-amber-400','➖'], 'Running': ['text-sky-400','🔄'] };
+      const outcomeMap = {
+        'TP Hit':    ['text-emerald-400', '✅'],
+        'SL Hit':    ['text-rose-400',    '❌'],
+        'Breakeven': ['text-amber-400',   '➖'],
+        'Running':   ['text-sky-400',     '🔄'],
+        'Expired':   ['text-gray-500',    '⏱️'],
+      };
       container.innerHTML = paginated.map(s => {
-        const [cls, icon] = outcomeMap[s.outcome || 'Running'] || ['text-gray-400','—'];
-        // Use postedAt or sentAt (whichever exists)
+        const outcome = s.outcome || 'Running';
+        const [cls, icon] = outcomeMap[outcome] || ['text-gray-400', '—'];
         const rawDate = s.postedAt || s.sentAt;
-        const date = rawDate ? new Date(rawDate).toLocaleDateString() : '';
-        const pair = s.title || s.type || s.pair || s.text?.slice(0, 20) || 'Signal';
+        const date = rawDate ? new Date(rawDate).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'2-digit' }) : '';
+        // pair comes pre-parsed from the server; fallback to parsing text here if needed
+        const pair = s.pair && s.pair !== 'N/A'
+          ? s.pair
+          : (s.text?.match(/\b(XAUUSD|XAGUSD|BTCUSD|ETHUSD|EURUSD|GBPUSD|USDJPY|USDCHF|AUDUSD|NZDUSD|USDCAD|GBPJPY|EURJPY|US30|NAS100|SPX500|US100|OIL|GER40)\b/i)?.[1]?.toUpperCase() || 'SIGNAL');
+        const cat = s.category || 'Forex';
         return `<div class="flex items-center justify-between py-1.5 px-3 rounded-xl bg-black/30 border border-white/5 hover:bg-white/5 transition">
           <div class="flex items-center gap-2 min-w-0">
-            <span class="text-[9px] text-gray-500 font-bold uppercase tracking-wider w-12 shrink-0">${s.category || 'FX'}</span>
+            <span class="text-[9px] text-gray-500 font-bold uppercase tracking-wider w-14 shrink-0">${cat}</span>
             <span class="text-white text-xs font-bold truncate">${pair}</span>
           </div>
-          <div class="flex items-center gap-2 shrink-0 ml-2">
+          <div class="flex items-center gap-3 shrink-0 ml-2">
             <span class="text-gray-600 text-[9px]">${date}</span>
-            <span class="${cls} text-xs font-bold">${icon} ${s.outcome || 'Running'}</span>
+            <span class="${cls} text-[10px] font-bold whitespace-nowrap">${icon} ${outcome}</span>
           </div>
         </div>`;
       }).join('');
