@@ -645,7 +645,7 @@ feather.replace();
 
     // ── Signal Performance Stats ───────────────────────────────────
     async function loadSignalStats() {
-      const token = localStorage.getItem('vip_token');
+      const token = localStorage.getItem('vip_session_token');
       if (!token) return;
       try {
         const res = await fetch('/api/signals/stats', { headers: { 'x-vip-token': token } });
@@ -662,7 +662,7 @@ feather.replace();
 
     // ── Daily Market Brief ────────────────────────────────────────
     async function loadDailyBrief() {
-      const token = localStorage.getItem('vip_token');
+      const token = localStorage.getItem('vip_session_token');
       if (!token) return;
       try {
         const res = await fetch('/api/daily-brief', { headers: { 'x-vip-token': token } });
@@ -722,7 +722,7 @@ feather.replace();
     }
 
     async function markModuleComplete(moduleId) {
-      const token = sessionStorage.getItem('vip_session_token');
+      const token = localStorage.getItem('vip_session_token');
       if (!token) return;
       try {
         const btn = document.querySelector(`#${moduleId} .academy-complete-btn`);
@@ -772,7 +772,7 @@ feather.replace();
     }
 
     async function loadSignalArchive() {
-      const token = localStorage.getItem('vip_token');
+      const token = localStorage.getItem('vip_session_token');
       const container = document.getElementById('signalArchiveList');
       if (!container || !token) return;
       try {
@@ -919,7 +919,7 @@ feather.replace();
       const container = document.getElementById('leaderboardList');
       if (!container) return;
       
-      const token = localStorage.getItem('vip_token');
+      const token = localStorage.getItem('vip_session_token');
       if (!token) return;
 
       try {
