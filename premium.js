@@ -774,11 +774,20 @@ feather.replace();
     async function loadSignalArchive() {
       const token = sessionStorage.getItem('vip_session_token') || localStorage.getItem('vip_session_token');
       const container = document.getElementById('signalArchiveList');
-      if (!container || !token) return;
+      if (!container) return;
+      if (!token) {
+        container.innerHTML = '<p class="text-gray-500 text-[11px] text-center py-4">Please log in to view signal archive.</p>';
+        return;
+      }
+      container.innerHTML = '<p class="text-gray-400 text-[11px] text-center py-4 animate-pulse">Loading archive...</p>';
       try {
         const res = await fetch('/api/signals?limit=100', { headers: { 'x-vip-token': token } });
+        if (!res.ok) {
+          container.innerHTML = '<p class="text-gray-500 text-[11px] text-center py-4">No signals found.</p>';
+          return;
+        }
         const data = await res.json();
-        if (data.ok && data.signals) {
+        if (data.ok && data.signals && data.signals.length) {
           _signalArchiveCache = data.signals;
           renderArchive(_signalArchiveCache);
         } else {
