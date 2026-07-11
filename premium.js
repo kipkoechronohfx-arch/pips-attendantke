@@ -1977,7 +1977,15 @@ feather.replace();
             if (data.user.badges) renderBadges(data.user.badges);
             if (data.user.completedModules) renderCompletedModules(data.user.completedModules);
             loadChatMessages();
-            initSocket(token); // Init real-time chat
+            try {
+              if (typeof io !== 'undefined') {
+                initSocket(token); // Init real-time chat
+              } else {
+                console.warn('[Premium] socket.io not loaded, chat real-time updates disabled.');
+              }
+            } catch (err) {
+              console.error('[Premium] initSocket error:', err);
+            }
             loadCountdownFromSignals();
 
             // ── Onboarding Tour (first login only) ──────────────
