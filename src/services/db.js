@@ -1150,7 +1150,7 @@ async function deletePropFirmAccount(userId) {
 
 async function getLeaderboardData() {
   const users = await getUsers();
-  const optedInUsers = users; // Include all users by default for now
+  const optedInUsers = users.filter(u => !u.leaderboardOptOut);
   const leaderboard = [];
   
   for (const user of optedInUsers) {

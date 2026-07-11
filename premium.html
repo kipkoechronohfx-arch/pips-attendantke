@@ -215,8 +215,8 @@
     </div>
 
     <!-- AUTH PANEL -->
-    <div id="authPanel" data-aos="zoom-in" data-aos-delay="200">
-      <div class="glass-card border border-gold/20 rounded-2xl p-8 max-w-sm mx-auto" data-tilt data-tilt-max="3" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.1">
+    <div id="authPanel" data-aos="zoom-in" data-aos-delay="200" class="w-full">
+      <div class="glass-card border border-gold/20 rounded-2xl p-6 sm:p-8 w-full max-w-sm mx-auto" data-tilt data-tilt-max="3" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.1">
         <div class="flex gap-2 mb-6">
           <button id="tabLogin" onclick="switchAuthTab('login')" class="flex-1 py-2 rounded-xl text-xs font-bold border border-gold-hover/40 bg-gold-hover/10 text-gold transition cursor-pointer">Login</button>
           <button id="tabRegister" onclick="switchAuthTab('register')" class="flex-1 py-2 rounded-xl text-xs font-bold border border-white/5 bg-white/5 text-gray-400 hover:text-gold transition cursor-pointer">Register</button>
@@ -274,8 +274,8 @@
     </div>
 
     <!-- FORGOT PASSWORD MODAL -->
-    <div id="forgotPasswordModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-      <div class="glass-card rounded-2xl p-8 max-w-sm w-full mx-4 border border-gold/20 transform scale-95 transition-transform duration-300">
+    <div id="forgotPasswordModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300 p-4">
+      <div class="glass-card rounded-2xl p-6 sm:p-8 max-w-sm w-full border border-gold/20 transform scale-95 transition-transform duration-300">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xl font-bold text-white">Reset Password</h2>
           <button onclick="closeForgotPasswordModal()" class="text-gray-400 hover:text-white transition cursor-pointer">
@@ -297,8 +297,8 @@
     </div>
 
     <!-- RESET PASSWORD MODAL (Triggered by URL token) -->
-    <div id="resetPasswordModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-      <div class="glass-card rounded-2xl p-8 max-w-sm w-full mx-4 border border-emerald-400/20 transform scale-95 transition-transform duration-300">
+    <div id="resetPasswordModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300 p-4">
+      <div class="glass-card rounded-2xl p-6 sm:p-8 max-w-sm w-full border border-emerald-400/20 transform scale-95 transition-transform duration-300">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xl font-bold text-white">Set New Password</h2>
         </div>
@@ -322,10 +322,10 @@
     </div>
 
     <!-- PAYMENT PANEL -->
-    <div id="paymentPanel" class="hidden">
+    <div id="paymentPanel" class="hidden w-full">
 
       <!-- ── Tier Selector ─────────────────────────────────── -->
-      <div class="max-w-sm mx-auto mb-5">
+      <div class="w-full max-w-sm mx-auto mb-5">
         <p class="text-[10px] font-bold uppercase tracking-wider text-center text-gray-400 mb-3">Choose Your Membership Tier</p>
         <div class="grid grid-cols-2 gap-3">
           <!-- Gold Tier -->
@@ -350,7 +350,7 @@
       </div>
 
       <!-- Payment Method Tabs -->
-      <div class="flex gap-2 max-w-sm mx-auto mb-4">
+      <div class="flex gap-2 w-full max-w-sm mx-auto mb-4">
         <button id="tabMpesa" onclick="switchPayTab('mpesa')"
           class="flex-1 py-2.5 rounded-xl text-xs font-bold border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 transition duration-200 cursor-pointer">
           📱 M-Pesa
@@ -362,7 +362,7 @@
       </div>
 
       <!-- M-Pesa Panel -->
-      <div id="mpesaPanel" class="glass-card border border-emerald-400/20 rounded-2xl p-8 max-w-sm mx-auto">
+      <div id="mpesaPanel" class="glass-card border border-emerald-400/20 rounded-2xl p-6 sm:p-8 w-full max-w-sm mx-auto">
         <div class="flex items-center gap-2 mb-5">
           <i data-feather="smartphone" class="w-5 h-5 text-emerald-400"></i>
           <h2 class="text-white font-bold text-lg">VIP Access (M-Pesa)</h2>
@@ -452,7 +452,7 @@
       </div>
 
       <!-- Crypto Panel (hidden by default) -->
-      <div id="cryptoPanel" class="hidden max-w-sm mx-auto">
+      <div id="cryptoPanel" class="hidden w-full max-w-sm mx-auto">
         <!-- Crypto Card -->
         <div class="glass-card border border-gold/25 rounded-2xl p-6 relative overflow-hidden" style="box-shadow: 0 0 30px rgba(251,191,36,0.08);">
           <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(ellipse at top right, rgba(251,191,36,0.06) 0%, transparent 70%);"></div>
@@ -628,8 +628,8 @@
     </div>
 
     <!-- SUCCESS PANEL -->
-    <div id="saveCodePanel" class="hidden">
-      <div class="glass-card border border-emerald-400/30 rounded-2xl p-8 max-w-md mx-auto text-center">
+    <div id="saveCodePanel" class="hidden w-full px-4">
+      <div class="glass-card border border-emerald-400/30 rounded-2xl p-6 sm:p-8 w-full max-w-md mx-auto text-center">
         <div class="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-5 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
           <i data-feather="check" class="w-8 h-8 text-emerald-400"></i>
         </div>

@@ -1,11 +1,12 @@
 /* --- PREMIUM UI STYLES --- */
 
 /* Base & Typography */
-body {
+html, body {
   background-color: #050505;
   color: #f8fafc;
   font-family: 'Inter', sans-serif;
   overflow-x: hidden;
+  max-width: 100vw;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
