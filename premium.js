@@ -855,24 +855,17 @@ feather.replace();
       _archivePage += delta;
       filterArchive();
     }
-    const _ARCHIVE_PAGE_SIZE = 15;
+    const _SIGNAL_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+
     function renderArchive(signals) {
       const container = document.getElementById('signalArchiveList');
-      const pagination = document.getElementById('archivePagination');
-      const prevBtn = document.getElementById('archivePrevBtn');
-      const nextBtn = document.getElementById('archiveNextBtn');
-      const pageInfo = document.getElementById('archivePageInfo');
       if (!container) return;
       if (!signals || !signals.length) {
         container.innerHTML = '<p class="text-gray-500 text-[11px] text-center py-4">No signals match this filter.</p>';
-        if (pagination) pagination.classList.add('hidden');
         return;
       }
-      const totalPages = Math.ceil(signals.length / _ARCHIVE_PAGE_SIZE);
-      if (_archivePage >= totalPages) _archivePage = totalPages - 1;
-      if (_archivePage < 0) _archivePage = 0;
-      const start = _archivePage * _ARCHIVE_PAGE_SIZE;
-      const paginated = signals.slice(start, start + _ARCHIVE_PAGE_SIZE);
+
+      const now = Date.now();
       const outcomeMap = {
         'TP Hit':    ['text-emerald-400', '✅'],
         'SL Hit':    ['text-rose-400',    '❌'],
@@ -880,16 +873,27 @@ feather.replace();
         'Running':   ['text-sky-400',     '🔄'],
         'Expired':   ['text-gray-500',    '⏱️'],
       };
-      container.innerHTML = paginated.map(s => {
-        const outcome = s.outcome || 'Running';
-        const [cls, icon] = outcomeMap[outcome] || ['text-gray-400', '—'];
+
+      container.innerHTML = signals.map((s, idx) => {
         const rawDate = s.postedAt || s.sentAt;
-        const date = rawDate ? new Date(rawDate).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'2-digit' }) : '';
-        // pair comes pre-parsed from the server; fallback to parsing text here if needed
+        const sentMs  = rawDate ? new Date(rawDate).getTime() : 0;
+
+        // Client-side 24h auto-expiry: if Running but older than 24h, show as Expired
+        let outcome = s.outcome || 'Running';
+        if (outcome === 'Running' && sentMs && (now - sentMs) > _SIGNAL_TTL_MS) {
+          outcome = 'Expired';
+        }
+
+        const [cls, icon] = outcomeMap[outcome] || ['text-gray-400', '—'];
+        const date = sentMs ? new Date(sentMs).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' }) : '';
+
+        // Pair from server or fallback regex
         const pair = s.pair && s.pair !== 'N/A'
           ? s.pair
           : (s.text?.match(/\b(XAUUSD|XAGUSD|BTCUSD|ETHUSD|EURUSD|GBPUSD|USDJPY|USDCHF|AUDUSD|NZDUSD|USDCAD|GBPJPY|EURJPY|US30|NAS100|SPX500|US100|OIL|GER40)\b/i)?.[1]?.toUpperCase() || 'SIGNAL');
         const cat = s.category || 'Forex';
+
+        // First 5 are rendered normally; rest rendered but hidden behind scroll
         return `<div class="flex items-center justify-between py-1.5 px-3 rounded-xl bg-black/30 border border-white/5 hover:bg-white/5 transition">
           <div class="flex items-center gap-2 min-w-0">
             <span class="text-[9px] text-gray-500 font-bold uppercase tracking-wider w-14 shrink-0">${cat}</span>
@@ -902,18 +906,10 @@ feather.replace();
         </div>`;
       }).join('');
 
-      // Update pagination controls
-      if (pagination) {
-        if (totalPages > 1) {
-          pagination.classList.remove('hidden');
-          if (pageInfo) pageInfo.textContent = `Page ${_archivePage + 1} of ${totalPages}`;
-          if (prevBtn) prevBtn.disabled = (_archivePage === 0);
-          if (nextBtn) nextBtn.disabled = (_archivePage >= totalPages - 1);
-        } else {
-          pagination.classList.add('hidden');
-        }
-      }
+      // Scroll to top so most recent signal is always first
+      container.scrollTop = 0;
     }
+
 
 
     // ── Badges ───────────────────────────────────────────────────
