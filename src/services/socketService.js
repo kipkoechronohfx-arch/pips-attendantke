@@ -75,7 +75,7 @@ function initializeSocket(server) {
     // ── Send a message to a room ────────────────────────────────
     socket.on('sendMessage', async (data) => {
       try {
-        if (!data || !data.text) return;
+        if (!data || (!data.text && !data.image)) return;
         const room = VALID_ROOMS.includes(data.room) ? data.room : 'general';
         const author = data.author || (socket.user?.name) || 'Member';
         const avatar = socket.user?.avatar || null;
@@ -105,13 +105,14 @@ function initializeSocket(server) {
            }
         }
 
-        const msg = await db.addChatMessage({ author, text: data.text, room, avatar });
+        const msg = await db.addChatMessage({ author, text: data.text || '', image: data.image || null, room, avatar });
         io.to(`room:${room}`).emit('newMessage', msg);
       } catch (err) {
         socket.emit('error', 'Failed to send message');
       }
     });
   });
+
 
   return io;
 }

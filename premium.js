@@ -1972,6 +1972,18 @@ feather.replace();
           avatarHtml = `<div class="w-5 h-5 rounded-full bg-white/5 flex items-center justify-center shrink-0 border border-white/10"><i data-feather="user" class="w-2.5 h-2.5 text-gray-500"></i></div>`;
         }
 
+        let imageHtml = '';
+        if (msg.image) {
+          imageHtml = `<div class="mt-2 mb-1 cursor-pointer hover:opacity-90 transition" onclick="window.open('${msg.image}', '_blank')">
+                         <img src="${msg.image}" class="max-h-48 rounded-lg border border-white/10 shadow-md object-cover" />
+                       </div>`;
+        }
+        
+        let textHtml = '';
+        if (msg.text) {
+          textHtml = msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
         const msgHtml = `
           <div class="flex flex-col ${isSelf ? 'items-end' : 'items-start'} w-full mt-2 animate-fade-in-up">
             <div class="flex items-center gap-1.5 mb-1 ${isSelf ? 'flex-row-reverse' : ''}">
@@ -1979,7 +1991,8 @@ feather.replace();
               <span class="text-[10px] text-gray-500">${msg.author} • ${timeStr}</span>
             </div>
             <div class="max-w-[80%] rounded-2xl px-4 py-2 text-sm ${isSelf ? 'bg-gold-hover/20 border border-gold-hover/30 text-amber-50 rounded-tr-sm' : 'bg-white/10 border border-white/5 text-gray-200 rounded-tl-sm'}">
-              ${msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
+              ${imageHtml}
+              ${textHtml}
             </div>
           </div>
         `;
@@ -2440,6 +2453,18 @@ feather.replace();
                 avatarHtml = `<div class="w-5 h-5 rounded-full bg-white/5 flex items-center justify-center shrink-0 border border-white/10"><i data-feather="user" class="w-2.5 h-2.5 text-gray-500"></i></div>`;
               }
 
+              let imageHtml = '';
+              if (msg.image) {
+                imageHtml = `<div class="mt-2 mb-1 cursor-pointer hover:opacity-90 transition" onclick="window.open('${msg.image}', '_blank')">
+                               <img src="${msg.image}" class="max-h-48 rounded-lg border border-white/10 shadow-md object-cover" />
+                             </div>`;
+              }
+              
+              let textHtml = '';
+              if (msg.text) {
+                textHtml = msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+              }
+
               return `
                 <div class="flex flex-col ${isSelf ? 'items-end' : 'items-start'} w-full mt-2">
                   <div class="flex items-center gap-1.5 mb-1 ${isSelf ? 'flex-row-reverse' : ''}">
@@ -2447,7 +2472,8 @@ feather.replace();
                     <span class="text-[10px] text-gray-500">${msg.author} • ${timeStr}</span>
                   </div>
                   <div class="max-w-[80%] rounded-2xl px-4 py-2 text-sm ${isSelf ? 'bg-gold-hover/20 border border-gold-hover/30 text-amber-50 rounded-tr-sm' : 'bg-white/10 border border-white/5 text-gray-200 rounded-tl-sm'}">
-                    ${msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
+                    ${imageHtml}
+                    ${textHtml}
                   </div>
                 </div>
               `;
@@ -2460,6 +2486,38 @@ feather.replace();
       }
     }
 
+    let currentChatImageBase64 = null;
+
+    window.previewChatImage = function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      // Ensure file is an image and size is < 5MB
+      if (!file.type.startsWith('image/')) {
+        showToast('Invalid File', 'Please select an image file.', 'error');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('File Too Large', 'Image must be under 5MB.', 'error');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        currentChatImageBase64 = e.target.result;
+        document.getElementById('chatImagePreview').src = currentChatImageBase64;
+        document.getElementById('chatImagePreviewContainer').classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    };
+
+    window.removeChatImage = function() {
+      currentChatImageBase64 = null;
+      document.getElementById('chatImageInput').value = '';
+      document.getElementById('chatImagePreviewContainer').classList.add('hidden');
+      document.getElementById('chatImagePreview').src = '';
+    };
+
     async function sendChatMessage(e) {
       e.preventDefault();
       const token = sessionStorage.getItem('vip_session_token');
@@ -2470,21 +2528,28 @@ feather.replace();
       const input = document.getElementById('chatInput');
       const btn = document.getElementById('chatBtn');
       const text = input.value.trim();
-      if (!text) return;
+      
+      // Require either text or an image
+      if (!text && !currentChatImageBase64) return;
 
       input.disabled = true;
       btn.disabled = true;
+      if(document.getElementById('chatImageInput')) document.getElementById('chatImageInput').disabled = true;
 
-      // Send via WebSocket instead of HTTP POST
+      // Send via WebSocket
       socket.emit('sendMessage', {
         room: currentRoom,
         text,
+        image: currentChatImageBase64,
         author: localStorage.getItem('pa_vip_user_name') || 'VIP Member'
       });
       
       input.value = '';
+      removeChatImage(); // Clears image and preview
+      
       input.disabled = false;
       btn.disabled = false;
+      if(document.getElementById('chatImageInput')) document.getElementById('chatImageInput').disabled = false;
       input.focus();
     }
 

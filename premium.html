@@ -1661,38 +1661,68 @@
         </div>
       </div>
 
-      <!-- 📈 Economic Calendar -->
+      <!-- 📈 Market Data & Economic Calendar -->
       <div class="mb-10">
-        <div class="glass-card border border-cyan-400/20 rounded-2xl overflow-hidden">
-          <div class="bg-gradient-to-r from-cyan-500/10 to-transparent p-4 border-b border-white/5 flex items-center gap-3">
-            <div class="p-2 bg-cyan-500/20 rounded-lg">
-              <i data-feather="bar-chart-2" class="w-5 h-5 text-cyan-400"></i>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          <!-- Market Sentiment -->
+          <div class="glass-card border border-cyan-400/20 rounded-2xl overflow-hidden" data-tilt>
+            <div class="bg-gradient-to-r from-cyan-500/10 to-transparent p-4 border-b border-white/5 flex items-center gap-3">
+              <div class="p-2 bg-cyan-500/20 rounded-lg">
+                <i data-feather="bar-chart-2" class="w-5 h-5 text-cyan-400"></i>
+              </div>
+              <h3 class="text-white font-bold text-lg">Market Sentiment</h3>
+              <span class="ml-auto flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="text-emerald-400 text-xs font-bold">LIVE</span>
+              </span>
             </div>
-            <h3 class="text-white font-bold text-lg">Market Sentiment: XAUUSD</h3>
-            <span class="ml-auto flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span class="text-emerald-400 text-xs font-bold">LIVE</span>
-            </span>
-          </div>
-          <div class="p-4 bg-black/30">
-            <!-- TradingView Technical Analysis Widget -->
-            <div class="tradingview-widget-container" style="height:430px; width:100%;">
-              <div class="tradingview-widget-container__widget" style="height:100%; width:100%;"></div>
-              <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" async>
-              {
-                "interval": "1h",
-                "autosize": true,
-                "isTransparent": true,
-                "height": 430,
-                "symbol": "OANDA:XAUUSD",
-                "showIntervalTabs": true,
-                "displayMode": "single",
-                "locale": "en",
-                "colorTheme": "dark"
-              }
-              </script>
+            <div class="p-4 bg-black/30">
+              <div class="tradingview-widget-container" style="height:430px; width:100%;">
+                <div class="tradingview-widget-container__widget" style="height:100%; width:100%;"></div>
+                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" async>
+                {
+                  "interval": "1h",
+                  "autosize": true,
+                  "isTransparent": true,
+                  "height": 430,
+                  "symbol": "OANDA:XAUUSD",
+                  "showIntervalTabs": true,
+                  "displayMode": "single",
+                  "locale": "en",
+                  "colorTheme": "dark"
+                }
+                </script>
+              </div>
             </div>
           </div>
+
+          <!-- Economic Calendar -->
+          <div class="glass-card border border-rose-400/20 rounded-2xl overflow-hidden" data-tilt>
+            <div class="bg-gradient-to-r from-rose-500/10 to-transparent p-4 border-b border-white/5 flex items-center gap-3">
+              <div class="p-2 bg-rose-500/20 rounded-lg">
+                <i data-feather="calendar" class="w-5 h-5 text-rose-400"></i>
+              </div>
+              <h3 class="text-white font-bold text-lg">Economic Calendar</h3>
+            </div>
+            <div class="p-4 bg-black/30">
+              <div class="tradingview-widget-container" style="height:430px; width:100%;">
+                <div class="tradingview-widget-container__widget" style="height:100%; width:100%;"></div>
+                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
+                {
+                  "colorTheme": "dark",
+                  "isTransparent": true,
+                  "width": "100%",
+                  "height": 430,
+                  "locale": "en",
+                  "importanceFilter": "-1,0,1",
+                  "currencyFilter": "USD,EUR,GBP,JPY,CAD,AUD,NZD,CHF"
+                }
+                </script>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -1731,12 +1761,28 @@
               <p class="text-xs">Connecting to chat...</p>
             </div>
           </div>
-          <form onsubmit="sendChatMessage(event)" id="chatForm" class="p-4 border-t border-white/5 bg-black/40 flex gap-3">
-            <input type="text" id="chatInput" placeholder="Type your message..." required autocomplete="off" onclick="setTimeout(() => { const msgs = document.getElementById('chatMessages'); if (msgs) msgs.scrollTo({ top: msgs.scrollHeight, behavior: 'smooth' }); }, 300)"
-              class="flex-1 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:border-gold/50 focus:outline-none transition" />
-            <button type="submit" id="chatBtn" class="px-5 py-2.5 rounded-xl font-bold bg-gold text-primary hover:brightness-110 active:scale-95 transition flex items-center gap-2">
-              Send <i data-feather="send" class="w-4 h-4"></i>
-            </button>
+          <form onsubmit="sendChatMessage(event)" id="chatForm" class="p-4 border-t border-white/5 bg-black/40 flex flex-col gap-2 relative">
+            <div id="chatImagePreviewContainer" class="hidden absolute bottom-full left-4 mb-2 bg-black/80 border border-white/10 rounded-lg p-2 backdrop-blur-sm shadow-xl z-10">
+              <div class="relative">
+                <img id="chatImagePreview" src="" class="h-24 w-auto rounded object-cover border border-white/10" />
+                <button type="button" onclick="removeChatImage()" class="absolute -top-2 -right-2 bg-rose-500 text-white rounded-full p-1 hover:scale-110 transition shadow-lg">
+                  <i data-feather="x" class="w-3 h-3"></i>
+                </button>
+              </div>
+            </div>
+            <div class="flex gap-2 items-center w-full">
+              <label for="chatImageInput" class="cursor-pointer p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition border border-white/10 flex-shrink-0" title="Attach Image">
+                <i data-feather="image" class="w-5 h-5"></i>
+              </label>
+              <input type="file" id="chatImageInput" accept="image/*" class="hidden" onchange="previewChatImage(event)" />
+              
+              <input type="text" id="chatInput" placeholder="Type your message..." autocomplete="off" onclick="setTimeout(() => { const msgs = document.getElementById('chatMessages'); if (msgs) msgs.scrollTo({ top: msgs.scrollHeight, behavior: 'smooth' }); }, 300)"
+                class="flex-1 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:border-gold/50 focus:outline-none transition min-w-0" />
+                
+              <button type="submit" id="chatBtn" class="px-5 py-2.5 rounded-xl font-bold bg-gold text-primary hover:brightness-110 active:scale-95 transition flex items-center gap-2 flex-shrink-0">
+                <span class="hidden sm:inline">Send</span> <i data-feather="send" class="w-4 h-4"></i>
+              </button>
+            </div>
           </form>
           <div id="readOnlyNotice" class="hidden p-4 border-t border-white/5 bg-black/40 text-center text-xs text-gray-500 italic">
             Only admins can post in this room.
