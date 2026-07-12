@@ -2491,3 +2491,12 @@ feather.replace();
         showToast('Not Supported', 'Push notifications are not supported in your browser.', 'error');
       }
     }
+
+// --- HAPTIC FEEDBACK ---
+// Adds a subtle vibration when clicking buttons/links on mobile devices
+document.addEventListener('click', (e) => {
+  const target = e.target.closest('button, a, .cursor-pointer');
+  if (target && navigator.vibrate) {
+    navigator.vibrate(15); // Light tap
+  }
+});

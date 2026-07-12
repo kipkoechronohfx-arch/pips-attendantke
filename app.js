@@ -235,3 +235,12 @@ window.addEventListener('mousemove', (e) => {
   document.documentElement.style.setProperty('--mouse-x', `${x}px`);
   document.documentElement.style.setProperty('--mouse-y', `${y}px`);
 });
+
+// --- HAPTIC FEEDBACK ---
+// Adds a subtle vibration when clicking buttons/links on mobile devices
+document.addEventListener('click', (e) => {
+  const target = e.target.closest('button, a, .cursor-pointer');
+  if (target && navigator.vibrate) {
+    navigator.vibrate(15); // Light tap
+  }
+});
