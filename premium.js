@@ -1956,8 +1956,8 @@ feather.replace();
             
             // Show Telegram Blocker if telegramId is not linked
             if (!data.user.telegramId) {
-              // 48-hour grace period for new members
-              const GRACE_HOURS = 48;
+              // 12-hour grace period for new members
+              const GRACE_HOURS = 12;
               const createdAt = data.user.createdAt ? new Date(data.user.createdAt).getTime() : Date.now();
               const hoursSinceCreation = (Date.now() - createdAt) / (1000 * 60 * 60);
 
