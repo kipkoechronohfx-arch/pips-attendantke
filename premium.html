@@ -166,14 +166,16 @@
         window.addEventListener('offline', () => setOnlineState(false));
         setOnlineState(navigator.onLine);
 
-        // ── Push button visibility ────────────────────────────
+        // ── Push Opt-In Banner Visibility ────────────────────────────
         if ('serviceWorker' in navigator && 'PushManager' in window) {
           const registration = await navigator.serviceWorker.ready;
           const subscription = await registration.pushManager.getSubscription();
           if (!subscription && Notification.permission !== 'denied') {
-            const btn = document.getElementById('pushSubscribeBtn');
-            if (btn) btn.classList.remove('hidden');
-            if (btn) btn.classList.add('flex');
+            const container = document.getElementById('pushOptInContainer');
+            if (container) {
+              container.classList.remove('hidden');
+              container.classList.add('flex');
+            }
           }
         }
       });
@@ -649,6 +651,22 @@
     <!-- CONTENT PANEL (hidden until password correct) -->
     <div id="contentPanel" class="hidden">
       
+      <!-- Push Notifications Opt-In Banner -->
+      <div id="pushOptInContainer" class="hidden bg-sky-500/10 border border-sky-500/30 rounded-2xl p-4 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-sky-500/20 flex items-center justify-center text-sky-400">
+            <i data-feather="bell" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-white font-bold text-sm">Enable Trade Alerts</h3>
+            <p class="text-sky-400/80 text-[11px]">Get instant browser notifications when a new VIP signal is posted.</p>
+          </div>
+        </div>
+        <button id="pushSubscribeBtn" onclick="subscribeToPush()" class="px-5 py-2.5 bg-sky-500 hover:bg-sky-400 text-black font-bold text-xs rounded-xl shadow-[0_0_15px_rgba(14,165,233,0.4)] transition cursor-pointer whitespace-nowrap">
+          Enable Alerts 🔔
+        </button>
+      </div>
+
       <!-- Welcome Banner -->
       <div class="glass-card border border-gold/20 rounded-2xl p-5 mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
         <div class="flex items-center gap-4 w-full sm:w-auto">
@@ -883,6 +901,56 @@
               </div>
               <div id="leaderboardList" class="max-h-64 overflow-y-auto custom-scrollbar">
                 <p class="text-gray-500 text-[11px] text-center py-4">Loading leaderboard...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Affiliate / Partner Section ─────────────────────────────────── -->
+      <div id="partnerSection" class="mb-8">
+        <div class="relative rounded-2xl overflow-hidden border border-emerald-500/30" style="background: linear-gradient(135deg, rgba(16,185,129,0.12) 0%, rgba(17,24,39,1) 60%); box-shadow: 0 0 40px rgba(16,185,129,0.1);">
+          <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-teal-400 to-green-500"></div>
+          <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl flex items-center justify-center text-2xl" style="background: linear-gradient(135deg, rgba(16,185,129,0.3), rgba(6,78,59,0.1)); border: 1px solid rgba(16,185,129,0.4);">🤝</div>
+                <div>
+                  <h3 class="text-white font-black text-base">Partner Dashboard</h3>
+                  <p class="text-emerald-400 text-[11px] font-medium">Earn rewards by inviting friends</p>
+                </div>
+              </div>
+              <button onclick="loadPartnerStats()" class="text-gray-400 hover:text-emerald-400 transition cursor-pointer">
+                <i data-feather="refresh-cw" class="w-4 h-4"></i>
+              </button>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+              <div class="bg-black/40 border border-emerald-500/20 rounded-xl p-4 text-center">
+                <p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-1">Total Clicks</p>
+                <p id="partnerClicks" class="text-lg font-black text-white">0</p>
+              </div>
+              <div class="bg-black/40 border border-emerald-500/20 rounded-xl p-4 text-center">
+                <p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-1">Paid Signups</p>
+                <p id="partnerSignups" class="text-lg font-black text-white">0</p>
+              </div>
+              <div class="bg-black/40 border border-emerald-500/20 rounded-xl p-4 text-center">
+                <p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-1">Total Earned</p>
+                <p id="partnerEarned" class="text-lg font-black text-emerald-400">$0</p>
+              </div>
+              <div class="bg-black/40 border border-emerald-500/20 rounded-xl p-4 text-center">
+                <p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-1">Pending Payout</p>
+                <p id="partnerPending" class="text-lg font-black text-amber-400">$0</p>
+              </div>
+            </div>
+
+            <div class="bg-black/30 border border-white/5 rounded-xl p-4">
+              <p class="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2">Your Unique Referral Link</p>
+              <div class="flex items-center gap-2">
+                <input type="text" id="partnerLink" readonly class="flex-1 px-3 py-2.5 rounded-lg bg-black/60 border border-white/10 text-white text-xs font-mono focus:outline-none" value="Loading...">
+                <button onclick="copyPartnerLink()" class="px-4 py-2.5 bg-emerald-500/20 hover:bg-emerald-500/40 border border-emerald-500/50 text-emerald-400 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-2">
+                  <i data-feather="copy" class="w-3.5 h-3.5"></i> Copy
+                </button>
               </div>
             </div>
           </div>
@@ -1946,6 +2014,18 @@
         icon: '🧠',
         title: "Today's Analysis",
         body: "Every trading day, our analyst uploads a fresh chart analysis here. Study the setup before entering any trade!"
+      },
+      {
+        targetId: 'journalSection',
+        icon: '📝',
+        title: 'Trading Journal',
+        body: 'Log your daily trades here to track your consistency. Compete on the Community Leaderboard for the highest weekly PnL!'
+      },
+      {
+        targetId: 'partnerSection',
+        icon: '🤝',
+        title: 'Partner Dashboard',
+        body: 'Share your unique referral link to invite friends. Earn rewards and free VIP days for every successful signup!'
       },
       {
         targetId: 'vipTelegramLink',

@@ -1006,6 +1006,37 @@ feather.replace();
       }
     }
 
+    async function loadPartnerStats() {
+      const token = sessionStorage.getItem('vip_session_token') || localStorage.getItem('vip_session_token');
+      if (!token) return;
+
+      try {
+        const res = await fetch('/api/partner/stats', { headers: { 'x-vip-token': token } });
+        const data = await res.json();
+        
+        if (data.ok && data.stats) {
+          document.getElementById('partnerClicks').textContent = data.stats.totalClicks || 0;
+          document.getElementById('partnerSignups').textContent = data.stats.paidSignups || 0;
+          document.getElementById('partnerEarned').textContent = '$' + (data.stats.totalEarnings || 0);
+          document.getElementById('partnerPending').textContent = '$' + (data.stats.pendingPayout || 0);
+          document.getElementById('partnerLink').value = data.stats.referralLink || '';
+        }
+      } catch (err) {
+        console.error('[Partner] Error loading stats', err);
+      }
+    }
+
+    function copyPartnerLink() {
+      const linkInput = document.getElementById('partnerLink');
+      if (!linkInput.value || linkInput.value === 'Loading...') return;
+      
+      linkInput.select();
+      linkInput.setSelectionRange(0, 99999);
+      navigator.clipboard.writeText(linkInput.value).then(() => {
+        showToast('Link Copied', 'Your referral link has been copied to clipboard!', 'success');
+      });
+    }
+
     async function loadMyBookings() {
       const token = sessionStorage.getItem('vip_session_token');
       if (!token) return;
@@ -2419,3 +2450,44 @@ feather.replace();
 
     // Initialize data on page load
     loadCryptoWallets();
+
+    // ── PUSH NOTIFICATIONS LOGIC ──
+    const publicVapidKey = 'BJcACSzRQjsW5ZnDnrmvcVAs5lGnM_j5aoDGdsXnx6bDulEYWZJ0W5aC52Z5mB71tJ74KDbIwwhyrzxMIQIh60k';
+
+    function urlBase64ToUint8Array(base64String) {
+      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+      const rawData = window.atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+      for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+      }
+      return outputArray;
+    }
+
+    async function subscribeToPush() {
+      if ('serviceWorker' in navigator) {
+        try {
+          const register = await navigator.serviceWorker.ready;
+          const subscription = await register.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
+          });
+          
+          await fetch('/api/push/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(subscription)
+          });
+          
+          showToast('Alerts Enabled', 'You will now receive push notifications for VIP signals!', 'success');
+          const container = document.getElementById('pushOptInContainer');
+          if (container) container.classList.add('hidden');
+        } catch (err) {
+          console.error('Push Subscription Error:', err);
+          showToast('Subscription Failed', 'Failed to enable alerts. Please check your browser permissions.', 'error');
+        }
+      } else {
+        showToast('Not Supported', 'Push notifications are not supported in your browser.', 'error');
+      }
+    }

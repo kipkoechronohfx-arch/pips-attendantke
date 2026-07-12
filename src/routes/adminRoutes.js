@@ -135,8 +135,10 @@ router.get('/analytics', validateAdminSession, async (req, res) => {
     
     const now = Date.now();
     const activeVIPs = users.filter(u => u.subscriptionExpiry && u.subscriptionExpiry > now).length;
+    const paidVIPs = users.filter(u => u.subscriptionExpiry && u.subscriptionExpiry > now && !u.isTrial).length;
+    const trialUsers = users.filter(u => u.subscriptionExpiry && u.subscriptionExpiry > now && u.isTrial).length;
     const expiredUsers = users.filter(u => u.subscriptionExpiry && u.subscriptionExpiry <= now).length;
-    const conversionRate = users.length > 0 ? Math.round(((activeVIPs + expiredUsers) / users.length) * 100) : 0;
+    const conversionRate = (paidVIPs + expiredUsers) > 0 ? Math.round(((paidVIPs) / (paidVIPs + expiredUsers)) * 100) : 0;
     
     const successfulPayments = payments.filter(p => p.status === 'Success');
     const kesPayments = successfulPayments.filter(p => !p.network); // USDT payments have a 'network' field
@@ -203,6 +205,8 @@ router.get('/analytics', validateAdminSession, async (req, res) => {
       ok: true,
       totalUsers: users.length,
       activeVIPs,
+      paidVIPs,
+      trialUsers,
       expiredUsers,
       conversionRate,
       totalKES,
