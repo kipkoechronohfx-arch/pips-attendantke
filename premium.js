@@ -745,7 +745,38 @@ feather.replace();
       }
     }
 
+    // ── Live Trading Room ──
+    async function loadLiveStream() {
+      const token = sessionStorage.getItem('vip_session_token') || localStorage.getItem('vip_session_token');
+      if (!token) return;
+      try {
+        const res = await fetch('/api/auth/livestream', { headers: { 'x-vip-token': token } });
+        const data = await res.json();
+        const videoWrapper = document.getElementById('liveVideoWrapper');
+        const offlinePlaceholder = document.getElementById('liveOfflinePlaceholder');
+        const iframe = document.getElementById('liveYoutubeIframe');
+        const badge = document.getElementById('liveStatusBadge');
+        const chatArea = document.getElementById('liveChatArea');
+
+        if (data.ok && data.youtubeLiveId) {
+          iframe.src = `https://www.youtube.com/embed/${data.youtubeLiveId}?autoplay=1&mute=1&rel=0&modestbranding=1`;
+          videoWrapper.classList.remove('hidden');
+          offlinePlaceholder.classList.add('hidden');
+          if (badge) badge.classList.remove('hidden');
+          if (chatArea) chatArea.classList.remove('hidden');
+        } else {
+          videoWrapper.classList.add('hidden');
+          offlinePlaceholder.classList.remove('hidden');
+          if (badge) badge.classList.add('hidden');
+          if (chatArea) chatArea.classList.add('hidden');
+        }
+      } catch (err) {
+        console.error('[LiveRoom] Error loading stream:', err);
+      }
+    }
+
     // ── Partner Program ──
+
     async function loadPartnerStats() {
       const token = sessionStorage.getItem('vip_session_token') || localStorage.getItem('vip_session_token');
       if (!token) return;
@@ -2029,6 +2060,8 @@ feather.replace();
             loadDailyBrief();
             loadSignalArchive();
             loadPartnerStats();
+            loadLiveStream();
+
             if (data.user.badges) renderBadges(data.user.badges);
             if (data.user.completedModules) renderCompletedModules(data.user.completedModules);
             loadChatMessages();

@@ -544,4 +544,15 @@ router.get('/daily-brief', validateUserSession, async (req, res) => {
   }
 });
 
+// ── Live Stream (VIP fetch) ────────────────────────────────────────────────
+router.get('/livestream', validateUserSession, async (req, res) => {
+  try {
+    const config = await db.getAppConfig();
+    const youtubeLiveId = (config && config.youtubeLiveId) ? config.youtubeLiveId : null;
+    res.json({ ok: true, youtubeLiveId });
+  } catch (err) {
+    res.json({ ok: true, youtubeLiveId: null });
+  }
+});
+
 module.exports = router;

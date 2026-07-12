@@ -1145,4 +1145,17 @@ router.post('/email-blast', validateAdminSession, async (req, res) => {
   }
 });
 
+// ── Live Stream Controls ──────────────────────────────────────────
+router.post('/livestream', validateAdminSession, async (req, res) => {
+  try {
+    const { youtubeLiveId } = req.body;
+    const conf = await db.getAppConfig();
+    conf.youtubeLiveId = youtubeLiveId ? youtubeLiveId.trim() : '';
+    await db.saveAppConfig(conf);
+    res.json({ ok: true, youtubeLiveId: conf.youtubeLiveId });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: 'Failed to update live stream config.' });
+  }
+});
+
 module.exports = router;
