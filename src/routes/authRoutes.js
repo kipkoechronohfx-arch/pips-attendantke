@@ -13,6 +13,13 @@ const logger = require('../utils/logger');
 // In-memory 2FA OTP store: { email -> { otp, expiresAt, userId } }
 const _otpStore = new Map();
 
+// In-memory IP tracking to prevent abuse
+const registrationIPs = new Map();
+// Clear IPs every 24 hours to prevent memory leak
+setInterval(() => {
+  registrationIPs.clear();
+}, 24 * 60 * 60 * 1000);
+
 function hashPassword(password) {
   return bcrypt.hashSync(password, 10);
 }
@@ -38,6 +45,12 @@ function generateUserToken(user) {
 }
 
 router.post('/register', authLimiter, async (req, res) => {
+  const clientIp = req.ip || req.connection?.remoteAddress || 'unknown';
+  const ipCount = registrationIPs.get(clientIp) || 0;
+  if (ipCount >= 2) {
+    return res.status(429).json({ ok: false, error: 'Maximum trial accounts reached for this device/IP.' });
+  }
+
   const { email, password, name, referralCode } = req.body;
   if (!email || !password) return res.status(400).json({ ok: false, error: 'Email and password required.' });
   
@@ -64,11 +77,13 @@ router.post('/register', authLimiter, async (req, res) => {
     registeredAt: new Date().toISOString(),
     subscriptionExpiry: trialExpiryMs,
     subscriptionTier: 'Platinum',
+    isTrial: true,
     referredBy: referredByUserId || null,
     telegramId: null
   };
 
   await saveUser(user);
+  registrationIPs.set(clientIp, ipCount + 1);
   const sessionToken = generateUserToken(user);
   
   try {

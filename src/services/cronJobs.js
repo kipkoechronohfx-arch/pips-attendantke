@@ -39,6 +39,36 @@ function buildRenewalReminderHtml({ userName, expiryDate, renewalUrl, daysLeft }
   </body></html>`;
 }
 
+function buildTrialExpiryHtml({ userName, renewalUrl }) {
+  return `
+  <!DOCTYPE html>
+  <html>
+  <body style="margin:0;padding:0;background:#0d0800;font-family:Arial,sans-serif;">
+  <div style="max-width:560px;margin:0 auto;background:#111827;border-radius:16px;border:1px solid rgba(251,191,36,0.2);overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#f59e0b,#fbbf24);padding:28px 32px;text-align:center;">
+      <h1 style="margin:0;color:#0d0800;font-size:22px;font-weight:800;">&#x23F0; Your Free Trial Ends Tomorrow!</h1>
+    </div>
+    <div style="padding:32px;">
+      <p style="color:#9ca3af;font-size:14px;margin:0 0 16px;">Hello <strong style="color:#f9fafb;">${userName || "Trader"}</strong>,</p>
+      <p style="color:#9ca3af;font-size:14px;margin:0 0 24px;">
+        We hope you've enjoyed your 5-day Platinum trial! Your free access will expire in exactly 24 hours.
+        Don't lose your edge in the markets—upgrade now and keep receiving exclusive VIP signals and mentorship.
+      </p>
+      <div style="background:rgba(251,191,36,0.08);border:1px dashed #fbbf24;border-radius:12px;padding:20px;margin-bottom:28px;text-align:center;">
+        <p style="color:#fbbf24;font-size:15px;font-weight:800;margin:0 0 8px;">🎁 Special Offer</p>
+        <p style="color:#9ca3af;font-size:13px;margin:0;">Use code <strong style="color:#fff;background:#000;padding:2px 6px;border-radius:4px;letter-spacing:1px;">TRIAL10</strong> at checkout for 10% off your first subscription!</p>
+      </div>
+      <div style="text-align:center;">
+        <a href="${renewalUrl}" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#0d0800;font-weight:800;padding:14px 32px;border-radius:12px;text-decoration:none;display:inline-block;font-size:15px;">Upgrade Now</a>
+      </div>
+    </div>
+    <div style="padding:16px 32px;border-top:1px solid rgba(255,255,255,0.06);text-align:center;">
+      <p style="color:#4b5563;font-size:11px;margin:0;">Pips Attendant | support@pipsattendant.com</p>
+    </div>
+  </div>
+  </body></html>`;
+}
+
 async function runExpiryReminders() {
   try {
     const users = await db.getUsers();
@@ -50,16 +80,29 @@ async function runExpiryReminders() {
       const expiry = user.subscriptionExpiry;
       const daysLeft = Math.ceil((expiry - now) / (24 * 60 * 60 * 1000));
       if (daysLeft === 3 || daysLeft === 1) {
+        if (user.isTrial && daysLeft !== 1) continue; // Trial users only get day 1 reminder
+
         const reminderKey = `reminder_${daysLeft}d_${expiry}`;
         if (user[reminderKey]) continue;
         try {
-          const html = buildRenewalReminderHtml({
-            userName: user.name,
-            expiryDate: new Date(expiry).toDateString(),
-            renewalUrl: `${appUrl}/premium.html`,
-            daysLeft
-          });
-          await sendEmail(user.email, `Your Pips Attendant VIP expires in ${daysLeft} day${daysLeft !== 1 ? "s" : ""}`, html);
+          let html;
+          let subject;
+          if (user.isTrial) {
+            html = buildTrialExpiryHtml({
+              userName: user.name,
+              renewalUrl: `${appUrl}/premium.html`
+            });
+            subject = "⏳ Your 5-Day VIP Trial Ends Tomorrow!";
+          } else {
+            html = buildRenewalReminderHtml({
+              userName: user.name,
+              expiryDate: new Date(expiry).toDateString(),
+              renewalUrl: `${appUrl}/premium.html`,
+              daysLeft
+            });
+            subject = `Your Pips Attendant VIP expires in ${daysLeft} day${daysLeft !== 1 ? "s" : ""}`;
+          }
+          await sendEmail(user.email, subject, html);
           user[reminderKey] = true;
           await db.saveUser(user);
           sent++;

@@ -2066,7 +2066,13 @@ feather.replace();
               const expiryDate = new Date(data.user.subscriptionExpiry);
               daysLeft = Math.ceil((data.user.subscriptionExpiry - Date.now()) / (1000 * 60 * 60 * 24));
               const expiryStr = expiryDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-              if (expiryEl) expiryEl.textContent = `Expires ${expiryStr} (${daysLeft} day${daysLeft !== 1 ? 's' : ''} left)`;
+              if (expiryEl) {
+                if (data.user.isTrial) {
+                  expiryEl.innerHTML = `<span class="bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded border border-amber-500/30 text-[10px] font-black tracking-wider uppercase mr-2 shadow-[0_0_10px_rgba(245,158,11,0.2)]">Trial Active</span> Expires ${expiryStr} (${daysLeft} day${daysLeft !== 1 ? 's' : ''} left)`;
+                } else {
+                  expiryEl.textContent = `Expires ${expiryStr} (${daysLeft} day${daysLeft !== 1 ? 's' : ''} left)`;
+                }
+              }
               if (accountExpiryEl) accountExpiryEl.textContent = expiryStr;
             }
             if (accountTierEl) accountTierEl.textContent = isPlatinum ? '💎 VIP Platinum' : '⭐ VIP Gold';
@@ -2107,6 +2113,14 @@ feather.replace();
             }
 
             feather.replace();
+          } else {
+            // VIP expired or no VIP
+            document.getElementById('contentPanel').classList.add('hidden');
+            document.getElementById('paymentPanel').style.display = 'block';
+            if (data.user && data.user.isTrial) {
+              const trialMsg = document.getElementById('trialExpiredMessage');
+              if (trialMsg) trialMsg.classList.remove('hidden');
+            }
           }
         } else {
           console.error('[checkUserAccess] Failed:', data);
