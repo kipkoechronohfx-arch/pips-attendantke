@@ -55,14 +55,15 @@ router.post('/register', authLimiter, async (req, res) => {
     if (referrer) referredByUserId = referrer._id || referrer.id;
   }
 
+  const trialExpiryMs = Date.now() + 5 * 24 * 60 * 60 * 1000;
   const user = {
     id: `USER_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`,
     email: email.toLowerCase().trim(),
     name: name || '',
     passwordHash: hashPassword(password),
     registeredAt: new Date().toISOString(),
-    subscriptionExpiry: null,
-    subscriptionTier: 'Gold',
+    subscriptionExpiry: trialExpiryMs,
+    subscriptionTier: 'Platinum',
     referredBy: referredByUserId || null,
     telegramId: null
   };
@@ -86,8 +87,8 @@ router.post('/register', authLimiter, async (req, res) => {
     <p style="color:#9ca3af;font-size:14px;line-height:1.7;margin:0 0 24px;">Your account has been successfully created. We are thrilled to have you on board with the Pips Attendant community!</p>
     <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:12px;padding:20px;margin-bottom:24px;">
       <p style="color:#fbbf24;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:1px;margin:0 0 12px;">What's Next?</p>
-      <p style="color:#d1d5db;font-size:13px;margin:0 0 8px;">✅ Log in and select a VIP subscription plan</p>
-      <p style="color:#d1d5db;font-size:13px;margin:0 0 8px;">✅ Get access to exclusive Telegram signals</p>
+      <p style="color:#d1d5db;font-size:13px;margin:0 0 8px;">✅ Enjoy your 5-day free Platinum trial</p>
+      <p style="color:#d1d5db;font-size:13px;margin:0 0 8px;">✅ Get full access to exclusive Telegram signals & Mentorship</p>
       <p style="color:#d1d5db;font-size:13px;margin:0;">✅ Join a community of profitable traders</p>
     </div>
     <div style="text-align:center;margin-bottom:24px;">
