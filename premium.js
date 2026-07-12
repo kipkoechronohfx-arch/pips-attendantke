@@ -365,6 +365,8 @@ feather.replace();
       const entryPrice = document.getElementById('jEntry').value;
       const exitPrice = document.getElementById('jExit').value;
       const pips = document.getElementById('jPips').value;
+      const strategy = document.getElementById('jStrategy').value;
+      const tvLink = document.getElementById('jTvLink').value.trim();
       const notes = document.getElementById('jNotes').value.trim();
       const imageFile = document.getElementById('jImage').files[0];
       const errEl = document.getElementById('journalFormError');
@@ -390,7 +392,7 @@ feather.replace();
         const res = await fetch('/api/journal', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-vip-token': token },
-          body: JSON.stringify({ asset, type, entry: entryPrice, exit: exitPrice, pl: pips, date: Date.now(), notes, image: imageData })
+          body: JSON.stringify({ asset, type, entry: entryPrice, exit: exitPrice, pl: pips, strategy, tvLink, date: Date.now(), notes, image: imageData })
         });
         const data = await res.json();
         if (data.ok) {
@@ -452,10 +454,14 @@ feather.replace();
                   <div class="flex items-center gap-2">
                     <span class="text-white font-bold text-xs">${j.asset}</span>
                     <span class="text-[9px] font-bold ${typeColor} px-1.5 py-0.5 rounded border border-current/20 bg-current/10">${j.type.toUpperCase()}</span>
+                    ${j.strategy ? `<span class="text-[9px] font-bold text-violet-400 px-1.5 py-0.5 rounded border border-violet-400/30 bg-violet-400/10">${j.strategy.toUpperCase()}</span>` : ''}
                     <span class="text-[9px] text-gray-500 ml-auto">${date}</span>
                   </div>
                   ${j.notes || j.pl !== undefined ? `<p class="text-gray-500 text-[10px] truncate mt-0.5 italic">${j.notes || (j.entry ? `Entry: ${j.entry} → Exit: ${j.exit}` : '')}</p>` : ''}
-                  ${j.image ? `<a href="${j.image}" target="_blank" class="inline-flex items-center gap-1 mt-1 text-[10px] text-emerald-400 hover:text-emerald-300"><i data-feather="image" class="w-3 h-3"></i> View Chart</a>` : ''}
+                  <div class="flex items-center gap-3 mt-1">
+                    ${j.tvLink ? `<a href="${j.tvLink}" target="_blank" class="inline-flex items-center gap-1 text-[10px] text-sky-400 hover:text-sky-300"><i data-feather="external-link" class="w-3 h-3"></i> TradingView</a>` : ''}
+                    ${j.image ? `<a href="${j.image}" target="_blank" class="inline-flex items-center gap-1 text-[10px] text-emerald-400 hover:text-emerald-300"><i data-feather="image" class="w-3 h-3"></i> View Image</a>` : ''}
+                  </div>
                 </div>
                 <div class="shrink-0 text-right">
                   <p class="font-bold text-sm ${pipsColor}">${pips >= 0 ? '+' : ''}${pips} <span class="text-[9px] font-normal">pips</span></p>
@@ -479,11 +485,11 @@ feather.replace();
         return;
       }
       
-      const headers = ['Date', 'Asset', 'Position', 'Entry', 'Exit', 'Pips', 'Notes', 'Has Chart'];
+      const headers = ['Date', 'Asset', 'Position', 'Strategy', 'Entry', 'Exit', 'Pips', 'Notes', 'TradingView Link', 'Has Image'];
       const rows = _journalCache.map(j => {
         const date = new Date(j.date).toLocaleDateString('en-GB');
         const notes = (j.notes || '').replace(/"/g, '""');
-        return `"${date}","${j.asset}","${j.type}","${j.entry || ''}","${j.exit || ''}","${j.pl || 0}","${notes}","${j.image ? 'Yes' : 'No'}"`;
+        return `"${date}","${j.asset}","${j.type}","${j.strategy || ''}","${j.entry || ''}","${j.exit || ''}","${j.pl || 0}","${notes}","${j.tvLink || ''}","${j.image ? 'Yes' : 'No'}"`;
       });
       
       const csvContent = [headers.join(','), ...rows].join('\\n');
@@ -516,6 +522,7 @@ feather.replace();
       const labels = ['Start'];
       
       let wins = 0, losses = 0, breakevens = 0;
+      let strategyStats = {};
 
       sorted.forEach((e, idx) => {
         const pips = parseFloat(e.pl) || 0;

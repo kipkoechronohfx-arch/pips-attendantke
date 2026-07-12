@@ -31,7 +31,7 @@ router.get('/leaderboard', validateUserSession, async (req, res) => {
 router.post('/', validateUserSession, async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
-    const { asset, type, entry, exit, pl, date, notes, image } = req.body;
+    const { asset, type, entry, exit, pl, strategy, tvLink, date, notes, image } = req.body;
     
     if (!asset || !type || entry === undefined || exit === undefined || pl === undefined) {
       return res.status(400).json({ ok: false, error: 'Missing required fields.' });
@@ -44,6 +44,8 @@ router.post('/', validateUserSession, async (req, res) => {
       entry: Number(entry),
       exit: Number(exit),
       pl: Number(pl),
+      strategy: strategy || null,
+      tvLink: tvLink || null,
       notes: notes || '',
       image: image || null,
       date: date || Date.now(),
