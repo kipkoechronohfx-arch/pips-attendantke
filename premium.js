@@ -1944,6 +1944,26 @@ feather.replace();
         showToast('New Trade Signal ⚡', 'A new signal has been posted to the VIP group!', 'info');
       });
 
+      socket.on('livestreamUpdate', (data) => {
+        const videoWrapper = document.getElementById('liveVideoWrapper');
+        const offlinePlaceholder = document.getElementById('liveOfflinePlaceholder');
+        const iframe = document.getElementById('liveYoutubeIframe');
+        const badge = document.getElementById('liveStatusBadge');
+        const chatArea = document.getElementById('liveChatArea');
+        if (data.youtubeLiveId) {
+          if (iframe) iframe.src = `https://www.youtube.com/embed/${data.youtubeLiveId}?autoplay=1&mute=1&rel=0&modestbranding=1`;
+          if (videoWrapper) videoWrapper.classList.remove('hidden');
+          if (offlinePlaceholder) offlinePlaceholder.classList.add('hidden');
+          if (badge) badge.classList.remove('hidden');
+          if (chatArea) chatArea.classList.remove('hidden');
+        } else {
+          if (videoWrapper) videoWrapper.classList.add('hidden');
+          if (offlinePlaceholder) offlinePlaceholder.classList.remove('hidden');
+          if (badge) badge.classList.add('hidden');
+          if (chatArea) chatArea.classList.add('hidden');
+        }
+      });
+
       socket.on('newMessage', (msg) => {
         // If message is for another room, show badge
         if (msg.room && msg.room !== currentRoom) {

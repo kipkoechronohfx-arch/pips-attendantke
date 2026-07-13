@@ -1152,6 +1152,13 @@ router.post('/livestream', validateAdminSession, async (req, res) => {
     const conf = await db.getAppConfig();
     conf.youtubeLiveId = youtubeLiveId ? youtubeLiveId.trim() : '';
     await db.saveAppConfig(conf);
+    
+    // Broadcast livestream update
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('livestreamUpdate', { youtubeLiveId: conf.youtubeLiveId });
+    }
+    
     res.json({ ok: true, youtubeLiveId: conf.youtubeLiveId });
   } catch (err) {
     res.status(500).json({ ok: false, error: 'Failed to update live stream config.' });
