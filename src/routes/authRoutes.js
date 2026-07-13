@@ -126,7 +126,7 @@ router.post('/register', authLimiter, async (req, res) => {
     logger.error('[Email] Failed to send welcome email: ' + err.message);
   }
 
-  res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, subscriptionExpiry: user.subscriptionExpiry, telegramId: user.telegramId } });
+  res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, avatar: user.avatar, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier, telegramId: user.telegramId, badges: user.badges || [], role: user.role || 'user' } });
 });
 
 router.post('/login', authLimiter, async (req, res) => {
