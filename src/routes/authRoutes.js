@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { authLimiter, passwordResetLimiter } = require('../middleware/rateLimiters');
 const { validateUserSession, JWT_SECRET } = require('../middleware/auth');
-const { getUserByEmail, getUserById, saveUser, getPaymentByAccessCode } = require('../services/db');
+const { getUserByEmail, getUserById, saveUser, getPaymentByAccessCode, getAppConfig } = require('../services/db');
 const { sendEmail } = require('../services/emailService');
 const { sendTelegramMessage } = require('../services/telegramBot');
 const logger = require('../utils/logger');
@@ -549,7 +549,7 @@ router.get('/daily-brief', validateUserSession, async (req, res) => {
 // ── Live Stream (VIP fetch) ────────────────────────────────────────────────
 router.get('/livestream', validateUserSession, async (req, res) => {
   try {
-    const config = await db.getAppConfig();
+    const config = await getAppConfig();
     const youtubeLiveId = (config && config.youtubeLiveId) ? config.youtubeLiveId : null;
     res.json({ ok: true, youtubeLiveId });
   } catch (err) {
