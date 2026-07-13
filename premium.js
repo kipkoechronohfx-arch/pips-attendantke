@@ -757,7 +757,7 @@ feather.replace();
       const token = sessionStorage.getItem('vip_session_token') || localStorage.getItem('vip_session_token');
       if (!token) return;
       try {
-        const res = await fetch('/api/auth/livestream', { headers: { 'x-vip-token': token } });
+        const res = await fetch('/api/livestream', { headers: { 'x-vip-token': token } });
         const data = await res.json();
         const videoWrapper = document.getElementById('liveVideoWrapper');
         const offlinePlaceholder = document.getElementById('liveOfflinePlaceholder');

@@ -72,7 +72,8 @@ app.use(helmet({
         "https://s3.tradingview.com",
         "https://*.tradingview.com",
         "https://*.tradingview-widget.com",
-        "https://*.myfxbook.com"
+        "https://*.myfxbook.com",
+        "https://www.googletagmanager.com"
       ],
       styleSrc: [
         "'self'",
