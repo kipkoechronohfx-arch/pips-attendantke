@@ -85,8 +85,8 @@ app.use(helmet({
       ],
       imgSrc: ["'self'", "data:", "blob:", "https:", "https://*.tradingview.com", "https://*.myfxbook.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      connectSrc: ["'self'", "https://api.telegram.org", "wss:", "ws:", "https://unpkg.com", "https://cdn.jsdelivr.net", "https://*.tradingview.com", "https://*.tradingview-widget.com", "https://pips-attendantke.onrender.com", "https://pipsattendant.top", "https://www.pipsattendant.top"],
-      frameSrc: ["'self'", "https://www.tradingview.com", "https://s3.tradingview.com", "https://s.tradingview.com", "https://*.tradingview.com", "https://www.tradingview-widget.com", "https://*.tradingview-widget.com", "https://*.myfxbook.com", "https://www.youtube.com", "https://youtube.com"],
+      connectSrc: ["'self'", "https://api.telegram.org", "wss:", "ws:", "https://unpkg.com", "https://cdn.jsdelivr.net", "https://*.tradingview.com", "https://*.tradingview-widget.com", "https://pips-attendantke.onrender.com", "https://pipsattendant.top", "https://www.pipsattendant.top", "https://www.google-analytics.com", "https://analytics.google.com", "https://stats.g.doubleclick.net"],
+      frameSrc: ["'self'", "https://www.tradingview.com", "https://s3.tradingview.com", "https://s.tradingview.com", "https://*.tradingview.com", "https://www.tradingview-widget.com", "https://*.tradingview-widget.com", "https://*.myfxbook.com", "https://www.youtube.com", "https://youtube.com", "https://www.google.com"],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
       // Helmet 7+ sets script-src-attr: 'none' by default, which blocks ALL inline onclick/onsubmit handlers.
