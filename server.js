@@ -94,7 +94,8 @@ app.use(helmet({
       scriptSrcAttr: ["'unsafe-inline'"]
     }
   },
-  crossOriginEmbedderPolicy: false
+  crossOriginEmbedderPolicy: false,
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
 }));
 
 // ── CORS ────────────────────────────────────────────────────────
