@@ -292,9 +292,11 @@ async function getAppConfig() {
 async function saveAppConfig(config) {
   if (db) {
     try {
+      // Strip _id — MongoDB forbids updating the immutable _id field via $set
+      const { _id, ...configToSave } = config;
       await getConfigsColl().updateOne(
         { type: 'app_config' },
-        { $set: config },
+        { $set: configToSave },
         { upsert: true }
       );
       return true;
@@ -310,6 +312,7 @@ async function saveAppConfig(config) {
     return false;
   }
 }
+
 
 async function getSignals(limit) {
   const safeLimit = Number.isInteger(limit) && limit > 0 ? limit : 0;
