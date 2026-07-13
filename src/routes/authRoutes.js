@@ -126,7 +126,7 @@ router.post('/register', authLimiter, async (req, res) => {
     logger.error('[Email] Failed to send welcome email: ' + err.message);
   }
 
-  res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, avatar: user.avatar, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier, telegramId: user.telegramId, badges: user.badges || [], role: user.role || 'user' } });
+  res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, avatar: user.avatar, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier || (user.isTrial ? 'Platinum' : 'Gold'), telegramId: user.telegramId, badges: user.badges || [], role: user.role || 'user', isTrial: user.isTrial || false, createdAt: user.registeredAt || user.createdAt } });
 });
 
 router.post('/login', authLimiter, async (req, res) => {
@@ -177,7 +177,7 @@ router.post('/login', authLimiter, async (req, res) => {
     // If email fails for any reason, fall back to direct login so users are never locked out
     logger.error('[2FA] Failed to send OTP email — falling back to direct login: ' + err.message);
     const sessionToken = generateUserToken(user);
-    return res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, avatar: user.avatar, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier, telegramId: user.telegramId, badges: user.badges || [], role: user.role || 'user' } });
+    return res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, avatar: user.avatar, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier || (user.isTrial ? 'Platinum' : 'Gold'), telegramId: user.telegramId, badges: user.badges || [], role: user.role || 'user', isTrial: user.isTrial || false, createdAt: user.registeredAt || user.createdAt } });
   }
 });
 
@@ -204,7 +204,7 @@ router.post('/verify-2fa', authLimiter, async (req, res) => {
 
   const sessionToken = generateUserToken(user);
   logger.info(`[2FA] User ${email} verified successfully.`);
-  res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, avatar: user.avatar, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier, telegramId: user.telegramId, badges: user.badges || [], role: user.role || 'user' } });
+  res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, avatar: user.avatar, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier || (user.isTrial ? 'Platinum' : 'Gold'), telegramId: user.telegramId, badges: user.badges || [], role: user.role || 'user', isTrial: user.isTrial || false, createdAt: user.registeredAt || user.createdAt } });
 });
 
 router.get('/me', validateUserSession, (req, res) => {
@@ -219,12 +219,14 @@ router.get('/me', validateUserSession, (req, res) => {
       name: req.user.name,
       avatar: req.user.avatar,
       subscriptionExpiry: req.user.subscriptionExpiry,
-      subscriptionTier: req.user.subscriptionTier || 'Gold',
+      subscriptionTier: req.user.subscriptionTier || (req.user.isTrial ? 'Platinum' : 'Gold'),
       telegramId: req.user.telegramId,
       badges: req.user.badges || [],
       completedModules: req.user.completedModules || [],
       webhookUrl: req.user.webhookUrl || '',
-      role: req.user.role || 'user'
+      role: req.user.role || 'user',
+      isTrial: req.user.isTrial || false,
+      createdAt: req.user.registeredAt || req.user.createdAt
     }
   });
 });
