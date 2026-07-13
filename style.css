@@ -246,32 +246,35 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 
 /* Ambient Glows */
 .ambient-glow-1, .ambient-glow-2 {
-  position: absolute;
+  position: fixed;
   border-radius: 50%;
-  opacity: 0.45;
+  opacity: 0.35;
   pointer-events: none;
   z-index: -1;
   animation: float-glow 12s infinite ease-in-out alternate;
   will-change: transform;
+  /* Prevent from causing horizontal scroll */
+  max-width: 60vw;
+  max-height: 60vw;
 }
 
 .ambient-glow-1 {
   background: radial-gradient(ellipse, rgba(212, 175, 55, 0.22) 0%, transparent 70%);
-  width: 650px; height: 650px;
-  top: -120px; left: -220px;
+  width: 500px; height: 500px;
+  top: -80px; left: -150px;
 }
 
 .ambient-glow-2 {
   background: radial-gradient(ellipse, rgba(124, 58, 237, 0.18) 0%, transparent 70%);
-  width: 540px; height: 540px;
-  bottom: -60px; right: -120px;
+  width: 420px; height: 420px;
+  bottom: -40px; right: -80px;
   animation-duration: 14s;
   animation-delay: -6s;
 }
 
 @keyframes float-glow {
   0%   { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(55px, 45px) scale(1.12); }
+  100% { transform: translate(20px, 20px) scale(1.08); }
 }
 
 /* Input focus ring polish */
