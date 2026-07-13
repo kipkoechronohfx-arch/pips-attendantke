@@ -117,8 +117,8 @@ router.post('/register', authLimiter, async (req, res) => {
 </div>
 </body></html>`;
     sendEmail(user.email, 'Welcome to Pips Attendant VIP! 🚀', welcomeHtml).catch(e => logger.error('[Email] Welcome email failed: ' + e.message));
-    // Notify admin on Telegram
-    const adminChatId = process.env.TELEGRAM_CHAT_ID;
+    // Notify admin on Telegram (use dedicated admin chat ID, NOT the VIP group)
+    const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
     if (adminChatId) {
       sendTelegramMessage(adminChatId, `🎉 *New User Registered*\n\n👤 Name: ${user.name || 'N/A'}\n📧 Email: ${user.email}\n🕐 ${new Date().toUTCString()}`).catch(() => {});
     }

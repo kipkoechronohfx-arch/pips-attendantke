@@ -10,7 +10,8 @@ const { sendTelegramMessage } = require('../services/telegramBot');
 const logger = require('../utils/logger');
 
 function notifyAdminPaymentError(context, error) {
-  const adminChatId = process.env.TELEGRAM_CHAT_ID;
+  // Use dedicated admin chat ID — never send errors to the VIP group
+  const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID || process.env.TELEGRAM_CHAT_ID;
   if (!adminChatId) return;
   const msg = `⚠️ *Payment Error*\n\n*Context:* ${context}\n*Error:* ${error}`;
   sendTelegramMessage(adminChatId, msg).catch(() => {});
