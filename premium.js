@@ -2072,8 +2072,9 @@ feather.replace();
 
               if (hoursSinceCreation < GRACE_HOURS) {
                 // Within grace period: show resources with a soft warning banner
+                document.getElementById('telegramBlocker').classList.remove('flex');
                 document.getElementById('telegramBlocker').classList.add('hidden');
-                document.getElementById('vipMainContent').classList.remove('hidden');
+                document.getElementById('vipMainContent').classList.remove('hidden', 'blur-md', 'pointer-events-none', 'select-none', 'opacity-60');
                 const softWarning = document.getElementById('telegramSoftWarning');
                 if (softWarning) {
                   const hoursLeft = Math.ceil(GRACE_HOURS - hoursSinceCreation);
@@ -2084,11 +2085,14 @@ feather.replace();
               } else {
                 // Grace period expired: show hard blocker
                 document.getElementById('telegramBlocker').classList.remove('hidden');
-                document.getElementById('vipMainContent').classList.add('hidden');
+                document.getElementById('telegramBlocker').classList.add('flex');
+                document.getElementById('vipMainContent').classList.remove('hidden');
+                document.getElementById('vipMainContent').classList.add('blur-md', 'pointer-events-none', 'select-none', 'opacity-60');
               }
             } else {
+              document.getElementById('telegramBlocker').classList.remove('flex');
               document.getElementById('telegramBlocker').classList.add('hidden');
-              document.getElementById('vipMainContent').classList.remove('hidden');
+              document.getElementById('vipMainContent').classList.remove('hidden', 'blur-md', 'pointer-events-none', 'select-none', 'opacity-60');
             }
             
             document.getElementById('vipWelcomeText').textContent = `Welcome, ${data.user.name || 'VIP Member'}!`;
