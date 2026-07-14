@@ -1165,4 +1165,104 @@ router.post('/livestream', validateAdminSession, async (req, res) => {
   }
 });
 
+
+// ── Leads Management ──────────────────────────────────────────────
+router.get('/leads', validateAdminSession, async (req, res) => {
+  try {
+    const leads = await db.getLeads();
+    res.json({ ok: true, leads });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.delete('/leads/:id', validateAdminSession, async (req, res) => {
+  try {
+    await db.deleteLeadById(req.params.id);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/leads/export-csv', validateAdminSession, async (req, res) => {
+  try {
+    const leads = await db.getLeads();
+    const header = 'Name,Email,Source,Date\n';
+    const rows = leads.map(l =>
+      `"${(l.name || '').replace(/"/g,'""')}","${l.email}","${l.source || ''}","${l.createdAt || ''}"`
+    ).join('\n');
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="pips_leads.csv"');
+    res.send(header + rows);
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── Blog / CMS Admin Routes ────────────────────────────────────────
+router.get('/blog', validateAdminSession, async (req, res) => {
+  try {
+    const posts = await db.getBlogPosts({ publishedOnly: false });
+    res.json({ ok: true, posts });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/blog', validateAdminSession, async (req, res) => {
+  const { title, content, excerpt, category, coverImage, status } = req.body;
+  if (!title || !content) return res.status(400).json({ ok: false, error: 'Title and content are required.' });
+  // Auto-generate slug from title
+  const slug = title.toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .substring(0, 80);
+  const post = {
+    title: title.trim(),
+    slug,
+    content,
+    excerpt: (excerpt || '').trim() || content.substring(0, 160).replace(/<[^>]+>/g, '') + '...',
+    category: category || 'Market Analysis',
+    coverImage: coverImage || '',
+    author: 'Pips Attendant',
+    status: status === 'published' ? 'published' : 'draft',
+    publishedAt: status === 'published' ? new Date().toISOString() : null,
+    createdAt: new Date().toISOString(),
+  };
+  try {
+    const saved = await db.saveBlogPost(post);
+    res.json({ ok: true, post: saved });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.put('/blog/:id', validateAdminSession, async (req, res) => {
+  try {
+    const posts = await db.getBlogPosts({ publishedOnly: false });
+    const existing = posts.find(p => String(p._id) === req.params.id);
+    if (!existing) return res.status(404).json({ ok: false, error: 'Post not found.' });
+    const { title, content, excerpt, category, coverImage, status } = req.body;
+    const updated = { ...existing, ...{ title, content, excerpt, category, coverImage, status } };
+    if (status === 'published' && existing.status !== 'published') {
+      updated.publishedAt = new Date().toISOString();
+    }
+    const saved = await db.saveBlogPost(updated);
+    res.json({ ok: true, post: saved });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.delete('/blog/:id', validateAdminSession, async (req, res) => {
+  try {
+    await db.deleteBlogPost(req.params.id);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;

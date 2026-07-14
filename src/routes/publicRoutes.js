@@ -5,6 +5,7 @@ const FormData = require('form-data');
 const webpush = require('web-push');
 const db = require('../services/db');
 const { validateAdminKey, validateAdminSession } = require('../middleware/auth');
+const { sendLeadMagnetEmail } = require('../services/emailService');
 
 function now() { return new Date().toISOString(); }
 
@@ -457,6 +458,64 @@ router.post('/tickets/:id/reply', validateUserSession, async (req, res) => {
     ticket.updatedAt = Date.now();
     await db.saveTicket(ticket);
     res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+
+// ── Lead Capture ────────────────────────────────────────────────
+router.post('/subscribe', async (req, res) => {
+  const { email, name, source } = req.body;
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ ok: false, error: 'A valid email is required.' });
+  }
+  const lead = {
+    email: email.toLowerCase().trim(),
+    name: (name || '').trim() || 'Trader',
+    source: source || 'homepage_popup',
+    createdAt: new Date().toISOString()
+  };
+  try {
+    const result = await db.addLead(lead);
+    if (!result.ok && result.duplicate) {
+      return res.json({ ok: true, message: 'You are already subscribed!', alreadySubscribed: true });
+    }
+    if (!result.ok) {
+      return res.status(500).json({ ok: false, error: result.error || 'Could not save subscription.' });
+    }
+    // Send welcome email asynchronously — don't block the response
+    sendLeadMagnetEmail(lead.email, lead.name).catch(err =>
+      console.warn('[Subscribe] Email delivery failed:', err.message)
+    );
+    return res.json({ ok: true, message: 'Subscribed successfully! Check your email for your free workbook.' });
+  } catch (err) {
+    console.error('[Subscribe Error]', err);
+    res.status(500).json({ ok: false, error: 'Server error. Please try again.' });
+  }
+});
+
+// ── Blog / CMS Public Routes ─────────────────────────────────────
+router.get('/blog', async (req, res) => {
+  try {
+    const posts = await db.getBlogPosts({ publishedOnly: true });
+    // Strip heavy content field for listing — only return meta
+    const summary = posts.map(({ _id, title, slug, excerpt, category, coverImage, publishedAt, author }) =>
+      ({ _id, title, slug, excerpt, category, coverImage, publishedAt, author })
+    );
+    res.json({ ok: true, posts: summary });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/blog/:slug', async (req, res) => {
+  try {
+    const post = await db.getBlogPostBySlug(req.params.slug);
+    if (!post || post.status !== 'published') {
+      return res.status(404).json({ ok: false, error: 'Article not found.' });
+    }
+    res.json({ ok: true, post });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }

@@ -23,6 +23,8 @@ const TICKETS_FILE = path.join(DATA_DIR, 'support_tickets.json');
 const RECEIPTS_FILE = path.join(DATA_DIR, 'receipts.json');
 const BOOKINGS_FILE = path.join(DATA_DIR, 'mentorship_bookings.json');
 const ANNOUNCEMENTS_FILE = path.join(DATA_DIR, 'announcements.json');
+const LEADS_FILE        = path.join(DATA_DIR, 'leads.json');
+const BLOG_FILE         = path.join(DATA_DIR, 'blog_posts.json');
 
 // Ensure local fallback folders exist
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
@@ -104,6 +106,8 @@ const getJournalColl = () => db.collection('journal_entries');
 const getPropFirmColl = () => db.collection('prop_firm_accounts');
 const getBookingsColl = () => db.collection('mentorship_bookings');
 const getAnnouncementsColl = () => db.collection('announcements');
+const getLeadsColl         = () => db.collection('leads');
+const getBlogColl          = () => db.collection('blog_posts');
 
 async function runMigrations() {
   console.log('[Migration] Checking for local data to migrate to MongoDB Atlas...');
@@ -1329,6 +1333,117 @@ async function deleteAnnouncement(id) {
   writeJSON(ANNOUNCEMENTS_FILE, announcements);
 }
 
+// ────────────────────────────────────────────────────────────────
+// LEADS
+// ────────────────────────────────────────────────────────────────
+async function getLeads() {
+  if (db) {
+    try { return await getLeadsColl().find({}).sort({ createdAt: -1 }).toArray(); } catch (err) {}
+  }
+  return readJSON(LEADS_FILE);
+}
+
+async function addLead(lead) {
+  // lead = { email, name, source, createdAt }
+  if (db) {
+    try {
+      // Prevent duplicate emails
+      const existing = await getLeadsColl().findOne({ email: lead.email });
+      if (existing) return { ok: false, duplicate: true };
+      const res = await getLeadsColl().insertOne(lead);
+      lead._id = res.insertedId;
+      return { ok: true, lead };
+    } catch (err) { return { ok: false, error: err.message }; }
+  }
+  const leads = readJSON(LEADS_FILE);
+  if (leads.some(l => l.email === lead.email)) return { ok: false, duplicate: true };
+  lead._id = Date.now().toString() + Math.random().toString(36).substring(2, 8);
+  leads.unshift(lead);
+  writeJSON(LEADS_FILE, leads);
+  return { ok: true, lead };
+}
+
+async function deleteLeadById(id) {
+  if (db) {
+    try {
+      const { ObjectId } = require('mongodb');
+      const isObjectId = /^[a-f\d]{24}$/i.test(String(id));
+      const filter = isObjectId ? { _id: new ObjectId(id) } : { _id: id };
+      await getLeadsColl().deleteOne(filter);
+      return;
+    } catch (err) {}
+  }
+  let leads = readJSON(LEADS_FILE);
+  leads = leads.filter(l => String(l._id) !== String(id));
+  writeJSON(LEADS_FILE, leads);
+}
+
+// ────────────────────────────────────────────────────────────────
+// BLOG POSTS
+// ────────────────────────────────────────────────────────────────
+async function getBlogPosts({ publishedOnly = true } = {}) {
+  if (db) {
+    try {
+      const filter = publishedOnly ? { status: 'published' } : {};
+      return await getBlogColl().find(filter).sort({ publishedAt: -1 }).toArray();
+    } catch (err) {}
+  }
+  let posts = readJSON(BLOG_FILE);
+  if (publishedOnly) posts = posts.filter(p => p.status === 'published');
+  return posts.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+}
+
+async function getBlogPostBySlug(slug) {
+  if (db) {
+    try { return await getBlogColl().findOne({ slug }); } catch (err) {}
+  }
+  const posts = readJSON(BLOG_FILE);
+  return posts.find(p => p.slug === slug) || null;
+}
+
+async function saveBlogPost(post) {
+  if (db) {
+    try {
+      if (post._id) {
+        const { ObjectId } = require('mongodb');
+        const isObjectId = /^[a-f\d]{24}$/i.test(String(post._id));
+        const filter = isObjectId ? { _id: new ObjectId(post._id) } : { _id: post._id };
+        const { _id, ...rest } = post;
+        await getBlogColl().updateOne(filter, { $set: rest }, { upsert: true });
+      } else {
+        const res = await getBlogColl().insertOne(post);
+        post._id = res.insertedId;
+      }
+      return post;
+    } catch (err) { throw err; }
+  }
+  const posts = readJSON(BLOG_FILE);
+  if (post._id) {
+    const idx = posts.findIndex(p => String(p._id) === String(post._id));
+    if (idx !== -1) posts[idx] = post; else posts.unshift(post);
+  } else {
+    post._id = Date.now().toString() + Math.random().toString(36).substring(2, 8);
+    posts.unshift(post);
+  }
+  writeJSON(BLOG_FILE, posts);
+  return post;
+}
+
+async function deleteBlogPost(id) {
+  if (db) {
+    try {
+      const { ObjectId } = require('mongodb');
+      const isObjectId = /^[a-f\d]{24}$/i.test(String(id));
+      const filter = isObjectId ? { _id: new ObjectId(id) } : { _id: id };
+      await getBlogColl().deleteOne(filter);
+      return;
+    } catch (err) {}
+  }
+  let posts = readJSON(BLOG_FILE);
+  posts = posts.filter(p => String(p._id) !== String(id));
+  writeJSON(BLOG_FILE, posts);
+}
+
 module.exports = {
   connectDB, closeDB,
   getAppConfig, saveAppConfig,
@@ -1351,5 +1466,7 @@ module.exports = {
   saveReceipt, getReceipt,
   getBookings, getUserBookings, saveBooking,
   getAnnouncements, saveAnnouncement, deleteAnnouncement,
+  getLeads, addLead, deleteLeadById,
+  getBlogPosts, getBlogPostBySlug, saveBlogPost, deleteBlogPost,
   ping
 };

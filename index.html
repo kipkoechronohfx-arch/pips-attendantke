@@ -145,6 +145,107 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-primary text-gray-300 font-sans antialiased selection:bg-gold/30 selection:text-white pt-[72px] md:pt-[46px] relative">
+
+    <!-- ── Lead Capture Popup ────────────────────────────────────── -->
+    <div id="leadPopupOverlay" class="fixed inset-0 z-[999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 hidden" style="opacity:0;transition:opacity 0.4s ease;">
+      <div class="relative bg-[#0f1520] border border-amber-400/30 rounded-3xl shadow-[0_0_60px_rgba(245,158,11,0.2)] max-w-md w-full p-8 overflow-hidden" style="transform:scale(0.92);transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);">
+        <!-- Glow accents -->
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent"></div>
+        <div class="absolute -top-20 left-1/2 -translate-x-1/2 w-48 h-48 bg-amber-400/10 rounded-full blur-3xl pointer-events-none"></div>
+        <!-- Close button -->
+        <button id="leadPopupClose" class="absolute top-4 right-4 text-gray-500 hover:text-white transition" aria-label="Close">
+          <i data-feather="x" class="w-5 h-5"></i>
+        </button>
+        <!-- Icon -->
+        <div class="flex justify-center mb-5">
+          <div class="w-16 h-16 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-3xl shadow-[0_0_20px_rgba(245,158,11,0.2)]">📊</div>
+        </div>
+        <!-- Copy -->
+        <h2 class="text-2xl font-black text-white text-center mb-2">Free Risk Management<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-200">Workbook</span></h2>
+        <p class="text-gray-400 text-sm text-center mb-6 leading-relaxed">The same exact risk rules we use to capture <strong class="text-white">1000+ pips monthly</strong>. Drop your email and we'll send it instantly — no spam, ever.</p>
+        <!-- Form -->
+        <form id="leadCaptureForm" class="space-y-3">
+          <input type="text" id="leadName" placeholder="Your first name (optional)" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400/50 transition" autocomplete="given-name">
+          <input type="email" id="leadEmail" placeholder="your@email.com" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400/50 transition" autocomplete="email">
+          <button id="leadSubmitBtn" type="submit" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-dark-navy font-bold text-sm shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:brightness-110 active:scale-95 transition flex items-center justify-center gap-2">
+            <i data-feather="send" class="w-4 h-4"></i>
+            Send Me the Workbook
+          </button>
+        </form>
+        <p id="leadFormMsg" class="text-center text-xs mt-3 hidden"></p>
+        <p class="text-gray-600 text-[10px] text-center mt-4">No spam. Unsubscribe anytime.</p>
+      </div>
+    </div>
+    <script>
+    (function() {
+      var POPUP_KEY = 'pa_lead_dismissed';
+      var overlay = document.getElementById('leadPopupOverlay');
+      var box = overlay ? overlay.querySelector('div') : null;
+      function showPopup() {
+        if (!overlay) return;
+        if (sessionStorage.getItem(POPUP_KEY)) return;
+        overlay.classList.remove('hidden');
+        requestAnimationFrame(function() {
+          overlay.style.opacity = '1';
+          if (box) box.style.transform = 'scale(1)';
+        });
+      }
+      function closePopup() {
+        if (!overlay) return;
+        overlay.style.opacity = '0';
+        if (box) box.style.transform = 'scale(0.92)';
+        setTimeout(function() { overlay.classList.add('hidden'); }, 400);
+        sessionStorage.setItem(POPUP_KEY, '1');
+      }
+      var closeBtn = document.getElementById('leadPopupClose');
+      if (closeBtn) closeBtn.addEventListener('click', closePopup);
+      overlay.addEventListener('click', function(e) { if (e.target === overlay) closePopup(); });
+      // Exit-intent on desktop
+      document.addEventListener('mouseleave', function(e) { if (e.clientY < 10) showPopup(); }, { once: true });
+      // Time-based trigger on mobile (12 seconds)
+      setTimeout(showPopup, 12000);
+      // Form submission
+      var form = document.getElementById('leadCaptureForm');
+      if (form) {
+        form.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          var btn = document.getElementById('leadSubmitBtn');
+          var msg = document.getElementById('leadFormMsg');
+          var email = document.getElementById('leadEmail').value.trim();
+          var name = document.getElementById('leadName').value.trim();
+          if (!email) return;
+          btn.disabled = true;
+          btn.textContent = 'Sending...';
+          try {
+            var res = await fetch('/api/public/subscribe', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, name, source: 'homepage_popup' })
+            });
+            var data = await res.json();
+            msg.classList.remove('hidden');
+            if (data.ok) {
+              msg.className = 'text-center text-xs mt-3 text-emerald-400';
+              msg.textContent = data.message || 'Sent! Check your inbox.';
+              setTimeout(closePopup, 2500);
+            } else {
+              msg.className = 'text-center text-xs mt-3 text-rose-400';
+              msg.textContent = data.error || 'Something went wrong. Please try again.';
+              btn.disabled = false;
+              btn.innerHTML = '<i data-feather="send" class="w-4 h-4 inline mr-1"></i>Try Again';
+              feather.replace();
+            }
+          } catch (err) {
+            msg.classList.remove('hidden');
+            msg.className = 'text-center text-xs mt-3 text-rose-400';
+            msg.textContent = 'Network error. Please try again.';
+            btn.disabled = false;
+            btn.textContent = 'Try Again';
+          }
+        });
+      }
+    })();
+    </script>
     
     <!-- Ambient Glows -->
     <div class="ambient-glow-1"></div>
