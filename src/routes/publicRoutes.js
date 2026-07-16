@@ -352,7 +352,7 @@ router.get('/signals/history', async (req, res) => {
   }
 });
 
-router.post('/subscribe', async (req, res) => {
+router.post('/telegram-subscribe', async (req, res) => {
   const { name, telegram, email } = req.body;
   if (!name && !telegram && !email) {
     return res.status(400).json({ ok: false, error: 'Please provide at least one contact method.' });

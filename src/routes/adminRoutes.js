@@ -1176,15 +1176,7 @@ router.get('/leads', validateAdminSession, async (req, res) => {
   }
 });
 
-router.delete('/leads/:id', validateAdminSession, async (req, res) => {
-  try {
-    await db.deleteLeadById(req.params.id);
-    res.json({ ok: true });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
+// NOTE: export-csv must be declared BEFORE /:id to avoid being matched as param
 router.get('/leads/export-csv', validateAdminSession, async (req, res) => {
   try {
     const leads = await db.getLeads();
@@ -1195,6 +1187,15 @@ router.get('/leads/export-csv', validateAdminSession, async (req, res) => {
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', 'attachment; filename="pips_leads.csv"');
     res.send(header + rows);
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.delete('/leads/:id', validateAdminSession, async (req, res) => {
+  try {
+    await db.deleteLeadById(req.params.id);
+    res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
