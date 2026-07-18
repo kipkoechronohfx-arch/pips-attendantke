@@ -148,12 +148,40 @@ const staticOptions = {
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
+    } else if (/\.(png|jpe?g|webp|svg|ico)$/i.test(filePath)) {
+      // Images: 30-day aggressive cache for better performance
+      res.setHeader('Cache-Control', 'public, max-age=2592000, immutable');
     } else if (filePath.endsWith('.js')) {
       // JS files: short cache + must-revalidate so deploys take effect fast
       res.setHeader('Cache-Control', 'public, max-age=300, must-revalidate');
     }
   }
 };
+
+// ── Security: Block Backend File Access ────────────────────────
+// Prevent public access to source code and data files via express.static
+const allowedPublicJS = ['/app.js', '/premium.js', '/chat-widget.js', '/sw.js'];
+
+app.use((req, res, next) => {
+  const p = req.path.toLowerCase();
+  
+  // Block sensitive directories
+  if (p.startsWith('/src/') || p.startsWith('/data/') || p.startsWith('/logs/') || p.startsWith('/tests/') || p.startsWith('/node_modules/')) {
+    return res.status(403).send('Forbidden');
+  }
+  
+  // Block configuration files and backend code
+  if (p === '/package.json' || p === '/package-lock.json' || p === '/server.js' || p.includes('/.')) {
+    return res.status(403).send('Forbidden');
+  }
+
+  // Block any unknown root JS files
+  if (p.endsWith('.js') && !allowedPublicJS.includes(p)) {
+    return res.status(403).send('Forbidden');
+  }
+
+  next();
+});
 // ── Admin Panel Protection ─────────────────────────────────────
 // Block direct browser access to admin.html without the ADMIN_KEY.
 // This runs before express.static so the file is never served without auth.

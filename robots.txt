@@ -17,5 +17,7 @@ Disallow: /offline.html
 Disallow: /googleb52db227de08e26c.html
 Disallow: /logs/
 Disallow: /data/
+Disallow: /src/
+Disallow: /node_modules/
 
 Sitemap: https://www.pipsattendant.com/sitemap.xml
