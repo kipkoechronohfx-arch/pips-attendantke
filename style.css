@@ -28,12 +28,12 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 }
 
 .glass-card {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.045) 0%, rgba(255, 255, 255, 0.01) 100%);
+  background: linear-gradient(145deg, rgba(10, 10, 10, 0.85) 0%, rgba(5, 5, 5, 0.92) 100%);
   backdrop-filter: blur(24px) saturate(160%);
   -webkit-backdrop-filter: blur(24px) saturate(160%);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-top: 1px solid rgba(212, 175, 55, 0.18);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.04);
   transition: all 0.45s cubic-bezier(0.22, 1, 0.36, 1);
   border-radius: 1.25rem;
   overflow: hidden;
@@ -59,15 +59,15 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 }
 
 .glass-card:hover {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.065) 0%, rgba(255, 255, 255, 0.02) 100%);
+  background: linear-gradient(145deg, rgba(18, 14, 6, 0.95) 0%, rgba(10, 8, 2, 0.98) 100%);
   border-color: rgba(212, 175, 55, 0.32);
   border-top-color: rgba(212, 175, 55, 0.45);
   transform: translateY(-6px) scale(1.008);
   box-shadow:
-    0 24px 60px -8px rgba(0, 0, 0, 0.75),
+    0 24px 60px -8px rgba(0, 0, 0, 0.85),
     0 0 0 1px rgba(212, 175, 55, 0.1),
     0 0 40px rgba(212, 175, 55, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 /* Gold Accents & CTA */
