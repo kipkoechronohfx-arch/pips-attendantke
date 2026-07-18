@@ -155,6 +155,19 @@
       document.getElementById('docTitle').textContent = `${post.title} | Pips Attendant`;
       document.getElementById('docDescription').setAttribute('content', post.excerpt || '');
 
+      // Update canonical to the specific article URL so Google indexes each article separately
+      const params = new URLSearchParams(window.location.search);
+      const slug = params.get('slug');
+      if (slug) {
+        let canonical = document.querySelector('link[rel="canonical"]');
+        if (!canonical) {
+          canonical = document.createElement('link');
+          canonical.rel = 'canonical';
+          document.head.appendChild(canonical);
+        }
+        canonical.href = `https://www.pipsattendant.com/article.html?slug=${encodeURIComponent(slug)}`;
+      }
+
       // Render meta row
       const dateStr = post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
       document.getElementById('articleMeta').innerHTML = `
