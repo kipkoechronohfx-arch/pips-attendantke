@@ -33,10 +33,10 @@ async function buildDynamicPrompt() {
   return context;
 }
 
-// ── Rate Limiter — 20 messages per minute per IP ───────────────────────────
+// ── Rate Limiter — 5 messages per minute per IP ───────────────────────────
 const chatLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 20,
+  max: 5,
   message: { ok: false, error: 'Too many messages. Please wait a moment before sending again.' },
   standardHeaders: true,
   legacyHeaders: false

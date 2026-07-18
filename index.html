@@ -818,21 +818,9 @@
                     </a>
                 </div>
 
-                <!-- TradingView Economic Calendar Widget -->
-                <div class="tradingview-widget-container tv-widget-invert bg-black" style="height:600px; width:100%;">
+                <!-- TradingView Economic Calendar Widget (Lazy Loaded) -->
+                <div class="tradingview-widget-container tv-widget-invert bg-black" id="tv-calendar-container" style="height:600px; width:100%;">
                     <div class="tradingview-widget-container__widget" style="height:600px; width:100%;"></div>
-                    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
-                    {
-                        "colorTheme": "dark",
-                        "isTransparent": true,
-                        "width": "100%",
-                        "height": "600",
-                        "locale": "en",
-                        "importanceFilter": "-1,0,1",
-                        "currencyFilter": "USD,EUR,ITL,NZD,CHF,AUD,BRL,CAD,CNY,CZK,DKK,HKD,INR,JPY,KRW,MXN,NOK,PLN,RUB,SGD,ZAR,SEK,TRY",
-                        "countryFilter": "ar,au,br,ca,cn,fr,de,in,id,it,jp,kr,mx,ru,sa,za,tr,gb,us,eu"
-                    }
-                    </script>
                 </div>
 
                 <!-- Footer -->
@@ -1675,5 +1663,33 @@
       }
     }, 15000);
   </script>
+    <!-- Lazy Load TradingView Widget -->
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var calendarContainer = document.getElementById('tv-calendar-container');
+        if ('IntersectionObserver' in window && calendarContainer) {
+            var observer = new IntersectionObserver(function(entries) {
+                if (entries[0].isIntersecting) {
+                    var script = document.createElement('script');
+                    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-events.js";
+                    script.async = true;
+                    script.innerHTML = JSON.stringify({
+                        "colorTheme": "dark",
+                        "isTransparent": true,
+                        "width": "100%",
+                        "height": "600",
+                        "locale": "en",
+                        "importanceFilter": "-1,0,1",
+                        "currencyFilter": "USD,EUR,ITL,NZD,CHF,AUD,BRL,CAD,CNY,CZK,DKK,HKD,INR,JPY,KRW,MXN,NOK,PLN,RUB,SGD,ZAR,SEK,TRY",
+                        "countryFilter": "ar,au,br,ca,cn,fr,de,in,id,it,jp,kr,mx,ru,sa,za,tr,gb,us,eu"
+                    });
+                    calendarContainer.appendChild(script);
+                    observer.disconnect();
+                }
+            }, { rootMargin: '200px' });
+            observer.observe(calendarContainer);
+        }
+    });
+    </script>
 </body>
 </html>
