@@ -54,6 +54,20 @@ const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 // Trust reverse proxy (Render, Heroku, Nginx) so rate limits use real IP
 app.set('trust proxy', 1);
 
+// ── Canonical Domain Redirect ──────────────────────────────────
+// Permanently redirect any traffic from pipsattendant.top OR bare
+// pipsattendant.com (no www) to the single canonical www.pipsattendant.com.
+// This eliminates the duplicate-website issue in Google Search.
+app.use((req, res, next) => {
+  const host = req.hostname;
+  if (IS_PRODUCTION) {
+    if (host.includes('pipsattendant.top') || host === 'pipsattendant.com') {
+      return res.redirect(301, 'https://www.pipsattendant.com' + req.originalUrl);
+    }
+  }
+  next();
+});
+
 // ── Security Headers ───────────────────────────────────────────
 // SECURITY: CSP re-enabled with a permissive-but-real policy.
 // Allows CDN scripts (Tailwind, Chart.js, etc.) and inline styles for the admin UI,
@@ -85,7 +99,7 @@ app.use(helmet({
       ],
       imgSrc: ["'self'", "data:", "blob:", "https:", "https://*.tradingview.com", "https://*.myfxbook.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      connectSrc: ["'self'", "https://api.telegram.org", "wss:", "ws:", "https://unpkg.com", "https://cdn.jsdelivr.net", "https://*.tradingview.com", "https://*.tradingview-widget.com", "https://pips-attendantke.onrender.com", "https://pipsattendant.top", "https://www.pipsattendant.top", "https://www.google-analytics.com", "https://analytics.google.com", "https://stats.g.doubleclick.net"],
+      connectSrc: ["'self'", "https://api.telegram.org", "wss:", "ws:", "https://unpkg.com", "https://cdn.jsdelivr.net", "https://*.tradingview.com", "https://*.tradingview-widget.com", "https://pips-attendantke.onrender.com", "https://www.pipsattendant.com", "https://www.google-analytics.com", "https://analytics.google.com", "https://stats.g.doubleclick.net"],
       frameSrc: ["'self'", "https://www.tradingview.com", "https://s3.tradingview.com", "https://s.tradingview.com", "https://*.tradingview.com", "https://www.tradingview-widget.com", "https://*.tradingview-widget.com", "https://*.myfxbook.com", "https://www.youtube.com", "https://youtube.com", "https://www.google.com"],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
@@ -101,12 +115,7 @@ app.use(helmet({
 // ── CORS ────────────────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
   'https://pips-attendantke.onrender.com',
-  'https://pipsattendant.com',
   'https://www.pipsattendant.com',
-  'https://pipsattendant.top',
-  'https://www.pipsattendant.top',
-  'https://admin.pipsattendant.top',
-  'https://vip.pipsattendant.top',
   'http://localhost:3000',
   'http://127.0.0.1:3000'
 ];

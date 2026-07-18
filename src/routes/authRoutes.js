@@ -87,7 +87,7 @@ router.post('/register', authLimiter, async (req, res) => {
   const sessionToken = generateUserToken(user);
   
   try {
-    const appUrl = process.env.APP_URL || 'https://pipsattendant.top';
+    const appUrl = process.env.APP_URL || 'https://www.pipsattendant.com';
     const welcomeHtml = `<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#0a0a0a;font-family:'Segoe UI',Arial,sans-serif;">

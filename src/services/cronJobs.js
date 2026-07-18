@@ -73,7 +73,7 @@ async function runExpiryReminders() {
   try {
     const users = await db.getUsers();
     const now = Date.now();
-    const appUrl = process.env.APP_URL || "https://pipsattendant.top";
+    const appUrl = process.env.APP_URL || "https://www.pipsattendant.com";
     let sent = 0;
     for (const user of users) {
       if (!user.email || !user.subscriptionExpiry) continue;

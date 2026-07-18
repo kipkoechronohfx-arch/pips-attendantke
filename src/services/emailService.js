@@ -66,7 +66,7 @@ function buildReceiptHtml({ ref, userName, userEmail, plan, amount, currency, me
         <tr><td style="color:#6b7280;padding:10px 0;font-size:13px;">VIP Expires</td><td style="color:#fbbf24;padding:10px 0;font-size:13px;font-weight:600;text-align:right;">${expiryDate}</td></tr>
       </table>
       <div style="margin-top:28px;text-align:center;">
-        <a href="${process.env.APP_URL || 'https://pipsattendant.top'}/premium.html" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#0d0800;font-weight:700;padding:14px 28px;border-radius:12px;text-decoration:none;display:inline-block;">Access VIP Area →</a>
+        <a href="${process.env.APP_URL || 'https://www.pipsattendant.com'}/premium.html" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#0d0800;font-weight:700;padding:14px 28px;border-radius:12px;text-decoration:none;display:inline-block;">Access VIP Area →</a>
       </div>
     </div>
     <div style="padding:16px 32px;border-top:1px solid rgba(255,255,255,0.06);text-align:center;">
@@ -78,7 +78,7 @@ function buildReceiptHtml({ ref, userName, userEmail, plan, amount, currency, me
 
 
 function buildLeadMagnetHtml(name) {
-  const appUrl = process.env.APP_URL || 'https://pipsattendant.top';
+  const appUrl = process.env.APP_URL || 'https://www.pipsattendant.com';
   return `
   <!DOCTYPE html>
   <html>

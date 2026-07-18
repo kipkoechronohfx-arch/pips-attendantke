@@ -18,7 +18,7 @@ Pips Attendant provides:
 - **Performance tracking** — transparent win-rate and pip statistics posted publicly
 - **VIP Telegram group** — exclusive signals, live setups, and mentorship delivered directly
 
-Website: https://pipsattendant.top
+Website: https://www.pipsattendant.com
 Telegram community link is provided after subscription confirmation.
 
 ---
@@ -42,7 +42,7 @@ There is also a **Free tier**: users can follow our public Telegram channel for 
 ## HOW TO SUBSCRIBE
 
 ### Option 1 — M-Pesa (Kenya only)
-1. Visit https://pipsattendant.top and click **"Subscribe Now"** or **"Join VIP"**
+1. Visit https://www.pipsattendant.com and click **"Subscribe Now"** or **"Join VIP"**
 2. Select your plan (1, 2, or 3 months)
 3. Enter your M-Pesa registered phone number (format: 07XXXXXXXX or 01XXXXXXXX)
 4. An M-Pesa STK Push (payment prompt) will be sent to your phone within seconds

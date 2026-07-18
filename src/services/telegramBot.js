@@ -31,7 +31,7 @@ async function handleTelegramUpdate(update) {
       const tier = user.subscriptionTier || 'Gold';
       
       if (!isVip) {
-        await sendTelegramMessage(chatId, `⚠️ *VIP Expired*\n\nYour subscription has expired.\n[Renew here](${process.env.APP_URL || 'https://pipsattendant.top'}/premium.html)`);
+        await sendTelegramMessage(chatId, `⚠️ *VIP Expired*\n\nYour subscription has expired.\n[Renew here](${process.env.APP_URL || 'https://www.pipsattendant.com'}/premium.html)`);
         return;
       }
 
@@ -41,7 +41,7 @@ async function handleTelegramUpdate(update) {
       
       const tierIcon = tier.toLowerCase().includes('platinum') ? '💎 Platinum' : '⭐ Gold';
       
-      const reply = `✅ *VIP Active*\n\n*Name:* ${user.name || user.email}\n*Tier:* ${tierIcon}\n*Expires:* ${expiryStr} (${daysLeft} day${daysLeft !== 1 ? 's' : ''} left)\n\n[Access Portal](${process.env.APP_URL || 'https://pipsattendant.top'}/premium.html)`;
+      const reply = `✅ *VIP Active*\n\n*Name:* ${user.name || user.email}\n*Tier:* ${tierIcon}\n*Expires:* ${expiryStr} (${daysLeft} day${daysLeft !== 1 ? 's' : ''} left)\n\n[Access Portal](${process.env.APP_URL || 'https://www.pipsattendant.com'}/premium.html)`;
       
       await sendTelegramMessage(chatId, reply);
     } catch (err) {

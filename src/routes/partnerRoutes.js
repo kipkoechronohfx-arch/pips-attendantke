@@ -36,7 +36,7 @@ router.get('/stats', validateUserSession, async (req, res) => {
     const paidSignups  = currentUser.referralCount   || 0;
     const totalEarnings = currentUser.referralEarnings || (paidSignups * 5);
 
-    // Use the canonical domain so the link always says pipsattendant.top
+    // Use the canonical domain so the link always says www.pipsattendant.com
     const host = req.get('host');
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const referralLink = `${protocol}://${host}/?ref=${referralCode}`;

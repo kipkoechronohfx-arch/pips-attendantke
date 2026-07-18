@@ -10,8 +10,7 @@ function initializeSocket(server) {
     cors: {
       origin: [
         'https://pips-attendantke.onrender.com',
-        'https://pipsattendant.top',
-        'https://www.pipsattendant.top',
+        'https://www.pipsattendant.com',
         'http://localhost:3000',
         'http://127.0.0.1:3000'
       ],

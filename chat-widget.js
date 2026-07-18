@@ -451,7 +451,7 @@
             </svg>
           </button>
         </div>
-        <div id="zuri-powered">Powered by Gemini AI · <a href="https://pipsattendant.top" target="_blank">pipsattendant.top</a></div>
+        <div id="zuri-powered">Powered by Gemini AI · <a href="https://www.pipsattendant.com" target="_blank">pipsattendant.com</a></div>
       </div>
     </div>
   `;
