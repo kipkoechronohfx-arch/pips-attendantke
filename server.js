@@ -109,7 +109,13 @@ app.use(helmet({
     }
   },
   crossOriginEmbedderPolicy: false,
-  referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  // HSTS: force HTTPS for 1 year, include subdomains
+  hsts: IS_PRODUCTION ? {
+    maxAge: 31536000,        // 1 year in seconds
+    includeSubDomains: true,
+    preload: true
+  } : false
 }));
 
 // ── CORS ────────────────────────────────────────────────────────
