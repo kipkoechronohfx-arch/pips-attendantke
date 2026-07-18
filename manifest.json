@@ -59,5 +59,27 @@
       "url": "/calculator.html",
       "icons": [{ "src": "/favicon.png", "sizes": "192x192" }]
     }
+  ],
+  "screenshots": [
+    {
+      "src": "/avatar.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "form_factor": "wide",
+      "label": "Pips Attendant VIP Mentorship"
+    },
+    {
+      "src": "/favicon.webp",
+      "sizes": "192x192",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "Pips Attendant Mobile App"
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://www.pipsattendant.com/manifest.json"
+    }
   ]
 }
