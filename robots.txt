@@ -1,4 +1,21 @@
 User-agent: *
 Allow: /
 
+# Block old/backup/test files from being indexed by Google
+Disallow: /old_index.html
+Disallow: /old_index_utf8.html
+Disallow: /very_old_index.html
+Disallow: /old_premium.html
+Disallow: /old_premium_utf8.html
+Disallow: /premium_old.html
+Disallow: /test.html
+Disallow: /test-script.html
+Disallow: /admin.html
+Disallow: /admin.html.backup
+Disallow: /404.html
+Disallow: /offline.html
+Disallow: /googleb52db227de08e26c.html
+Disallow: /logs/
+Disallow: /data/
+
 Sitemap: https://www.pipsattendant.com/sitemap.xml
