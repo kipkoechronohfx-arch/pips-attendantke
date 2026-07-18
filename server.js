@@ -148,6 +148,16 @@ const staticOptions = {
     }
   }
 };
+// ── Admin Panel Protection ─────────────────────────────────────
+// Block direct browser access to admin.html without the ADMIN_KEY.
+// This runs before express.static so the file is never served without auth.
+app.get(['/admin.html', '/admin'], (req, res, next) => {
+  const key = req.query.key || req.headers['x-admin-key'];
+  if (key && key === process.env.ADMIN_KEY) return next();
+  // Return a plain 403 — don't reveal that admin.html even exists
+  return res.status(403).send('<html><body style="background:#000;color:#f00;font-family:monospace;display:flex;align-items:center;justify-content:center;height:100vh;margin:0"><div style="text-align:center"><h1>403</h1><p>Access Denied</p></div></body></html>');
+});
+
 app.use(express.static(path.join(__dirname), staticOptions));
 app.use(express.static(path.join(__dirname, 'admin'), staticOptions));
 
