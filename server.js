@@ -218,15 +218,21 @@ app.get(['/admin.html', '/admin'], (req, res) => {
 });
 
 // 4. Real Admin Panel — served at an obscured, non-guessable URL.
-// Access requires the correct ADMIN_KEY query param or x-admin-key header.
-// IMPORTANT: Update this path in your admin bookmarks. Share with no one.
-const ADMIN_SLUG = process.env.ADMIN_SLUG || 'dashboard-9f3x';
-app.get(['/' + ADMIN_SLUG, '/' + ADMIN_SLUG + '.html'], (req, res, next) => {
+// IMPORTANT: Route is evaluated dynamically at request time so changing
+// ADMIN_SLUG in Render env vars takes effect on next deploy without code changes.
+app.use((req, res, next) => {
+  // Read slug fresh on every request so env var changes take effect after redeploy
+  const slug = (process.env.ADMIN_SLUG || 'dashboard-9f3x').replace(/^\/+/, '');
+  const p = req.path.replace(/^\/+/, '').replace(/\.html$/, ''); // strip leading / and .html
+
+  if (p !== slug) return next(); // Not the admin slug — pass through
+
   const key = req.query.key || req.headers['x-admin-key'];
   if (key && key === process.env.ADMIN_KEY) {
-    // Serve the actual admin.html file
+    // Valid key — serve the actual admin.html file
     return res.sendFile(path.join(__dirname, 'admin.html'));
   }
+
   // Wrong/missing key — log it and send 403
   const ip = req.ip || req.socket?.remoteAddress || 'unknown';
   logger.warn(
@@ -238,6 +244,18 @@ app.get(['/' + ADMIN_SLUG, '/' + ADMIN_SLUG + '.html'], (req, res, next) => {
     '<div style="text-align:center"><h1>403</h1><p>Access Denied</p></div>' +
     '</body></html>'
   );
+});
+
+// Recovery endpoint — returns the current admin URL (key-protected)
+// GET /api/admin-slug?key=ADMIN_KEY  →  { url: "https://..." }
+app.get('/api/admin-slug', (req, res) => {
+  const key = req.query.key || req.headers['x-admin-key'];
+  if (!key || key !== process.env.ADMIN_KEY) {
+    return res.status(403).json({ ok: false, error: 'Forbidden' });
+  }
+  const slug = (process.env.ADMIN_SLUG || 'dashboard-9f3x').replace(/^\/+/, '');
+  const base = process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
+  return res.json({ ok: true, url: `${base}/${slug}?key=${encodeURIComponent(process.env.ADMIN_KEY)}` });
 });
 
 app.use(express.static(path.join(__dirname), staticOptions));
