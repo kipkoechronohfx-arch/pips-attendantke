@@ -126,5 +126,70 @@ router.get('/download-vip', async (req, res) => {
     res.status(500).send('Error downloading file: ' + err.message);
   }
 });
+// --- Trade Journal Endpoints ---
+router.get('/journal', requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.user.email || req.session.user.id;
+    const entries = await db.getJournalEntries(userId);
+    res.json({ ok: true, entries });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/journal', requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.user.email || req.session.user.id;
+    const { asset, type, entry, exit, pl, strategy, tvLink, date, notes, image } = req.body;
+    if (!asset) return res.status(400).json({ ok: false, error: 'Asset/Pair is required.' });
+    
+    const journalEntry = {
+      userId,
+      asset,
+      type,
+      entry,
+      exit,
+      pl: Number(pl) || 0,
+      strategy,
+      tvLink,
+      date: date || Date.now(),
+      notes,
+      image,
+      createdAt: Date.now()
+    };
+    
+    await db.saveJournalEntry(journalEntry);
+    res.json({ ok: true, message: 'Trade logged successfully!', entry: journalEntry });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.delete('/journal/:id', requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.user.email || req.session.user.id;
+    const deleted = await db.deleteJournalEntry(req.params.id, userId);
+    if (deleted) res.json({ ok: true });
+    else res.status(404).json({ ok: false, error: 'Entry not found' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/journal/leaderboard', requireAuth, async (req, res) => {
+  try {
+    // For simplicity, just return a dummy leaderboard or fetch from db if implemented
+    const allUsers = await db.getUsers();
+    // In a real app we'd aggregate all journals. For now, returning top 3 dummy
+    const leaderboard = [
+      { name: 'Alex P.', pips: 1240 },
+      { name: 'Sarah M.', pips: 980 },
+      { name: 'John D.', pips: 850 }
+    ];
+    res.json({ ok: true, leaderboard });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
 
 module.exports = router;

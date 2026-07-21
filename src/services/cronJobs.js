@@ -177,6 +177,38 @@ async function autoArchiveSignals() {
   }
 }
 
+async function processScheduledAlerts() {
+  try {
+    const alerts = await db.getScheduledAlerts();
+    const now = Date.now();
+    for (const alert of alerts) {
+      if (!alert.sent && alert.scheduledTime <= now) {
+        // Send email to free users if target is 'free'
+        if (alert.target === 'free' || alert.target === 'all') {
+          const allUsers = await db.getUsers();
+          const freeUsers = allUsers.filter(u => !u.subscriptionExpiry || u.subscriptionExpiry < now);
+          for (const u of freeUsers) {
+            if (u.email) sendEmail(u.email, '⏰ Pips Attendant Scheduled Alert', `<p>${alert.message}</p>`).catch(() => {});
+          }
+        }
+        // Send email to VIP users if target is 'vip'
+        if (alert.target === 'vip' || alert.target === 'all') {
+          const allUsers = await db.getUsers();
+          const vipUsers = allUsers.filter(u => u.subscriptionExpiry && u.subscriptionExpiry > now);
+          for (const u of vipUsers) {
+            if (u.email) sendEmail(u.email, '💎 VIP Scheduled Alert', `<p>${alert.message}</p>`).catch(() => {});
+          }
+        }
+        alert.sent = true;
+        await db.saveScheduledAlert(alert);
+        logger.info(`[Cron] Sent scheduled alert: ${alert.message.substring(0, 20)}...`);
+      }
+    }
+  } catch (err) {
+    logger.error(`[Cron] Scheduled alerts failed: ${err.message}`);
+  }
+}
+
 function startCronJobs() {
   cron.schedule("0 5 * * *", () => {
     logger.info("[Cron] Running daily VIP expiry reminder check...");
@@ -189,7 +221,12 @@ function startCronJobs() {
     autoArchiveSignals();
   });
   
-  logger.info("[Cron] Jobs scheduled: VIP expiry daily, Signal Auto-Archive hourly");
+  // Run every minute to check scheduled alerts
+  cron.schedule("* * * * *", () => {
+    processScheduledAlerts();
+  });
+  
+  logger.info("[Cron] Jobs scheduled: VIP expiry daily, Signal Auto-Archive hourly, Alerts minutely");
 }
 
-module.exports = { startCronJobs, computeAndSaveBadges, BADGE_DEFINITIONS, autoArchiveSignals };
+module.exports = { startCronJobs, computeAndSaveBadges, BADGE_DEFINITIONS, autoArchiveSignals, processScheduledAlerts };

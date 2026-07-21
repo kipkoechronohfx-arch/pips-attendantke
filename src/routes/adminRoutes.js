@@ -1432,5 +1432,46 @@ router.get('/referrals', validateAdminSession, async (req, res) => {
     res.status(500).json({ ok: false, error: err.message });
   }
 });
+// --- SCHEDULED ALERTS ---
+router.get('/scheduled-alerts', validateAdminSession, async (req, res) => {
+  try {
+    const alerts = await db.getScheduledAlerts();
+    res.json({ ok: true, alerts });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/scheduled-alerts', validateAdminSession, async (req, res) => {
+  try {
+    const { message, target, scheduledTime } = req.body;
+    if (!message || !target || !scheduledTime) {
+      return res.status(400).json({ ok: false, error: 'Message, target, and scheduledTime are required.' });
+    }
+    
+    const alert = {
+      message,
+      target,
+      scheduledTime: new Date(scheduledTime).getTime(),
+      sent: false,
+      createdAt: Date.now()
+    };
+    
+    await db.saveScheduledAlert(alert);
+    res.json({ ok: true, message: 'Alert scheduled successfully!', alert });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.delete('/scheduled-alerts/:id', validateAdminSession, async (req, res) => {
+  try {
+    const deleted = await db.deleteScheduledAlert(req.params.id);
+    if (deleted) res.json({ ok: true });
+    else res.status(404).json({ ok: false, error: 'Alert not found' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
 
 module.exports = router;

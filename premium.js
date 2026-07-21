@@ -2226,6 +2226,14 @@ feather.replace();
             }
 
             feather.replace();
+
+            // ── Show Onboarding Tour ─────────────────────────────────
+            if (!localStorage.getItem('pa_vip_tour_seen')) {
+              setTimeout(() => {
+                if (typeof startVIPTour === 'function') startVIPTour();
+              }, 1000);
+            }
+
           } else {
             // VIP expired or no VIP
             document.getElementById('contentPanel').classList.add('hidden');
@@ -2675,3 +2683,96 @@ function shareReferral(platform) {
   
   if (url) window.open(url, '_blank');
 }
+
+// ─────────────────────────────────────────────────
+// VIP ONBOARDING TOUR
+// ─────────────────────────────────────────────────
+let currentTourStep = 0;
+const tourSteps = [
+  {
+    title: "Welcome to VIP! 💎",
+    text: "You now have exclusive access to premium signals, deep market analysis, and the Platinum Lounge.",
+    target: null
+  },
+  {
+    title: "Live Signals 🚀",
+    text: "Scroll down to view our real-time XAUUSD & Forex signals as soon as they're broadcasted.",
+    target: 'signalsList'
+  },
+  {
+    title: "Your Trade Journal 📓",
+    text: "Log your trades and track your equity curve using our built-in performance tracker.",
+    target: 'journalSection'
+  },
+  {
+    title: "VIP Lounge Chat 💬",
+    text: "Engage with other traders, ask questions, and share your charts in our exclusive chat room.",
+    target: 'chatMessages'
+  }
+];
+
+function startVIPTour() {
+  currentTourStep = 0;
+  const overlay = document.getElementById('vipTourOverlay');
+  if (overlay) {
+    overlay.classList.remove('hidden');
+    renderTourStep();
+    if (window.feather) feather.replace();
+  }
+}
+
+function renderTourStep() {
+  const step = tourSteps[currentTourStep];
+  if (!step) {
+    // Tour complete
+    const overlay = document.getElementById('vipTourOverlay');
+    if (overlay) overlay.classList.add('hidden');
+    localStorage.setItem('pa_vip_tour_seen', 'true');
+    // Clean up highlights
+    document.querySelectorAll('.tour-highlight').forEach(el => {
+      el.classList.remove('tour-highlight', 'ring-2', 'ring-amber-500');
+    });
+    return;
+  }
+
+  const title = document.getElementById('tourTitle');
+  const text = document.getElementById('tourText');
+  const btn = document.getElementById('tourNextBtn');
+  const dots = document.getElementById('tourDots');
+
+  if (title) title.textContent = step.title;
+  if (text) text.textContent = step.text;
+  if (btn) btn.textContent = currentTourStep === tourSteps.length - 1 ? 'Get Started ✨' : 'Next';
+
+  // Update dots
+  if (dots) {
+    const dotEls = dots.children;
+    for (let i = 0; i < dotEls.length; i++) {
+      dotEls[i].className = i === currentTourStep
+        ? 'w-2.5 h-2.5 rounded-full bg-amber-500 transition-all'
+        : 'w-2 h-2 rounded-full bg-gray-600 transition-all';
+    }
+  }
+
+  // Highlight target element
+  document.querySelectorAll('.tour-highlight').forEach(el => {
+    el.classList.remove('tour-highlight', 'ring-2', 'ring-amber-500', 'rounded-xl');
+  });
+
+  if (step.target) {
+    const targetEl = document.getElementById(step.target);
+    if (targetEl) {
+      targetEl.classList.add('tour-highlight', 'ring-2', 'ring-amber-500', 'rounded-xl');
+      targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+}
+
+function nextTourStep() {
+  currentTourStep++;
+  renderTourStep();
+}
+
+// Expose globally
+window.startVIPTour = startVIPTour;
+window.nextTourStep = nextTourStep;

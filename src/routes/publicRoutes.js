@@ -193,6 +193,30 @@ router.post('/broadcast', async (req, res) => {
       if (type === 'signal' && text) {
         const notify = req.app.get('notifyVIPsNewSignal');
         if (typeof notify === 'function') notify(text).catch(() => {});
+        
+        // --- FREE TEASER EMAIL LOGIC ---
+        if (req.body.sendTeaser) {
+          const { sendEmail } = require('../services/emailService');
+          const allUsers = await db.getUsers();
+          const freeUsers = allUsers.filter(u => !u.subscriptionExpiry || u.subscriptionExpiry < Date.now());
+          
+          let asset = 'a new pair';
+          const assetMatch = text.match(/\b(XAUUSD|EURUSD|GBPUSD|USDJPY|GBPJPY|AUDUSD|US30|NAS100|USDCAD|USDCHF|[A-Z]{6})\b/);
+          if (assetMatch) asset = assetMatch[1];
+          
+          const subject = `🚨 New VIP Signal Released (${asset})!`;
+          const html = `<h2>New VIP Signal Posted!</h2>
+                        <p>Our analysts just released a high-probability VIP signal for <strong>${asset}</strong>.</p>
+                        <p>Upgrade to VIP now to see the exact Entry Price, Stop Loss, and Take Profit targets before the move happens!</p>
+                        <br>
+                        <a href="https://pipsattendant.com/premium.html" style="display:inline-block;background:#f59e0b;color:#000;padding:12px 24px;text-decoration:none;border-radius:8px;font-weight:bold;">Unlock VIP Access</a>`;
+          
+          for (const u of freeUsers) {
+            if (u.email) {
+              sendEmail(u.email, subject, html).catch(e => console.error('[Teaser Email Error]', e.message));
+            }
+          }
+        }
       }
     } catch (logErr) {}
 

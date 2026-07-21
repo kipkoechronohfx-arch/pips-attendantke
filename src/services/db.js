@@ -25,6 +25,7 @@ const BOOKINGS_FILE = path.join(DATA_DIR, 'mentorship_bookings.json');
 const ANNOUNCEMENTS_FILE = path.join(DATA_DIR, 'announcements.json');
 const LEADS_FILE        = path.join(DATA_DIR, 'leads.json');
 const BLOG_FILE         = path.join(DATA_DIR, 'blog_posts.json');
+const SCHEDULED_ALERTS_FILE = path.join(DATA_DIR, 'scheduled_alerts.json');
 
 // Ensure local fallback folders exist
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
@@ -1444,6 +1445,63 @@ async function deleteBlogPost(id) {
   writeJSON(BLOG_FILE, posts);
 }
 
+function getScheduledAlertsColl() { return db.collection('scheduled_alerts'); }
+
+async function getScheduledAlerts() {
+  if (db) {
+    try {
+      return await getScheduledAlertsColl().find({}).toArray();
+    } catch (err) {}
+  }
+  return readJSON(SCHEDULED_ALERTS_FILE);
+}
+
+async function saveScheduledAlert(alert) {
+  if (db) {
+    try {
+      if (alert._id) {
+        const { ObjectId } = require('mongodb');
+        const id = alert._id;
+        delete alert._id;
+        const isObjectId = /^[a-f\d]{24}$/i.test(String(id));
+        const filter = isObjectId ? { _id: new ObjectId(id) } : { _id: id };
+        await getScheduledAlertsColl().updateOne(filter, { $set: alert }, { upsert: true });
+        alert._id = id;
+      } else {
+        await getScheduledAlertsColl().insertOne(alert);
+      }
+      return alert;
+    } catch (err) {}
+  }
+  let alerts = readJSON(SCHEDULED_ALERTS_FILE);
+  if (alert._id) {
+    const idx = alerts.findIndex(a => String(a._id) === String(alert._id));
+    if (idx >= 0) alerts[idx] = { ...alerts[idx], ...alert };
+    else alerts.push(alert);
+  } else {
+    alert._id = Date.now().toString();
+    alerts.push(alert);
+  }
+  writeJSON(SCHEDULED_ALERTS_FILE, alerts);
+  return alert;
+}
+
+async function deleteScheduledAlert(id) {
+  if (db) {
+    try {
+      const { ObjectId } = require('mongodb');
+      const isObjectId = /^[a-f\d]{24}$/i.test(String(id));
+      const filter = isObjectId ? { _id: new ObjectId(id) } : { _id: id };
+      const res = await getScheduledAlertsColl().deleteOne(filter);
+      return res.deletedCount > 0;
+    } catch (err) {}
+  }
+  let alerts = readJSON(SCHEDULED_ALERTS_FILE);
+  const initialLen = alerts.length;
+  alerts = alerts.filter(a => String(a._id) !== String(id));
+  writeJSON(SCHEDULED_ALERTS_FILE, alerts);
+  return alerts.length < initialLen;
+}
 module.exports = {
   connectDB, closeDB,
   getAppConfig, saveAppConfig,
@@ -1468,5 +1526,6 @@ module.exports = {
   getAnnouncements, saveAnnouncement, deleteAnnouncement,
   getLeads, addLead, deleteLeadById,
   getBlogPosts, getBlogPostBySlug, saveBlogPost, deleteBlogPost,
+  getScheduledAlerts, saveScheduledAlert, deleteScheduledAlert,
   ping
 };
