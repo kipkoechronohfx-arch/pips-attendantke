@@ -2287,8 +2287,7 @@
     // Shows a tick animation for 2s then resets back.
     function copyAdminUrl() {
       const key = localStorage.getItem('pa_admin_key') || '';
-      const slug = window.location.pathname; // e.g. /ctrl-7h9q2
-      const url = window.location.origin + slug + (key ? '?key=' + encodeURIComponent(key) : '');
+      const url = window.location.origin + '/admin.html' + (key ? '?key=' + encodeURIComponent(key) : '');
 
       navigator.clipboard.writeText(url).then(() => {
         const btn  = document.getElementById('copyAdminUrlBtn');

@@ -183,79 +183,41 @@ app.use((req, res, next) => {
 
   next();
 });
-// ── Security: Admin Panel Hardening ────────────────────────────
-
-// 1. IP-Based Probe Logger
-// Every unauthenticated attempt at any admin-related path is logged
-// to logs/probe.log for forensic review.
+// ── Security: Admin Panel Protection ───────────────────────────
+// 1. Log every attempt to /admin.html or /admin to probe.log
 app.use(['/admin.html', '/admin', '/admin/*'], (req, res, next) => {
-  const ip   = req.ip || req.socket?.remoteAddress || 'unknown';
-  const ua   = req.get('User-Agent') || 'no-ua';
-  const ref  = req.get('Referer') || '-';
-  logger.warn(
-    `[PROBE] ${req.method} ${req.path} | IP: ${ip} | UA: ${ua} | Ref: ${ref}`
-  );
+  const ip  = req.ip || req.socket?.remoteAddress || 'unknown';
+  const ua  = req.get('User-Agent') || 'no-ua';
+  const ref = req.get('Referer') || '-';
+  logger.warn(`[PROBE] ${req.method} ${req.path} | IP: ${ip} | UA: ${ua} | Ref: ${ref}`);
   next();
 });
 
-// 2. Rate-limit unauthenticated admin probes (3 hits/60s → 429)
+// 2. Rate-limit: 5 unauthenticated hits per 60s → 429 (bots blocked, real admin unaffected)
 app.use(['/admin.html', '/admin', '/admin/*'], adminProbeLimiter);
 
-// 3. Honeypot — /admin.html is the trap, not the real admin panel.
-// Bots & scanners that hit the old URL get a slow, believable fake response
-// that wastes their time. The real admin is served at the obscured path below.
+// 3. Gate: serve admin.html only when correct ADMIN_KEY is provided.
+// Bots hitting /admin.html without the key get a plain 403 — fast, no file served.
+// YOU access it the same way as always:
+//   https://www.pipsattendant.com/admin.html?key=YOUR_ADMIN_KEY
+// Then fill in the in-page login form (Admin Key + 2FA) as normal.
 app.get(['/admin.html', '/admin'], (req, res) => {
-  // Artificial 800ms delay to waste scanner CPU time
+  const key = req.query.key || req.headers['x-admin-key'];
+  if (key && key === process.env.ADMIN_KEY) {
+    // Valid key → serve the admin panel
+    return res.sendFile(path.join(__dirname, 'admin.html'));
+  }
+  // No / wrong key → 403 with 800ms delay to slow down automated scanners
+  const ip = req.ip || req.socket?.remoteAddress || 'unknown';
+  logger.warn(`[ADMIN BLOCKED] IP: ${ip} | Key present: ${!!key} | UA: ${req.get('User-Agent') || 'no-ua'}`);
   setTimeout(() => {
     res.status(403).send(
       '<html><body style="background:#000;color:#f00;font-family:monospace;' +
       'display:flex;align-items:center;justify-content:center;height:100vh;margin:0">' +
-      '<div style="text-align:center"><h1>403</h1><p>Access Denied</p>' +
-      '<!-- Pips Attendant Admin Portal v2.1 -->' + // Fake comment to lure scrapers
-      '</div></body></html>'
+      '<div style="text-align:center"><h1>403</h1><p>Access Denied</p></div>' +
+      '</body></html>'
     );
   }, 800);
-});
-
-// 4. Real Admin Panel — served at an obscured, non-guessable URL.
-// IMPORTANT: Route is evaluated dynamically at request time so changing
-// ADMIN_SLUG in Render env vars takes effect on next deploy without code changes.
-app.use((req, res, next) => {
-  // Read slug fresh on every request so env var changes take effect after redeploy
-  const slug = (process.env.ADMIN_SLUG || 'dashboard-9f3x').replace(/^\/+/, '');
-  const p = req.path.replace(/^\/+/, '').replace(/\.html$/, ''); // strip leading / and .html
-
-  if (p !== slug) return next(); // Not the admin slug — pass through
-
-  const key = req.query.key || req.headers['x-admin-key'];
-  if (key && key === process.env.ADMIN_KEY) {
-    // Valid key — serve the actual admin.html file
-    return res.sendFile(path.join(__dirname, 'admin.html'));
-  }
-
-  // Wrong/missing key — log it and send 403
-  const ip = req.ip || req.socket?.remoteAddress || 'unknown';
-  logger.warn(
-    `[ADMIN AUTH FAIL] IP: ${ip} | Key provided: ${!!key} | UA: ${req.get('User-Agent') || 'no-ua'}`
-  );
-  return res.status(403).send(
-    '<html><body style="background:#000;color:#f00;font-family:monospace;' +
-    'display:flex;align-items:center;justify-content:center;height:100vh;margin:0">' +
-    '<div style="text-align:center"><h1>403</h1><p>Access Denied</p></div>' +
-    '</body></html>'
-  );
-});
-
-// Recovery endpoint — returns the current admin URL (key-protected)
-// GET /api/admin-slug?key=ADMIN_KEY  →  { url: "https://..." }
-app.get('/api/admin-slug', (req, res) => {
-  const key = req.query.key || req.headers['x-admin-key'];
-  if (!key || key !== process.env.ADMIN_KEY) {
-    return res.status(403).json({ ok: false, error: 'Forbidden' });
-  }
-  const slug = (process.env.ADMIN_SLUG || 'dashboard-9f3x').replace(/^\/+/, '');
-  const base = process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
-  return res.json({ ok: true, url: `${base}/${slug}?key=${encodeURIComponent(process.env.ADMIN_KEY)}` });
 });
 
 app.use(express.static(path.join(__dirname), staticOptions));
