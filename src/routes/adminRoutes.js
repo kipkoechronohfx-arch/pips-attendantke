@@ -1296,4 +1296,122 @@ router.post('/upload-image', validateAdminSession, async (req, res) => {
   }
 });
 
+// ── SendGrid Email Broadcast ──────────────────────────────────
+router.post('/broadcast-email', validateAdminSession, async (req, res) => {
+  const { subject, messageHtml } = req.body;
+  if (!subject || !messageHtml) return res.status(400).json({ ok: false, error: 'Subject and message are required.' });
+
+  try {
+    const { sendEmail } = require('../services/emailService');
+    const leads = await db.getLeads();
+    if (!leads || leads.length === 0) {
+      return res.status(400).json({ ok: false, error: 'No leads found to broadcast to.' });
+    }
+
+    let sentCount = 0;
+    for (const lead of leads) {
+      if (lead.email) {
+        try {
+          await sendEmail(lead.email, subject, messageHtml);
+          sentCount++;
+        } catch (err) {
+          console.error(`[Email Broadcast Fail] ${lead.email}:`, err.message);
+        }
+      }
+    }
+
+    res.json({ ok: true, message: `Email broadcast sent to ${sentCount} recipient(s).`, sentCount });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── PWA Browser Push Notification Broadcast ───────────────────
+router.post('/push/broadcast', validateAdminSession, async (req, res) => {
+  const { title, body, url } = req.body;
+  if (!title || !body) return res.status(400).json({ ok: false, error: 'Title and body are required.' });
+
+  if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+    return res.status(500).json({ ok: false, error: 'VAPID keys not configured on server.' });
+  }
+
+  try {
+    const webpush = require('web-push');
+    webpush.setVapidDetails(
+      'mailto:support@pipsattendant.com',
+      process.env.VAPID_PUBLIC_KEY,
+      process.env.VAPID_PRIVATE_KEY
+    );
+
+    const subscriptions = await db.getPushSubscriptions();
+    if (!subscriptions || subscriptions.length === 0) {
+      return res.json({ ok: true, message: 'No push subscribers found.', sentCount: 0 });
+    }
+
+    const payload = JSON.stringify({
+      title: title.trim(),
+      body: body.trim(),
+      icon: '/favicon.png',
+      badge: '/favicon.png',
+      tag: 'pips-broadcast',
+      url: url || '/'
+    });
+
+    let sentCount = 0;
+    const promises = subscriptions.map(sub =>
+      webpush.sendNotification(sub, payload).then(() => sentCount++).catch(err => {
+        if (err.statusCode === 404 || err.statusCode === 410) {
+          return db.deletePushSubscription(sub);
+        }
+      })
+    );
+    await Promise.all(promises);
+
+    res.json({ ok: true, message: `Push notification sent to ${sentCount} subscriber(s).`, sentCount });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── Full Platform Data Backup (JSON Export) ───────────────────
+router.get('/backup/export-all', validateAdminSession, async (req, res) => {
+  try {
+    const [leads, blogPosts, users, subscribers, payments, performanceLogs, propFirmAccounts, tickets, announcements] = await Promise.all([
+      db.getLeads().catch(() => []),
+      db.getBlogPosts({ publishedOnly: false }).catch(() => []),
+      db.getUsers().catch(() => []),
+      db.getSubscribers().catch(() => []),
+      db.getAllPayments().catch(() => []),
+      db.getPerformanceLogs().catch(() => []),
+      db.getAllPropFirmAccounts().catch(() => []),
+      db.getTickets().catch(() => []),
+      db.getAnnouncements().catch(() => [])
+    ]);
+
+    const backupData = {
+      exportedAt: new Date().toISOString(),
+      platform: 'Pips Attendant',
+      version: '1.0.0',
+      data: {
+        leads,
+        blogPosts,
+        users,
+        subscribers,
+        payments,
+        performanceLogs,
+        propFirmAccounts,
+        tickets,
+        announcements
+      }
+    };
+
+    const fileName = `pips_attendant_backup_${new Date().toISOString().split('T')[0]}.json`;
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.status(200).send(JSON.stringify(backupData, null, 2));
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;

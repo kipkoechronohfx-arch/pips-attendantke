@@ -218,6 +218,12 @@
           <i data-feather="settings" class="w-3.5 h-3.5"></i>
           Setup Credentials
         </button>
+
+        <!-- Download Full Backup Button -->
+        <button onclick="downloadFullBackup()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 hover:border-emerald-400/60 hover:bg-emerald-400/15 text-emerald-400 text-xs font-medium transition duration-300 cursor-pointer">
+          <i data-feather="download" class="w-3.5 h-3.5"></i>
+          Backup Data
+        </button>
       </div>
     </div>
 
@@ -505,6 +511,14 @@
               </svg>
               <span>Share to WhatsApp</span>
             </button>
+          </div>
+
+          <!-- 🔔 PWA Browser Push Toggle -->
+          <div class="flex items-center gap-3">
+            <label class="flex items-center gap-2 cursor-pointer group">
+              <input type="checkbox" id="signalPushNotify" class="w-4 h-4 text-neon-blue bg-black border-white/20 rounded focus:ring-neon-blue focus:ring-offset-gray-900" />
+              <span class="text-xs font-medium text-gray-400 group-hover:text-neon-blue transition"><i data-feather="bell" class="inline w-3.5 h-3.5 mr-1"></i>Send Browser Push Notification</span>
+            </label>
           </div>
 
           <!-- 🌐 Distribute: Tickets · X · Facebook · Instagram · TikTok · LinkedIn -->
@@ -1523,6 +1537,22 @@
               <tr><td colspan="5" class="text-center py-4 text-xs">Loading leads...</td></tr>
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- Email Broadcast Card -->
+      <div class="glass-card rounded-2xl p-6 border border-neon-blue/20 bg-neon-blue/5">
+        <h3 class="text-sm font-bold text-white mb-1 flex items-center gap-2"><i data-feather="mail" class="w-4 h-4 text-neon-blue"></i> Email Broadcast to All Leads</h3>
+        <p class="text-xs text-gray-400 mb-4">Send a newsletter or announcement directly to every subscribed email via SendGrid.</p>
+        <div class="space-y-3">
+          <input type="text" id="emailBroadcastSubject" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-white text-sm outline-none focus:border-neon-blue" placeholder="Email subject line..." />
+          <textarea id="emailBroadcastBody" rows="5" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white text-sm outline-none focus:border-neon-blue resize-none" placeholder="Email message (HTML is supported)..."></textarea>
+          <div class="flex items-center gap-3">
+            <button onclick="sendEmailBroadcast()" id="emailBroadcastBtn" class="px-6 py-2.5 bg-gradient-to-r from-neon-blue/80 to-neon-purple/80 text-white text-sm font-bold rounded-xl hover:brightness-110 transition cursor-pointer flex items-center gap-2">
+              <i data-feather="send" class="w-4 h-4"></i> Send to All Leads
+            </button>
+            <span id="emailBroadcastFeedback" class="text-xs"></span>
+          </div>
         </div>
       </div>
     </div>
@@ -2639,6 +2669,26 @@
           document.getElementById('entryTimeClear').classList.add('hidden');
           clearImage();
           updateLivePreview();
+
+          // Optionally fire PWA push notification
+          const pushChecked = document.getElementById('signalPushNotify');
+          if (pushChecked && pushChecked.checked) {
+            const asset = document.getElementById('assetPair') ? document.getElementById('assetPair').value : 'Signal';
+            const adminKey = localStorage.getItem('pa_admin_key');
+            const adminToken = localStorage.getItem('pa_admin_token');
+            fetch('/api/admin/push/broadcast', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey, 'x-admin-token': adminToken },
+              body: JSON.stringify({
+                title: `📈 New Signal: ${asset}`,
+                body: 'A new forex signal has just been posted. Open the app to view it!',
+                url: '/premium.html'
+              })
+            }).then(r => r.json()).then(d => {
+              if (d.ok) console.log('[Push] Sent to', d.sentCount, 'subscribers');
+            }).catch(err => console.error('[Push] Failed:', err));
+            pushChecked.checked = false;
+          }
         } else {
           feedbackEl.innerHTML = `<span class="text-rose-400">Error: ${data.error || 'Failed to send'}</span>`;
         }
@@ -5443,7 +5493,78 @@
       } catch (e) {
         console.error('Failed to load analytics', e);
       }
+    }    // ── Email Broadcast to All Leads ────────────────────────────
+    async function sendEmailBroadcast() {
+      const subject = document.getElementById('emailBroadcastSubject').value.trim();
+      const messageHtml = document.getElementById('emailBroadcastBody').value.trim();
+      const feedback = document.getElementById('emailBroadcastFeedback');
+      const btn = document.getElementById('emailBroadcastBtn');
+
+      if (!subject || !messageHtml) { feedback.innerHTML = '<span class="text-rose-400">Subject and message are required.</span>'; return; }
+      if (!confirm(`Send email to ALL subscribed leads?\n\nSubject: ${subject}\n\nThis cannot be undone.`)) return;
+
+      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
+      btn.disabled = true;
+      feedback.innerHTML = '<span class="text-neon-blue animate-pulse">Sending...</span>';
+
+      try {
+        const res = await fetch('/api/admin/broadcast-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey, 'x-admin-token': adminToken },
+          body: JSON.stringify({ subject, messageHtml })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          feedback.innerHTML = `<span class="text-emerald-400">✅ ${data.message}</span>`;
+          document.getElementById('emailBroadcastSubject').value = '';
+          document.getElementById('emailBroadcastBody').value = '';
+        } else {
+          feedback.innerHTML = `<span class="text-rose-400">Error: ${data.error || 'Failed to send'}</span>`;
+        }
+      } catch (err) {
+        feedback.innerHTML = `<span class="text-rose-400">Network error: ${err.message}</span>`;
+      } finally {
+        btn.disabled = false;
+      }
     }
+
+    // ── Download Full Platform Backup ──────────────────────────
+    async function downloadFullBackup() {
+      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
+      if (!adminToken) { alert('Please log in first.'); return; }
+
+      const btn = event.currentTarget;
+      const original = btn.innerHTML;
+      btn.innerHTML = '<i data-feather="loader" class="w-3.5 h-3.5 animate-spin"></i> Exporting...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`/api/admin/backup/export-all?token=${adminToken}`, {
+          headers: { 'x-admin-key': adminKey, 'x-admin-token': adminToken }
+        });
+        if (!res.ok) throw new Error((await res.json()).error || 'Export failed');
+
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const today = new Date().toISOString().split('T')[0];
+        a.href = url;
+        a.download = `pips_attendant_backup_${today}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        alert('Backup failed: ' + err.message);
+      } finally {
+        btn.innerHTML = original;
+        btn.disabled = false;
+        if (window.feather) feather.replace();
+      }
+    }
+
 </script>
 </body>
 </html>
