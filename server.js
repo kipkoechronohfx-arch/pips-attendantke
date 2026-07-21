@@ -88,7 +88,8 @@ app.use(helmet({
         "https://*.tradingview.com",
         "https://*.tradingview-widget.com",
         "https://*.myfxbook.com",
-        "https://www.googletagmanager.com"
+        "https://www.googletagmanager.com",
+        "https://cdn.quilljs.com"
       ],
       styleSrc: [
         "'self'",
@@ -96,7 +97,8 @@ app.use(helmet({
         "https://unpkg.com",
         "https://cdn.jsdelivr.net",
         "https://fonts.googleapis.com",
-        "https://fonts.gstatic.com"
+        "https://fonts.gstatic.com",
+        "https://cdn.quilljs.com"
       ],
       imgSrc: ["'self'", "data:", "blob:", "https:", "https://*.tradingview.com", "https://*.myfxbook.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
