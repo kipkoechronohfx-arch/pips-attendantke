@@ -127,9 +127,9 @@ router.get('/download-vip', async (req, res) => {
   }
 });
 // --- Trade Journal Endpoints ---
-router.get('/journal', requireAuth, async (req, res) => {
+router.get('/journal', validateVipSession, async (req, res) => {
   try {
-    const userId = req.session.user.email || req.session.user.id;
+    const userId = req.user.email || req.user.id;
     const entries = await db.getJournalEntries(userId);
     res.json({ ok: true, entries });
   } catch (err) {
@@ -137,9 +137,9 @@ router.get('/journal', requireAuth, async (req, res) => {
   }
 });
 
-router.post('/journal', requireAuth, async (req, res) => {
+router.post('/journal', validateVipSession, async (req, res) => {
   try {
-    const userId = req.session.user.email || req.session.user.id;
+    const userId = req.user.email || req.user.id;
     const { asset, type, entry, exit, pl, strategy, tvLink, date, notes, image } = req.body;
     if (!asset) return res.status(400).json({ ok: false, error: 'Asset/Pair is required.' });
     
@@ -165,9 +165,9 @@ router.post('/journal', requireAuth, async (req, res) => {
   }
 });
 
-router.delete('/journal/:id', requireAuth, async (req, res) => {
+router.delete('/journal/:id', validateVipSession, async (req, res) => {
   try {
-    const userId = req.session.user.email || req.session.user.id;
+    const userId = req.user.email || req.user.id;
     const deleted = await db.deleteJournalEntry(req.params.id, userId);
     if (deleted) res.json({ ok: true });
     else res.status(404).json({ ok: false, error: 'Entry not found' });
@@ -176,7 +176,7 @@ router.delete('/journal/:id', requireAuth, async (req, res) => {
   }
 });
 
-router.get('/journal/leaderboard', requireAuth, async (req, res) => {
+router.get('/journal/leaderboard', validateVipSession, async (req, res) => {
   try {
     // For simplicity, just return a dummy leaderboard or fetch from db if implemented
     const allUsers = await db.getUsers();
