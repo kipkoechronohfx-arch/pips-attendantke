@@ -2096,6 +2096,11 @@ feather.replace();
             }
             
             document.getElementById('vipWelcomeText').textContent = `Welcome, ${data.user.name || 'VIP Member'}!`;
+            
+            const refInput = document.getElementById('myReferralLink');
+            if (refInput && data.user.referralCode) {
+              refInput.value = `${window.location.origin}/premium.html?ref=${data.user.referralCode}`;
+            }
             updateDownloadLinks();
             loadTodaysSetup();
             loadTodaysSetupResults();

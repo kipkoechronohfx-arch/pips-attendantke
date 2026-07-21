@@ -79,10 +79,24 @@ router.post('/register', authLimiter, async (req, res) => {
     subscriptionTier: 'Platinum',
     isTrial: true,
     referredBy: referredByUserId || null,
+    referralCode: (name || email.split('@')[0]).toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 8) + crypto.randomBytes(3).toString('hex'),
+    referralCount: 0,
     telegramId: null
   };
 
   await saveUser(user);
+
+  // Increment referrer's count
+  if (referredByUserId) {
+    try {
+      const referrer = await getUserById(referredByUserId);
+      if (referrer) {
+        referrer.referralCount = (referrer.referralCount || 0) + 1;
+        await saveUser(referrer);
+      }
+    } catch (e) { /* non-critical */ }
+  }
+
   registrationIPs.set(clientIp, ipCount + 1);
   const sessionToken = generateUserToken(user);
   
@@ -126,7 +140,7 @@ router.post('/register', authLimiter, async (req, res) => {
     logger.error('[Email] Failed to send welcome email: ' + err.message);
   }
 
-  res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, avatar: user.avatar, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier || (user.isTrial ? 'Platinum' : 'Gold'), telegramId: user.telegramId, badges: user.badges || [], role: user.role || 'user', isTrial: user.isTrial || false, createdAt: user.registeredAt || user.createdAt } });
+  res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, avatar: user.avatar, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier || (user.isTrial ? 'Platinum' : 'Gold'), telegramId: user.telegramId, badges: user.badges || [], role: user.role || 'user', isTrial: user.isTrial || false, createdAt: user.registeredAt || user.createdAt, referralCode: user.referralCode || null, referralCount: user.referralCount || 0 } });
 });
 
 router.post('/login', authLimiter, async (req, res) => {
@@ -177,7 +191,7 @@ router.post('/login', authLimiter, async (req, res) => {
     // If email fails for any reason, fall back to direct login so users are never locked out
     logger.error('[2FA] Failed to send OTP email — falling back to direct login: ' + err.message);
     const sessionToken = generateUserToken(user);
-    return res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, avatar: user.avatar, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier || (user.isTrial ? 'Platinum' : 'Gold'), telegramId: user.telegramId, badges: user.badges || [], role: user.role || 'user', isTrial: user.isTrial || false, createdAt: user.registeredAt || user.createdAt } });
+    return res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, avatar: user.avatar, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier || (user.isTrial ? 'Platinum' : 'Gold'), telegramId: user.telegramId, badges: user.badges || [], role: user.role || 'user', isTrial: user.isTrial || false, createdAt: user.registeredAt || user.createdAt, referralCode: user.referralCode || null, referralCount: user.referralCount || 0 } });
   }
 });
 
@@ -204,7 +218,7 @@ router.post('/verify-2fa', authLimiter, async (req, res) => {
 
   const sessionToken = generateUserToken(user);
   logger.info(`[2FA] User ${email} verified successfully.`);
-  res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, avatar: user.avatar, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier || (user.isTrial ? 'Platinum' : 'Gold'), telegramId: user.telegramId, badges: user.badges || [], role: user.role || 'user', isTrial: user.isTrial || false, createdAt: user.registeredAt || user.createdAt } });
+  res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, avatar: user.avatar, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier || (user.isTrial ? 'Platinum' : 'Gold'), telegramId: user.telegramId, badges: user.badges || [], role: user.role || 'user', isTrial: user.isTrial || false, createdAt: user.registeredAt || user.createdAt, referralCode: user.referralCode || null, referralCount: user.referralCount || 0 } });
 });
 
 router.get('/me', validateUserSession, (req, res) => {
@@ -226,7 +240,9 @@ router.get('/me', validateUserSession, (req, res) => {
       webhookUrl: req.user.webhookUrl || '',
       role: req.user.role || 'user',
       isTrial: req.user.isTrial || false,
-      createdAt: req.user.registeredAt || req.user.createdAt
+      createdAt: req.user.registeredAt || req.user.createdAt,
+      referralCode: req.user.referralCode || null,
+      referralCount: req.user.referralCount || 0
     }
   });
 });

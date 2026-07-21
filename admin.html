@@ -244,6 +244,9 @@
       <button onclick="switchAdminTab('analytics')" id="tab-analytics" class="px-5 py-2 rounded-xl text-sm font-bold bg-black/40 text-gray-400 border border-white/10 hover:text-white transition">
         Analytics
       </button>
+      <button onclick="switchAdminTab('referrals')" id="tab-referrals" class="px-5 py-2 rounded-xl text-sm font-bold bg-black/40 text-gray-400 border border-white/10 hover:text-white transition">
+        Referrals
+      </button>
     </div>
 
     <!-- 🔒 1. SETUP / CONFIGURATION PANEL (Shows if no localStorage) -->
@@ -1429,6 +1432,30 @@
         <h3 class="text-sm font-bold text-white mb-6 uppercase tracking-wider">Performance Chart (Last 50 Trades)</h3>
         <div class="w-full h-80 relative">
           <canvas id="performanceChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🔗 REFERRALS PANEL -->
+    <div id="referralsPanel" class="hidden space-y-6">
+      <div class="glass-card rounded-2xl p-6 border border-white/10">
+        <h2 class="text-xl font-bold text-white mb-1 flex items-center gap-2"><i data-feather="users" class="w-5 h-5 text-amber-400"></i> Referral Leaderboard</h2>
+        <p class="text-xs text-gray-400 mb-6">Members who have referred the most new signups to the platform.</p>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-gray-400">
+            <thead class="text-xs text-gray-500 uppercase bg-black/40">
+              <tr>
+                <th class="px-4 py-3 rounded-tl-lg">#</th>
+                <th class="px-4 py-3">Member</th>
+                <th class="px-4 py-3">Email</th>
+                <th class="px-4 py-3">Referral Code</th>
+                <th class="px-4 py-3 rounded-tr-lg text-right">Signups</th>
+              </tr>
+            </thead>
+            <tbody id="referralsTableBody">
+              <tr><td colspan="5" class="text-center py-4 text-xs">Loading...</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -5010,14 +5037,14 @@
 
     function switchAdminTab(tab) {
       // Hide all panels
-      const panels = ['dashboardPanel', 'propfirmPanel', 'leadsPanel', 'blogPanel', 'analyticsPanel'];
+      const panels = ['dashboardPanel', 'propfirmPanel', 'leadsPanel', 'blogPanel', 'analyticsPanel', 'referralsPanel'];
       panels.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
       });
 
       // Reset all tabs
-      const tabs = ['tab-broadcast', 'tab-propfirm', 'tab-leads', 'tab-blog', 'tab-analytics'];
+      const tabs = ['tab-broadcast', 'tab-propfirm', 'tab-leads', 'tab-blog', 'tab-analytics', 'tab-referrals'];
       tabs.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
@@ -5048,6 +5075,10 @@
         targetPanel = 'analyticsPanel';
         targetTab = 'tab-analytics';
         if (typeof fetchAnalytics === 'function') fetchAnalytics();
+      } else if (tab === 'referrals') {
+        targetPanel = 'referralsPanel';
+        targetTab = 'tab-referrals';
+        if (typeof fetchReferrals === 'function') fetchReferrals();
       }
       
       if (targetPanel && document.getElementById(targetPanel)) {
@@ -5493,7 +5524,45 @@
       } catch (e) {
         console.error('Failed to load analytics', e);
       }
-    }    // ── Email Broadcast to All Leads ────────────────────────────
+    }
+
+    // ── Referrals ──────────────────────────────────────────────
+    async function fetchReferrals() {
+      const tbody = document.getElementById('referralsTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-xs">Loading...</td></tr>';
+      
+      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
+      try {
+        const res = await fetch('/api/admin/referrals', {
+          headers: { 'x-admin-key': adminKey, 'x-admin-token': adminToken }
+        });
+        const data = await res.json();
+        
+        if (data.ok) {
+          if (data.referrers.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-xs text-gray-500">No referrals yet.</td></tr>';
+            return;
+          }
+          tbody.innerHTML = data.referrers.map((r, i) => `
+            <tr class="border-b border-white/5 hover:bg-white/5 transition">
+              <td class="px-4 py-3 text-white">${i + 1}</td>
+              <td class="px-4 py-3 font-medium text-amber-400">${r.name}</td>
+              <td class="px-4 py-3">${r.email}</td>
+              <td class="px-4 py-3"><span class="bg-black/50 text-xs px-2 py-1 rounded text-gray-300 font-mono">${r.referralCode || 'N/A'}</span></td>
+              <td class="px-4 py-3 text-right font-bold text-white">${r.referralCount}</td>
+            </tr>
+          `).join('');
+        } else {
+          tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-xs text-rose-400">Error: ${data.error}</td></tr>`;
+        }
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-xs text-rose-400">Network error.</td></tr>`;
+      }
+    }
+    
+    // ── Email Broadcast to All Leads ────────────────────────────
     async function sendEmailBroadcast() {
       const subject = document.getElementById('emailBroadcastSubject').value.trim();
       const messageHtml = document.getElementById('emailBroadcastBody').value.trim();

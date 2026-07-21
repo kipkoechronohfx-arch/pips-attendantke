@@ -1414,4 +1414,23 @@ router.get('/backup/export-all', validateAdminSession, async (req, res) => {
   }
 });
 
+// ── Referral Leaderboard ──────────────────────────────────────
+router.get('/referrals', validateAdminSession, async (req, res) => {
+  try {
+    const users = await db.getUsers();
+    const referrers = users
+      .filter(u => u.referralCount > 0)
+      .sort((a, b) => (b.referralCount || 0) - (a.referralCount || 0))
+      .map(u => ({
+        name: u.name || 'Unnamed',
+        email: u.email,
+        referralCode: u.referralCode || null,
+        referralCount: u.referralCount || 0
+      }));
+    res.json({ ok: true, referrers, total: referrers.length });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;
