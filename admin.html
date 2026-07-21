@@ -160,6 +160,8 @@
   <!-- Quill Rich Text Editor -->
   <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
   <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+  <!-- Chart.js for Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="text-white min-h-screen relative overflow-x-hidden pt-6 pb-12 selection:bg-amber-400/30" style="background-color: #0d0800;">
 
@@ -232,6 +234,9 @@
       </button>
       <button onclick="switchAdminTab('propfirm')" id="tab-propfirm" class="px-5 py-2 rounded-xl text-sm font-bold bg-black/40 text-gray-400 border border-white/10 hover:text-white transition">
         Prop Firm Mgmt
+      </button>
+      <button onclick="switchAdminTab('analytics')" id="tab-analytics" class="px-5 py-2 rounded-xl text-sm font-bold bg-black/40 text-gray-400 border border-white/10 hover:text-white transition">
+        Analytics
       </button>
     </div>
 
@@ -1387,6 +1392,33 @@
       </div>
     </div>
 
+    <!-- 📊 ANALYTICS DASHBOARD PANEL -->
+    <div id="analyticsPanel" class="hidden space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Stats Cards -->
+        <div class="glass-card rounded-2xl p-6 border border-white/10 flex flex-col justify-center items-center">
+          <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Total Trades</p>
+          <p class="text-3xl font-black text-white" id="statTotalTrades">-</p>
+        </div>
+        <div class="glass-card rounded-2xl p-6 border border-emerald-500/20 bg-emerald-500/5 flex flex-col justify-center items-center">
+          <p class="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-2">Pips Caught</p>
+          <p class="text-3xl font-black text-white" id="statTotalPips">-</p>
+        </div>
+        <div class="glass-card rounded-2xl p-6 border border-neon-blue/20 bg-neon-blue/5 flex flex-col justify-center items-center">
+          <p class="text-xs font-bold text-neon-blue uppercase tracking-widest mb-2">Win Rate</p>
+          <p class="text-3xl font-black text-white" id="statWinRate">-</p>
+        </div>
+      </div>
+      
+      <!-- Chart -->
+      <div class="glass-card rounded-2xl p-6 border border-white/10">
+        <h3 class="text-sm font-bold text-white mb-6 uppercase tracking-wider">Performance Chart (Last 50 Trades)</h3>
+        <div class="w-full h-80 relative">
+          <canvas id="performanceChart"></canvas>
+        </div>
+      </div>
+    </div>
+
     <!-- 🏦 3. PROP FIRM MANAGEMENT PANEL -->
     <div id="propfirmPanel" class="hidden">
       <div class="glass-card rounded-2xl p-6 border border-white/10">
@@ -1534,6 +1566,14 @@
               <label class="block text-xs font-bold text-gray-400 mb-1">Content</label>
               <div id="quillEditor" class="bg-white/5 text-white" style="height: 300px; border-radius: 0 0 8px 8px; border-color: rgba(255,255,255,0.1);"></div>
             </div>
+            
+            <div class="flex items-center gap-3 pt-2">
+              <label class="flex items-center gap-2 cursor-pointer group">
+                <input type="checkbox" id="blogBroadcastTg" class="w-4 h-4 text-neon-blue bg-black border-white/20 rounded focus:ring-neon-blue focus:ring-offset-gray-900" />
+                <span class="text-sm font-medium text-gray-300 group-hover:text-neon-blue transition">Announce to Telegram Channel</span>
+              </label>
+            </div>
+
             <div class="flex gap-4 pt-4">
               <button onclick="saveBlogPost('published')" class="flex-1 py-3 bg-amber-400 text-dark-navy font-bold rounded-xl hover:bg-amber-300 transition cursor-pointer">Publish</button>
               <button onclick="saveBlogPost('draft')" class="flex-1 py-3 bg-white/10 text-white font-bold rounded-xl hover:bg-white/20 transition cursor-pointer">Save Draft</button>
@@ -4920,14 +4960,14 @@
 
     function switchAdminTab(tab) {
       // Hide all panels
-      const panels = ['dashboardPanel', 'propfirmPanel', 'leadsPanel', 'blogPanel'];
+      const panels = ['dashboardPanel', 'propfirmPanel', 'leadsPanel', 'blogPanel', 'analyticsPanel'];
       panels.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
       });
 
       // Reset all tabs
-      const tabs = ['tab-broadcast', 'tab-propfirm', 'tab-leads', 'tab-blog'];
+      const tabs = ['tab-broadcast', 'tab-propfirm', 'tab-leads', 'tab-blog', 'tab-analytics'];
       tabs.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
@@ -4954,6 +4994,10 @@
         targetPanel = 'blogPanel';
         targetTab = 'tab-blog';
         if (typeof fetchAdminBlogPosts === 'function') fetchAdminBlogPosts();
+      } else if (tab === 'analytics') {
+        targetPanel = 'analyticsPanel';
+        targetTab = 'tab-analytics';
+        if (typeof fetchAnalytics === 'function') fetchAnalytics();
       }
       
       if (targetPanel && document.getElementById(targetPanel)) {
@@ -5211,6 +5255,31 @@
         body: JSON.stringify(payload)
       });
       if(res.ok) {
+        // Broadcast to telegram if checked and publishing
+        const broadcastChecked = document.getElementById('blogBroadcastTg').checked;
+        if (status === 'published' && broadcastChecked) {
+          const botToken = localStorage.getItem('pa_bot_token');
+          const chatId = localStorage.getItem('pa_chat_id');
+          if (botToken && chatId) {
+            const articleUrl = `https://www.pipsattendant.com/article/${payload.slug}`;
+            const tgMsg = `📰 *New Article Published!*\n\n*${payload.title}*\n\n${payload.excerpt ? payload.excerpt + '\n\n' : ''}Read it here: ${articleUrl}`;
+            try {
+              await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  chat_id: chatId,
+                  text: tgMsg,
+                  parse_mode: 'Markdown',
+                  disable_web_page_preview: false
+                })
+              });
+            } catch(e) {
+              console.error('Telegram broadcast failed', e);
+            }
+          }
+        }
+        
         alert(editId ? 'Post updated' : 'Post created');
         document.getElementById('blogTitle').value = '';
         document.getElementById('blogCategory').value = '';
@@ -5218,6 +5287,7 @@
         document.getElementById('blogCover').value = '';
         quill.root.innerHTML = '';
         document.getElementById('blogEditId').value = '';
+        document.getElementById('blogBroadcastTg').checked = false;
         fetchAdminBlogPosts();
       }
     }
@@ -5291,6 +5361,87 @@
         btn.disabled = false;
         fileInput.value = '';
         if(window.feather) feather.replace();
+      }
+    }
+    
+    // ── Analytics Dashboard Logic ───────────────────────────────
+    let perfChartInstance = null;
+    async function fetchAnalytics() {
+      try {
+        const res = await fetch('/api/performance/all');
+        const data = await res.json();
+        if (!data.ok) return;
+
+        const logs = data.logs || [];
+        
+        // Calculate stats
+        let totalPips = 0, pipsGained = 0, pipsLost = 0;
+        logs.forEach(log => {
+          const p = Number(log.pips) || 0;
+          totalPips += p;
+          if (log.result === 'Win') pipsGained += Math.abs(p);
+          else if (log.result === 'Loss') pipsLost += Math.abs(p);
+        });
+        
+        const totalMovement = pipsGained + pipsLost;
+        const winRate = totalMovement > 0 ? Math.round((pipsGained / totalMovement) * 100) : 0;
+        
+        document.getElementById('statTotalTrades').innerText = logs.length;
+        document.getElementById('statTotalPips').innerText = totalPips > 0 ? '+' + totalPips : totalPips;
+        document.getElementById('statWinRate').innerText = winRate + '%';
+
+        // Plot last 50 trades chronologically (oldest to newest left to right)
+        const recentLogs = logs.slice(0, 50).reverse();
+        const labels = recentLogs.map(l => new Date(l.date).toLocaleDateString(undefined, {month:'short', day:'numeric'}) + ' (' + l.asset + ')');
+        const chartData = recentLogs.map(l => Number(l.pips) || 0);
+        const bgColors = chartData.map(val => val >= 0 ? 'rgba(16, 185, 129, 0.8)' : 'rgba(244, 63, 94, 0.8)');
+
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+        if (perfChartInstance) perfChartInstance.destroy();
+        
+        Chart.defaults.color = 'rgba(255, 255, 255, 0.5)';
+        Chart.defaults.font.family = 'Inter';
+
+        perfChartInstance = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [{
+              label: 'Pips Caught',
+              data: chartData,
+              backgroundColor: bgColors,
+              borderRadius: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: 'rgba(0,0,0,0.8)',
+                titleFont: { size: 13, family: 'Inter' },
+                bodyFont: { size: 14, family: 'Inter', weight: 'bold' },
+                callbacks: {
+                  label: (ctx) => `${ctx.raw > 0 ? '+' : ''}${ctx.raw} pips`
+                }
+              }
+            },
+            scales: {
+              y: {
+                grid: { color: 'rgba(255,255,255,0.05)' },
+                border: { display: false }
+              },
+              x: {
+                grid: { display: false },
+                border: { display: false },
+                ticks: { maxTicksLimit: 10 }
+              }
+            }
+          }
+        });
+      } catch (e) {
+        console.error('Failed to load analytics', e);
       }
     }
 </script>
