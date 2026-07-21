@@ -1631,9 +1631,10 @@
               </label>
             </div>
 
-            <div class="flex gap-4 pt-4">
-              <button onclick="saveBlogPost('published')" class="flex-1 py-3 bg-amber-400 text-dark-navy font-bold rounded-xl hover:bg-amber-300 transition cursor-pointer">Publish</button>
-              <button onclick="saveBlogPost('draft')" class="flex-1 py-3 bg-white/10 text-white font-bold rounded-xl hover:bg-white/20 transition cursor-pointer">Save Draft</button>
+            <div class="flex gap-4 pt-4" id="blogActionButtons">
+              <button onclick="saveBlogPost('published')" class="flex-1 py-3 bg-amber-400 text-dark-navy font-bold rounded-xl hover:bg-amber-300 transition cursor-pointer" id="btnBlogPublish">Publish</button>
+              <button onclick="saveBlogPost('draft')" class="flex-1 py-3 bg-white/10 text-white font-bold rounded-xl hover:bg-white/20 transition cursor-pointer" id="btnBlogDraft">Save Draft</button>
+              <button onclick="cancelBlogEdit()" id="btnBlogCancel" class="hidden flex-1 py-3 bg-rose-500/20 text-rose-400 font-bold rounded-xl hover:bg-rose-500/30 transition cursor-pointer">Cancel Edit</button>
               <input type="hidden" id="blogEditId" value="">
             </div>
           </div>
@@ -5366,11 +5367,31 @@
         document.getElementById('blogCategory').value = '';
         document.getElementById('blogExcerpt').value = '';
         document.getElementById('blogCover').value = '';
-        quill.root.innerHTML = '';
+        quill.setText('');
         document.getElementById('blogEditId').value = '';
         document.getElementById('blogBroadcastTg').checked = false;
+        
+        // Reset buttons
+        document.getElementById('btnBlogPublish').textContent = 'Publish';
+        document.getElementById('btnBlogDraft').classList.remove('hidden');
+        document.getElementById('btnBlogCancel').classList.add('hidden');
+
         fetchAdminBlogPosts();
       }
+    }
+
+    function cancelBlogEdit() {
+      document.getElementById('blogTitle').value = '';
+      document.getElementById('blogCategory').value = '';
+      document.getElementById('blogExcerpt').value = '';
+      document.getElementById('blogCover').value = '';
+      quill.setText('');
+      document.getElementById('blogEditId').value = '';
+      document.getElementById('blogBroadcastTg').checked = false;
+      
+      document.getElementById('btnBlogPublish').textContent = 'Publish';
+      document.getElementById('btnBlogDraft').classList.remove('hidden');
+      document.getElementById('btnBlogCancel').classList.add('hidden');
     }
 
     async function editBlogPost(id) {
@@ -5386,7 +5407,15 @@
         document.getElementById('blogAuthor').value = post.author || 'Pips Attendant';
         document.getElementById('blogExcerpt').value = post.excerpt || '';
         document.getElementById('blogCover').value = post.coverImage || '';
-        quill.root.innerHTML = post.content || '';
+        
+        // Use dangerouslyPasteHTML so Quill parses and binds the content correctly for editing
+        quill.clipboard.dangerouslyPasteHTML(post.content || '');
+        
+        // Update UI for editing
+        document.getElementById('btnBlogPublish').textContent = 'Update Post';
+        document.getElementById('btnBlogDraft').classList.add('hidden');
+        document.getElementById('btnBlogCancel').classList.remove('hidden');
+
         window.scrollTo({top: document.getElementById('blogPanel').offsetTop, behavior: 'smooth'});
       }
     }
