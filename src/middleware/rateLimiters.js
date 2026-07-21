@@ -50,10 +50,31 @@ const passwordResetLimiter = rateLimit({
   legacyHeaders: false
 });
 
+// ── Admin Probe Limiter ────────────────────────────────────────
+// SECURITY: Block scanners/bots hitting the admin URL without auth.
+// 3 unauthenticated hits within 60s → 429 for the rest of the window.
+// Successful (authenticated) requests are excluded so real admins are never throttled.
+const adminProbeLimiter = rateLimit({
+  windowMs: 60 * 1000,   // 60-second window
+  max: 3,                // 3 unauthenticated attempts max
+  skipSuccessfulRequests: true, // Authenticated hits don't count
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => {
+    res.status(429).send(
+      '<html><body style="background:#000;color:#f00;font-family:monospace;' +
+      'display:flex;align-items:center;justify-content:center;height:100vh;margin:0">' +
+      '<div style="text-align:center"><h1>429</h1><p>Too Many Requests</p></div>' +
+      '</body></html>'
+    );
+  }
+});
+
 module.exports = {
   vipAuthLimiter,
   authLimiter,
   adminLoginLimiter,
   twoFASetupLimiter,
-  passwordResetLimiter
+  passwordResetLimiter,
+  adminProbeLimiter
 };

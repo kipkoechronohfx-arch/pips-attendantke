@@ -32,6 +32,13 @@ const logger = createLogger({
       maxsize: 5 * 1024 * 1024,
       maxFiles: 3,
     }),
+    // Dedicated scanner/probe log — captures all 'warn' events (probe attempts)
+    new transports.File({
+      filename: path.join(logsDir, 'probe.log'),
+      level: 'warn',
+      maxsize: 2 * 1024 * 1024, // 2MB max
+      maxFiles: 5,
+    }),
     // Also print to console in all environments (for Render logs)
     new transports.Console({
       format: format.combine(

@@ -14,6 +14,7 @@ const { initializeSocket } = require('./src/services/socketService');
 
 const authRoutes = require('./src/routes/authRoutes');
 const adminRoutes = require('./src/routes/adminRoutes');
+const { adminProbeLimiter } = require('./src/middleware/rateLimiters');
 const vipRoutes = require('./src/routes/vipRoutes');
 const paymentRoutes = require('./src/routes/paymentRoutes');
 const publicRoutes = require('./src/routes/publicRoutes');
@@ -182,14 +183,61 @@ app.use((req, res, next) => {
 
   next();
 });
-// ── Admin Panel Protection ─────────────────────────────────────
-// Block direct browser access to admin.html without the ADMIN_KEY.
-// This runs before express.static so the file is never served without auth.
-app.get(['/admin.html', '/admin'], (req, res, next) => {
+// ── Security: Admin Panel Hardening ────────────────────────────
+
+// 1. IP-Based Probe Logger
+// Every unauthenticated attempt at any admin-related path is logged
+// to logs/probe.log for forensic review.
+app.use(['/admin.html', '/admin', '/admin/*'], (req, res, next) => {
+  const ip   = req.ip || req.socket?.remoteAddress || 'unknown';
+  const ua   = req.get('User-Agent') || 'no-ua';
+  const ref  = req.get('Referer') || '-';
+  logger.warn(
+    `[PROBE] ${req.method} ${req.path} | IP: ${ip} | UA: ${ua} | Ref: ${ref}`
+  );
+  next();
+});
+
+// 2. Rate-limit unauthenticated admin probes (3 hits/60s → 429)
+app.use(['/admin.html', '/admin', '/admin/*'], adminProbeLimiter);
+
+// 3. Honeypot — /admin.html is the trap, not the real admin panel.
+// Bots & scanners that hit the old URL get a slow, believable fake response
+// that wastes their time. The real admin is served at the obscured path below.
+app.get(['/admin.html', '/admin'], (req, res) => {
+  // Artificial 800ms delay to waste scanner CPU time
+  setTimeout(() => {
+    res.status(403).send(
+      '<html><body style="background:#000;color:#f00;font-family:monospace;' +
+      'display:flex;align-items:center;justify-content:center;height:100vh;margin:0">' +
+      '<div style="text-align:center"><h1>403</h1><p>Access Denied</p>' +
+      '<!-- Pips Attendant Admin Portal v2.1 -->' + // Fake comment to lure scrapers
+      '</div></body></html>'
+    );
+  }, 800);
+});
+
+// 4. Real Admin Panel — served at an obscured, non-guessable URL.
+// Access requires the correct ADMIN_KEY query param or x-admin-key header.
+// IMPORTANT: Update this path in your admin bookmarks. Share with no one.
+const ADMIN_SLUG = process.env.ADMIN_SLUG || 'dashboard-9f3x';
+app.get(['/' + ADMIN_SLUG, '/' + ADMIN_SLUG + '.html'], (req, res, next) => {
   const key = req.query.key || req.headers['x-admin-key'];
-  if (key && key === process.env.ADMIN_KEY) return next();
-  // Return a plain 403 — don't reveal that admin.html even exists
-  return res.status(403).send('<html><body style="background:#000;color:#f00;font-family:monospace;display:flex;align-items:center;justify-content:center;height:100vh;margin:0"><div style="text-align:center"><h1>403</h1><p>Access Denied</p></div></body></html>');
+  if (key && key === process.env.ADMIN_KEY) {
+    // Serve the actual admin.html file
+    return res.sendFile(path.join(__dirname, 'admin.html'));
+  }
+  // Wrong/missing key — log it and send 403
+  const ip = req.ip || req.socket?.remoteAddress || 'unknown';
+  logger.warn(
+    `[ADMIN AUTH FAIL] IP: ${ip} | Key provided: ${!!key} | UA: ${req.get('User-Agent') || 'no-ua'}`
+  );
+  return res.status(403).send(
+    '<html><body style="background:#000;color:#f00;font-family:monospace;' +
+    'display:flex;align-items:center;justify-content:center;height:100vh;margin:0">' +
+    '<div style="text-align:center"><h1>403</h1><p>Access Denied</p></div>' +
+    '</body></html>'
+  );
 });
 
 app.use(express.static(path.join(__dirname), staticOptions));
