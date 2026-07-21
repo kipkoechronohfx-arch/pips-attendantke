@@ -205,6 +205,13 @@
           Ready to Post
         </span>
 
+        <!-- Copy Admin URL Button -->
+        <button id="copyAdminUrlBtn" onclick="copyAdminUrl()" title="Copy full admin URL to clipboard"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 hover:border-amber-400/60 hover:bg-amber-400/15 text-amber-400 text-xs font-medium transition duration-300 cursor-pointer">
+          <i id="copyAdminUrlIcon" data-feather="link" class="w-3.5 h-3.5"></i>
+          <span id="copyAdminUrlText">Copy Admin URL</span>
+        </button>
+
         <button onclick="resetCredentials()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:border-rose-500/50 hover:bg-rose-500/10 hover:text-rose-400 text-gray-400 text-xs font-medium transition duration-300 cursor-pointer">
           <i data-feather="settings" class="w-3.5 h-3.5"></i>
           Setup Credentials
@@ -2273,6 +2280,40 @@
       } catch (err) {
         alert('Network error during login. Check your internet connection.');
       }
+    }
+
+    // ── Copy Admin URL ─────────────────────────────────────────
+    // Builds the full current admin URL (slug + key) and copies it to clipboard.
+    // Shows a tick animation for 2s then resets back.
+    function copyAdminUrl() {
+      const key = localStorage.getItem('pa_admin_key') || '';
+      const slug = window.location.pathname; // e.g. /ctrl-7h9q2
+      const url = window.location.origin + slug + (key ? '?key=' + encodeURIComponent(key) : '');
+
+      navigator.clipboard.writeText(url).then(() => {
+        const btn  = document.getElementById('copyAdminUrlBtn');
+        const icon = document.getElementById('copyAdminUrlIcon');
+        const text = document.getElementById('copyAdminUrlText');
+
+        // Swap to success state
+        btn.classList.remove('border-amber-500/20', 'bg-amber-500/10', 'text-amber-400', 'hover:border-amber-400/60', 'hover:bg-amber-400/15');
+        btn.classList.add('border-emerald-500/40', 'bg-emerald-500/15', 'text-emerald-400');
+        icon.setAttribute('data-feather', 'check');
+        text.textContent = 'Copied!';
+        feather.replace();
+
+        // Reset after 2s
+        setTimeout(() => {
+          btn.classList.remove('border-emerald-500/40', 'bg-emerald-500/15', 'text-emerald-400');
+          btn.classList.add('border-amber-500/20', 'bg-amber-500/10', 'text-amber-400', 'hover:border-amber-400/60', 'hover:bg-amber-400/15');
+          icon.setAttribute('data-feather', 'link');
+          text.textContent = 'Copy Admin URL';
+          feather.replace();
+        }, 2000);
+      }).catch(() => {
+        // Fallback: show URL in a prompt so user can manually copy
+        prompt('Copy your admin URL:', url);
+      });
     }
 
     function resetCredentials() {
