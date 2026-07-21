@@ -5110,9 +5110,10 @@
 
     async function fetchLeads() {
       const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       const tbody = document.getElementById('leadsTableBody');
       try {
-        const res = await fetch('/api/admin/leads', { headers: { 'x-admin-key': adminKey } });
+        const res = await fetch('/api/admin/leads', { headers: { 'x-admin-key': adminKey, 'x-admin-token': adminToken } });
         const data = await res.json();
         if (data.ok && data.leads.length > 0) {
           tbody.innerHTML = data.leads.map(l => `
@@ -5138,20 +5139,23 @@
     async function deleteLead(id) {
       if(!confirm('Delete this lead?')) return;
       const adminKey = localStorage.getItem('pa_admin_key');
-      await fetch(`/api/admin/leads/${id}`, { method: 'DELETE', headers: { 'x-admin-key': adminKey } });
+      const adminToken = localStorage.getItem('pa_admin_token');
+      await fetch(`/api/admin/leads/${id}`, { method: 'DELETE', headers: { 'x-admin-key': adminKey, 'x-admin-token': adminToken } });
       fetchLeads();
     }
 
     function exportLeadsCSV() {
       const adminKey = localStorage.getItem('pa_admin_key');
-      window.open(`/api/admin/leads/export-csv?key=${adminKey}`, '_blank');
+      const adminToken = localStorage.getItem('pa_admin_token');
+      window.open(`/api/admin/leads/export-csv?key=${adminKey}&token=${adminToken}`, '_blank');
     }
 
     async function fetchAdminBlogPosts() {
       const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       const list = document.getElementById('blogList');
       try {
-        const res = await fetch('/api/admin/blog', { headers: { 'x-admin-key': adminKey } });
+        const res = await fetch('/api/admin/blog', { headers: { 'x-admin-key': adminKey, 'x-admin-token': adminToken } });
         const data = await res.json();
         if (data.ok && data.posts.length > 0) {
           list.innerHTML = data.posts.map(p => `
@@ -5195,8 +5199,9 @@
       const url = editId ? `/api/admin/blog/${editId}` : '/api/admin/blog';
       
       const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       const res = await fetch(url, {
-        method, headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+        method, headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey, 'x-admin-token': adminToken },
         body: JSON.stringify(payload)
       });
       if(res.ok) {
@@ -5213,7 +5218,8 @@
 
     async function editBlogPost(id) {
       const adminKey = localStorage.getItem('pa_admin_key');
-      const res = await fetch('/api/admin/blog', { headers: { 'x-admin-key': adminKey } });
+      const adminToken = localStorage.getItem('pa_admin_token');
+      const res = await fetch('/api/admin/blog', { headers: { 'x-admin-key': adminKey, 'x-admin-token': adminToken } });
       const data = await res.json();
       const post = data.posts.find(p => p._id === id);
       if(post) {
@@ -5231,7 +5237,8 @@
     async function deleteBlogPost(id) {
       if(!confirm('Delete post?')) return;
       const adminKey = localStorage.getItem('pa_admin_key');
-      await fetch(`/api/admin/blog/${id}`, { method: 'DELETE', headers: { 'x-admin-key': adminKey } });
+      const adminToken = localStorage.getItem('pa_admin_token');
+      await fetch(`/api/admin/blog/${id}`, { method: 'DELETE', headers: { 'x-admin-key': adminKey, 'x-admin-token': adminToken } });
       fetchAdminBlogPosts();
     }
 </script>
