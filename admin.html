@@ -4913,22 +4913,50 @@
     // ==========================================
 
     function switchAdminTab(tab) {
-      document.getElementById('dashboardPanel').classList.add('hidden');
-      document.getElementById('propfirmPanel').classList.add('hidden');
-      document.getElementById('tab-broadcast').classList.replace('bg-neon-blue/20', 'bg-black/40');
-      document.getElementById('tab-broadcast').classList.replace('text-neon-blue', 'text-gray-400');
-      document.getElementById('tab-propfirm').classList.replace('bg-neon-blue/20', 'bg-black/40');
-      document.getElementById('tab-propfirm').classList.replace('text-neon-blue', 'text-gray-400');
+      // Hide all panels
+      const panels = ['dashboardPanel', 'propfirmPanel', 'leadsPanel', 'blogPanel'];
+      panels.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+      });
+
+      // Reset all tabs
+      const tabs = ['tab-broadcast', 'tab-propfirm', 'tab-leads', 'tab-blog'];
+      tabs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.classList.replace('bg-neon-blue/20', 'bg-black/40');
+          el.classList.replace('text-neon-blue', 'text-gray-400');
+        }
+      });
+      
+      // Show selected panel & activate tab
+      let targetPanel, targetTab;
       
       if (tab === 'broadcast') {
-        document.getElementById('dashboardPanel').classList.remove('hidden');
-        document.getElementById('tab-broadcast').classList.replace('bg-black/40', 'bg-neon-blue/20');
-        document.getElementById('tab-broadcast').classList.replace('text-gray-400', 'text-neon-blue');
+        targetPanel = 'dashboardPanel';
+        targetTab = 'tab-broadcast';
       } else if (tab === 'propfirm') {
-        document.getElementById('propfirmPanel').classList.remove('hidden');
-        document.getElementById('tab-propfirm').classList.replace('bg-black/40', 'bg-neon-blue/20');
-        document.getElementById('tab-propfirm').classList.replace('text-gray-400', 'text-neon-blue');
-        loadPropFirmAccounts();
+        targetPanel = 'propfirmPanel';
+        targetTab = 'tab-propfirm';
+        if (typeof loadPropFirmAccounts === 'function') loadPropFirmAccounts();
+      } else if (tab === 'leads') {
+        targetPanel = 'leadsPanel';
+        targetTab = 'tab-leads';
+        if (typeof fetchLeads === 'function') fetchLeads();
+      } else if (tab === 'blog') {
+        targetPanel = 'blogPanel';
+        targetTab = 'tab-blog';
+        if (typeof fetchAdminBlogPosts === 'function') fetchAdminBlogPosts();
+      }
+      
+      if (targetPanel && document.getElementById(targetPanel)) {
+        document.getElementById(targetPanel).classList.remove('hidden');
+      }
+      if (targetTab && document.getElementById(targetTab)) {
+        const tabEl = document.getElementById(targetTab);
+        tabEl.classList.replace('bg-black/40', 'bg-neon-blue/20');
+        tabEl.classList.replace('text-gray-400', 'text-neon-blue');
       }
     }
 
