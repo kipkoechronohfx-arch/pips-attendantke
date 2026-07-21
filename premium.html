@@ -724,11 +724,25 @@
               <p class="text-xs text-gray-400">Share your unique link and earn perks when they sign up.</p>
             </div>
           </div>
-          <div class="w-full sm:w-auto flex items-center gap-2">
-            <input type="text" id="myReferralLink" readonly class="w-full sm:w-64 text-xs bg-black/40 border border-white/10 text-gray-300 rounded-lg px-3 py-2 outline-none" value="Loading...">
-            <button onclick="copyReferralLink()" class="px-3 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs transition flex-shrink-0">
-              Copy
-            </button>
+          <div class="w-full sm:w-auto flex flex-col items-end gap-2">
+            <div class="flex items-center gap-2 w-full">
+              <input type="text" id="myReferralLink" readonly class="w-full sm:w-64 text-xs bg-black/40 border border-white/10 text-gray-300 rounded-lg px-3 py-2 outline-none" value="Loading...">
+              <button onclick="copyReferralLink()" class="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition flex-shrink-0" title="Copy Link">
+                Copy
+              </button>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider mr-1">Share:</span>
+              <button onclick="shareReferral('whatsapp')" class="w-7 h-7 rounded bg-[#25D366]/20 hover:bg-[#25D366]/40 text-[#25D366] flex items-center justify-center transition" title="WhatsApp">
+                <i data-feather="message-circle" class="w-3.5 h-3.5"></i>
+              </button>
+              <button onclick="shareReferral('telegram')" class="w-7 h-7 rounded bg-[#0088cc]/20 hover:bg-[#0088cc]/40 text-[#0088cc] flex items-center justify-center transition" title="Telegram">
+                <i data-feather="send" class="w-3.5 h-3.5"></i>
+              </button>
+              <button onclick="shareReferral('twitter')" class="w-7 h-7 rounded bg-black/40 hover:bg-white/10 text-gray-300 border border-white/10 flex items-center justify-center transition" title="X (Twitter)">
+                <i data-feather="twitter" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -2373,5 +2387,9 @@
     }
   </script>
 
+  <!-- Floating Install App Button (Hidden by default, shown via JS) -->
+  <button id="pwaInstallBtn" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-amber-400 text-black font-black text-xs px-5 py-2.5 rounded-full shadow-[0_8px_30px_rgba(245,158,11,0.4)] hover:scale-105 transition-all z-50 flex items-center gap-2">
+    <i data-feather="download" class="w-4 h-4"></i> Install App
+  </button>
 </body>
 </html>

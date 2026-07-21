@@ -2634,3 +2634,44 @@ document.addEventListener('click', (e) => {
     navigator.vibrate(15); // Light tap
   }
 });
+
+// --- PWA INSTALL PROMPT ---
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const installBtn = document.getElementById('pwaInstallBtn');
+  if (installBtn) {
+    installBtn.classList.remove('hidden');
+    installBtn.addEventListener('click', async () => {
+      installBtn.classList.add('hidden');
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') console.log('PWA Setup Accepted');
+      deferredPrompt = null;
+    });
+  }
+});
+
+// --- REFERRAL LOGIC ---
+function copyReferralLink() {
+  const input = document.getElementById('myReferralLink');
+  if (!input || !input.value || input.value === 'Loading...') return;
+  navigator.clipboard.writeText(input.value).then(() => showToast('Copied!', 'Referral link copied to clipboard.', 'success'))
+    .catch(err => { input.select(); document.execCommand('copy'); showToast('Copied!', 'Referral link copied.', 'success'); });
+}
+
+function shareReferral(platform) {
+  const input = document.getElementById('myReferralLink');
+  if (!input || !input.value || input.value === 'Loading...') return;
+  
+  const link = encodeURIComponent(input.value);
+  const text = encodeURIComponent("Join Pips Attendant for the best forex signals and mentorship! Get started here: ");
+  let url = '';
+
+  if (platform === 'whatsapp') url = `https://wa.me/?text=${text}${link}`;
+  else if (platform === 'telegram') url = `https://t.me/share/url?url=${link}&text=${text}`;
+  else if (platform === 'twitter') url = `https://twitter.com/intent/tweet?text=${text}&url=${link}`;
+  
+  if (url) window.open(url, '_blank');
+}

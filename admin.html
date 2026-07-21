@@ -1411,6 +1411,29 @@
 
     <!-- 📊 ANALYTICS DASHBOARD PANEL -->
     <div id="analyticsPanel" class="hidden space-y-6">
+      
+      <!-- Platform KPIs -->
+      <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-2">Platform Overview</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="glass-card rounded-2xl p-5 border border-white/10 flex flex-col justify-center items-center">
+          <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 text-center">Total Users</p>
+          <p class="text-2xl font-black text-white" id="statTotalUsers">-</p>
+        </div>
+        <div class="glass-card rounded-2xl p-5 border border-amber-500/20 bg-amber-500/5 flex flex-col justify-center items-center">
+          <p class="text-[10px] font-bold text-amber-400 uppercase tracking-widest mb-1 text-center">VIP Members</p>
+          <p class="text-2xl font-black text-white" id="statVipMembers">-</p>
+        </div>
+        <div class="glass-card rounded-2xl p-5 border border-emerald-500/20 bg-emerald-500/5 flex flex-col justify-center items-center">
+          <p class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-1 text-center">Active Referrals</p>
+          <p class="text-2xl font-black text-white" id="statTotalReferrals">-</p>
+        </div>
+        <div class="glass-card rounded-2xl p-5 border border-violet-500/20 bg-violet-500/5 flex flex-col justify-center items-center">
+          <p class="text-[10px] font-bold text-violet-400 uppercase tracking-widest mb-1 text-center">Signals Sent</p>
+          <p class="text-2xl font-black text-white" id="statSignalsSent">-</p>
+        </div>
+      </div>
+
+      <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-2">Trading Performance</h3>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- Stats Cards -->
         <div class="glass-card rounded-2xl p-6 border border-white/10 flex flex-col justify-center items-center">
