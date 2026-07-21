@@ -1522,7 +1522,13 @@
             </div>
             <div>
               <label class="block text-xs font-bold text-gray-400 mb-1">Cover Image URL (Optional)</label>
-              <input type="text" id="blogCover" class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-white text-sm outline-none focus:border-amber-400" placeholder="https://...">
+              <div class="flex gap-2 items-center">
+                <input type="text" id="blogCover" class="flex-1 bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-white text-sm outline-none focus:border-amber-400" placeholder="https://...">
+                <input type="file" id="blogCoverFile" accept="image/*" class="hidden" onchange="uploadBlogCover()">
+                <button type="button" onclick="document.getElementById('blogCoverFile').click()" id="blogUploadBtn" class="px-4 py-2 rounded-lg font-bold text-sm bg-white/10 hover:bg-white/20 text-white transition cursor-pointer flex items-center gap-2">
+                  <i data-feather="upload" class="w-4 h-4"></i> Upload
+                </button>
+              </div>
             </div>
             <div>
               <label class="block text-xs font-bold text-gray-400 mb-1">Content</label>
@@ -5240,6 +5246,52 @@
       const adminToken = localStorage.getItem('pa_admin_token');
       await fetch(`/api/admin/blog/${id}`, { method: 'DELETE', headers: { 'x-admin-key': adminKey, 'x-admin-token': adminToken } });
       fetchAdminBlogPosts();
+    }
+
+    async function uploadBlogCover() {
+      const fileInput = document.getElementById('blogCoverFile');
+      const btn = document.getElementById('blogUploadBtn');
+      const input = document.getElementById('blogCover');
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
+
+      // UI Loading state
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i data-feather="loader" class="w-4 h-4 animate-spin"></i>';
+      btn.disabled = true;
+
+      try {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = async () => {
+          const imageBase64 = reader.result;
+          const res = await fetch('/api/admin/upload-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey, 'x-admin-token': adminToken },
+            body: JSON.stringify({ imageBase64 })
+          });
+          const data = await res.json();
+          if (data.ok && data.url) {
+            input.value = data.url;
+            if(typeof showToast !== 'undefined') showToast('Image uploaded successfully');
+          } else {
+            alert(data.error || 'Upload failed');
+          }
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+          fileInput.value = ''; // reset
+          if(window.feather) feather.replace();
+        };
+      } catch (err) {
+        alert('Upload failed: ' + err.message);
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        fileInput.value = '';
+        if(window.feather) feather.replace();
+      }
     }
 </script>
 </body>

@@ -1265,5 +1265,35 @@ router.delete('/blog/:id', validateAdminSession, async (req, res) => {
     res.status(500).json({ ok: false, error: err.message });
   }
 });
+// ── Image Uploads (ImgBB proxy) ───────────────────────────────
+router.post('/upload-image', validateAdminSession, async (req, res) => {
+  const { imageBase64 } = req.body;
+  if (!imageBase64) return res.status(400).json({ ok: false, error: 'No image data provided' });
+
+  const apiKey = process.env.IMGBB_API_KEY;
+  if (!apiKey) return res.status(500).json({ ok: false, error: 'IMGBB_API_KEY is not configured on the server.' });
+
+  try {
+    const fetch = require('node-fetch');
+    const FormData = require('form-data');
+    const form = new FormData();
+    // Remove the data URL prefix if present (e.g. data:image/png;base64,)
+    const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+    form.append('image', base64Data);
+
+    const imgbbRes = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+      method: 'POST',
+      body: form
+    });
+    const data = await imgbbRes.json();
+    if (data.success) {
+      return res.json({ ok: true, url: data.data.url });
+    } else {
+      return res.status(400).json({ ok: false, error: data.error?.message || 'ImgBB upload failed' });
+    }
+  } catch (err) {
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
 
 module.exports = router;

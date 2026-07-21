@@ -5,6 +5,7 @@ const FormData = require('form-data');
 const webpush = require('web-push');
 const db = require('../services/db');
 const { validateAdminKey, validateAdminSession } = require('../middleware/auth');
+const { leadCaptureLimiter } = require('../middleware/rateLimiters');
 const { sendLeadMagnetEmail } = require('../services/emailService');
 
 function now() { return new Date().toISOString(); }
@@ -465,7 +466,7 @@ router.post('/tickets/:id/reply', validateUserSession, async (req, res) => {
 
 
 // ── Lead Capture ────────────────────────────────────────────────
-router.post('/subscribe', async (req, res) => {
+router.post('/subscribe', leadCaptureLimiter, async (req, res) => {
   const { email, name, source } = req.body;
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ ok: false, error: 'A valid email is required.' });

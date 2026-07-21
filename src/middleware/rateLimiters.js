@@ -70,11 +70,23 @@ const adminProbeLimiter = rateLimit({
   }
 });
 
+// ── Lead Capture Limiter ───────────────────────────────────────
+// Prevents bots from spamming the lead capture form with fake emails.
+// Limit: 3 lead submissions per IP per 1 hour window.
+const leadCaptureLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 3,
+  message: { ok: false, error: 'Too many submissions from this IP. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
 module.exports = {
   vipAuthLimiter,
   authLimiter,
   adminLoginLimiter,
   twoFASetupLimiter,
   passwordResetLimiter,
-  adminProbeLimiter
+  adminProbeLimiter,
+  leadCaptureLimiter
 };
