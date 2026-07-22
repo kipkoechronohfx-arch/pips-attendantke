@@ -266,7 +266,7 @@ router.get('/system-status', validateAdminSession, async (req, res) => {
 router.get('/users', validateAdminSession, async (req, res) => {
   try {
     const users = await db.getUsers();
-    const safeUsers = users.map(u => ({ id: u._id || u.id, email: u.email, name: u.name, registeredAt: u.registeredAt, subscriptionExpiry: u.subscriptionExpiry, subscriptionTier: u.subscriptionTier || 'Gold' }));
+    const safeUsers = users.map(u => ({ id: u._id || u.id, email: u.email, name: u.name, registeredAt: u.registeredAt, subscriptionExpiry: u.subscriptionExpiry, subscriptionTier: u.subscriptionTier || 'Gold', isTrial: !!u.isTrial }));
     res.json({ ok: true, count: safeUsers.length, users: safeUsers });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });

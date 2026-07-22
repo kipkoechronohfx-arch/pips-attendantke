@@ -4114,7 +4114,9 @@
         const date = u.registeredAt ? new Date(u.registeredAt).toLocaleDateString() : '—';
         const isVip = u.subscriptionExpiry && u.subscriptionExpiry > now;
         const statusSpan = isVip
-          ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/10 border border-amber-400/20 text-amber-400">VIP</span>`
+          ? (u.isTrial 
+              ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/10 border border-blue-500/20 text-blue-400">Trial</span>`
+              : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/10 border border-amber-400/20 text-amber-400">VIP</span>`)
           : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-500/10 border border-gray-500/20 text-gray-400">Free</span>`;
         
         const tier = u.subscriptionTier || 'Gold';
@@ -4169,7 +4171,7 @@
           u.name || '',
           u.email,
           u.registeredAt ? new Date(u.registeredAt).toLocaleDateString() : '',
-          u.subscriptionExpiry && u.subscriptionExpiry > now ? 'VIP' : 'Free',
+          u.subscriptionExpiry && u.subscriptionExpiry > now ? (u.isTrial ? 'Trial VIP' : 'VIP') : 'Free',
           u.subscriptionTier || 'Gold',
           u.subscriptionExpiry ? new Date(u.subscriptionExpiry).toLocaleDateString() : '',
           u.telegramId || ''
