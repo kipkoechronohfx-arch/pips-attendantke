@@ -2098,7 +2098,10 @@ feather.replace();
             }
             
             document.getElementById('vipWelcomeText').textContent = `Welcome, ${data.user.name || 'VIP Member'}!`;
-            
+
+            // Render the 5-day trial countdown banner for trial users
+            if (data.user.isTrial) renderTrialBanner(data.user.subscriptionExpiry);
+
             const refInput = document.getElementById('myReferralLink');
             if (refInput && data.user.referralCode) {
               refInput.value = `${window.location.origin}/premium.html?ref=${data.user.referralCode}`;
@@ -2237,18 +2240,25 @@ feather.replace();
             }
 
           } else {
-            // VIP expired or no VIP
+            // VIP expired or no subscription — auto-logout trial users so they
+            // land cleanly on the payment panel instead of seeing a broken state.
+            if (data.user && data.user.isTrial) {
+              // Clear session and reload so the payment panel + trial-expired
+              // message renders from a clean state.
+              sessionStorage.removeItem('vip_session_token');
+              localStorage.removeItem('vip_session_token');
+              // Set a flag so the payment panel can show the trial-expired banner
+              sessionStorage.setItem('pa_trial_expired', '1');
+              window.location.reload();
+              return;
+            }
             document.getElementById('contentPanel').classList.add('hidden');
             document.getElementById('paymentPanel').style.display = 'block';
-            if (data.user && data.user.isTrial) {
-              const trialMsg = document.getElementById('trialExpiredMessage');
-              if (trialMsg) trialMsg.classList.remove('hidden');
-            }
           }
         } else {
           console.error('[checkUserAccess] Failed:', data);
           document.getElementById('authError').textContent = 'Session error: ' + (data.error || 'Unknown');
-          // logout(); // Disabled temporarily to prevent instant reload
+          logout(); // Clear invalid/expired session token
         }
       } catch (e) {
         // Fallback or offline, just stay where we are or logout
@@ -2262,9 +2272,109 @@ feather.replace();
       window.location.reload();
     }
 
+    // ── Trial Countdown Banner ─────────────────────────────────────────────────
+    // Renders a colour-coded banner showing how many days remain on the free trial.
+    // Green  → 3+ days left   (plenty of time)
+    // Amber  → 1-2 days left  (gentle urgency)
+    // Red    → last day       (critical urgency, content blurred as warning)
+    function renderTrialBanner(subscriptionExpiry) {
+      const banner  = document.getElementById('trialCountdownBanner');
+      const inner   = document.getElementById('trialCountdownInner');
+      const glow    = document.getElementById('trialCountdownGlow');
+      const icon    = document.getElementById('trialCountdownIcon');
+      const title   = document.getElementById('trialCountdownTitle');
+      const text    = document.getElementById('trialCountdownText');
+      const btn     = document.getElementById('trialUpgradeBtn');
+      if (!banner || !subscriptionExpiry) return;
+
+      const msLeft   = subscriptionExpiry - Date.now();
+      const hoursLeft = Math.max(0, msLeft / (1000 * 60 * 60));
+      const daysLeft  = Math.ceil(hoursLeft / 24);
+
+      // Pick colour theme based on urgency
+      let theme;
+      if (daysLeft >= 3) {
+        // Green — plenty of time
+        theme = {
+          border:    'border-emerald-500/40',
+          bg:        'bg-emerald-500/10',
+          glow:      'radial-gradient(ellipse at left, rgba(16,185,129,0.10) 0%, transparent 70%)',
+          iconBg:    'bg-emerald-500/20 border-emerald-500/40 text-emerald-400',
+          titleCls:  'text-emerald-300',
+          textCls:   'text-emerald-400/80',
+          btnCls:    'bg-emerald-500/20 border-emerald-400/30 text-emerald-300 hover:bg-emerald-500 hover:text-white',
+          emoji:     '🟢',
+        };
+      } else if (daysLeft >= 2) {
+        // Amber — 2 days left
+        theme = {
+          border:    'border-amber-400/40',
+          bg:        'bg-amber-400/10',
+          glow:      'radial-gradient(ellipse at left, rgba(251,191,36,0.10) 0%, transparent 70%)',
+          iconBg:    'bg-amber-400/20 border-amber-400/40 text-amber-400',
+          titleCls:  'text-amber-300',
+          textCls:   'text-amber-400/80',
+          btnCls:    'bg-amber-500/20 border-amber-400/30 text-amber-300 hover:bg-amber-500 hover:text-black',
+          emoji:     '⚠️',
+        };
+      } else {
+        // Red — last day (also blur content as a final warning)
+        theme = {
+          border:    'border-rose-500/40',
+          bg:        'bg-rose-500/10',
+          glow:      'radial-gradient(ellipse at left, rgba(239,68,68,0.10) 0%, transparent 70%)',
+          iconBg:    'bg-rose-500/20 border-rose-500/40 text-rose-400',
+          titleCls:  'text-rose-300',
+          textCls:   'text-rose-400/80',
+          btnCls:    'bg-rose-500/20 border-rose-400/30 text-rose-300 hover:bg-rose-500 hover:text-white',
+          emoji:     '🔴',
+        };
+        // Blur VIP main content on the final day as a strong visual prompt to upgrade
+        const mainContent = document.getElementById('vipMainContent');
+        if (mainContent && !mainContent.classList.contains('blur-md')) {
+          mainContent.classList.add('blur-sm', 'pointer-events-none', 'select-none', 'opacity-70');
+        }
+      }
+
+      // Apply theme
+      inner.className = `flex items-start gap-4 p-4 rounded-2xl border relative overflow-hidden ${theme.border} ${theme.bg}`;
+      glow.style.background  = theme.glow;
+      icon.className  = `w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 relative z-10 border ${theme.iconBg}`;
+      title.className = `font-bold text-sm ${theme.titleCls}`;
+      text.className  = `text-xs mt-0.5 ${theme.textCls}`;
+      btn.className   = `inline-flex items-center gap-1.5 mt-2 px-4 py-1.5 rounded-xl text-xs font-bold border transition cursor-pointer ${theme.btnCls}`;
+
+      // Set text content
+      const dayWord = daysLeft === 1 ? 'day' : 'days';
+      title.textContent = `${theme.emoji} Free Trial — ${daysLeft} ${dayWord} left`;
+      if (daysLeft >= 2) {
+        text.textContent = `Your free 5-day Platinum trial expires in ${daysLeft} ${dayWord}. Upgrade to keep full access.`;
+      } else {
+        text.textContent = `⚡ Trial expires today! Upgrade now to avoid losing access to all VIP signals and content.`;
+      }
+
+      // Show the banner
+      banner.classList.remove('hidden');
+      feather.replace();
+    }
+
+    // ── Trial Expired Flag (set by auto-logout on expiry) ─────────────────────
+    // When a trial user's subscription expires, we clear their token and set this
+    // flag before reloading. On the next load (unauthenticated), we pick it up here
+    // and reveal the trialExpiredMessage on the payment panel.
+    (function checkTrialExpiredFlag() {
+      if (sessionStorage.getItem('pa_trial_expired') === '1') {
+        sessionStorage.removeItem('pa_trial_expired');
+        // Payment panel is shown by default when there's no token; just surface the message
+        const trialMsg = document.getElementById('trialExpiredMessage');
+        if (trialMsg) trialMsg.classList.remove('hidden');
+      }
+    })();
+
     function lockVIP() {
       logout();
     }
+
 
     let pollingInterval;
     let countdownInterval;

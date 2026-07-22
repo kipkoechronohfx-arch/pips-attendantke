@@ -1488,6 +1488,27 @@
         </div>
       </div>
 
+      <!-- TRIAL COUNTDOWN BANNER (shown to isTrial users while subscription is active) -->
+      <div id="trialCountdownBanner" class="hidden mb-6">
+        <div id="trialCountdownInner" class="flex items-start gap-4 p-4 rounded-2xl border relative overflow-hidden">
+          <div class="absolute inset-0 pointer-events-none" id="trialCountdownGlow"></div>
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 relative z-10 border" id="trialCountdownIcon">
+            <i data-feather="clock" class="w-4 h-4"></i>
+          </div>
+          <div class="relative z-10 flex-1 min-w-0">
+            <p class="font-bold text-sm" id="trialCountdownTitle">⏳ Free Trial Active</p>
+            <p class="text-xs mt-0.5" id="trialCountdownText">Your 5-day free Platinum trial is running.</p>
+            <a href="#" onclick="document.getElementById('paymentPanel').style.display='block'; document.getElementById('contentPanel').classList.add('hidden'); return false;"
+               class="inline-flex items-center gap-1.5 mt-2 px-4 py-1.5 rounded-xl text-xs font-bold border transition cursor-pointer" id="trialUpgradeBtn">
+              <i data-feather="zap" class="w-3.5 h-3.5"></i> Upgrade to Full VIP
+            </a>
+          </div>
+          <button onclick="document.getElementById('trialCountdownBanner').classList.add('hidden')" class="relative z-10 text-gray-500 hover:text-white transition flex-shrink-0 cursor-pointer" title="Dismiss">
+            <i data-feather="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
       <!-- ⏱ Live Signal Countdown Timer -->
       <div id="countdownSection" class="mb-6 hidden">
         <div class="glass-card border border-gold/30 rounded-2xl p-5 relative overflow-hidden">
