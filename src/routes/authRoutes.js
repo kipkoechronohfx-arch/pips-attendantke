@@ -422,6 +422,7 @@ router.post('/redeem-code', validateUserSession, async (req, res) => {
   const tierToSet = planInfo.tier;
 
   user.subscriptionExpiry += daysToAdd * 24 * 60 * 60 * 1000;
+  user.isTrial = false;
 
   // Set the correct tier (never downgrade Platinum to Gold)
   if (tierToSet === 'Platinum' || user.subscriptionTier !== 'Platinum') {
