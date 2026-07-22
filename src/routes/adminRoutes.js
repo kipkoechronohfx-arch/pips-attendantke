@@ -506,7 +506,7 @@ router.post('/approve-crypto-request', validateAdminSession, async (req, res) =>
     if (targetEmail) {
       try {
         const plan = found.plan || '1month';
-        const usdtMap = { '1month': 50, '2months': 95, '3months': 140, '6months': 250 };
+        const usdtMap = { '1month': 50, '2months': 95, '3months': 140, '6months': 250, '1month_platinum': 90, '3months_platinum': 240, 'lifetime_platinum': 499 };
         const amount = usdtMap[plan] || 50;
         const expiryDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toDateString();
         const receiptHtml = buildReceiptHtml({
@@ -791,7 +791,7 @@ router.get('/analytics', validateAdminSession, async (req, res) => {
     });
 
     cryptoPayments.filter(p => p.status === 'Approved').forEach(p => {
-      const usdtMap = { '1month': 50, '2months': 95, '3months': 140, '6months': 250 };
+      const usdtMap = { '1month': 50, '2months': 95, '3months': 140, '6months': 250, '1month_platinum': 90, '3months_platinum': 240, 'lifetime_platinum': 499 };
       const amount = usdtMap[p.plan] || 50;
       totalUSDT += amount;
       if (p.plan === '1month') mrrUSDT += amount;
@@ -897,7 +897,7 @@ router.get('/payments/export', validateAdminSession, async (req, res) => {
     });
 
     cryptoPayments.forEach(p => {
-      const usdtMap = { '1month': 50, '2months': 95, '3months': 140, '6months': 250 };
+      const usdtMap = { '1month': 50, '2months': 95, '3months': 140, '6months': 250, '1month_platinum': 90, '3months_platinum': 240, 'lifetime_platinum': 499 };
       rows.push([
         p.id || p._id || '',
         p.timestamp || '',

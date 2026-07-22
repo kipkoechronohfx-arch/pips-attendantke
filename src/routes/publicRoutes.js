@@ -11,9 +11,13 @@ const { sendLeadMagnetEmail } = require('../services/emailService');
 function now() { return new Date().toISOString(); }
 
 const PLANS = {
-  '1month':  { days: 30,  kesPrice: 5000,  usdtPrice: 50  },
-  '2months': { days: 60,  kesPrice: 9500,  usdtPrice: 95  },
-  '3months': { days: 90,  kesPrice: 14000, usdtPrice: 140 }
+  '1month':           { days: 30,  kesPrice: 5000,  usdtPrice: 50,  tier: 'Gold' },
+  '2months':          { days: 60,  kesPrice: 9500,  usdtPrice: 95,  tier: 'Gold' },
+  '3months':          { days: 90,  kesPrice: 14000, usdtPrice: 140, tier: 'Gold' },
+  '6months':          { days: 180, kesPrice: 25000, usdtPrice: 250, tier: 'Gold' },
+  '1month_platinum':  { days: 30,  kesPrice: 9500,  usdtPrice: 90,  tier: 'Platinum' },
+  '3months_platinum': { days: 90,  kesPrice: 25000, usdtPrice: 240, tier: 'Platinum' },
+  'lifetime_platinum':{ days: 36500, kesPrice: 65000, usdtPrice: 499, tier: 'Platinum' }
 };
 
 if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {

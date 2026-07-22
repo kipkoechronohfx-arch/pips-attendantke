@@ -1206,51 +1206,89 @@ feather.replace();
     let selectedCryptoPlan = '1month';
     let authMode = 'login';
 
-    const PLAN_KES  = { '1month': 5000, '2months': 9500, '3months': 14000, '6months': 25000 };
-    const PLAN_USDT = { '1month': 50,   '2months': 95,   '3months': 140,   '6months': 250   };
-    const PLAN_DAYS = { '1month': 30,   '2months': 60,   '3months': 90,    '6months': 180   };
+    const PLAN_KES  = { '1month': 5000, '2months': 9500, '3months': 14000, '6months': 25000, '1month_platinum': 9500, '3months_platinum': 25000, 'lifetime_platinum': 65000 };
+    const PLAN_USDT = { '1month': 50,   '2months': 95,   '3months': 140,   '6months': 250,   '1month_platinum': 90,   '3months_platinum': 240,   'lifetime_platinum': 499 };
+    const PLAN_DAYS = { '1month': 30,   '2months': 60,   '3months': 90,    '6months': 180,   '1month_platinum': 30,   '3months_platinum': 90,    'lifetime_platinum': 36500 };
+    const ALL_PLANS = ['1month', '2months', '3months', '6months', '1month_platinum', '3months_platinum', 'lifetime_platinum'];
 
     function selectMpesaPlan(plan) {
       selectedMpesaPlan = plan;
-      ['1month','2months','3months','6months'].forEach(p => {
+      ALL_PLANS.forEach(p => {
         const btn = document.getElementById(`mp-${p}`);
         if (!btn) return;
-        if (p === plan) {
-          btn.className = 'plan-btn-mpesa flex flex-col items-center py-3 px-1 rounded-xl border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 cursor-pointer transition text-center relative overflow-hidden';
-          if(p === '6months') btn.innerHTML += '<div class="absolute top-0 right-0 bg-emerald-500 text-black text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg">POPULAR</div>';
+        const isPlat = p.includes('platinum');
+        const isActive = (p === plan);
+        
+        btn.classList.remove(
+          'border-emerald-500/50', 'bg-emerald-500/10', 'text-emerald-400',
+          'border-violet-500/50', 'bg-violet-500/10', 'text-violet-300',
+          'border-white/10', 'bg-white/5', 'text-gray-400',
+          'hover:border-emerald-500/30', 'hover:border-violet-500/30'
+        );
+
+        if (isActive) {
+          if (isPlat) btn.classList.add('border-violet-500/50', 'bg-violet-500/10', 'text-violet-300');
+          else btn.classList.add('border-emerald-500/50', 'bg-emerald-500/10', 'text-emerald-400');
+          
+          const badge = btn.querySelector('.absolute');
+          if (badge) {
+            if (p === '6months') badge.className = 'absolute top-0 right-0 bg-emerald-500 text-black text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg';
+            if (p === '3months_platinum') badge.className = 'absolute top-0 right-0 bg-violet-500 text-white text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg';
+          }
         } else {
-          btn.className = 'plan-btn-mpesa flex flex-col items-center py-3 px-1 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:border-emerald-500/30 cursor-pointer transition text-center relative overflow-hidden';
-          if(p === '6months') btn.innerHTML += '<div class="absolute top-0 right-0 bg-emerald-500/50 text-white text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg">POPULAR</div>';
-        }
-        // Remove duplicate popular badges injected by the if-else loop
-        const badges = btn.querySelectorAll('div');
-        if (badges.length > 1) {
-          for (let i = 1; i < badges.length; i++) badges[i].remove();
+          btn.classList.add('border-white/10', 'bg-white/5', 'text-gray-400');
+          if (isPlat) btn.classList.add('hover:border-violet-500/30');
+          else btn.classList.add('hover:border-emerald-500/30');
+          
+          const badge = btn.querySelector('.absolute');
+          if (badge) {
+            if (p === '6months') badge.className = 'absolute top-0 right-0 bg-emerald-500/50 text-white text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg';
+            if (p === '3months_platinum') badge.className = 'absolute top-0 right-0 bg-violet-500/50 text-white text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg';
+          }
         }
       });
-      const kes = PLAN_KES[plan];
+      const kes = PLAN_KES[plan] || 5000;
       const btn = document.getElementById('payBtn');
       if (btn) btn.textContent = `Pay KES ${kes.toLocaleString()} via M-Pesa 💸`;
     }
 
     function selectCryptoPlan(plan) {
       selectedCryptoPlan = plan;
-      ['1month','2months','3months','6months'].forEach(p => {
+      ALL_PLANS.forEach(p => {
         const btn = document.getElementById(`cp-${p}`);
         if (!btn) return;
-        if (p === plan) {
-          btn.className = 'plan-btn-crypto flex flex-col items-center py-2.5 px-1 rounded-xl border border-gold/50 bg-gold/10 text-gold cursor-pointer transition text-center relative overflow-hidden';
-          if(p === '6months') btn.innerHTML += '<div class="absolute top-0 right-0 bg-gold text-black text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg">POPULAR</div>';
+        const isPlat = p.includes('platinum');
+        const isActive = (p === plan);
+        
+        btn.classList.remove(
+          'border-gold/50', 'bg-gold/10', 'text-gold',
+          'border-violet-500/50', 'bg-violet-500/10', 'text-violet-300',
+          'border-white/10', 'bg-white/5', 'text-gray-400',
+          'hover:border-gold/30', 'hover:border-violet-500/30'
+        );
+
+        if (isActive) {
+          if (isPlat) btn.classList.add('border-violet-500/50', 'bg-violet-500/10', 'text-violet-300');
+          else btn.classList.add('border-gold/50', 'bg-gold/10', 'text-gold');
+          
+          const badge = btn.querySelector('.absolute');
+          if (badge) {
+            if (p === '6months') badge.className = 'absolute top-0 right-0 bg-gold text-black text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg';
+            if (p === '3months_platinum') badge.className = 'absolute top-0 right-0 bg-violet-500 text-white text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg';
+          }
         } else {
-          btn.className = 'plan-btn-crypto flex flex-col items-center py-2.5 px-1 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:border-gold/30 cursor-pointer transition text-center relative overflow-hidden';
-          if(p === '6months') btn.innerHTML += '<div class="absolute top-0 right-0 bg-gold/50 text-white text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg">POPULAR</div>';
-        }
-        const badges = btn.querySelectorAll('div');
-        if (badges.length > 1) {
-          for (let i = 1; i < badges.length; i++) badges[i].remove();
+          btn.classList.add('border-white/10', 'bg-white/5', 'text-gray-400');
+          if (isPlat) btn.classList.add('hover:border-violet-500/30');
+          else btn.classList.add('hover:border-gold/30');
+          
+          const badge = btn.querySelector('.absolute');
+          if (badge) {
+            if (p === '6months') badge.className = 'absolute top-0 right-0 bg-gold/50 text-white text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg';
+            if (p === '3months_platinum') badge.className = 'absolute top-0 right-0 bg-violet-500/50 text-white text-[7px] font-bold px-1.5 py-0.5 rounded-bl-lg';
+          }
         }
       });
-      const usdt = PLAN_USDT[plan];
+      const usdt = PLAN_USDT[plan] || 50;
       const priceEl = document.getElementById('cryptoPriceDisplay');
       if (priceEl) priceEl.textContent = `$${usdt}`;
     }
