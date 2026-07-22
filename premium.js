@@ -50,6 +50,15 @@ feather.replace();
 
     let TELEGRAM_BOT_USERNAME = 'PipsAttendantBot';
 
+    function escapeHTML(str) {
+      if (typeof str !== 'string') return str;
+      return str.replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+    }
+
     function showMyAccountModal() {
       const modal = document.getElementById('myAccountModal');
       modal.classList.remove('hidden');
@@ -318,10 +327,10 @@ feather.replace();
           return `
             <div class="rounded-xl border border-white/10 bg-white/5 p-3">
               <div class="flex items-center justify-between gap-2 mb-1">
-                <p class="text-white text-xs font-semibold truncate flex-1">${t.subject}</p>
+                <p class="text-white text-xs font-semibold truncate flex-1">${escapeHTML(t.subject)}</p>
                 <span class="shrink-0 text-[9px] font-bold ${statusColor}">${t.status}</span>
               </div>
-              ${lastMsg ? `<p class="text-gray-400 text-[10px] italic truncate">${lastMsg.sender}: ${lastMsg.text}</p>` : ''}
+              ${lastMsg ? `<p class="text-gray-400 text-[10px] italic truncate">${escapeHTML(lastMsg.sender)}: ${escapeHTML(lastMsg.text)}</p>` : ''}
             </div>
           `;
         }).join('');
@@ -452,12 +461,12 @@ feather.replace();
               <div class="flex items-center gap-3 p-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 transition group">
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2">
-                    <span class="text-white font-bold text-xs">${j.asset}</span>
+                    <span class="text-white font-bold text-xs">${escapeHTML(j.asset)}</span>
                     <span class="text-[9px] font-bold ${typeColor} px-1.5 py-0.5 rounded border border-current/20 bg-current/10">${j.type.toUpperCase()}</span>
-                    ${j.strategy ? `<span class="text-[9px] font-bold text-violet-400 px-1.5 py-0.5 rounded border border-violet-400/30 bg-violet-400/10">${j.strategy.toUpperCase()}</span>` : ''}
+                    ${j.strategy ? `<span class="text-[9px] font-bold text-violet-400 px-1.5 py-0.5 rounded border border-violet-400/30 bg-violet-400/10">${escapeHTML(j.strategy).toUpperCase()}</span>` : ''}
                     <span class="text-[9px] text-gray-500 ml-auto">${date}</span>
                   </div>
-                  ${j.notes || j.pl !== undefined ? `<p class="text-gray-500 text-[10px] truncate mt-0.5 italic">${j.notes || (j.entry ? `Entry: ${j.entry} → Exit: ${j.exit}` : '')}</p>` : ''}
+                  ${j.notes || j.pl !== undefined ? `<p class="text-gray-500 text-[10px] truncate mt-0.5 italic">${escapeHTML(j.notes) || (j.entry ? `Entry: ${escapeHTML(j.entry)} → Exit: ${escapeHTML(j.exit)}` : '')}</p>` : ''}
                   <div class="flex items-center gap-3 mt-1">
                     ${j.tvLink ? `<a href="${j.tvLink}" target="_blank" class="inline-flex items-center gap-1 text-[10px] text-sky-400 hover:text-sky-300"><i data-feather="external-link" class="w-3 h-3"></i> TradingView</a>` : ''}
                     ${j.image ? `<a href="${j.image}" target="_blank" class="inline-flex items-center gap-1 text-[10px] text-emerald-400 hover:text-emerald-300"><i data-feather="image" class="w-3 h-3"></i> View Image</a>` : ''}
@@ -2642,21 +2651,21 @@ feather.replace();
 
               let imageHtml = '';
               if (msg.image) {
-                imageHtml = `<div class="mt-2 mb-1 cursor-pointer hover:opacity-90 transition" onclick="window.open('${msg.image}', '_blank')">
-                               <img src="${msg.image}" class="max-h-48 rounded-lg border border-white/10 shadow-md object-cover" />
+                imageHtml = `<div class="mt-2 mb-1 cursor-pointer hover:opacity-90 transition" onclick="window.open('${escapeHTML(msg.image)}', '_blank')">
+                               <img src="${escapeHTML(msg.image)}" class="max-h-48 rounded-lg border border-white/10 shadow-md object-cover" />
                              </div>`;
               }
               
               let textHtml = '';
               if (msg.text) {
-                textHtml = msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                textHtml = escapeHTML(msg.text);
               }
 
               return `
                 <div class="flex flex-col ${isSelf ? 'items-end' : 'items-start'} w-full mt-2">
                   <div class="flex items-center gap-1.5 mb-1 ${isSelf ? 'flex-row-reverse' : ''}">
                     ${avatarHtml}
-                    <span class="text-[10px] text-gray-500">${msg.author} • ${timeStr}</span>
+                    <span class="text-[10px] text-gray-500">${escapeHTML(msg.author)} • ${timeStr}</span>
                   </div>
                   <div class="max-w-[80%] rounded-2xl px-4 py-2 text-sm ${isSelf ? 'bg-gold-hover/20 border border-gold-hover/30 text-amber-50 rounded-tr-sm' : 'bg-white/10 border border-white/5 text-gray-200 rounded-tl-sm'}">
                     ${imageHtml}
