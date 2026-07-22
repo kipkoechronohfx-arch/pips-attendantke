@@ -469,9 +469,7 @@ router.post('/approve-crypto-request', validateAdminSession, async (req, res) =>
         const currentExpiry = user.subscriptionExpiry && user.subscriptionExpiry > Date.now() ? user.subscriptionExpiry : Date.now();
         user.subscriptionExpiry = currentExpiry + days * 24 * 60 * 60 * 1000;
         user.isTrial = false; // Clear trial flag upon crypto approval
-        if (tier === 'Platinum' || user.subscriptionTier !== 'Platinum') {
-          user.subscriptionTier = tier;
-        }
+        user.subscriptionTier = tier;
         await db.saveUser(user);
         
         // ── Referral Program: Credit Referrer 5 Days ────────────

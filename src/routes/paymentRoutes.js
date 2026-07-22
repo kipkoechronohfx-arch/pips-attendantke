@@ -142,10 +142,7 @@ router.post('/payhero-webhook', async (req, res) => {
               user.subscriptionExpiry = currentExpiry + days * 24 * 60 * 60 * 1000;
               user.isTrial = false; // Clear trial flag upon payment
 
-              // Preserve Platinum if already set
-              if (tier === 'Platinum' || user.subscriptionTier !== 'Platinum') {
-                user.subscriptionTier = tier;
-              }
+              user.subscriptionTier = tier;
               await db.saveUser(user);
 
               payment.processedForUser = true;
@@ -237,10 +234,7 @@ router.get('/check-payment/:ref', validateUserSession, async (req, res) => {
         user.subscriptionExpiry = currentExpiry + days * 24 * 60 * 60 * 1000;
         user.isTrial = false; // Clear trial flag upon payment
         
-        // Upgrade tier: once Platinum, always keep Platinum unless plan changes back to Gold
-        if (tier === 'Platinum' || user.subscriptionTier !== 'Platinum') {
-          user.subscriptionTier = tier;
-        }
+        user.subscriptionTier = tier;
         await db.saveUser(user);
         
         payment.processedForUser = true;

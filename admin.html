@@ -2255,6 +2255,14 @@
 
     <!-- Custom Scripts for Admin Operations -->
   <script>
+    function escapeHTML(str) {
+      if (typeof str !== 'string') return str;
+      return str.replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+    }
     // Global fetch interceptor to handle 401 Unauthorized errors
     const originalFetch = window.fetch;
     let isLoggingOut = false;
@@ -3856,8 +3864,8 @@
           return `<tr class="border-b border-white/5 hover:bg-white/3 transition">
             <td class="py-3 px-4 text-gray-400 font-mono text-[10px] whitespace-nowrap">${date}</td>
             <td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/10 border border-amber-400/20 text-amber-400">${req.network || 'TRC20'}</span></td>
-            <td class="py-3 px-4 font-mono text-[10px] text-gray-300" title="${req.txHash}">${shortTx}</td>
-            <td class="py-3 px-4 text-sky-400 text-[10px]">${req.contactInfo || '—'}</td>
+            <td class="py-3 px-4 font-mono text-[10px] text-gray-300" title="${escapeHTML(req.txHash)}">${escapeHTML(shortTx)}</td>
+            <td class="py-3 px-4 text-sky-400 text-[10px]">${escapeHTML(req.contactInfo || '—')}</td>
             <td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${statusColor}">${req.status}</span></td>
             <td class="py-3 px-4 font-mono text-amber-400 text-[10px] font-bold">${req.accessCode || '—'}</td>
             <td class="py-3 px-4">${actionBtns}</td>
@@ -4129,8 +4137,8 @@
         ` : `<span class="text-gray-600 text-[10px] block text-center">—</span>`;
 
         return `<tr class="border-b border-white/5 hover:bg-white/3 transition">
-          <td class="py-3 px-3 text-white text-xs">${u.name || '—'}</td>
-          <td class="py-3 px-3 text-gray-400 text-xs">${u.email}</td>
+          <td class="py-3 px-3 text-white text-xs">${escapeHTML(u.name) || '—'}</td>
+          <td class="py-3 px-3 text-gray-400 text-xs">${escapeHTML(u.email)}</td>
           <td class="py-3 px-3 text-gray-500 font-mono text-[10px]">${date}</td>
           <td class="py-3 px-3">${tierUI}</td>
           <td class="py-3 px-3 text-right">${statusSpan}</td>

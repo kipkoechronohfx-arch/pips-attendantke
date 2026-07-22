@@ -423,12 +423,8 @@ router.post('/redeem-code', validateUserSession, async (req, res) => {
 
   user.subscriptionExpiry += daysToAdd * 24 * 60 * 60 * 1000;
   user.isTrial = false;
+  user.subscriptionTier = tierToSet;
 
-  // Set the correct tier (never downgrade Platinum to Gold)
-  if (tierToSet === 'Platinum' || user.subscriptionTier !== 'Platinum') {
-    user.subscriptionTier = tierToSet;
-  }
-  
   // Mark code as used
   payment.usedBy = user._id || user.id;
   payment.usedAt = now;
