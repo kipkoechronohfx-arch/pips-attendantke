@@ -2060,7 +2060,9 @@ feather.replace();
             if (!data.user.telegramId) {
               // 12-hour grace period for new members
               const GRACE_HOURS = 12;
-              const createdAt = data.user.createdAt ? new Date(data.user.createdAt).getTime() : Date.now();
+              // Use epoch 0 for legacy accounts without a createdAt so they are
+              // always past the grace period and must link immediately.
+              const createdAt = data.user.createdAt ? new Date(data.user.createdAt).getTime() : 0;
               const hoursSinceCreation = (Date.now() - createdAt) / (1000 * 60 * 60);
 
               // Build Telegram link for all buttons

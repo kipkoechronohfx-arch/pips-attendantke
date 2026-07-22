@@ -3,7 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const db = require('../services/db');
-const { validateVipSession, JWT_SECRET } = require('../middleware/auth');
+const { validateVipSession, requireTelegramLinked, JWT_SECRET } = require('../middleware/auth');
 const { vipAuthLimiter } = require('../middleware/rateLimiters');
 
 router.post('/verify-vip', vipAuthLimiter, async (req, res) => {
@@ -52,7 +52,7 @@ router.post('/verify-access-code', vipAuthLimiter, async (req, res) => {
   res.json({ ok: true, sessionToken });
 });
 
-router.get('/chat/messages', validateVipSession, async (req, res) => {
+router.get('/chat/messages', validateVipSession, requireTelegramLinked, async (req, res) => {
   try {
     const msgs = await db.getChatMessages();
     res.json({ ok: true, messages: msgs });
@@ -61,7 +61,7 @@ router.get('/chat/messages', validateVipSession, async (req, res) => {
   }
 });
 
-router.post('/chat/message', validateVipSession, async (req, res) => {
+router.post('/chat/message', validateVipSession, requireTelegramLinked, async (req, res) => {
   const { author, text } = req.body;
   if (!text) return res.status(400).json({ ok: false, error: 'Message required' });
   try {
@@ -72,7 +72,7 @@ router.post('/chat/message', validateVipSession, async (req, res) => {
   }
 });
 
-router.get('/todays-setup', validateVipSession, async (req, res) => {
+router.get('/todays-setup', validateVipSession, requireTelegramLinked, async (req, res) => {
   try {
     const setup = await db.getTodaysSetup();
     res.json({ ok: true, setup });
@@ -81,7 +81,7 @@ router.get('/todays-setup', validateVipSession, async (req, res) => {
   }
 });
 
-router.get('/todays-setup-results', validateVipSession, async (req, res) => {
+router.get('/todays-setup-results', validateVipSession, requireTelegramLinked, async (req, res) => {
   try {
     const setup = await db.getTodaysSetupResults();
     res.json({ ok: true, setup });
@@ -127,7 +127,7 @@ router.get('/download-vip', async (req, res) => {
   }
 });
 // --- Trade Journal Endpoints ---
-router.get('/journal', validateVipSession, async (req, res) => {
+router.get('/journal', validateVipSession, requireTelegramLinked, async (req, res) => {
   try {
     const userId = req.user.email || req.user.id;
     const entries = await db.getJournalEntries(userId);
@@ -137,7 +137,7 @@ router.get('/journal', validateVipSession, async (req, res) => {
   }
 });
 
-router.post('/journal', validateVipSession, async (req, res) => {
+router.post('/journal', validateVipSession, requireTelegramLinked, async (req, res) => {
   try {
     const userId = req.user.email || req.user.id;
     const { asset, type, entry, exit, pl, strategy, tvLink, date, notes, image } = req.body;
@@ -165,7 +165,7 @@ router.post('/journal', validateVipSession, async (req, res) => {
   }
 });
 
-router.delete('/journal/:id', validateVipSession, async (req, res) => {
+router.delete('/journal/:id', validateVipSession, requireTelegramLinked, async (req, res) => {
   try {
     const userId = req.user.email || req.user.id;
     const deleted = await db.deleteJournalEntry(req.params.id, userId);
@@ -176,7 +176,7 @@ router.delete('/journal/:id', validateVipSession, async (req, res) => {
   }
 });
 
-router.get('/journal/leaderboard', validateVipSession, async (req, res) => {
+router.get('/journal/leaderboard', validateVipSession, requireTelegramLinked, async (req, res) => {
   try {
     // For simplicity, just return a dummy leaderboard or fetch from db if implemented
     const allUsers = await db.getUsers();

@@ -82,11 +82,50 @@ async function validateVipSession(req, res, next) {
   });
 }
 
+// ── Telegram Link Enforcement ───────────────────────────────────
+// Enforces the 12-hour grace period server-side.
+// Must be used AFTER validateVipSession so req.user is populated.
+// Users who joined within the grace window still have access (soft warning only).
+// After 12 hours without linking, all VIP content API calls are blocked.
+const TELEGRAM_GRACE_MS = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
+
+function requireTelegramLinked(req, res, next) {
+  const user = req.user;
+
+  // If already linked, allow through
+  if (user && user.telegramId) {
+    return next();
+  }
+
+  // Determine account creation time.
+  // registeredAt takes priority; fall back to createdAt.
+  // If neither is recorded (legacy accounts), use epoch 0 so elapsed >> grace period
+  // and they are required to link immediately.
+  const createdAtRaw = user && (user.registeredAt || user.createdAt);
+  const createdAt = createdAtRaw ? new Date(createdAtRaw).getTime() : 0;
+  const elapsed = Date.now() - createdAt;
+
+  if (elapsed < TELEGRAM_GRACE_MS) {
+    // Within grace period — allow access (client shows soft warning)
+    return next();
+  }
+
+  // Grace period expired and Telegram is not linked — block the request
+  const hoursElapsed = Math.floor(elapsed / (1000 * 60 * 60));
+  return res.status(403).json({
+    ok: false,
+    error: 'Telegram account not linked.',
+    code: 'TELEGRAM_NOT_LINKED',
+    message: `You must link your Telegram account to access VIP content. Your 12-hour grace period ended ${hoursElapsed}h ago.`
+  });
+}
+
 module.exports = {
   JWT_SECRET,
   ADMIN_KEY,
   validateAdminKey,
   validateAdminSession,
   validateUserSession,
-  validateVipSession
+  validateVipSession,
+  requireTelegramLinked
 };
