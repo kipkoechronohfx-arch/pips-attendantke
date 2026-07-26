@@ -181,7 +181,7 @@ router.post('/payhero-webhook', async (req, res) => {
                 }
               }
 
-              // Send receipt email
+              // ── Polish: Auto-Receipt Emailing ──
               if (user.email) {
                 try {
                   const plan = payment.plan || '1month';

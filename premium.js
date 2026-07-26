@@ -1506,19 +1506,41 @@ feather.replace();
 
     // ── Show "Success" panel after payment ──────────────
     function showSuccessPanel() {
-      document.getElementById('paymentPanel').style.display = 'none';
-      document.getElementById('saveCodePanel').classList.remove('hidden');
+      fadeTransition(document.getElementById('paymentPanel'), document.getElementById('saveCodePanel'));
       feather.replace();
+    }
+
+    // ── Fade Transition Helper ──────────────
+    function fadeTransition(hideEl, showEl) {
+      if (hideEl) {
+        hideEl.classList.add('opacity-0');
+        setTimeout(() => {
+          hideEl.style.display = 'none';
+          hideEl.classList.remove('opacity-0');
+          if (showEl) {
+            showEl.classList.add('opacity-0');
+            showEl.style.display = 'block';
+            showEl.classList.remove('hidden');
+            setTimeout(() => {
+              showEl.classList.remove('opacity-0');
+            }, 50);
+          }
+        }, 300);
+      } else if (showEl) {
+        showEl.classList.add('opacity-0');
+        showEl.style.display = 'block';
+        showEl.classList.remove('hidden');
+        setTimeout(() => {
+          showEl.classList.remove('opacity-0');
+        }, 50);
+      }
     }
 
     // ── Show Upgrade Panel (for trial users) ─────────────
     function showUpgradePanel() {
-      document.getElementById('contentPanel').classList.add('hidden');
+      fadeTransition(document.getElementById('contentPanel'), document.getElementById('paymentPanel'));
       const trialBanner = document.getElementById('trialCountdownBanner');
       if (trialBanner) trialBanner.classList.add('hidden');
-      
-      document.getElementById('paymentPanel').style.display = 'block';
-      
       const trialMsg = document.getElementById('trialExpiredMessage');
       if (trialMsg) trialMsg.classList.add('hidden');
     }
@@ -1526,8 +1548,7 @@ feather.replace();
 
     // ── Transition from Success panel → VIP Content ─────────
     function enterVIPFromSavePanel() {
-      document.getElementById('saveCodePanel').classList.add('hidden');
-      document.getElementById('contentPanel').classList.remove('hidden');
+      fadeTransition(document.getElementById('saveCodePanel'), document.getElementById('contentPanel'));
       updateDownloadLinks();
       loadTodaysSetup();
       loadTodaysSetupResults();
@@ -1639,9 +1660,12 @@ feather.replace();
       // M-Pesa STK prompts expire in ~75s — poll for max 90s (30 × 3s)
       pollInterval = setInterval(async () => {
         if (++attempts > 30) {
-          stopPolling(false);
-          errorEl.className = 'text-rose-400 text-xs min-h-[16px]';
-          errorEl.textContent = '❌ Payment timed out. Please try again.';
+          clearInterval(pollInterval);
+          btn.innerHTML = 'Check Status Again 🔄';
+          btn.onclick = () => pollPayment(ref, btn, originalText, errorEl);
+          if (cancelBtn) cancelBtn.classList.remove('hidden');
+          errorEl.className = 'text-amber-400 text-xs min-h-[16px]';
+          errorEl.textContent = '⚠️ M-Pesa is taking longer than usual. Please check your phone or try again.';
           return;
         }
 
@@ -1685,7 +1709,7 @@ feather.replace();
       const btn = document.getElementById('payBtn');
       const cancelBtn = document.getElementById('cancelPayBtn');
       const errorEl = document.getElementById('mpesaError');
-      if (btn) { btn.innerHTML = 'Pay KES 5,000 via M-Pesa 💸'; btn.disabled = false; }
+      if (btn) { btn.innerHTML = 'Pay KES 5,000 via M-Pesa 💸'; btn.disabled = false; btn.onclick = payMpesa; }
       if (cancelBtn) cancelBtn.classList.add('hidden');
       if (errorEl) { errorEl.className = 'text-amber-400 text-xs min-h-[16px]'; errorEl.textContent = '⚠️ Payment cancelled. You can try again.'; }
     }
@@ -2421,7 +2445,7 @@ feather.replace();
       }
 
       // Apply theme
-      inner.className = `flex items-start gap-4 p-4 rounded-2xl border relative overflow-hidden ${theme.border} ${theme.bg}`;
+      inner.className = `flex items-start gap-4 p-4 rounded-2xl border relative overflow-hidden ${theme.border} ${theme.bg} ${daysLeft <= 1 ? 'animate-pulse' : ''}`;
       glow.style.background  = theme.glow;
       icon.className  = `w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 relative z-10 border ${theme.iconBg}`;
       title.className = `font-bold text-sm ${theme.titleCls}`;
