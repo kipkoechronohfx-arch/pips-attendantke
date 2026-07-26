@@ -37,8 +37,12 @@ function verifyPassword(password, hash) {
 }
 
 function generateUserToken(user) {
+  let role = user.role || 'user';
+  if (process.env.ADMIN_EMAIL && user.email && user.email.toLowerCase() === process.env.ADMIN_EMAIL.toLowerCase()) {
+    role = 'admin';
+  }
   return jwt.sign(
-    { id: user._id || user.id, email: user.email },
+    { id: user._id || user.id, email: user.email, role },
     JWT_SECRET,
     { expiresIn: '30d' }
   );
@@ -242,7 +246,8 @@ router.get('/me', validateUserSession, (req, res) => {
       isTrial: req.user.isTrial || false,
       createdAt: req.user.registeredAt || req.user.createdAt,
       referralCode: req.user.referralCode || null,
-      referralCount: req.user.referralCount || 0
+      referralCount: req.user.referralCount || 0,
+      adminKey: (req.user.role === 'admin' || (process.env.ADMIN_EMAIL && req.user.email.toLowerCase() === process.env.ADMIN_EMAIL.toLowerCase())) ? process.env.ADMIN_KEY : undefined
     }
   });
 });

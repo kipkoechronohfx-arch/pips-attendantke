@@ -250,18 +250,43 @@ feather.replace();
     }
 
     function copyReferralLink() {
-      const input = document.getElementById('referralLinkInput');
+      const input = document.getElementById('referralLinkInput') || document.getElementById('myReferralLink');
       const msgEl = document.getElementById('referralCopyMsg');
       if (!input || !input.value) return;
       navigator.clipboard.writeText(input.value).then(() => {
-        msgEl.textContent = '✅ Referral link copied!';
-        setTimeout(() => { msgEl.textContent = ''; }, 3000);
+        if (msgEl) { msgEl.textContent = '✅ Referral link copied!'; setTimeout(() => { msgEl.textContent = ''; }, 3000); }
       }).catch(() => {
         input.select();
         document.execCommand('copy');
-        msgEl.textContent = '✅ Copied!';
-        setTimeout(() => { msgEl.textContent = ''; }, 3000);
+        if (msgEl) { msgEl.textContent = '✅ Copied!'; setTimeout(() => { msgEl.textContent = ''; }, 3000); }
       });
+    }
+
+    function shareReferralWhatsApp() {
+      const input = document.getElementById('referralLinkInput') || document.getElementById('myReferralLink');
+      if (!input || !input.value) return;
+      const text = `🚀 Join me on Pips Attendant VIP — get daily forex signals, academy, and more! Use my referral link: ${input.value}`;
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    }
+
+    function renderReferralHub(referralCount) {
+      const count = referralCount || 0;
+      const bonusDays = count * 5;
+      // Max bar at 10 referrals (50 days)
+      const pct = Math.min(100, (count / 10) * 100);
+
+      const countEl = document.getElementById('referralCount');
+      const barEl = document.getElementById('referralProgressBar');
+      const daysEl = document.getElementById('referralBonusDays');
+      const badgeEl = document.getElementById('referralBonusBadge');
+
+      if (countEl) countEl.textContent = count;
+      if (barEl) barEl.style.width = pct + '%';
+      if (daysEl) daysEl.textContent = bonusDays;
+      if (badgeEl && count > 0) {
+        badgeEl.textContent = `+${bonusDays} bonus days`;
+        badgeEl.classList.remove('hidden');
+      }
     }
 
     function openNewTicketForm() {
@@ -2211,9 +2236,14 @@ feather.replace();
             if (data.user.isTrial) renderTrialBanner(data.user.subscriptionExpiry);
 
             const refInput = document.getElementById('myReferralLink');
-            if (refInput && data.user.referralCode) {
-              refInput.value = `${window.location.origin}/premium.html?ref=${data.user.referralCode}`;
-            }
+            const refInputModal = document.getElementById('referralLinkInput');
+            const refUrl = data.user.referralCode
+              ? `${window.location.origin}/premium.html?ref=${data.user.referralCode}`
+              : `${window.location.origin}/premium.html?ref=${data.user.id}`;
+            if (refInput) refInput.value = refUrl;
+            if (refInputModal) refInputModal.value = refUrl;
+            renderReferralHub(data.user.referralCount || 0);
+
             updateDownloadLinks();
             loadTodaysSetup();
             loadTodaysSetupResults();
@@ -2318,6 +2348,17 @@ feather.replace();
             feather.replace();
             document.getElementById('profileName').value = data.user.name || '';
             document.getElementById('leaderboardOptOut').checked = !!data.user.leaderboardOptOut;
+
+            // ── Admin button: only visible to admin account ─────────
+            if (data.user.adminKey) {
+              const adminBtn = document.getElementById('adminPanelBtn');
+              if (adminBtn) {
+                adminBtn.classList.remove('hidden');
+                adminBtn.classList.add('flex');
+                adminBtn.href = `/admin.html?key=${encodeURIComponent(data.user.adminKey)}`;
+              }
+            }
+
             if (data.user.avatar) {
               setAvatar(data.user.avatar);
               localStorage.setItem('pa_vip_user_avatar', data.user.avatar);

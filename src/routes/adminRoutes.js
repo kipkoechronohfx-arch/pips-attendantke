@@ -1472,5 +1472,151 @@ router.delete('/scheduled-alerts/:id', validateAdminSession, async (req, res) =>
     res.status(500).json({ ok: false, error: err.message });
   }
 });
+// ── Phase 2: Telegram Broadcast (Post signal/message to VIP group) ──
+router.post('/broadcast-telegram', validateAdminSession, async (req, res) => {
+  const { message, imageUrl } = req.body;
+  if (!message || !message.trim()) {
+    return res.status(400).json({ ok: false, error: 'Message is required.' });
+  }
+  const { sendTelegramMessage } = require('../services/telegramBot');
+  const VIP_CHAT_ID = process.env.TELEGRAM_VIP_CHAT_ID || process.env.TELEGRAM_CHAT_ID;
+  if (!VIP_CHAT_ID) {
+    return res.status(500).json({ ok: false, error: 'TELEGRAM_VIP_CHAT_ID environment variable is not configured.' });
+  }
+  try {
+    if (imageUrl) {
+      // Send photo with caption
+      const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+      const fetch = require('node-fetch');
+      await fetch(`https://api.telegram.org/bot${TOKEN}/sendPhoto`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: VIP_CHAT_ID,
+          photo: imageUrl,
+          caption: message.trim(),
+          parse_mode: 'Markdown'
+        })
+      });
+    } else {
+      await sendTelegramMessage(VIP_CHAT_ID, message.trim());
+    }
+    res.json({ ok: true, message: 'Message broadcast to VIP Telegram group.' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── Phase 2: Email Blast (Newsletter to all active VIPs) ──
+router.post('/broadcast-email', validateAdminSession, async (req, res) => {
+  const { subject, body } = req.body;
+  if (!subject || !body) {
+    return res.status(400).json({ ok: false, error: 'Subject and body are required.' });
+  }
+  try {
+    const users = await db.getUsers();
+    const now = Date.now();
+    const activeVIPs = users.filter(u => u.email && u.subscriptionExpiry && u.subscriptionExpiry > now);
+    let sent = 0, failed = 0;
+    for (const user of activeVIPs) {
+      try {
+        const html = `
+          <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;background:#0d0d0d;padding:32px;border-radius:16px;color:#f9fafb;">
+            <div style="text-align:center;margin-bottom:24px;">
+              <img src="https://www.pipsattendant.com/avatar.webp" style="width:48px;height:48px;border-radius:50%;border:2px solid #fbbf24;" alt="Logo"/>
+              <h2 style="color:#fbbf24;margin:12px 0 4px;font-size:20px;">${subject}</h2>
+              <p style="color:#6b7280;font-size:11px;margin:0;">Pips Attendant VIP Newsletter</p>
+            </div>
+            <div style="background:#111827;border-radius:12px;padding:24px;color:#d1d5db;font-size:14px;line-height:1.7;white-space:pre-wrap;">${body}</div>
+            <p style="text-align:center;color:#374151;font-size:11px;margin-top:24px;">You are receiving this because you are a VIP member of Pips Attendant.<br/>
+            <a href="https://www.pipsattendant.com/premium.html" style="color:#fbbf24;">Access your VIP Dashboard</a></p>
+          </div>`;
+        await sendEmail(user.email, subject, html);
+        sent++;
+      } catch { failed++; }
+    }
+    res.json({ ok: true, sent, failed, total: activeVIPs.length, message: `Blast sent to ${sent}/${activeVIPs.length} active VIPs.` });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── Phase 3: Referral Stats ──
+router.get('/referral-stats', validateAdminSession, async (req, res) => {
+  try {
+    const users = await db.getUsers();
+    const stats = users
+      .filter(u => u.referralCount > 0)
+      .sort((a, b) => (b.referralCount || 0) - (a.referralCount || 0))
+      .slice(0, 20)
+      .map(u => ({
+        name: u.name || u.email,
+        email: u.email,
+        referralCode: u.referralCode,
+        referralCount: u.referralCount || 0,
+        bonusDaysEarned: (u.referralCount || 0) * 5
+      }));
+    res.json({ ok: true, stats });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── Phase 4: Prop Firm Admin Management ──
+router.get('/propfirm-accounts', validateAdminSession, async (req, res) => {
+  try {
+    const accounts = await db.getAllPropFirmAccounts();
+    res.json({ ok: true, accounts: accounts || [] });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/propfirm-accounts', validateAdminSession, async (req, res) => {
+  try {
+    const { userId, firm, phase, accountSize, targetPercent, currentPercent, maxDrawdown, notes, status } = req.body;
+    if (!userId || !firm) return res.status(400).json({ ok: false, error: 'userId and firm are required.' });
+    const user = await db.getUserById(userId);
+    if (!user) return res.status(404).json({ ok: false, error: 'User not found.' });
+    const account = {
+      userId,
+      userEmail: user.email,
+      userName: user.name,
+      firm,
+      phase: phase || 'Phase 1',
+      accountSize: Number(accountSize) || 10000,
+      targetPercent: Number(targetPercent) || 8,
+      currentPercent: Number(currentPercent) || 0,
+      maxDrawdown: Number(maxDrawdown) || 5,
+      notes: notes || '',
+      status: status || 'active',
+      updatedAt: new Date().toISOString()
+    };
+    await db.savePropFirmAccount(userId, account);
+    res.json({ ok: true, message: 'Prop firm account saved.', account });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.put('/propfirm-accounts/:userId', validateAdminSession, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const updates = { ...req.body, updatedAt: new Date().toISOString() };
+    await db.savePropFirmAccount(userId, updates);
+    res.json({ ok: true, message: 'Prop firm account updated.' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.delete('/propfirm-accounts/:userId', validateAdminSession, async (req, res) => {
+  try {
+    await db.deletePropFirmAccount(req.params.userId);
+    res.json({ ok: true, message: 'Prop firm account removed.' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
 
 module.exports = router;
