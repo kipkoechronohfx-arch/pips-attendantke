@@ -24,8 +24,10 @@ const partnerRoutes = require('./src/routes/partnerRoutes');
 const propfirmRoutes = require('./src/routes/propfirmRoutes');
 
 // ── Environment Validation ─────────────────────────────────────
-// SECURITY: JWT_SECRET and ADMIN_KEY are now required at startup.
-const REQUIRED_ENV = ['MONGODB_URI', 'JWT_SECRET', 'ADMIN_KEY'];
+// SECURITY: JWT_SECRET, ADMIN_KEY, and PAYHERO_WEBHOOK_SECRET are required at startup.
+// A missing PAYHERO_WEBHOOK_SECRET means the webhook endpoint falls back to a hardcoded
+// insecure secret, which could allow forged payment confirmations in production.
+const REQUIRED_ENV = ['MONGODB_URI', 'JWT_SECRET', 'ADMIN_KEY', 'PAYHERO_WEBHOOK_SECRET'];
 // GEMINI_API_KEY is optional — AI chat is disabled gracefully if missing
 const RECOMMENDED_ENV = [
   'TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID',
@@ -33,6 +35,7 @@ const RECOMMENDED_ENV = [
   'SENDGRID_API_KEY', 'SENDGRID_FROM_EMAIL',
   'VAPID_PUBLIC_KEY', 'VAPID_PRIVATE_KEY'
 ];
+
 
 function validateEnv() {
   const missing = REQUIRED_ENV.filter(k => !process.env[k]);

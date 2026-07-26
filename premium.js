@@ -1612,13 +1612,23 @@ feather.replace();
       if (pollInterval) clearInterval(pollInterval);
       let attempts = 0;
 
+      // Show the cancel button while waiting
+      const cancelBtn = document.getElementById('cancelPayBtn');
+      if (cancelBtn) cancelBtn.classList.remove('hidden');
+
+      function stopPolling(isSuccess) {
+        clearInterval(pollInterval);
+        btn.innerHTML = originalText;
+        btn.disabled  = false;
+        if (cancelBtn) cancelBtn.classList.add('hidden');
+      }
+
+      // M-Pesa STK prompts expire in ~75s — poll for max 90s (30 × 3s)
       pollInterval = setInterval(async () => {
-        if (++attempts > 60) {
-          clearInterval(pollInterval);
+        if (++attempts > 30) {
+          stopPolling(false);
           errorEl.className = 'text-rose-400 text-xs min-h-[16px]';
           errorEl.textContent = '❌ Payment timed out. Please try again.';
-          btn.innerHTML = originalText;
-          btn.disabled = false;
           return;
         }
 
@@ -1630,10 +1640,8 @@ feather.replace();
           const data = await res.json();
 
           if (data.ok && data.status === 'Success') {
-            clearInterval(pollInterval);
-            btn.innerHTML = originalText;
-            btn.disabled  = false;
-            
+            stopPolling(true);
+
             if (data.sessionToken) {
                sessionStorage.setItem('vip_session_token', data.sessionToken);
             }
@@ -1646,14 +1654,22 @@ feather.replace();
           } else if (data.ok && data.status && data.status !== 'Pending') {
             // Any terminal status that is not 'Success' or 'Pending' means the payment ended
             // (e.g. 'Failed', 'Cancelled', 'Rejected') — stop polling immediately
-            clearInterval(pollInterval);
+            stopPolling(false);
             errorEl.className = 'text-rose-400 text-xs min-h-[16px]';
             errorEl.textContent = '❌ Payment failed or was cancelled. Please try again.';
-            btn.innerHTML = originalText;
-            btn.disabled  = false;
           }
         } catch { /* ignore transient network errors during polling */ }
       }, 3000);
+    }
+
+    function cancelPayment() {
+      if (pollInterval) clearInterval(pollInterval);
+      const btn = document.getElementById('payBtn');
+      const cancelBtn = document.getElementById('cancelPayBtn');
+      const errorEl = document.getElementById('mpesaError');
+      if (btn) { btn.innerHTML = 'Pay KES 5,000 via M-Pesa 💸'; btn.disabled = false; }
+      if (cancelBtn) cancelBtn.classList.add('hidden');
+      if (errorEl) { errorEl.className = 'text-amber-400 text-xs min-h-[16px]'; errorEl.textContent = '⚠️ Payment cancelled. You can try again.'; }
     }
 
 

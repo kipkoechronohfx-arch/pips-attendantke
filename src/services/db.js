@@ -1233,6 +1233,41 @@ async function getReceipt(ref) {
   return receipts.find(r => r.ref === ref) || null;
 }
 
+// ── Webhook Audit Log ────────────────────────────────────────
+// Permanently stores every incoming Payhero webhook payload for dispute resolution.
+const WEBHOOK_LOGS_FILE = path.join(DATA_DIR, 'webhook_logs.json');
+
+async function saveWebhookLog(entry) {
+  if (db) {
+    try {
+      await db.collection('webhook_logs').insertOne({ ...entry, savedAt: new Date().toISOString() });
+      return true;
+    } catch (err) {
+      console.error('[DB Webhook Log Error]', err.message);
+    }
+  }
+  const logs = readJSON(WEBHOOK_LOGS_FILE);
+  logs.push({ ...entry, savedAt: new Date().toISOString() });
+  // Keep last 500 entries to avoid unbounded file growth
+  if (logs.length > 500) logs.splice(0, logs.length - 500);
+  writeJSON(WEBHOOK_LOGS_FILE, logs);
+  return true;
+}
+
+async function getWebhookLogs(limit = 100) {
+  if (db) {
+    try {
+      return await db.collection('webhook_logs').find({}).sort({ savedAt: -1 }).limit(limit).toArray();
+    } catch (err) {
+      console.error('[DB Webhook Logs Error]', err.message);
+    }
+  }
+  const logs = readJSON(WEBHOOK_LOGS_FILE);
+  return logs.slice(-limit).reverse();
+}
+
+
+
 // ── Mentorship Bookings ─────────────────────────────────────
 async function getBookings() {
   if (db) {
@@ -1522,6 +1557,7 @@ module.exports = {
   getJournalEntries, saveJournalEntry, deleteJournalEntry, syncJournalEntries, getLeaderboardData,
   getPropFirmAccount, getAllPropFirmAccounts, savePropFirmAccount, deletePropFirmAccount,
   saveReceipt, getReceipt,
+  saveWebhookLog, getWebhookLogs,
   getBookings, getUserBookings, saveBooking,
   getAnnouncements, saveAnnouncement, deleteAnnouncement,
   getLeads, addLead, deleteLeadById,

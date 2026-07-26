@@ -117,7 +117,10 @@ router.post('/payhero-webhook', async (req, res) => {
     }
 
     const body = req.body;
-    console.log('[Payhero Webhook Received]', JSON.stringify(body));
+    // ── Permanent Audit Log — saved before any processing ────────
+    // Every raw Payhero payload is logged permanently for dispute resolution.
+    db.saveWebhookLog({ ref: body.external_reference || (body.response && body.response.ExternalReference), body, receivedAt: new Date().toISOString() }).catch(() => {});
+    logger.info('[Payhero Webhook Received] ref=' + (body.external_reference || '?') + ' body=' + JSON.stringify(body));
 
     const ref = body.external_reference || (body.response && body.response.ExternalReference);
     // Prefer the nested M-Pesa response status (most reliable), fall back to top-level status string.
@@ -232,6 +235,9 @@ router.get('/check-payment/:ref', validateUserSession, async (req, res) => {
   }
 
   if (payment.status === 'Success') {
+    // Fallback upgrade: fires only if the webhook hasn't set processedForUser yet.
+    // Receipt is intentionally NOT sent here — it is sent exclusively by the webhook
+    // handler to prevent duplicate emails.
     if (!payment.processedForUser) {
       const user = await db.getUserById(currentUserId);
       if (user) {
@@ -240,40 +246,12 @@ router.get('/check-payment/:ref', validateUserSession, async (req, res) => {
         const currentExpiry = user.subscriptionExpiry && user.subscriptionExpiry > Date.now() ? user.subscriptionExpiry : Date.now();
         user.subscriptionExpiry = currentExpiry + days * 24 * 60 * 60 * 1000;
         user.isTrial = false; // Clear trial flag upon payment
-        
         user.subscriptionTier = tier;
         await db.saveUser(user);
-        
+
         payment.processedForUser = true;
         await db.savePayment(ref, payment);
-
-        if (user.referredBy) {
-          const referrer = await db.getUserById(user.referredBy);
-          if (referrer && referrer.subscriptionExpiry) {
-            referrer.subscriptionExpiry += 5 * 24 * 60 * 60 * 1000;
-            await db.saveUser(referrer);
-          }
-        }
-
-        if (user && user.email) {
-          const plan = payment.plan || '1month';
-          const expiryDate = new Date(user.subscriptionExpiry).toDateString();
-          const receiptHtml = buildReceiptHtml({
-            ref,
-            userName: user.name,
-            userEmail: user.email,
-            plan,
-            amount: payment.amount || PLANS[plan]?.kesPrice || 5000,
-            currency: 'KES',
-            method: 'M-Pesa (Payhero)',
-            days,
-            expiryDate
-          });
-          // Save receipt to DB
-          await db.saveReceipt(ref, { html: receiptHtml, userId: currentUserId, plan, amount: payment.amount, createdAt: new Date().toISOString() });
-          // Email receipt
-          await sendEmail(user.email, `🧾 Your VIP Receipt — Pips Attendant`, receiptHtml);
-        }
+        logger.info(`[check-payment] Fallback upgrade applied for ref ${ref}, user ${user.email}`);
       }
     }
 
@@ -290,6 +268,7 @@ router.get('/check-payment/:ref', validateUserSession, async (req, res) => {
     res.json({ ok: true, status: payment.status });
   }
 });
+
 // ── Validate Promo Code (live preview) ───────────────────────
 router.post('/validate-promo', validateUserSession, async (req, res) => {
   const { promoCode, plan } = req.body;
