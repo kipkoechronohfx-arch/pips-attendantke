@@ -1670,8 +1670,13 @@ feather.replace();
             stopPolling(false);
             errorEl.className = 'text-rose-400 text-xs min-h-[16px]';
             errorEl.textContent = '❌ Payment failed or was cancelled. Please try again.';
+          } else if (!data.ok) {
+            // If the server explicitly returns an error (e.g. 403, 404), stop polling to prevent infinite spinners
+            stopPolling(false);
+            errorEl.className = 'text-rose-400 text-xs min-h-[16px]';
+            errorEl.textContent = `❌ ${data.error || 'Payment error occurred. Please try again.'}`;
           }
-        } catch { /* ignore transient network errors during polling */ }
+        } catch (err) { /* ignore transient network errors during polling */ }
       }, 3000);
     }
 
