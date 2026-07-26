@@ -236,7 +236,7 @@ router.get('/check-payment/:ref', validateUserSession, async (req, res) => {
   if (!payment) return res.status(404).json({ ok: false, error: 'Transaction not found.' });
 
   const currentUserId = req.user._id || req.user.id;
-  if (payment.userId && payment.userId !== currentUserId) {
+  if (payment.userId && String(payment.userId) !== String(currentUserId)) {
     return res.status(403).json({ ok: false, error: 'Unauthorized.' });
   }
 
