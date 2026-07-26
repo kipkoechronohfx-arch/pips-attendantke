@@ -94,7 +94,7 @@ router.post('/pay-vip', validateUserSession, async (req, res) => {
 
     const data = await response.json();
     if (data.success || response.ok) {
-      await db.savePayment(ref, { status: 'Pending', phone, userId: req.user._id || req.user.id, plan: selectedPlan, timestamp: new Date().toISOString() });
+      await db.savePayment(ref, { status: 'Pending', phone, userId: req.user._id || req.user.id, plan: selectedPlan, amount: finalAmount, timestamp: new Date().toISOString() });
       res.json({ ok: true, reference: ref, message: 'Check your phone for the M-Pesa PIN prompt.' });
     } else {
       throw new Error(data.message || 'Payment initiation failed');
@@ -120,13 +120,20 @@ router.post('/payhero-webhook', async (req, res) => {
     console.log('[Payhero Webhook Received]', JSON.stringify(body));
 
     const ref = body.external_reference || (body.response && body.response.ExternalReference);
-    const status = body.status || (body.response && body.response.Status) || 'Failed';
+    // Prefer the nested M-Pesa response status (most reliable), fall back to top-level status string.
+    // IMPORTANT: Do NOT use body.status === true or body.success === true — Payhero sets these
+    // for a successful API call even when the underlying M-Pesa transaction was cancelled/failed.
+    const mpesaResultCode = body.response && body.response.ResultCode;
+    const statusStr = String(
+      (body.response && body.response.Status) || body.status || 'Failed'
+    ).toLowerCase();
 
     if (ref) {
       const payment = await db.getPayment(ref);
       if (payment) {
-        const statusStr = String(status).toLowerCase();
-        const isSuccess = ['success', 'completed', 'successful'].includes(statusStr) || body.status === true || body.success === true;
+        // isSuccess = true ONLY when M-Pesa confirms the actual money was received
+        const isSuccess = mpesaResultCode === 0 ||
+          ['success', 'completed', 'successful'].includes(statusStr);
         payment.status = isSuccess ? 'Success' : 'Failed';
         payment.rawWebhook = body;
         await db.savePayment(ref, payment);

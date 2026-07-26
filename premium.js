@@ -1643,16 +1643,19 @@ feather.replace();
 
             showSuccessPanel();
 
-          } else if (data.ok && data.status === 'Failed') {
+          } else if (data.ok && data.status && data.status !== 'Pending') {
+            // Any terminal status that is not 'Success' or 'Pending' means the payment ended
+            // (e.g. 'Failed', 'Cancelled', 'Rejected') — stop polling immediately
             clearInterval(pollInterval);
             errorEl.className = 'text-rose-400 text-xs min-h-[16px]';
-            errorEl.textContent = '❌ Payment failed or was cancelled.';
+            errorEl.textContent = '❌ Payment failed or was cancelled. Please try again.';
             btn.innerHTML = originalText;
             btn.disabled  = false;
           }
         } catch { /* ignore transient network errors during polling */ }
       }, 3000);
     }
+
 
     // ── User Authentication ────────────────────────────────────
     function switchAuthTab(mode) {
