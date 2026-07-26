@@ -119,13 +119,13 @@ router.post('/payhero-webhook', async (req, res) => {
     const body = req.body;
     // ── Permanent Audit Log — saved before any processing ────────
     // Every raw Payhero payload is logged permanently for dispute resolution.
-    db.saveWebhookLog({ ref: body.external_reference || (body.response && body.response.ExternalReference), body, receivedAt: new Date().toISOString() }).catch(() => {});
-    logger.info('[Payhero Webhook Received] ref=' + (body.external_reference || '?') + ' body=' + JSON.stringify(body));
+    db.saveWebhookLog({ ref: body.external_reference || (body.response && body.response.ExternalReference) || (body.response && body.response.User_Reference), body, receivedAt: new Date().toISOString() }).catch(() => {});
+    logger.info('[Payhero Webhook Received] ref=' + (body.external_reference || (body.response && body.response.ExternalReference) || (body.response && body.response.User_Reference) || '?') + ' body=' + JSON.stringify(body));
 
-    const ref = body.external_reference || (body.response && body.response.ExternalReference);
-    // Prefer the nested M-Pesa response status (most reliable), fall back to top-level status string.
-    // IMPORTANT: Do NOT use body.status === true or body.success === true — Payhero sets these
-    // for a successful API call even when the underlying M-Pesa transaction was cancelled/failed.
+    const ref = body.external_reference || 
+                (body.response && body.response.ExternalReference) ||
+                (body.response && body.response.User_Reference);
+
     const mpesaResultCode = body.response && body.response.ResultCode;
     const statusStr = String(
       (body.response && body.response.Status) || body.status || 'Failed'
@@ -135,10 +135,13 @@ router.post('/payhero-webhook', async (req, res) => {
       const payment = await db.getPayment(ref);
       if (payment) {
         // isSuccess = true ONLY when M-Pesa confirms the actual money was received.
-        // We explicitly check ResultCode from M-Pesa if it exists, otherwise fallback to status string.
+        // We explicitly check ResultCode from M-Pesa if it exists.
+        // If it's a C2B format payload, it might only have woocommerce_payment_status='complete'.
         let isSuccess = false;
         if (body.response && body.response.ResultCode !== undefined) {
           isSuccess = (Number(body.response.ResultCode) === 0);
+        } else if (body.response && body.response.woocommerce_payment_status === 'complete') {
+          isSuccess = true;
         } else {
           isSuccess = ['success', 'completed', 'successful'].includes(statusStr);
         }
