@@ -1511,6 +1511,19 @@ feather.replace();
       feather.replace();
     }
 
+    // ── Show Upgrade Panel (for trial users) ─────────────
+    function showUpgradePanel() {
+      document.getElementById('contentPanel').classList.add('hidden');
+      const trialBanner = document.getElementById('trialCountdownBanner');
+      if (trialBanner) trialBanner.classList.add('hidden');
+      
+      document.getElementById('paymentPanel').style.display = 'block';
+      
+      const trialMsg = document.getElementById('trialExpiredMessage');
+      if (trialMsg) trialMsg.classList.add('hidden');
+    }
+
+
     // ── Transition from Success panel → VIP Content ─────────
     function enterVIPFromSavePanel() {
       document.getElementById('saveCodePanel').classList.add('hidden');

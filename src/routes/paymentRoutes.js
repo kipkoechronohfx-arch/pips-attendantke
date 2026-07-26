@@ -134,9 +134,15 @@ router.post('/payhero-webhook', async (req, res) => {
     if (ref) {
       const payment = await db.getPayment(ref);
       if (payment) {
-        // isSuccess = true ONLY when M-Pesa confirms the actual money was received
-        const isSuccess = mpesaResultCode === 0 ||
-          ['success', 'completed', 'successful'].includes(statusStr);
+        // isSuccess = true ONLY when M-Pesa confirms the actual money was received.
+        // We explicitly check ResultCode from M-Pesa if it exists, otherwise fallback to status string.
+        let isSuccess = false;
+        if (body.response && body.response.ResultCode !== undefined) {
+          isSuccess = (Number(body.response.ResultCode) === 0);
+        } else {
+          isSuccess = ['success', 'completed', 'successful'].includes(statusStr);
+        }
+
         payment.status = isSuccess ? 'Success' : 'Failed';
         payment.rawWebhook = body;
         await db.savePayment(ref, payment);
