@@ -34,9 +34,17 @@ async function sendWeeklyRecapToVIP() {
         pipsLost += Number(s.pips) || 0;
       }
     }
+
     const total = wins + losses;
-    const winRate = total > 0 ? Math.round((wins / total) * 100) : 0;
-    const netPips = pipsGained - pipsLost;
+    if (total === 0) {
+      logger.info(`[Cron] Weekly recap skipped: No resolved signals this week.`);
+      return { ok: false, error: 'No resolved signals found in the past 7 days.' };
+    }
+
+    const winRate = Math.round((wins / total) * 100);
+    // Fix JS floating point math (e.g., 50.300000001)
+    let netPips = pipsGained - pipsLost;
+    netPips = Number(netPips.toFixed(1));
 
     // Get date range label e.g. "Jul 21 – Jul 27"
     const now = new Date();
@@ -306,7 +314,7 @@ function startCronJobs() {
   cron.schedule("0 0 * * 0", () => {
     logger.info("[Cron] Sending weekly performance recap to VIP channel...");
     sendWeeklyRecapToVIP();
-  });
+  }, { timezone: "Africa/Nairobi" });
   
   logger.info("[Cron] Jobs scheduled: VIP expiry daily, Signal Auto-Archive hourly, Alerts minutely, Weekly Recap every Sunday midnight");
 }

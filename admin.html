@@ -3328,6 +3328,10 @@
         return;
       }
 
+      if (!confirm("Are you sure you want to instantly broadcast the automated recap?\n\nThis will blast the VIP channel with the past 7 days' stats.")) {
+        return;
+      }
+
       btn.disabled = true;
       btn.textContent = 'Sending...';
       feedbackEl.innerHTML = '<span class="text-sky-400 animate-pulse">📡 Triggering auto recap...</span>';
