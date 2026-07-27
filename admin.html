@@ -3339,7 +3339,7 @@
         });
         const data = await res.json();
         if (data.ok) {
-          feedbackEl.innerHTML = '<span class="text-emerald-400">✅ Auto recap sent to VIP channel!</span>';
+          feedbackEl.innerHTML = `<span class="text-emerald-400">✅ ${data.message || 'Auto recap sent to VIP channel!'}</span>`;
           showToast();
         } else {
           feedbackEl.innerHTML = `<span class="text-rose-400">❌ ${data.error || 'Failed'}</span>`;

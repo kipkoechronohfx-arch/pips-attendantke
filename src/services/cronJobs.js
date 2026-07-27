@@ -9,8 +9,9 @@ async function sendWeeklyRecapToVIP() {
   const chatId = process.env.TELEGRAM_VIP_CHAT_ID || process.env.TELEGRAM_CHAT_ID;
 
   if (!token || !chatId) {
-    logger.warn('[Cron] Weekly recap skipped: TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not set.');
-    return;
+    const err = 'TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not set.';
+    logger.warn(`[Cron] Weekly recap skipped: ${err}`);
+    return { ok: false, error: err };
   }
 
   try {
@@ -65,12 +66,16 @@ async function sendWeeklyRecapToVIP() {
     const result = await response.json();
 
     if (result.ok) {
-      logger.info(`[Cron] Weekly recap sent to VIP (${weekLabel}): ${wins}W/${losses}L, ${netPips >= 0 ? '+' : ''}${netPips} pips.`);
+      const successMsg = `Weekly recap sent to VIP (${weekLabel}): ${wins}W/${losses}L, ${netPips >= 0 ? '+' : ''}${netPips} pips.`;
+      logger.info(`[Cron] ${successMsg}`);
+      return { ok: true, message: successMsg };
     } else {
       logger.error(`[Cron] Weekly recap Telegram error: ${result.description}`);
+      return { ok: false, error: result.description };
     }
   } catch (err) {
     logger.error(`[Cron] Weekly recap job failed: ${err.message}`);
+    return { ok: false, error: err.message };
   }
 }
 

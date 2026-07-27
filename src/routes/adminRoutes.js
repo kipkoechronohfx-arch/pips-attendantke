@@ -1623,8 +1623,16 @@ router.delete('/propfirm-accounts/:userId', validateAdminSession, async (req, re
 router.post('/trigger-weekly-recap', validateAdminSession, async (req, res) => {
   try {
     const { sendWeeklyRecapToVIP } = require('../services/cronJobs');
-    await sendWeeklyRecapToVIP();
-    res.json({ ok: true, message: 'Weekly performance recap triggered and sent to VIP channel.' });
+    const result = await sendWeeklyRecapToVIP();
+    
+    if (result && !result.ok) {
+      return res.status(400).json(result);
+    }
+    
+    res.json({ 
+      ok: true, 
+      message: result && result.message ? result.message : 'Weekly performance recap triggered and sent to VIP channel.' 
+    });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
