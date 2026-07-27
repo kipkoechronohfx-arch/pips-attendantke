@@ -1638,4 +1638,19 @@ router.post('/trigger-weekly-recap', validateAdminSession, async (req, res) => {
   }
 });
 
+// ── Push Notification Broadcast ──────────────────────────────────
+router.post('/push/broadcast', validateAdminSession, async (req, res) => {
+  try {
+    const { title, body, url } = req.body;
+    if (!title || !body) return res.status(400).json({ ok: false, error: 'Title and body are required.' });
+
+    const pushService = require('../services/pushService');
+    const result = await pushService.broadcastPush(title, body, url);
+    
+    res.json({ ok: true, sentCount: result.success, failedCount: result.failed });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;

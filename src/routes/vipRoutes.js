@@ -192,4 +192,37 @@ router.get('/journal/leaderboard', validateVipSession, requireTelegramLinked, as
   }
 });
 
+// --- Web Push Subscription Endpoints ---
+router.get('/push/vapidPublicKey', validateVipSession, (req, res) => {
+  res.json({ publicKey: process.env.VAPID_PUBLIC_KEY || null });
+});
+
+router.post('/push/subscribe', validateVipSession, async (req, res) => {
+  try {
+    const subscription = req.body;
+    if (!subscription || !subscription.endpoint) {
+      return res.status(400).json({ ok: false, error: 'Invalid subscription object' });
+    }
+    // Attach userId to the subscription object
+    subscription.userId = req.user.email || req.user.id;
+    await db.addPushSubscription(subscription);
+    res.json({ ok: true, message: 'Subscribed to push notifications.' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/push/unsubscribe', validateVipSession, async (req, res) => {
+  try {
+    const subscription = req.body;
+    if (!subscription || !subscription.endpoint) {
+      return res.status(400).json({ ok: false, error: 'Invalid subscription object' });
+    }
+    await db.deletePushSubscription(subscription);
+    res.json({ ok: true, message: 'Unsubscribed from push notifications.' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;

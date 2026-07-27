@@ -2879,7 +2879,10 @@ feather.replace();
           
           await fetch('/api/push/subscribe', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('pa_token')}`
+            },
             body: JSON.stringify(subscription)
           });
           
