@@ -131,7 +131,7 @@ router.get('/analytics', validateAdminSession, async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
     const users = await db.getUsers();
-    const payments = await db.getPayments();
+    const payments = await db.getAllPayments();
     
     const now = Date.now();
     const activeVIPs = users.filter(u => u.subscriptionExpiry && u.subscriptionExpiry > now).length;

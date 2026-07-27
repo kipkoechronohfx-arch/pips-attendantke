@@ -1439,7 +1439,7 @@
     </div>
 
     <!-- 📊 ANALYTICS DASHBOARD PANEL -->
-    <div id="analyticsPanel" class="hidden space-y-6">
+    <div id="perfLogsPanel" class="hidden space-y-6">
       
       <!-- Platform KPIs -->
       <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-2">Platform Overview</h3>
@@ -5270,6 +5270,9 @@
         targetPanel = 'analyticsPanel';
         targetTab = 'tab-analytics';
         if (typeof fetchAnalytics === 'function') fetchAnalytics();
+        if (typeof fetchPerfLogs === 'function') fetchPerfLogs();
+        const perfPanel = document.getElementById('perfLogsPanel');
+        if (perfPanel) perfPanel.classList.remove('hidden');
       } else if (tab === 'referrals') {
         targetPanel = 'referralsPanel';
         targetTab = 'tab-referrals';
@@ -5670,7 +5673,7 @@
     
     // ── Analytics Dashboard Logic ───────────────────────────────
     let perfChartInstance = null;
-    async function fetchAnalytics() {
+    async function fetchPerfLogs() {
       try {
         const res = await fetch('/api/performance/all');
         const data = await res.json();
