@@ -1619,4 +1619,15 @@ router.delete('/propfirm-accounts/:userId', validateAdminSession, async (req, re
   }
 });
 
+// ── Manual Trigger: Weekly Performance Recap ───────────────────
+router.post('/trigger-weekly-recap', validateAdminSession, async (req, res) => {
+  try {
+    const { sendWeeklyRecapToVIP } = require('../services/cronJobs');
+    await sendWeeklyRecapToVIP();
+    res.json({ ok: true, message: 'Weekly performance recap triggered and sent to VIP channel.' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;

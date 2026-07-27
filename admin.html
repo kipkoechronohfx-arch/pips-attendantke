@@ -1082,9 +1082,26 @@
             </div>
           </div>
 
+          <!-- Channel Selector for Recap -->
+          <div class="flex items-center gap-3 p-3 rounded-xl bg-black/30 border border-white/10">
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider whitespace-nowrap">📡 Send To:</span>
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="radio" name="perfChannel" value="general" class="accent-amber-400" checked>
+              <span class="text-xs text-gray-300 font-semibold">General</span>
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="radio" name="perfChannel" value="vip" class="accent-amber-400">
+              <span class="text-xs text-gray-300 font-semibold">VIP</span>
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="radio" name="perfChannel" value="both" class="accent-amber-400">
+              <span class="text-xs text-amber-400 font-bold">Both ✨</span>
+            </label>
+          </div>
+
           <!-- Action Buttons -->
           <div class="flex flex-col sm:flex-row gap-3">
-            <button type="button" onclick="sendPerformance()" class="flex-1 py-4 px-6 rounded-xl font-bold bg-gradient-to-r from-amber-500 to-yellow-400 hover:brightness-110 hover:shadow-[0_0_20px_rgba(251,191,36,0.4)] active:scale-95 transition duration-300 flex items-center justify-center gap-2.5 shadow-lg cursor-pointer text-dark-navy">
+            <button type="button" onclick="sendPerformance()" id="perfBroadcastBtn" class="flex-1 py-4 px-6 rounded-xl font-bold bg-gradient-to-r from-amber-500 to-yellow-400 hover:brightness-110 hover:shadow-[0_0_20px_rgba(251,191,36,0.4)] active:scale-95 transition duration-300 flex items-center justify-center gap-2.5 shadow-lg cursor-pointer text-dark-navy">
               <i data-feather="bar-chart-2" class="w-4 h-4"></i>
               <span>Broadcast Weekly Recap</span>
             </button>
@@ -1119,6 +1136,18 @@
             </button>
           </div>
           <div id="perfFeedback" class="text-xs font-semibold min-h-[16px]"></div>
+
+          <!-- Auto Recap Trigger -->
+          <div class="mt-2 p-3 rounded-xl border border-amber-400/15 bg-amber-400/5 flex items-center justify-between gap-3">
+            <div>
+              <p class="text-xs font-bold text-amber-400">⏰ Auto-Send: Every Sunday at 00:00</p>
+              <p class="text-[11px] text-gray-500 mt-0.5">Automatically posts this week's signal stats to VIP channel</p>
+            </div>
+            <button type="button" onclick="triggerAutoRecap()" id="autoRecapBtn" class="shrink-0 px-4 py-2 rounded-xl text-xs font-bold border border-amber-400/40 bg-amber-400/10 hover:bg-amber-400/20 text-amber-400 transition active:scale-95 cursor-pointer">
+              Send Now
+            </button>
+          </div>
+          <div id="autoRecapFeedback" class="text-xs font-semibold min-h-[14px]"></div>
         </div>
 
         <!-- Live Preview -->
@@ -3220,12 +3249,24 @@
 
     async function sendPerformance() {
       const token = localStorage.getItem('pa_bot_token');
-      const chat = localStorage.getItem('pa_chat_id');
-      const btn = event.currentTarget;
+      const generalChat = localStorage.getItem('pa_chat_id');
+      const vipChat = localStorage.getItem('pa_vip_chat_id');
+      const btn = document.getElementById('perfBroadcastBtn');
       const feedbackMsg = document.getElementById('perfFeedback');
 
-      if (!token || !chat) {
-        feedbackMsg.innerHTML = '<span class="text-rose-400">Error: Missing credentials.</span>';
+      const channelSelection = document.querySelector('input[name="perfChannel"]:checked');
+      const target = channelSelection ? channelSelection.value : 'general';
+
+      if (!token) {
+        feedbackMsg.innerHTML = '<span class="text-rose-400">❌ Error: Telegram bot token missing. Re-enter credentials in Settings.</span>';
+        return;
+      }
+      if ((target === 'general' || target === 'both') && !generalChat) {
+        feedbackMsg.innerHTML = '<span class="text-rose-400">❌ Error: General chat ID missing. Check Settings.</span>';
+        return;
+      }
+      if ((target === 'vip' || target === 'both') && !vipChat) {
+        feedbackMsg.innerHTML = '<span class="text-rose-400">❌ Error: VIP chat ID missing. Add it in Settings.</span>';
         return;
       }
 
@@ -3233,17 +3274,83 @@
 
       btn.disabled = true;
       btn.classList.add('opacity-75', 'cursor-not-allowed');
-      feedbackMsg.innerHTML = '<span class="text-sky-400 animate-pulse">Broadcasting via API...</span>';
+      feedbackMsg.innerHTML = '<span class="text-sky-400 animate-pulse">📡 Broadcasting via Telegram...</span>';
 
-      const payload = { token, chatId: chat, text: msg, type: 'performance' };
-      
-      await sendPayload('/api/broadcast', payload, btn, feedbackMsg);
+      try {
+        const chatsToSend = [];
+        if (target === 'general' || target === 'both') chatsToSend.push(generalChat);
+        if (target === 'vip' || target === 'both') chatsToSend.push(vipChat);
+
+        const results = await Promise.allSettled(
+          chatsToSend.map(chatId =>
+            fetch('/api/broadcast', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ token, chatId, text: msg, type: 'performance' })
+            }).then(r => r.json())
+          )
+        );
+
+        const failed = results.filter(r => r.status === 'rejected' || (r.value && !r.value.ok));
+        const succeeded = results.length - failed.length;
+
+        if (failed.length === 0) {
+          feedbackMsg.innerHTML = `<span class="text-emerald-400">✅ Weekly recap broadcast to ${succeeded} channel${succeeded > 1 ? 's' : ''}!</span>`;
+          showToast();
+        } else if (succeeded > 0) {
+          const errMsg = failed[0].reason?.message || failed[0].value?.error || 'Unknown error';
+          feedbackMsg.innerHTML = `<span class="text-amber-400">⚠️ Sent to ${succeeded}/${results.length} channel(s). Error: ${errMsg}</span>`;
+        } else {
+          const errMsg = failed[0].reason?.message || failed[0].value?.error || 'Telegram rejected the request';
+          feedbackMsg.innerHTML = `<span class="text-rose-400">❌ Failed: ${errMsg}</span>`;
+        }
+      } catch (err) {
+        feedbackMsg.innerHTML = `<span class="text-rose-400">❌ Network error: ${err.message}</span>`;
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('opacity-75', 'cursor-not-allowed');
+      }
     }
 
     function sharePerfToWhatsApp() {
       const msg = buildPerfMessage();
       const encoded = encodeURIComponent(msg.replace(/\*(.*?)\*/g, '*$1*'));
       window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
+    }
+
+    async function triggerAutoRecap() {
+      const adminToken = localStorage.getItem('pa_admin_token');
+      const btn = document.getElementById('autoRecapBtn');
+      const feedbackEl = document.getElementById('autoRecapFeedback');
+
+      if (!adminToken) {
+        feedbackEl.innerHTML = '<span class="text-rose-400">❌ Not logged in as admin.</span>';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+      feedbackEl.innerHTML = '<span class="text-sky-400 animate-pulse">📡 Triggering auto recap...</span>';
+
+      try {
+        const res = await fetch('/api/admin/trigger-weekly-recap', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken }
+        });
+        const data = await res.json();
+        if (data.ok) {
+          feedbackEl.innerHTML = '<span class="text-emerald-400">✅ Auto recap sent to VIP channel!</span>';
+          showToast();
+        } else {
+          feedbackEl.innerHTML = `<span class="text-rose-400">❌ ${data.error || 'Failed'}</span>`;
+        }
+      } catch (err) {
+        feedbackEl.innerHTML = `<span class="text-rose-400">❌ Network error: ${err.message}</span>`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Send Now';
+        setTimeout(() => feedbackEl.innerHTML = '', 5000);
+      }
     }
 
     async function logTradeResult() {

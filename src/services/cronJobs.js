@@ -3,6 +3,77 @@ const db = require("./db");
 const { sendEmail } = require("./emailService");
 const logger = require("../utils/logger");
 
+// ── Weekly Performance Recap ──────────────────────────────────────────────────
+async function sendWeeklyRecapToVIP() {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_VIP_CHAT_ID || process.env.TELEGRAM_CHAT_ID;
+
+  if (!token || !chatId) {
+    logger.warn('[Cron] Weekly recap skipped: TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not set.');
+    return;
+  }
+
+  try {
+    // Fetch all signals and filter to the past 7 days
+    const allSignals = await db.getSignals(0);
+    const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const weekSignals = allSignals.filter(s => {
+      const t = typeof s.sentAt === 'string' ? new Date(s.sentAt).getTime() : Number(s.sentAt);
+      return t >= weekAgo && s.type === 'signal';
+    });
+
+    // Compute stats
+    let wins = 0, losses = 0, pipsGained = 0, pipsLost = 0;
+    for (const s of weekSignals) {
+      if (s.outcome === 'TP Hit') {
+        wins++;
+        pipsGained += Number(s.pips) || 0;
+      } else if (s.outcome === 'SL Hit') {
+        losses++;
+        pipsLost += Number(s.pips) || 0;
+      }
+    }
+    const total = wins + losses;
+    const winRate = total > 0 ? Math.round((wins / total) * 100) : 0;
+    const netPips = pipsGained - pipsLost;
+
+    // Get date range label e.g. "Jul 21 – Jul 27"
+    const now = new Date();
+    const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const fmt = d => d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+    const weekLabel = `${fmt(weekStart)} – ${fmt(now)}`;
+
+    const ratingEmoji = winRate >= 80 ? '🔥' : winRate >= 60 ? '✅' : '📊';
+
+    let msg = `📊 *WEEKLY PERFORMANCE RECAP* 📊\n`;
+    msg += `🗓️ *${weekLabel}*\n\n`;
+    msg += `━━━━━━━━━━━━━━━━━━━━━\n`;
+    msg += `✅ Wins: *${wins}*\n`;
+    msg += `❌ Losses: *${losses}*\n`;
+    msg += `🎯 Win Rate: *${winRate}%* ${ratingEmoji}\n`;
+    msg += `📈 Net Pips: *${netPips >= 0 ? '+' : ''}${netPips} pips*\n`;
+    msg += `🔢 Total Signals: *${weekSignals.length}*\n`;
+    msg += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
+    msg += `Stay consistent, manage risk, and let's go even harder next week! 💪💰`;
+
+    const tgUrl = `https://api.telegram.org/bot${token}/sendMessage`;
+    const response = await fetch(tgUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text: msg, parse_mode: 'Markdown' })
+    });
+    const result = await response.json();
+
+    if (result.ok) {
+      logger.info(`[Cron] Weekly recap sent to VIP (${weekLabel}): ${wins}W/${losses}L, ${netPips >= 0 ? '+' : ''}${netPips} pips.`);
+    } else {
+      logger.error(`[Cron] Weekly recap Telegram error: ${result.description}`);
+    }
+  } catch (err) {
+    logger.error(`[Cron] Weekly recap job failed: ${err.message}`);
+  }
+}
+
 function buildRenewalReminderHtml({ userName, expiryDate, renewalUrl, daysLeft }) {
   return `
   <!DOCTYPE html>
@@ -225,8 +296,14 @@ function startCronJobs() {
   cron.schedule("* * * * *", () => {
     processScheduledAlerts();
   });
+
+  // ── Weekly Performance Recap — Every Sunday at midnight (VIP Telegram) ──
+  cron.schedule("0 0 * * 0", () => {
+    logger.info("[Cron] Sending weekly performance recap to VIP channel...");
+    sendWeeklyRecapToVIP();
+  });
   
-  logger.info("[Cron] Jobs scheduled: VIP expiry daily, Signal Auto-Archive hourly, Alerts minutely");
+  logger.info("[Cron] Jobs scheduled: VIP expiry daily, Signal Auto-Archive hourly, Alerts minutely, Weekly Recap every Sunday midnight");
 }
 
-module.exports = { startCronJobs, computeAndSaveBadges, BADGE_DEFINITIONS, autoArchiveSignals, processScheduledAlerts };
+module.exports = { startCronJobs, computeAndSaveBadges, BADGE_DEFINITIONS, autoArchiveSignals, processScheduledAlerts, sendWeeklyRecapToVIP };
