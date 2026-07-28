@@ -138,12 +138,27 @@ router.post('/payhero-webhook', async (req, res) => {
         // We explicitly check ResultCode from M-Pesa if it exists.
         // If it's a C2B format payload, it might only have woocommerce_payment_status='complete'.
         let isSuccess = false;
+        let isFinal = false;
+
         if (body.response && body.response.ResultCode !== undefined) {
           isSuccess = (Number(body.response.ResultCode) === 0);
+          isFinal = true;
         } else if (body.response && body.response.woocommerce_payment_status === 'complete') {
           isSuccess = true;
+          isFinal = true;
+        } else if (body.response && (body.response.MpesaReceiptNumber || body.response.ReceiptNumber)) {
+          isSuccess = true;
+          isFinal = true;
         } else {
-          isSuccess = ['success', 'completed', 'successful'].includes(statusStr);
+          if (['failed', 'cancelled', 'rejected'].includes(statusStr)) {
+            isSuccess = false;
+            isFinal = true;
+          }
+        }
+
+        if (!isFinal) {
+          logger.info(`[Payhero Webhook] Interim webhook received for ${ref}, status: ${statusStr}. Ignoring to prevent bypass.`);
+          return res.status(200).json({ received: true, status: 'ignored_interim' });
         }
 
         payment.status = isSuccess ? 'Success' : 'Failed';
