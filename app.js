@@ -240,7 +240,40 @@ window.addEventListener('mousemove', (e) => {
 // Adds a subtle vibration when clicking buttons/links on mobile devices
 document.addEventListener('click', (e) => {
   const target = e.target.closest('button, a, .cursor-pointer');
-  if (target && navigator.vibrate) {
-    navigator.vibrate(15); // Light tap
+});
+
+// --- SCROLL REVEAL & PROGRESS BAR ---
+window.addEventListener('DOMContentLoaded', () => {
+  // Scroll Progress Bar
+  const progressBar = document.getElementById('scrollProgressBar');
+  if (progressBar) {
+    window.addEventListener('scroll', () => {
+      const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrolled = (winScroll / height) * 100;
+      progressBar.style.width = scrolled + '%';
+    });
+  }
+
+  // Scroll Reveal Animations
+  const reveals = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale');
+  if (reveals.length > 0 && 'IntersectionObserver' in window) {
+    const revealObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active');
+          observer.unobserve(entry.target); // Only animate once
+        }
+      });
+    }, {
+      root: null,
+      threshold: 0.1,
+      rootMargin: "0px 0px -50px 0px"
+    });
+
+    reveals.forEach(reveal => {
+      revealObserver.observe(reveal);
+    });
   }
 });
+
