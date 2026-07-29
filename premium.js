@@ -2077,6 +2077,10 @@ feather.replace();
         showToast('New Trade Signal ⚡', 'A new signal has been posted to the VIP group!', 'info');
       });
 
+      socket.on('news_alert', (data) => {
+        showToast(data.title || '🚨 High Impact News', data.message, 'warning');
+      });
+
       socket.on('livestreamUpdate', (data) => {
         const videoWrapper = document.getElementById('liveVideoWrapper');
         const offlinePlaceholder = document.getElementById('liveOfflinePlaceholder');

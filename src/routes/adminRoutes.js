@@ -660,6 +660,41 @@ router.post('/broadcast-to-tickets', validateAdminSession, async (req, res) => {
   }
 });
 
+// ── High Impact News Broadcast ──────────────────────────────────
+router.post('/broadcast-news', validateAdminSession, async (req, res) => {
+  const { title, message, type } = req.body;
+  if (!message || !message.trim()) {
+    return res.status(400).json({ ok: false, error: 'Message is required.' });
+  }
+  try {
+    const { broadcastPush } = require('../services/pushService');
+    const { sendTelegramMessage } = require('../services/telegramBot');
+    
+    const displayTitle = title || `🚨 High Impact News: ${type || 'Alert'}`;
+    
+    // 1. Push Notification
+    await broadcastPush(displayTitle, message, '/');
+    
+    // 2. Telegram Broadcast
+    const tgMsg = `📣 *${displayTitle}*\n\n${message}`;
+    const generalChat = process.env.TELEGRAM_CHAT_ID;
+    const vipChat = process.env.TELEGRAM_VIP_CHAT_ID;
+    
+    if (generalChat) await sendTelegramMessage(generalChat, tgMsg);
+    if (vipChat && vipChat !== generalChat) await sendTelegramMessage(vipChat, tgMsg);
+
+    // 3. Socket Broadcast (All Connected Users)
+    if (req.app.get('io')) {
+      req.app.get('io').emit('news_alert', { title: displayTitle, message, type, timestamp: Date.now() });
+    }
+
+    res.json({ ok: true, message: 'High Impact News broadcasted successfully!' });
+  } catch (err) {
+    console.error('[Broadcast News]', err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // ── Signal Outcome & Category Management ────────────────────────────────
 router.post('/signals/:id/outcome', validateAdminSession, async (req, res) => {
   const { outcome } = req.body;

@@ -844,6 +844,41 @@
           </div>
         </div>
       </div>
+
+      <!-- 🚨 3.5. HIGH IMPACT NEWS SECTION -->
+      <div class="flex items-center gap-4 mb-6 mt-12">
+        <div class="flex-1 h-px bg-white/10"></div>
+        <div class="flex items-center gap-2 px-4 py-2 rounded-full border border-rose-500/30 bg-rose-500/5">
+          <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+          <span class="text-rose-500 text-xs font-bold tracking-[0.2em] uppercase">High Impact News</span>
+        </div>
+        <div class="flex-1 h-px bg-white/10"></div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div class="lg:col-span-7 space-y-5">
+          <div class="glass-card rounded-2xl p-6 border border-white/10">
+            <span class="block text-xs font-bold uppercase tracking-wider text-rose-500 mb-4">Quick News Templates</span>
+            <div class="grid grid-cols-3 gap-3 mb-4">
+              <button type="button" onclick="applyNewsTemplate('CPI')" class="eng-btn py-3 rounded-xl border border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/10 text-rose-400 text-xs font-bold transition cursor-pointer">CPI Alert</button>
+              <button type="button" onclick="applyNewsTemplate('FOMC')" class="eng-btn py-3 rounded-xl border border-amber-500/20 bg-amber-500/5 hover:bg-amber-500/10 text-amber-400 text-xs font-bold transition cursor-pointer">FOMC Meeting</button>
+              <button type="button" onclick="applyNewsTemplate('NFP')" class="eng-btn py-3 rounded-xl border border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/10 text-blue-400 text-xs font-bold transition cursor-pointer">NFP Release</button>
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-gray-400 mb-1">News Title</label>
+              <input type="text" id="newsTitle" placeholder="e.g. 🚨 High Impact News: CPI" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm mb-4 focus:border-rose-500/50 focus:outline-none transition" />
+              
+              <label class="block text-[11px] font-semibold text-gray-400 mb-1">News Details</label>
+              <textarea id="newsMessage" rows="4" placeholder="Enter the news details..." class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-rose-500/50 focus:outline-none transition resize-none mb-4"></textarea>
+              
+              <button type="button" onclick="broadcastNews()" class="w-full py-4 px-6 rounded-xl font-bold bg-gradient-to-r from-rose-600 to-rose-500 hover:brightness-110 shadow-lg text-white active:scale-95 transition cursor-pointer">
+                <i data-feather="radio" class="w-4 h-4 inline mr-2"></i> Broadcast News
+              </button>
+              <div id="newsFeedback" class="text-xs font-semibold mt-2 text-center min-h-[16px]"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- 🎙️ 4. LIVE SESSIONS SECTION -->
     <div id="livePanel" class="hidden mt-12 mb-20">
 
@@ -2983,6 +3018,55 @@
       const imgPreview = document.getElementById('engImgPreview');
       imgPreview.src = '';
       imgContainer.classList.add('hidden');
+    }
+
+    function applyNewsTemplate(type) {
+      const titleEl = document.getElementById('newsTitle');
+      const msgEl = document.getElementById('newsMessage');
+      if (type === 'CPI') {
+        titleEl.value = '🚨 High Impact News: US CPI Data Release';
+        msgEl.value = 'Expect extreme market volatility due to the upcoming US Consumer Price Index (CPI) release. Tighten stop losses and manage risk carefully.';
+      } else if (type === 'FOMC') {
+        titleEl.value = '🚨 High Impact News: FOMC Meeting / Interest Rates';
+        msgEl.value = 'The Federal Reserve is about to announce interest rate decisions. Massive volatility expected. Avoid entering new positions right now.';
+      } else if (type === 'NFP') {
+        titleEl.value = '🚨 High Impact News: US Non-Farm Payrolls (NFP)';
+        msgEl.value = 'NFP data release is imminent! The market will experience wild swings. Protect your capital and wait for a clear direction.';
+      }
+    }
+
+    async function broadcastNews() {
+      const adminKey = localStorage.getItem('pa_admin_key') || '';
+      const adminToken = localStorage.getItem('pa_admin_token') || '';
+      const title = document.getElementById('newsTitle').value;
+      const message = document.getElementById('newsMessage').value;
+      const fb = document.getElementById('newsFeedback');
+      
+      if (!message.trim()) {
+        fb.innerHTML = '<span class="text-rose-400">Error: Message is required.</span>';
+        return;
+      }
+      
+      fb.innerHTML = '<span class="text-amber-400">Broadcasting...</span>';
+      
+      try {
+        const res = await fetch('/api/admin/broadcast-news', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey, 'x-admin-token': adminToken },
+          body: JSON.stringify({ title, message, type: 'News' })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          fb.innerHTML = '<span class="text-emerald-400">✅ Broadcast sent successfully!</span>';
+          showToast();
+          document.getElementById('newsTitle').value = '';
+          document.getElementById('newsMessage').value = '';
+        } else {
+          fb.innerHTML = `<span class="text-rose-400">❌ Error: ${data.error}</span>`;
+        }
+      } catch (err) {
+        fb.innerHTML = `<span class="text-rose-400">❌ Network Error: ${err.message}</span>`;
+      }
     }
 
     async function sendEngagement() {
