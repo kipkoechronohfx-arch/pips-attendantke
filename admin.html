@@ -2296,8 +2296,12 @@
         localStorage.removeItem('pa_chat_id');
         localStorage.removeItem('pa_vip_chat_id');
         localStorage.removeItem('pa_admin_key');
-        
-        setTimeout(() => { window.location.reload(); }, 500);
+
+        // Show the login/setup panel in-page without reloading
+        setTimeout(() => {
+          isLoggingOut = false;
+          if (typeof checkCredentials === 'function') checkCredentials();
+        }, 500);
       }
       return response;
     };
