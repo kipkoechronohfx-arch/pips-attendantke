@@ -662,13 +662,12 @@ router.post('/broadcast-to-tickets', validateAdminSession, async (req, res) => {
 
 // ── High Impact News Broadcast ──────────────────────────────────
 router.post('/broadcast-news', validateAdminSession, async (req, res) => {
-  const { title, message, type } = req.body;
+  const { title, message, type, botToken, generalChat, vipChat } = req.body;
   if (!message || !message.trim()) {
     return res.status(400).json({ ok: false, error: 'Message is required.' });
   }
   try {
     const { broadcastPush } = require('../services/pushService');
-    const { sendTelegramMessage } = require('../services/telegramBot');
     
     const displayTitle = title || `🚨 High Impact News: ${type || 'Alert'}`;
     
@@ -676,12 +675,27 @@ router.post('/broadcast-news', validateAdminSession, async (req, res) => {
     await broadcastPush(displayTitle, message, '/');
     
     // 2. Telegram Broadcast
-    const tgMsg = `📣 *${displayTitle}*\n\n${message}`;
-    const generalChat = process.env.TELEGRAM_CHAT_ID;
-    const vipChat = process.env.TELEGRAM_VIP_CHAT_ID;
+    const token = botToken || process.env.TELEGRAM_BOT_TOKEN;
+    const gChat = generalChat || process.env.TELEGRAM_CHAT_ID;
+    const vChat = vipChat || process.env.TELEGRAM_VIP_CHAT_ID;
     
-    if (generalChat) await sendTelegramMessage(generalChat, tgMsg);
-    if (vipChat && vipChat !== generalChat) await sendTelegramMessage(vipChat, tgMsg);
+    if (token) {
+      const tgMsg = `📣 *${displayTitle}*\n\n${message}`;
+      const sendTg = async (chatId) => {
+        try {
+          const fetch = require('node-fetch');
+          await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: chatId, text: tgMsg, parse_mode: 'Markdown', disable_web_page_preview: true })
+          });
+        } catch (e) {
+          console.error('[TG News Send Error]', e);
+        }
+      };
+      if (gChat) await sendTg(gChat);
+      if (vChat && vChat !== gChat) await sendTg(vChat);
+    }
 
     // 3. Socket Broadcast (All Connected Users)
     if (req.app.get('io')) {

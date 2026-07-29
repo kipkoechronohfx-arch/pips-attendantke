@@ -3038,6 +3038,10 @@
     async function broadcastNews() {
       const adminKey = localStorage.getItem('pa_admin_key') || '';
       const adminToken = localStorage.getItem('pa_admin_token') || '';
+      const botToken = localStorage.getItem('pa_bot_token');
+      const generalChat = localStorage.getItem('pa_chat_id');
+      const vipChat = localStorage.getItem('pa_vip_chat_id');
+      
       const title = document.getElementById('newsTitle').value;
       const message = document.getElementById('newsMessage').value;
       const fb = document.getElementById('newsFeedback');
@@ -3053,7 +3057,7 @@
         const res = await fetch('/api/admin/broadcast-news', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey, 'x-admin-token': adminToken },
-          body: JSON.stringify({ title, message, type: 'News' })
+          body: JSON.stringify({ title, message, type: 'News', botToken, generalChat, vipChat })
         });
         const data = await res.json();
         if (data.ok) {
