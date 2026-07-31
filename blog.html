@@ -81,10 +81,10 @@
     <!-- Header -->
     <div class="text-center mb-16">
       <h1 class="text-4xl md:text-5xl font-black tracking-tight mb-4 drop-shadow-md">
-        Trading <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-200">Insights & Analysis</span>
+        Forex Education, <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-200">Strategies & Market Analysis</span>
       </h1>
       <p class="text-gray-400 max-w-2xl mx-auto text-sm md:text-base leading-relaxed">
-        Master the markets with our comprehensive guides on what is forex, how to trade forex safely, and our exclusive daily market analysis. We break down complex strategies into actionable steps.
+        In-depth guides on Forex trading psychology, XAUUSD gold strategy, prop firm challenges, and more. Written by professional traders for disciplined learners.
       </p>
     </div>
 
@@ -129,11 +129,14 @@
 
     // Static fallback articles (shown if API returns 0 posts)
     const STATIC_ARTICLES = [
+      { title: 'How to Pass a Prop Firm Challenge in 2026', excerpt: 'The exact risk management framework our team uses to pass FTMO, FundedNext, and more — consistently.', category: 'Prop Firm', href: 'how-to-pass-prop-firm-challenge.html' },
+      { title: 'XAUUSD Gold Trading Strategy: How to Trade Gold in 2026', excerpt: 'Timeframes, liquidity sweeps, order block entries — the complete gold trading playbook our analysts use daily.', category: 'Market Analysis', href: 'xauusd-gold-trading-strategy.html' },
+      { title: 'Forex Trading Psychology: How to Master Your Mindset', excerpt: 'Overcome revenge trading, FOMO, and emotional decision-making with the mental frameworks elite traders use.', category: 'Risk Management', href: 'forex-trading-psychology.html' },
       { title: 'Forex Signals for Beginners', excerpt: 'Discover what is forex, how the global markets operate, and how to use premium signals safely.', category: 'Forex Education', href: 'forex-signals-for-beginners.html' },
       { title: 'Daily Market Analysis: Gold (XAUUSD)', excerpt: 'A breakdown of key liquidity zones and high probability setups for gold trading this week.', category: 'Market Analysis', href: 'daily-market-analysis-gold.html' },
-      { title: 'How to Pass a Prop Firm Challenge', excerpt: 'Our step-by-step framework to handle strict drawdowns and secure a funded account.', category: 'Prop Firm', href: 'propfirm.html' },
       { title: 'Understanding Signals and Pips', excerpt: 'What are forex signals? How do you calculate pips? A foundational guide to navigating the premium setups.', category: 'Forex Education', href: 'understanding-signals-and-pips.html' },
       { title: 'Finding the Best Brokers in 2026', excerpt: 'We review the best brokers for fast execution, tight spreads, and trading success.', category: 'Brokers', href: 'finding-the-best-brokers-in-2026.html' },
+      { title: 'How to Pass a Prop Firm Challenge', excerpt: 'Our step-by-step framework to handle strict drawdowns and secure a funded account.', category: 'Prop Firm', href: 'propfirm.html' },
     ];
 
     function buildCard(title, excerpt, category, href, date) {
