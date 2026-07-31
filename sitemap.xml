@@ -1,58 +1,102 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- ── Tier 1: Core Pages (Priority 1.0 – 0.9) ── -->
   <url>
     <loc>https://www.pipsattendant.com/</loc>
-    <lastmod>2026-07-18</lastmod>
+    <lastmod>2026-08-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://www.pipsattendant.com/premium.html</loc>
-    <lastmod>2026-07-18</lastmod>
+    <lastmod>2026-08-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- ── Tier 2: Service Landing Pages (Priority 0.9 – 0.8) ── -->
+  <url>
+    <loc>https://www.pipsattendant.com/forex-signals.html</loc>
+    <lastmod>2026-08-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.pipsattendant.com/copy-trading.html</loc>
+    <lastmod>2026-08-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://www.pipsattendant.com/propfirm.html</loc>
-    <lastmod>2026-07-14</lastmod>
+    <lastmod>2026-08-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.pipsattendant.com/forex-signals-for-beginners.html</loc>
-    <lastmod>2026-07-14</lastmod>
+    <loc>https://www.pipsattendant.com/education.html</loc>
+    <lastmod>2026-08-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <!-- ── Tier 3: Content & Tools (Priority 0.8 – 0.7) ── -->
   <url>
     <loc>https://www.pipsattendant.com/blog.html</loc>
-    <lastmod>2026-07-18</lastmod>
+    <lastmod>2026-08-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.pipsattendant.com/article.html</loc>
-    <lastmod>2026-07-18</lastmod>
-    <changefreq>weekly</changefreq>
+    <loc>https://www.pipsattendant.com/calculator.html</loc>
+    <lastmod>2026-08-01</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.pipsattendant.com/journal.html</loc>
-    <lastmod>2026-07-14</lastmod>
+    <lastmod>2026-08-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.pipsattendant.com/history.html</loc>
-    <lastmod>2026-07-14</lastmod>
+    <lastmod>2026-08-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- ── Tier 4: Blog Articles (Priority 0.7 – 0.6) ── -->
+  <url>
+    <loc>https://www.pipsattendant.com/forex-signals-for-beginners.html</loc>
+    <lastmod>2026-08-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.pipsattendant.com/daily-market-analysis-gold.html</loc>
+    <lastmod>2026-08-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.pipsattendant.com/finding-the-best-brokers-in-2026.html</loc>
+    <lastmod>2026-08-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.pipsattendant.com/calculator.html</loc>
-    <lastmod>2026-07-14</lastmod>
+    <loc>https://www.pipsattendant.com/understanding-signals-and-pips.html</loc>
+    <lastmod>2026-08-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
-</urlset>
+  <url>
+    <loc>https://www.pipsattendant.com/article.html</loc>
+    <lastmod>2026-08-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
 
+</urlset>
