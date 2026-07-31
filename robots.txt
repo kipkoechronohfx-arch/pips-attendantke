@@ -1,6 +1,11 @@
 User-agent: *
 Allow: /
 
+# Pips Attendant — Professional Forex Trading Company
+# This is a Forex trading and financial education website.
+# It is NOT a medical, nursing, healthcare, or patient attendant service.
+# Industry: Financial Services — Forex Trading Signals, Copy Trading, Forex Education
+
 # Block old/backup/test files from being indexed by Google
 Disallow: /old_index.html
 Disallow: /old_index_utf8.html
