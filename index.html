@@ -1054,27 +1054,222 @@
     <!-- WhatsApp Broadcast Widget (Moved to bottom) -->
     <div class="flex justify-center mb-12">
             <!-- WhatsApp Broadcast Widget -->
-            <div id="waBroadcastCard" class="max-w-xs mx-auto p-6 glass-card border border-gold/20 relative overflow-hidden text-center transition-all duration-300">
+            <div id="waBroadcastCard" class="w-full max-w-sm mx-auto p-7 glass-card border border-gold/20 relative overflow-hidden text-center transition-all duration-300 rounded-2xl">
                 <button type="button" onclick="document.getElementById('waBroadcastCard').style.display='none'" class="absolute top-3 right-3 text-gray-500 hover:text-white transition z-20"><i data-feather="x" class="w-4 h-4"></i></button>
                 <div class="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent"></div>
                 <div class="relative z-10">
-                    <div class="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4 border border-green-500/30">
-                        <i data-feather="message-circle" class="w-6 h-6 text-green-400"></i>
+                    <div class="w-14 h-14 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4 border border-green-500/30">
+                        <i data-feather="message-circle" class="w-7 h-7 text-green-400"></i>
                     </div>
-                    <h3 class="text-white font-bold mb-2">Free WhatsApp Broadcast</h3>
-                    <p class="text-xs text-gray-400 mb-6">Get occasional free signal teasers directly to your WhatsApp.</p>
-                    <form onsubmit="subscribeWhatsApp(event)" class="space-y-3">
-                        <div class="flex rounded-xl overflow-hidden border border-white/10 focus-within:border-green-400/50 transition bg-black/40">
-                                                        <select id="waCountry" class="bg-black/60 text-white text-sm px-3 py-3 border-r border-white/10 focus:outline-none cursor-pointer flex-shrink-0 w-[120px]">
-                                <option value="+93" >🇦🇫 +93 Afghanistan</option>\n                                <option value="+355" >🇦🇱 +355 Albania</option>\n                                <option value="+213" >🇩🇿 +213 Algeria</option>\n                                <option value="+376" >🇦🇩 +376 Andorra</option>\n                                <option value="+244" >🇦🇴 +244 Angola</option>\n                                <option value="+1" >🇦🇬 +1 Antigua and ...</option>\n                                <option value="+54" >🇦🇷 +54 Argentina</option>\n                                <option value="+374" >🇦🇲 +374 Armenia</option>\n                                <option value="+61" >🇦🇺 +61 Australia</option>\n                                <option value="+43" >🇦🇹 +43 Austria</option>\n                                <option value="+994" >🇦🇿 +994 Azerbaijan</option>\n                                <option value="+1" >🇧🇸 +1 Bahamas</option>\n                                <option value="+973" >🇧🇭 +973 Bahrain</option>\n                                <option value="+880" >🇧🇩 +880 Bangladesh</option>\n                                <option value="+1" >🇧🇧 +1 Barbados</option>\n                                <option value="+375" >🇧🇾 +375 Belarus</option>\n                                <option value="+32" >🇧🇪 +32 Belgium</option>\n                                <option value="+501" >🇧🇿 +501 Belize</option>\n                                <option value="+229" >🇧🇯 +229 Benin</option>\n                                <option value="+975" >🇧🇹 +975 Bhutan</option>\n                                <option value="+591" >🇧🇴 +591 Bolivia</option>\n                                <option value="+387" >🇧🇦 +387 Bosnia and H...</option>\n                                <option value="+267" >🇧🇼 +267 Botswana</option>\n                                <option value="+55" >🇧🇷 +55 Brazil</option>\n                                <option value="+673" >🇧🇳 +673 Brunei</option>\n                                <option value="+359" >🇧🇬 +359 Bulgaria</option>\n                                <option value="+226" >🇧🇫 +226 Burkina Faso</option>\n                                <option value="+257" >🇧🇮 +257 Burundi</option>\n                                <option value="+238" >🇨🇻 +238 Cabo Verde</option>\n                                <option value="+855" >🇰🇭 +855 Cambodia</option>\n                                <option value="+237" >🇨🇲 +237 Cameroon</option>\n                                <option value="+1" >🇨🇦 +1 Canada</option>\n                                <option value="+236" >🇨🇫 +236 Central Afri...</option>\n                                <option value="+235" >🇹🇩 +235 Chad</option>\n                                <option value="+56" >🇨🇱 +56 Chile</option>\n                                <option value="+86" >🇨🇳 +86 China</option>\n                                <option value="+57" >🇨🇴 +57 Colombia</option>\n                                <option value="+269" >🇰🇲 +269 Comoros</option>\n                                <option value="+242" >🇨🇬 +242 Congo (Congo...</option>\n                                <option value="+506" >🇨🇷 +506 Costa Rica</option>\n                                <option value="+385" >🇭🇷 +385 Croatia</option>\n                                <option value="+53" >🇨🇺 +53 Cuba</option>\n                                <option value="+357" >🇨🇾 +357 Cyprus</option>\n                                <option value="+420" >🇨🇿 +420 Czechia (Cze...</option>\n                                <option value="+243" >🇨🇩 +243 Democratic R...</option>\n                                <option value="+45" >🇩🇰 +45 Denmark</option>\n                                <option value="+253" >🇩🇯 +253 Djibouti</option>\n                                <option value="+1" >🇩🇲 +1 Dominica</option>\n                                <option value="+1" >🇩🇴 +1 Dominican Re...</option>\n                                <option value="+593" >🇪🇨 +593 Ecuador</option>\n                                <option value="+20" >🇪🇬 +20 Egypt</option>\n                                <option value="+503" >🇸🇻 +503 El Salvador</option>\n                                <option value="+240" >🇬🇶 +240 Equatorial G...</option>\n                                <option value="+291" >🇪🇷 +291 Eritrea</option>\n                                <option value="+372" >🇪🇪 +372 Estonia</option>\n                                <option value="+268" >🇸🇿 +268 Eswatini (fm...</option>\n                                <option value="+251" >🇪🇹 +251 Ethiopia</option>\n                                <option value="+679" >🇫🇯 +679 Fiji</option>\n                                <option value="+358" >🇫🇮 +358 Finland</option>\n                                <option value="+33" >🇫🇷 +33 France</option>\n                                <option value="+241" >🇬🇦 +241 Gabon</option>\n                                <option value="+220" >🇬🇲 +220 Gambia</option>\n                                <option value="+995" >🇬🇪 +995 Georgia</option>\n                                <option value="+49" >🇩🇪 +49 Germany</option>\n                                <option value="+233" >🇬🇭 +233 Ghana</option>\n                                <option value="+30" >🇬🇷 +30 Greece</option>\n                                <option value="+1" >🇬🇩 +1 Grenada</option>\n                                <option value="+502" >🇬🇹 +502 Guatemala</option>\n                                <option value="+224" >🇬🇳 +224 Guinea</option>\n                                <option value="+245" >🇬🇼 +245 Guinea-Bissa...</option>\n                                <option value="+592" >🇬🇾 +592 Guyana</option>\n                                <option value="+509" >🇭🇹 +509 Haiti</option>\n                                <option value="+504" >🇭🇳 +504 Honduras</option>\n                                <option value="+36" >🇭🇺 +36 Hungary</option>\n                                <option value="+354" >🇮🇸 +354 Iceland</option>\n                                <option value="+91" >🇮🇳 +91 India</option>\n                                <option value="+62" >🇮🇩 +62 Indonesia</option>\n                                <option value="+98" >🇮🇷 +98 Iran</option>\n                                <option value="+964" >🇮🇶 +964 Iraq</option>\n                                <option value="+353" >🇮🇪 +353 Ireland</option>\n                                <option value="+972" >🇮🇱 +972 Israel</option>\n                                <option value="+39" >🇮🇹 +39 Italy</option>\n                                <option value="+1" >🇯🇲 +1 Jamaica</option>\n                                <option value="+81" >🇯🇵 +81 Japan</option>\n                                <option value="+962" >🇯🇴 +962 Jordan</option>\n                                <option value="+7" >🇰🇿 +7 Kazakhstan</option>\n                                <option value="+254" selected>🇰🇪 +254 Kenya</option>\n                                <option value="+686" >🇰🇮 +686 Kiribati</option>\n                                <option value="+965" >🇰🇼 +965 Kuwait</option>\n                                <option value="+996" >🇰🇬 +996 Kyrgyzstan</option>\n                                <option value="+856" >🇱🇦 +856 Laos</option>\n                                <option value="+371" >🇱🇻 +371 Latvia</option>\n                                <option value="+961" >🇱🇧 +961 Lebanon</option>\n                                <option value="+266" >🇱🇸 +266 Lesotho</option>\n                                <option value="+231" >🇱🇷 +231 Liberia</option>\n                                <option value="+218" >🇱🇾 +218 Libya</option>\n                                <option value="+423" >🇱🇮 +423 Liechtenstei...</option>\n                                <option value="+370" >🇱🇹 +370 Lithuania</option>\n                                <option value="+352" >🇱🇺 +352 Luxembourg</option>\n                                <option value="+261" >🇲🇬 +261 Madagascar</option>\n                                <option value="+265" >🇲🇼 +265 Malawi</option>\n                                <option value="+60" >🇲🇾 +60 Malaysia</option>\n                                <option value="+960" >🇲🇻 +960 Maldives</option>\n                                <option value="+223" >🇲🇱 +223 Mali</option>\n                                <option value="+356" >🇲🇹 +356 Malta</option>\n                                <option value="+692" >🇲🇭 +692 Marshall Isl...</option>\n                                <option value="+222" >🇲🇷 +222 Mauritania</option>\n                                <option value="+230" >🇲🇺 +230 Mauritius</option>\n                                <option value="+52" >🇲🇽 +52 Mexico</option>\n                                <option value="+691" >🇫🇲 +691 Micronesia</option>\n                                <option value="+373" >🇲🇩 +373 Moldova</option>\n                                <option value="+377" >🇲🇨 +377 Monaco</option>\n                                <option value="+976" >🇲🇳 +976 Mongolia</option>\n                                <option value="+382" >🇲🇪 +382 Montenegro</option>\n                                <option value="+212" >🇲🇦 +212 Morocco</option>\n                                <option value="+258" >🇲🇿 +258 Mozambique</option>\n                                <option value="+95" >🇲🇲 +95 Myanmar (for...</option>\n                                <option value="+264" >🇳🇦 +264 Namibia</option>\n                                <option value="+674" >🇳🇷 +674 Nauru</option>\n                                <option value="+977" >🇳🇵 +977 Nepal</option>\n                                <option value="+31" >🇳🇱 +31 Netherlands</option>\n                                <option value="+64" >🇳🇿 +64 New Zealand</option>\n                                <option value="+505" >🇳🇮 +505 Nicaragua</option>\n                                <option value="+227" >🇳🇪 +227 Niger</option>\n                                <option value="+234" >🇳🇬 +234 Nigeria</option>\n                                <option value="+850" >🇰🇵 +850 North Korea</option>\n                                <option value="+389" >🇲🇰 +389 North Macedo...</option>\n                                <option value="+47" >🇳🇴 +47 Norway</option>\n                                <option value="+968" >🇴🇲 +968 Oman</option>\n                                <option value="+92" >🇵🇰 +92 Pakistan</option>\n                                <option value="+680" >🇵🇼 +680 Palau</option>\n                                <option value="+970" >🇵🇸 +970 Palestine St...</option>\n                                <option value="+507" >🇵🇦 +507 Panama</option>\n                                <option value="+675" >🇵🇬 +675 Papua New Gu...</option>\n                                <option value="+595" >🇵🇾 +595 Paraguay</option>\n                                <option value="+51" >🇵🇪 +51 Peru</option>\n                                <option value="+63" >🇵🇭 +63 Philippines</option>\n                                <option value="+48" >🇵🇱 +48 Poland</option>\n                                <option value="+351" >🇵🇹 +351 Portugal</option>\n                                <option value="+974" >🇶🇦 +974 Qatar</option>\n                                <option value="+40" >🇷🇴 +40 Romania</option>\n                                <option value="+7" >🇷🇺 +7 Russia</option>\n                                <option value="+250" >🇷🇼 +250 Rwanda</option>\n                                <option value="+1" >🇰🇳 +1 Saint Kitts ...</option>\n                                <option value="+1" >🇱🇨 +1 Saint Lucia</option>\n                                <option value="+1" >🇻🇨 +1 Saint Vincen...</option>\n                                <option value="+685" >🇼🇸 +685 Samoa</option>\n                                <option value="+378" >🇸🇲 +378 San Marino</option>\n                                <option value="+239" >🇸🇹 +239 Sao Tome and...</option>\n                                <option value="+966" >🇸🇦 +966 Saudi Arabia</option>\n                                <option value="+221" >🇸🇳 +221 Senegal</option>\n                                <option value="+381" >🇷🇸 +381 Serbia</option>\n                                <option value="+248" >🇸🇨 +248 Seychelles</option>\n                                <option value="+232" >🇸🇱 +232 Sierra Leone</option>\n                                <option value="+65" >🇸🇬 +65 Singapore</option>\n                                <option value="+421" >🇸🇰 +421 Slovakia</option>\n                                <option value="+386" >🇸🇮 +386 Slovenia</option>\n                                <option value="+677" >🇸🇧 +677 Solomon Isla...</option>\n                                <option value="+252" >🇸🇴 +252 Somalia</option>\n                                <option value="+27" >🇿🇦 +27 South Africa</option>\n                                <option value="+82" >🇰🇷 +82 South Korea</option>\n                                <option value="+211" >🇸🇸 +211 South Sudan</option>\n                                <option value="+34" >🇪🇸 +34 Spain</option>\n                                <option value="+94" >🇱🇰 +94 Sri Lanka</option>\n                                <option value="+249" >🇸🇩 +249 Sudan</option>\n                                <option value="+597" >🇸🇷 +597 Suriname</option>\n                                <option value="+46" >🇸🇪 +46 Sweden</option>\n                                <option value="+41" >🇨🇭 +41 Switzerland</option>\n                                <option value="+963" >🇸🇾 +963 Syria</option>\n                                <option value="+992" >🇹🇯 +992 Tajikistan</option>\n                                <option value="+255" >🇹🇿 +255 Tanzania</option>\n                                <option value="+66" >🇹🇭 +66 Thailand</option>\n                                <option value="+670" >🇹🇱 +670 Timor-Leste</option>\n                                <option value="+228" >🇹🇬 +228 Togo</option>\n                                <option value="+676" >🇹🇴 +676 Tonga</option>\n                                <option value="+1" >🇹🇹 +1 Trinidad and...</option>\n                                <option value="+216" >🇹🇳 +216 Tunisia</option>\n                                <option value="+90" >🇹🇷 +90 Turkey</option>\n                                <option value="+993" >🇹🇲 +993 Turkmenistan</option>\n                                <option value="+688" >🇹🇻 +688 Tuvalu</option>\n                                <option value="+256" >🇺🇬 +256 Uganda</option>\n                                <option value="+380" >🇺🇦 +380 Ukraine</option>\n                                <option value="+971" >🇦🇪 +971 United Arab ...</option>\n                                <option value="+44" >🇬🇧 +44 United Kingd...</option>\n                                <option value="+1" >🇺🇸 +1 United State...</option>\n                                <option value="+598" >🇺🇾 +598 Uruguay</option>\n                                <option value="+998" >🇺🇿 +998 Uzbekistan</option>\n                                <option value="+678" >🇻🇺 +678 Vanuatu</option>\n                                <option value="+58" >🇻🇪 +58 Venezuela</option>\n                                <option value="+84" >🇻🇳 +84 Vietnam</option>\n                                <option value="+967" >🇾🇪 +967 Yemen</option>\n                                <option value="+260" >🇿🇲 +260 Zambia</option>\n                                <option value="+263" >🇿🇼 +263 Zimbabwe</option>
+                    <h3 class="text-white font-bold text-lg mb-1">Free WhatsApp Broadcast</h3>
+                    <p class="text-xs text-gray-400 mb-6 leading-relaxed">Get occasional free Forex signal teasers delivered directly to your WhatsApp.</p>
+                    <form onsubmit="subscribeWhatsApp(event)" class="space-y-3 text-left">
+                        <div>
+                            <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1.5 block">Select Country</label>
+                            <select id="waCountry" class="w-full bg-black/60 text-white text-sm px-4 py-3 rounded-xl border border-white/10 focus:outline-none focus:border-green-400/50 cursor-pointer">
+                                <option value="+93">🇦🇫 +93 — Afghanistan</option>
+                                <option value="+355">🇦🇱 +355 — Albania</option>
+                                <option value="+213">🇩🇿 +213 — Algeria</option>
+                                <option value="+376">🇦🇩 +376 — Andorra</option>
+                                <option value="+244">🇦🇴 +244 — Angola</option>
+                                <option value="+1">🇦🇬 +1 — Antigua and Barbuda</option>
+                                <option value="+54">🇦🇷 +54 — Argentina</option>
+                                <option value="+374">🇦🇲 +374 — Armenia</option>
+                                <option value="+61">🇦🇺 +61 — Australia</option>
+                                <option value="+43">🇦🇹 +43 — Austria</option>
+                                <option value="+994">🇦🇿 +994 — Azerbaijan</option>
+                                <option value="+1">🇧🇸 +1 — Bahamas</option>
+                                <option value="+973">🇧🇭 +973 — Bahrain</option>
+                                <option value="+880">🇧🇩 +880 — Bangladesh</option>
+                                <option value="+1">🇧🇧 +1 — Barbados</option>
+                                <option value="+375">🇧🇾 +375 — Belarus</option>
+                                <option value="+32">🇧🇪 +32 — Belgium</option>
+                                <option value="+501">🇧🇿 +501 — Belize</option>
+                                <option value="+229">🇧🇯 +229 — Benin</option>
+                                <option value="+975">🇧🇹 +975 — Bhutan</option>
+                                <option value="+591">🇧🇴 +591 — Bolivia</option>
+                                <option value="+387">🇧🇦 +387 — Bosnia and Herzegovina</option>
+                                <option value="+267">🇧🇼 +267 — Botswana</option>
+                                <option value="+55">🇧🇷 +55 — Brazil</option>
+                                <option value="+673">🇧🇳 +673 — Brunei</option>
+                                <option value="+359">🇧🇬 +359 — Bulgaria</option>
+                                <option value="+226">🇧🇫 +226 — Burkina Faso</option>
+                                <option value="+257">🇧🇮 +257 — Burundi</option>
+                                <option value="+238">🇨🇻 +238 — Cabo Verde</option>
+                                <option value="+855">🇰🇭 +855 — Cambodia</option>
+                                <option value="+237">🇨🇲 +237 — Cameroon</option>
+                                <option value="+1">🇨🇦 +1 — Canada</option>
+                                <option value="+236">🇨🇫 +236 — Central African Republic</option>
+                                <option value="+235">🇹🇩 +235 — Chad</option>
+                                <option value="+56">🇨🇱 +56 — Chile</option>
+                                <option value="+86">🇨🇳 +86 — China</option>
+                                <option value="+57">🇨🇴 +57 — Colombia</option>
+                                <option value="+269">🇰🇲 +269 — Comoros</option>
+                                <option value="+242">🇨🇬 +242 — Congo</option>
+                                <option value="+506">🇨🇷 +506 — Costa Rica</option>
+                                <option value="+385">🇭🇷 +385 — Croatia</option>
+                                <option value="+53">🇨🇺 +53 — Cuba</option>
+                                <option value="+357">🇨🇾 +357 — Cyprus</option>
+                                <option value="+420">🇨🇿 +420 — Czech Republic</option>
+                                <option value="+243">🇨🇩 +243 — DR Congo</option>
+                                <option value="+45">🇩🇰 +45 — Denmark</option>
+                                <option value="+253">🇩🇯 +253 — Djibouti</option>
+                                <option value="+1">🇩🇲 +1 — Dominica</option>
+                                <option value="+1">🇩🇴 +1 — Dominican Republic</option>
+                                <option value="+593">🇪🇨 +593 — Ecuador</option>
+                                <option value="+20">🇪🇬 +20 — Egypt</option>
+                                <option value="+503">🇸🇻 +503 — El Salvador</option>
+                                <option value="+240">🇬🇶 +240 — Equatorial Guinea</option>
+                                <option value="+291">🇪🇷 +291 — Eritrea</option>
+                                <option value="+372">🇪🇪 +372 — Estonia</option>
+                                <option value="+268">🇸🇿 +268 — Eswatini</option>
+                                <option value="+251">🇪🇹 +251 — Ethiopia</option>
+                                <option value="+679">🇫🇯 +679 — Fiji</option>
+                                <option value="+358">🇫🇮 +358 — Finland</option>
+                                <option value="+33">🇫🇷 +33 — France</option>
+                                <option value="+241">🇬🇦 +241 — Gabon</option>
+                                <option value="+220">🇬🇲 +220 — Gambia</option>
+                                <option value="+995">🇬🇪 +995 — Georgia</option>
+                                <option value="+49">🇩🇪 +49 — Germany</option>
+                                <option value="+233">🇬🇭 +233 — Ghana</option>
+                                <option value="+30">🇬🇷 +30 — Greece</option>
+                                <option value="+1">🇬🇩 +1 — Grenada</option>
+                                <option value="+502">🇬🇹 +502 — Guatemala</option>
+                                <option value="+224">🇬🇳 +224 — Guinea</option>
+                                <option value="+245">🇬🇼 +245 — Guinea-Bissau</option>
+                                <option value="+592">🇬🇾 +592 — Guyana</option>
+                                <option value="+509">🇭🇹 +509 — Haiti</option>
+                                <option value="+504">🇭🇳 +504 — Honduras</option>
+                                <option value="+36">🇭🇺 +36 — Hungary</option>
+                                <option value="+354">🇮🇸 +354 — Iceland</option>
+                                <option value="+91">🇮🇳 +91 — India</option>
+                                <option value="+62">🇮🇩 +62 — Indonesia</option>
+                                <option value="+98">🇮🇷 +98 — Iran</option>
+                                <option value="+964">🇮🇶 +964 — Iraq</option>
+                                <option value="+353">🇮🇪 +353 — Ireland</option>
+                                <option value="+972">🇮🇱 +972 — Israel</option>
+                                <option value="+39">🇮🇹 +39 — Italy</option>
+                                <option value="+1">🇯🇲 +1 — Jamaica</option>
+                                <option value="+81">🇯🇵 +81 — Japan</option>
+                                <option value="+962">🇯🇴 +962 — Jordan</option>
+                                <option value="+7">🇰🇿 +7 — Kazakhstan</option>
+                                <option value="+254" selected>🇰🇪 +254 — Kenya</option>
+                                <option value="+686">🇰🇮 +686 — Kiribati</option>
+                                <option value="+965">🇰🇼 +965 — Kuwait</option>
+                                <option value="+996">🇰🇬 +996 — Kyrgyzstan</option>
+                                <option value="+856">🇱🇦 +856 — Laos</option>
+                                <option value="+371">🇱🇻 +371 — Latvia</option>
+                                <option value="+961">🇱🇧 +961 — Lebanon</option>
+                                <option value="+266">🇱🇸 +266 — Lesotho</option>
+                                <option value="+231">🇱🇷 +231 — Liberia</option>
+                                <option value="+218">🇱🇾 +218 — Libya</option>
+                                <option value="+423">🇱🇮 +423 — Liechtenstein</option>
+                                <option value="+370">🇱🇹 +370 — Lithuania</option>
+                                <option value="+352">🇱🇺 +352 — Luxembourg</option>
+                                <option value="+261">🇲🇬 +261 — Madagascar</option>
+                                <option value="+265">🇲🇼 +265 — Malawi</option>
+                                <option value="+60">🇲🇾 +60 — Malaysia</option>
+                                <option value="+960">🇲🇻 +960 — Maldives</option>
+                                <option value="+223">🇲🇱 +223 — Mali</option>
+                                <option value="+356">🇲🇹 +356 — Malta</option>
+                                <option value="+692">🇲🇭 +692 — Marshall Islands</option>
+                                <option value="+222">🇲🇷 +222 — Mauritania</option>
+                                <option value="+230">🇲🇺 +230 — Mauritius</option>
+                                <option value="+52">🇲🇽 +52 — Mexico</option>
+                                <option value="+691">🇫🇲 +691 — Micronesia</option>
+                                <option value="+373">🇲🇩 +373 — Moldova</option>
+                                <option value="+377">🇲🇨 +377 — Monaco</option>
+                                <option value="+976">🇲🇳 +976 — Mongolia</option>
+                                <option value="+382">🇲🇪 +382 — Montenegro</option>
+                                <option value="+212">🇲🇦 +212 — Morocco</option>
+                                <option value="+258">🇲🇿 +258 — Mozambique</option>
+                                <option value="+95">🇲🇲 +95 — Myanmar</option>
+                                <option value="+264">🇳🇦 +264 — Namibia</option>
+                                <option value="+674">🇳🇷 +674 — Nauru</option>
+                                <option value="+977">🇳🇵 +977 — Nepal</option>
+                                <option value="+31">🇳🇱 +31 — Netherlands</option>
+                                <option value="+64">🇳🇿 +64 — New Zealand</option>
+                                <option value="+505">🇳🇮 +505 — Nicaragua</option>
+                                <option value="+227">🇳🇪 +227 — Niger</option>
+                                <option value="+234">🇳🇬 +234 — Nigeria</option>
+                                <option value="+850">🇰🇵 +850 — North Korea</option>
+                                <option value="+389">🇲🇰 +389 — North Macedonia</option>
+                                <option value="+47">🇳🇴 +47 — Norway</option>
+                                <option value="+968">🇴🇲 +968 — Oman</option>
+                                <option value="+92">🇵🇰 +92 — Pakistan</option>
+                                <option value="+680">🇵🇼 +680 — Palau</option>
+                                <option value="+970">🇵🇸 +970 — Palestine</option>
+                                <option value="+507">🇵🇦 +507 — Panama</option>
+                                <option value="+675">🇵🇬 +675 — Papua New Guinea</option>
+                                <option value="+595">🇵🇾 +595 — Paraguay</option>
+                                <option value="+51">🇵🇪 +51 — Peru</option>
+                                <option value="+63">🇵🇭 +63 — Philippines</option>
+                                <option value="+48">🇵🇱 +48 — Poland</option>
+                                <option value="+351">🇵🇹 +351 — Portugal</option>
+                                <option value="+974">🇶🇦 +974 — Qatar</option>
+                                <option value="+40">🇷🇴 +40 — Romania</option>
+                                <option value="+7">🇷🇺 +7 — Russia</option>
+                                <option value="+250">🇷🇼 +250 — Rwanda</option>
+                                <option value="+1">🇰🇳 +1 — Saint Kitts and Nevis</option>
+                                <option value="+1">🇱🇨 +1 — Saint Lucia</option>
+                                <option value="+1">🇻🇨 +1 — Saint Vincent and the Grenadines</option>
+                                <option value="+685">🇼🇸 +685 — Samoa</option>
+                                <option value="+378">🇸🇲 +378 — San Marino</option>
+                                <option value="+239">🇸🇹 +239 — Sao Tome and Principe</option>
+                                <option value="+966">🇸🇦 +966 — Saudi Arabia</option>
+                                <option value="+221">🇸🇳 +221 — Senegal</option>
+                                <option value="+381">🇷🇸 +381 — Serbia</option>
+                                <option value="+248">🇸🇨 +248 — Seychelles</option>
+                                <option value="+232">🇸🇱 +232 — Sierra Leone</option>
+                                <option value="+65">🇸🇬 +65 — Singapore</option>
+                                <option value="+421">🇸🇰 +421 — Slovakia</option>
+                                <option value="+386">🇸🇮 +386 — Slovenia</option>
+                                <option value="+677">🇸🇧 +677 — Solomon Islands</option>
+                                <option value="+252">🇸🇴 +252 — Somalia</option>
+                                <option value="+27">🇿🇦 +27 — South Africa</option>
+                                <option value="+82">🇰🇷 +82 — South Korea</option>
+                                <option value="+211">🇸🇸 +211 — South Sudan</option>
+                                <option value="+34">🇪🇸 +34 — Spain</option>
+                                <option value="+94">🇱🇰 +94 — Sri Lanka</option>
+                                <option value="+249">🇸🇩 +249 — Sudan</option>
+                                <option value="+597">🇸🇷 +597 — Suriname</option>
+                                <option value="+46">🇸🇪 +46 — Sweden</option>
+                                <option value="+41">🇨🇭 +41 — Switzerland</option>
+                                <option value="+963">🇸🇾 +963 — Syria</option>
+                                <option value="+992">🇹🇯 +992 — Tajikistan</option>
+                                <option value="+255">🇹🇿 +255 — Tanzania</option>
+                                <option value="+66">🇹🇭 +66 — Thailand</option>
+                                <option value="+670">🇹🇱 +670 — Timor-Leste</option>
+                                <option value="+228">🇹🇬 +228 — Togo</option>
+                                <option value="+676">🇹🇴 +676 — Tonga</option>
+                                <option value="+1">🇹🇹 +1 — Trinidad and Tobago</option>
+                                <option value="+216">🇹🇳 +216 — Tunisia</option>
+                                <option value="+90">🇹🇷 +90 — Turkey</option>
+                                <option value="+993">🇹🇲 +993 — Turkmenistan</option>
+                                <option value="+688">🇹🇻 +688 — Tuvalu</option>
+                                <option value="+256">🇺🇬 +256 — Uganda</option>
+                                <option value="+380">🇺🇦 +380 — Ukraine</option>
+                                <option value="+971">🇦🇪 +971 — United Arab Emirates</option>
+                                <option value="+44">🇬🇧 +44 — United Kingdom</option>
+                                <option value="+1">🇺🇸 +1 — United States</option>
+                                <option value="+598">🇺🇾 +598 — Uruguay</option>
+                                <option value="+998">🇺🇿 +998 — Uzbekistan</option>
+                                <option value="+678">🇻🇺 +678 — Vanuatu</option>
+                                <option value="+58">🇻🇪 +58 — Venezuela</option>
+                                <option value="+84">🇻🇳 +84 — Vietnam</option>
+                                <option value="+967">🇾🇪 +967 — Yemen</option>
+                                <option value="+260">🇿🇲 +260 — Zambia</option>
+                                <option value="+263">🇿🇼 +263 — Zimbabwe</option>
                             </select>
-                            <input type="tel" id="waPhone" placeholder="712 345 678" required class="flex-1 min-w-0 px-3 py-3 bg-transparent text-white text-sm focus:outline-none font-mono" />
                         </div>
-                        <p class="text-[10px] text-gray-500 text-left -mt-1">Enter your number without the country code</p>
-                        <button type="submit" id="waBtn" class="w-full py-3 rounded-xl font-bold bg-gradient-to-r from-green-500 to-green-400 text-black hover:brightness-110 active:scale-95 transition duration-300 text-sm shadow-lg">
+                        <div>
+                            <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1.5 block">Phone Number <span class="normal-case text-gray-600">(without country code)</span></label>
+                            <input type="tel" id="waPhone" placeholder="e.g. 712 345 678" required class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 focus:outline-none focus:border-green-400/50 text-white text-sm font-mono transition" />
+                        </div>
+                        <button type="submit" id="waBtn" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r from-green-500 to-green-400 text-black hover:brightness-110 active:scale-95 transition duration-300 text-sm shadow-lg shadow-green-500/20">
                             Join Broadcast
                         </button>
-                        <div id="waStatus" class="text-xs min-h-[16px] mt-2"></div>
+                        <div id="waStatus" class="text-xs min-h-[16px] text-center"></div>
                     </form>
                 </div>
             </div>
