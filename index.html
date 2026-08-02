@@ -1943,34 +1943,60 @@
       }
     }, 15000);
   </script>
-    <!-- Lazy Load TradingView Widget -->
+    <!-- TradingView Economic Calendar Widget -->
     <script>
     document.addEventListener("DOMContentLoaded", function() {
         var calendarContainer = document.getElementById('tv-calendar-container');
-        if ('IntersectionObserver' in window && calendarContainer) {
+        if (!calendarContainer) return;
+
+        function loadTVCalendar() {
+            // Clear loading placeholder
+            calendarContainer.innerHTML = '';
+
+            // Create the widget wrapper div
+            var widgetDiv = document.createElement('div');
+            widgetDiv.className = 'tradingview-widget-container__widget';
+            widgetDiv.style.height = '600px';
+            widgetDiv.style.width = '100%';
+            calendarContainer.appendChild(widgetDiv);
+
+            // Create config script (must be added BEFORE the widget script)
+            var configScript = document.createElement('script');
+            configScript.type = 'text/javascript';
+            configScript.text = JSON.stringify({
+                "colorTheme": "dark",
+                "isTransparent": true,
+                "width": "100%",
+                "height": "600",
+                "locale": "en",
+                "importanceFilter": "0,1",
+                "currencyFilter": "USD,EUR,GBP,JPY,CNY,AUD,CAD,CHF,NZD",
+                "countryFilter": "us,eu,gb,jp,cn,au,ca,ch,nz"
+            });
+            calendarContainer.appendChild(configScript);
+
+            // Create the widget loader script
+            var widgetScript = document.createElement('script');
+            widgetScript.type = 'text/javascript';
+            widgetScript.src = 'https://s3.tradingview.com/external-embedding/embed-widget-events.js';
+            widgetScript.async = true;
+            calendarContainer.appendChild(widgetScript);
+        }
+
+        if ('IntersectionObserver' in window) {
             var observer = new IntersectionObserver(function(entries) {
                 if (entries[0].isIntersecting) {
-                    var script = document.createElement('script');
-                    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-events.js";
-                    script.async = true;
-                    script.innerHTML = JSON.stringify({
-                        "colorTheme": "dark",
-                        "isTransparent": true,
-                        "width": "100%",
-                        "height": "600",
-                        "locale": "en",
-                        "importanceFilter": "0,1",
-                        "currencyFilter": "USD,EUR,ITL,NZD,CHF,AUD,BRL,CAD,CNY,CZK,DKK,HKD,INR,JPY,KRW,MXN,NOK,PLN,RUB,SGD,ZAR,SEK,TRY",
-                        "countryFilter": "ar,au,br,ca,cn,fr,de,in,id,it,jp,kr,mx,ru,sa,za,tr,gb,us,eu"
-                    });
-                    calendarContainer.appendChild(script);
+                    loadTVCalendar();
                     observer.disconnect();
                 }
-            }, { rootMargin: '200px' });
+            }, { rootMargin: '300px' });
             observer.observe(calendarContainer);
+        } else {
+            loadTVCalendar();
         }
     });
     </script>
+
 
 </body>
 </html>
