@@ -866,12 +866,12 @@
                 <div class="w-16 h-16 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center mx-auto mb-6">
                     <i data-feather="zap" class="w-6 h-6 text-gold"></i>
                 </div>
-                <h2 class="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight">📅 Upcoming <span class="secondary-gradient-text">High-Impact News</span></h2>
+                <h2 class="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight">📅 Upcoming <span class="secondary-gradient-text drop-shadow-[0_0_15px_rgba(255,215,0,0.3)]">High-Impact News</span></h2>
                 <p class="text-gray-400 max-w-2xl mx-auto text-sm md:text-base">Know before you trade. Real-time high-impact economic events that move the markets.</p>
 
                 <!-- Impact legend & Myfxbook link -->
                 <div class="flex flex-wrap justify-center gap-3 mt-6">
-                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-red-500/15 text-red-400 border border-red-500/20 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-red-500 inline-block"></span> High Impact</span>
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-red-500/15 text-red-400 border border-red-500/20 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-red-500 inline-block animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]"></span> High Impact</span>
                     <span class="px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/20 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span> Medium Impact</span>
                     <span class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-500/15 text-gray-400 border border-gray-500/20">USD · EUR · GBP · JPY · CNY</span>
                     <a href="https://www.myfxbook.com/forex-economic-calendar" target="_blank" class="px-3 py-1 rounded-full text-xs font-semibold bg-gold/15 text-gold border border-gold/20 hover:bg-gold/25 transition-colors flex items-center gap-1">
@@ -881,9 +881,9 @@
             </div>
 
             <!-- Events widget card -->
-            <div data-tilt data-tilt-max="3" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.1" class="glass-card rounded-3xl overflow-hidden border border-gold/20 shadow-[0_8px_40px_rgba(0,0,0,0.6)]">
+            <div data-tilt data-tilt-max="3" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.1" class="glass-card rounded-3xl overflow-hidden border border-gold/20 shadow-[0_8px_40px_rgba(0,0,0,0.6)] hover:border-gold/40 hover:shadow-[0_0_40px_rgba(255,215,0,0.15)] transition-all duration-500 bg-black/40 backdrop-blur-xl">
                 <!-- Top bar -->
-                <div class="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-black">
+                <div class="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-transparent">
                     <div class="flex items-center gap-2">
                         <div class="w-3 h-3 rounded-full bg-red-500 opacity-70"></div>
                         <div class="w-3 h-3 rounded-full bg-amber-400 opacity-70"></div>
@@ -897,12 +897,12 @@
                 </div>
 
                 <!-- TradingView Economic Calendar Widget (Lazy Loaded) -->
-                <div class="tradingview-widget-container bg-black" id="tv-calendar-container" style="height:600px; width:100%;">
+                <div class="tradingview-widget-container bg-transparent" id="tv-calendar-container" style="height:600px; width:100%;">
                     <div class="tradingview-widget-container__widget" style="height:600px; width:100%;"></div>
                 </div>
 
                 <!-- Footer -->
-                <div class="px-6 py-3 border-t border-white/5 flex items-center justify-between bg-[#0a0a0a]">
+                <div class="px-6 py-3 border-t border-white/5 flex items-center justify-between bg-transparent">
                     <span class="text-xs text-gray-400 font-medium">News events by <a href="https://www.tradingview.com/" target="_blank" class="text-gold hover:text-gold/80 transition-colors font-bold">TradingView</a></span>
                     <a href="https://www.myfxbook.com/forex-economic-calendar" target="_blank" class="text-xs text-gray-400 hover:text-gold transition-colors flex items-center gap-1 font-bold">
                         <i data-feather="trending-up" class="w-3 h-3"></i> More on Myfxbook
