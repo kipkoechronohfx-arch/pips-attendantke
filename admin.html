@@ -344,6 +344,10 @@
               <input type="radio" name="targetChannel" value="vip" class="w-4 h-4 text-amber-500 bg-black border-white/20 focus:ring-amber-500 focus:ring-offset-gray-900" />
               <span class="text-sm font-medium text-gray-300 group-hover:text-amber-400 transition">VIP Channel</span>
             </label>
+            <label class="flex items-center gap-2 cursor-pointer group">
+              <input type="radio" name="targetChannel" value="both" class="w-4 h-4 text-purple-500 bg-black border-white/20 focus:ring-purple-500 focus:ring-offset-gray-900" />
+              <span class="text-sm font-medium text-gray-300 group-hover:text-purple-400 transition">Both (General + VIP)</span>
+            </label>
           </div>
         </div>
 
@@ -2758,10 +2762,16 @@
 
       // Determine target channel
       const targetSelection = document.querySelector('input[name="targetChannel"]:checked');
-      const isVip = targetSelection && targetSelection.value === 'vip';
-      const chat = isVip ? vipChat : generalChat;
+      const targetVal = targetSelection ? targetSelection.value : 'general';
+      
+      let chat = generalChat;
+      if (targetVal === 'vip') {
+        chat = vipChat;
+      } else if (targetVal === 'both') {
+        chat = `${generalChat},${vipChat}`;
+      }
 
-      if (isVip && !chat) {
+      if ((targetVal === 'vip' || targetVal === 'both') && !vipChat) {
         alert('VIP Channel Chat ID is missing! Please configure it in Setup Credentials.');
         return;
       }
