@@ -2,6 +2,8 @@ const cron = require("node-cron");
 const db = require("./db");
 const { sendEmail } = require("./emailService");
 const logger = require("../utils/logger");
+const fetch = require('node-fetch');
+const FormData = require('form-data');
 
 // ── Weekly Performance Recap ──────────────────────────────────────────────────
 async function sendWeeklyRecapToVIP() {
@@ -293,6 +295,92 @@ async function processScheduledAlerts() {
   }
 }
 
+async function processScheduledBroadcasts() {
+  try {
+    const broadcasts = await db.getScheduledBroadcasts();
+    const now = Date.now();
+    for (const b of broadcasts) {
+      if (b.scheduledTime <= now) {
+        logger.info(`[Cron] Processing scheduled broadcast ID: ${b._id}`);
+        const token = process.env.TELEGRAM_BOT_TOKEN;
+        if (!token) {
+          logger.warn(`[Cron] Missing Telegram Token for broadcast ${b._id}`);
+          continue;
+        }
+
+        const TG_BASE = `https://api.telegram.org/bot${token}`;
+        const chatIds = Array.isArray(b.chatId) ? b.chatId : String(b.chatId).split(',').map(id => id.trim()).filter(Boolean);
+        
+        let telegramError = null;
+        for (const currentChatId of chatIds) {
+          try {
+            if (b.imageBase64) {
+              const mimeMatch = b.imageBase64.match(/^data:(image\/[\w+.-]+);base64,/);
+              const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+              const ext = mimeType.split('/')[1].replace('+xml', '');
+              const base64Data = b.imageBase64.replace(/^data:image\/[\w+.-]+;base64,/, '');
+              const imgBuffer = Buffer.from(base64Data, 'base64');
+
+              const form = new FormData();
+              form.append('chat_id', currentChatId);
+              form.append('photo', imgBuffer, {
+                filename: `image.${ext}`,
+                contentType: mimeType,
+                knownLength: imgBuffer.length,
+              });
+              if (b.text) {
+                form.append('caption', b.text);
+                form.append('parse_mode', 'Markdown');
+              }
+
+              const photoRes = await fetch(`${TG_BASE}/sendPhoto`, { method: 'POST', body: form, headers: form.getHeaders() });
+              const photoData = await photoRes.json();
+              if (!photoData.ok) throw new Error(photoData.description);
+            } else if (b.text) {
+              const msgRes = await fetch(`${TG_BASE}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: currentChatId, text: b.text, parse_mode: 'Markdown', disable_web_page_preview: false }),
+              });
+              const msgData = await msgRes.json();
+              if (!msgData.ok) throw new Error(msgData.description);
+            }
+
+            if (b.stickerId) {
+              const stickerRes = await fetch(`${TG_BASE}/sendSticker`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: currentChatId, sticker: b.stickerId }),
+              });
+              const stickerData = await stickerRes.json();
+              if (!stickerData.ok) throw new Error(stickerData.description);
+            }
+          } catch (tgErr) {
+            telegramError = tgErr.message;
+            logger.error(`[Cron] Telegram send failed for ${currentChatId}: ${telegramError}`);
+          }
+        }
+
+        // Add to signals history if successful or partially successful
+        await db.addSignal({
+          id: Date.now(),
+          type: b.type,
+          text: b.text || '',
+          sentAt: new Date().toISOString(),
+          entryTime: b.entryTime || null,
+          category: b.category || null
+        });
+
+        // Delete from queue regardless of success to prevent infinite loop of failing messages
+        await db.deleteScheduledBroadcast(b._id);
+        logger.info(`[Cron] Completed scheduled broadcast ${b._id}`);
+      }
+    }
+  } catch (err) {
+    logger.error(`[Cron] processScheduledBroadcasts failed: ${err.message}`);
+  }
+}
+
 function startCronJobs() {
   cron.schedule("0 5 * * *", () => {
     logger.info("[Cron] Running daily VIP expiry reminder check...");
@@ -305,9 +393,10 @@ function startCronJobs() {
     autoArchiveSignals();
   });
   
-  // Run every minute to check scheduled alerts
+  // Run every minute to check scheduled alerts and broadcasts
   cron.schedule("* * * * *", () => {
     processScheduledAlerts();
+    processScheduledBroadcasts();
   });
 
   // ── Weekly Performance Recap — Every Sunday at midnight (VIP Telegram) ──

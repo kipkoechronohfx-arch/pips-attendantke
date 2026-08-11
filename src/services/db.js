@@ -26,6 +26,7 @@ const ANNOUNCEMENTS_FILE = path.join(DATA_DIR, 'announcements.json');
 const LEADS_FILE        = path.join(DATA_DIR, 'leads.json');
 const BLOG_FILE         = path.join(DATA_DIR, 'blog_posts.json');
 const SCHEDULED_ALERTS_FILE = path.join(DATA_DIR, 'scheduled_alerts.json');
+const SCHEDULED_BROADCASTS_FILE = path.join(DATA_DIR, 'scheduled_broadcasts.json');
 
 // Ensure local fallback folders exist
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
@@ -1537,6 +1538,49 @@ async function deleteScheduledAlert(id) {
   writeJSON(SCHEDULED_ALERTS_FILE, alerts);
   return alerts.length < initialLen;
 }
+
+function getScheduledBroadcastsColl() { return db.collection('scheduled_broadcasts'); }
+
+async function getScheduledBroadcasts() {
+  if (db) {
+    try {
+      return await getScheduledBroadcastsColl().find({}).toArray();
+    } catch (err) {}
+  }
+  return readJSON(SCHEDULED_BROADCASTS_FILE);
+}
+
+async function addScheduledBroadcast(broadcast) {
+  if (db) {
+    try {
+      if (!broadcast._id) broadcast._id = Date.now().toString();
+      await getScheduledBroadcastsColl().insertOne(broadcast);
+      return broadcast;
+    } catch (err) {}
+  }
+  let broadcasts = readJSON(SCHEDULED_BROADCASTS_FILE);
+  if (!broadcast._id) broadcast._id = Date.now().toString();
+  broadcasts.push(broadcast);
+  writeJSON(SCHEDULED_BROADCASTS_FILE, broadcasts);
+  return broadcast;
+}
+
+async function deleteScheduledBroadcast(id) {
+  if (db) {
+    try {
+      const { ObjectId } = require('mongodb');
+      const isObjectId = /^[a-f\d]{24}$/i.test(String(id));
+      const filter = isObjectId ? { _id: new ObjectId(id) } : { _id: id };
+      const res = await getScheduledBroadcastsColl().deleteOne(filter);
+      return res.deletedCount > 0;
+    } catch (err) {}
+  }
+  let broadcasts = readJSON(SCHEDULED_BROADCASTS_FILE);
+  const initialLen = broadcasts.length;
+  broadcasts = broadcasts.filter(b => String(b._id) !== String(id));
+  writeJSON(SCHEDULED_BROADCASTS_FILE, broadcasts);
+  return broadcasts.length < initialLen;
+}
 module.exports = {
   connectDB, closeDB,
   getAppConfig, saveAppConfig,
@@ -1563,5 +1607,6 @@ module.exports = {
   getLeads, addLead, deleteLeadById,
   getBlogPosts, getBlogPostBySlug, saveBlogPost, deleteBlogPost,
   getScheduledAlerts, saveScheduledAlert, deleteScheduledAlert,
+  getScheduledBroadcasts, addScheduledBroadcast, deleteScheduledBroadcast,
   ping
 };

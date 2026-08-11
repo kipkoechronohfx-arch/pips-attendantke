@@ -135,6 +135,19 @@ router.post('/broadcast', async (req, res) => {
     return res.status(400).json({ ok: false, error: 'Provide text, image, or sticker.' });
   }
 
+  const { scheduledTime } = req.body;
+  
+  if (scheduledTime && scheduledTime > Date.now()) {
+    try {
+      const payloadToSave = { ...req.body };
+      delete payloadToSave.token; // Do not store the bot token in DB
+      await db.addScheduledBroadcast(payloadToSave);
+      return res.json({ ok: true, message: 'Broadcast scheduled successfully', scheduled: true });
+    } catch (err) {
+      return res.status(500).json({ ok: false, error: 'Failed to schedule broadcast: ' + err.message });
+    }
+  }
+
   const TG_BASE = `https://api.telegram.org/bot${token}`;
 
   try {

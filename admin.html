@@ -492,6 +492,13 @@
           </div>
         </div>
 
+        <!-- Schedule Send -->
+        <div>
+          <label class="block text-[11px] font-semibold text-gray-400 mb-1 flex items-center gap-1"><i data-feather="clock" class="w-3 h-3"></i> Schedule For (Optional)</label>
+          <input type="datetime-local" id="signalSchedule" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-neon-blue/50 focus:outline-none transition">
+          <p class="text-[9px] text-gray-500 mt-1">Leave empty to send immediately.</p>
+        </div>
+
         <!-- Submit Button Panel -->
         <div class="flex flex-col gap-3">
           <div id="feedbackMsg" class="text-xs font-semibold min-h-[18px]"></div>
@@ -606,6 +613,64 @@
             <p class="text-xs text-sky-400 font-semibold uppercase tracking-wider">Mute / Unmute</p>
           </div>
 
+        </div>
+
+        <!-- Admin Quick Pips Calculator -->
+        <div class="glass-card rounded-2xl p-5 border border-white/10 mt-4 flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+              <i data-feather="crosshair" class="w-3.5 h-3.5"></i> Pip & Risk Calculator
+            </span>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[10px] text-gray-400 uppercase font-semibold mb-1">Asset</label>
+              <select id="calcAsset" class="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-emerald-500/50" onchange="calculateRisk()">
+                <option value="forex">Forex (EURUSD, etc)</option>
+                <option value="jpy">Forex (JPY Pairs)</option>
+                <option value="xauusd">Gold (XAUUSD)</option>
+                <option value="btc">Bitcoin (BTCUSD)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] text-gray-400 uppercase font-semibold mb-1">Lot Size</label>
+              <input type="number" id="calcLotSize" step="0.01" value="0.10" class="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-emerald-500/50" oninput="calculateRisk()">
+            </div>
+            <div>
+              <label class="block text-[10px] text-gray-400 uppercase font-semibold mb-1">Entry Price</label>
+              <input type="number" id="calcEntry" step="0.00001" class="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-emerald-500/50" oninput="calculateRisk()">
+            </div>
+            <div>
+              <label class="block text-[10px] text-gray-400 uppercase font-semibold mb-1">Stop Loss</label>
+              <input type="number" id="calcSL" step="0.00001" class="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-emerald-500/50" oninput="calculateRisk()">
+            </div>
+          </div>
+          <div class="bg-black/50 border border-emerald-500/20 rounded-xl p-3 flex justify-between items-center mt-1">
+            <div class="flex flex-col">
+              <span class="text-[10px] text-gray-400 uppercase font-bold">SL Distance</span>
+              <span id="calcPipsOutput" class="text-sm font-bold text-white">0.0 pips</span>
+            </div>
+            <div class="flex flex-col text-right">
+              <span class="text-[10px] text-gray-400 uppercase font-bold">Total Risk</span>
+              <span id="calcRiskOutput" class="text-sm font-bold text-rose-400">$0.00</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Recent Broadcasts Panel -->
+      <div class="mt-8 glass-card rounded-2xl p-6 border border-white/10">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-bold uppercase tracking-wider text-neon-blue flex items-center gap-2">
+            <i data-feather="list" class="w-4 h-4"></i> Recent Broadcasts
+          </span>
+          <button onclick="loadRecentBroadcasts()" class="text-[10px] text-gray-400 hover:text-white flex items-center gap-1 transition cursor-pointer">
+            <i data-feather="refresh-cw" class="w-3 h-3"></i> Refresh
+          </button>
+        </div>
+        <div id="recentBroadcastsList" class="space-y-3 max-h-64 overflow-y-auto pr-2">
+          <div class="text-center py-4"><i data-feather="loader" class="w-4 h-4 animate-spin text-gray-500 mx-auto"></i></div>
         </div>
       </div>
     </div>
@@ -780,6 +845,12 @@
                 class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-neon-purple/50 focus:outline-none transition font-mono" />
               <p class="text-[10px] text-gray-500 mt-1">Find sticker File IDs by forwarding any sticker to <a href="https://t.me/RawDataBot" target="_blank" class="text-neon-blue hover:underline">@RawDataBot</a> on Telegram.</p>
             </div>
+          </div>
+
+          <!-- Schedule Send -->
+          <div class="mt-4 mb-2">
+            <label class="block text-[11px] font-semibold text-gray-400 mb-1 flex items-center gap-1"><i data-feather="clock" class="w-3 h-3"></i> Schedule For (Optional)</label>
+            <input type="datetime-local" id="engSchedule" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-neon-purple/50 focus:outline-none transition">
           </div>
 
           <!-- Action Buttons -->
@@ -965,6 +1036,12 @@
                 class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-rose-500/50 focus:outline-none transition resize-none font-sans"></textarea>
             </div>
 
+          </div>
+
+          <!-- Schedule Send -->
+          <div class="mt-4 mb-2">
+            <label class="block text-[11px] font-semibold text-gray-400 mb-1 flex items-center gap-1"><i data-feather="clock" class="w-3 h-3"></i> Schedule For (Optional)</label>
+            <input type="datetime-local" id="liveSchedule" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-rose-500/50 focus:outline-none transition">
           </div>
 
           <!-- Action Buttons -->
@@ -2814,13 +2891,18 @@
       
       const entryTime = document.getElementById('entryTime').value;
       const category = document.getElementById('signalCategory') ? document.getElementById('signalCategory').value : 'Forex';
+      
+      const scheduleVal = document.getElementById('signalSchedule').value;
+      const scheduledTime = scheduleVal ? new Date(scheduleVal).getTime() : null;
+
       const payload = {
         token: token,
         chatId: chat,
         text: messageText,
         type: 'signal',
         category: category,
-        entryTime: entryTime ? new Date(entryTime).getTime() : null
+        entryTime: entryTime ? new Date(entryTime).getTime() : null,
+        scheduledTime: scheduledTime
       };
 
       try {
@@ -3156,39 +3238,44 @@
         return;
       }
 
-      btn.disabled = true;
-      btn.classList.add('opacity-75', 'cursor-not-allowed');
-      feedbackMsg.innerHTML = '<span class="text-sky-400 animate-pulse">Sending via API...</span>';
+      const scheduleVal = document.getElementById('engSchedule').value;
+      const scheduledTime = scheduleVal ? new Date(scheduleVal).getTime() : null;
+      const payload = { token, chatId: chat, text, stickerId, type: 'engagement', scheduledTime };
+      const targetLabel = targetVal === 'both' ? 'General + VIP' : targetVal.toUpperCase();
+      
+      promptBroadcastConfirm(targetLabel, 'Engagement', text || '(Sticker/Image only)', async () => {
+        btn.disabled = true;
+        btn.classList.add('opacity-75', 'cursor-not-allowed');
+        feedbackMsg.innerHTML = '<span class="text-sky-400 animate-pulse">Sending via API...</span>';
 
-      const payload = { token, chatId: chat, text, stickerId, type: 'engagement' };
-
-      try {
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = async function(event) {
-            payload.imageBase64 = event.target.result;
+        try {
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = async function(event) {
+              payload.imageBase64 = event.target.result;
+              await sendPayload('/api/broadcast', payload, btn, feedbackMsg, () => {
+                document.getElementById('engMessage').value = '';
+                document.getElementById('engStickerId').value = '';
+                clearEngImage();
+                updateEngPreview();
+              });
+            };
+            reader.readAsDataURL(file);
+          } else {
             await sendPayload('/api/broadcast', payload, btn, feedbackMsg, () => {
               document.getElementById('engMessage').value = '';
               document.getElementById('engStickerId').value = '';
               clearEngImage();
               updateEngPreview();
             });
-          };
-          reader.readAsDataURL(file);
-        } else {
-          await sendPayload('/api/broadcast', payload, btn, feedbackMsg, () => {
-            document.getElementById('engMessage').value = '';
-            document.getElementById('engStickerId').value = '';
-            clearEngImage();
-            updateEngPreview();
-          });
+          }
+        } catch (err) {
+          console.error(err);
+          feedbackMsg.innerHTML = `<span class="text-rose-400">Error: ${err.message}</span>`;
+          btn.disabled = false;
+          btn.classList.remove('opacity-75', 'cursor-not-allowed');
         }
-      } catch (err) {
-        console.error(err);
-        feedbackMsg.innerHTML = `<span class="text-rose-400">Error: ${err.message}</span>`;
-        btn.disabled = false;
-        btn.classList.remove('opacity-75', 'cursor-not-allowed');
-      }
+      });
     }
 
     async function sendPayload(url, payload, btn, feedbackEl, onSuccess) {
@@ -3309,16 +3396,21 @@
       let fullMessage = msg;
       if (link) fullMessage += `\n\n${link}`;
 
-      btn.disabled = true;
-      btn.classList.add('opacity-75', 'cursor-not-allowed');
-      feedbackMsg.innerHTML = '<span class="text-sky-400 animate-pulse">Broadcasting via API...</span>';
+      const scheduleVal = document.getElementById('liveSchedule').value;
+      const scheduledTime = scheduleVal ? new Date(scheduleVal).getTime() : null;
+      const payload = { token, chatId: chat, text: fullMessage, type: 'live', scheduledTime };
+      const targetLabel = targetVal === 'both' ? 'General + VIP' : targetVal.toUpperCase();
 
-      const payload = { token, chatId: chat, text: fullMessage, type: 'live' };
-      
-      await sendPayload('/api/broadcast', payload, btn, feedbackMsg, () => {
-        document.getElementById('liveMessage').value = '';
-        document.getElementById('liveInviteLink').value = '';
-        updateLiveRoomPreview();
+      promptBroadcastConfirm(targetLabel, 'Live Session', fullMessage, async () => {
+        btn.disabled = true;
+        btn.classList.add('opacity-75', 'cursor-not-allowed');
+        feedbackMsg.innerHTML = '<span class="text-sky-400 animate-pulse">Broadcasting via API...</span>';
+        
+        await sendPayload('/api/broadcast', payload, btn, feedbackMsg, () => {
+          document.getElementById('liveMessage').value = '';
+          document.getElementById('liveInviteLink').value = '';
+          updateLiveRoomPreview();
+        });
       });
     }
 
@@ -6071,9 +6163,112 @@
       }
     }
 
+    // ── Recent Broadcasts Logic ────────────────────────────────────
+    async function loadRecentBroadcasts() {
+      const listEl = document.getElementById('recentBroadcastsList');
+      if (!listEl) return;
+      listEl.innerHTML = '<div class="text-center py-4"><i data-feather="loader" class="w-4 h-4 animate-spin text-gray-500 mx-auto"></i></div>';
+      if (window.feather) feather.replace();
+      
+      try {
+        const res = await fetch('/api/signals?limit=5');
+        const data = await res.json();
+        if (data.ok && data.signals && data.signals.length > 0) {
+          listEl.innerHTML = data.signals.map(s => `
+            <div class="flex flex-col bg-black/40 border border-white/5 rounded-xl p-3 hover:bg-white/5 transition">
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-[10px] font-bold text-sky-400 uppercase tracking-wider">${s.type || 'Signal'}</span>
+                <span class="text-[9px] text-gray-400">${new Date(s.sentAt).toLocaleString()}</span>
+              </div>
+              <p class="text-gray-300 text-xs font-sans whitespace-pre-wrap line-clamp-2">${(s.text || '').substring(0, 150)}${s.text && s.text.length > 150 ? '...' : ''}</p>
+            </div>
+          `).join('');
+        } else {
+          listEl.innerHTML = '<p class="text-gray-500 text-xs text-center py-4">No recent broadcasts found.</p>';
+        }
+      } catch (err) {
+        listEl.innerHTML = '<p class="text-rose-400 text-xs text-center py-4">Failed to load broadcasts.</p>';
+      }
+    }
+
     // Auto-fetch alerts when admin page loads
     document.addEventListener('DOMContentLoaded', () => {
       fetchScheduledAlerts();
+      loadRecentBroadcasts();
+    });
+
+    // ── Quick Pip & Risk Calculator Logic ─────────────────────────
+    function calculateRisk() {
+      const asset = document.getElementById('calcAsset').value;
+      const lots = parseFloat(document.getElementById('calcLotSize').value) || 0;
+      const entry = parseFloat(document.getElementById('calcEntry').value);
+      const sl = parseFloat(document.getElementById('calcSL').value);
+
+      const pipsOut = document.getElementById('calcPipsOutput');
+      const riskOut = document.getElementById('calcRiskOutput');
+
+      if (isNaN(entry) || isNaN(sl) || entry <= 0 || sl <= 0) {
+        pipsOut.textContent = '0.0 pips';
+        riskOut.textContent = '$0.00';
+        return;
+      }
+
+      const diff = Math.abs(entry - sl);
+      let pips = 0;
+      let pipValue = 0; // standard value per 1 lot
+
+      if (asset === 'forex') {
+        pips = diff * 10000;
+        pipValue = 10;
+      } else if (asset === 'jpy') {
+        pips = diff * 100;
+        pipValue = 10; // approx
+      } else if (asset === 'xauusd') {
+        pips = diff * 10; 
+        pipValue = 10;
+      } else if (asset === 'btc') {
+        pips = diff; 
+        pipValue = 1; // varies, generic $1 per point
+      }
+
+      pipsOut.textContent = pips.toFixed(1) + ' pips';
+      const risk = pips * pipValue * lots;
+      riskOut.textContent = '$' + risk.toFixed(2);
+    }
+
+    // ── Global Image Paste Handler ─────────────────────────────────
+    document.addEventListener('paste', (e) => {
+      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      let imageFile = null;
+      for (let index in items) {
+        const item = items[index];
+        if (item.kind === 'file' && item.type.startsWith('image/')) {
+          imageFile = item.getAsFile();
+          break;
+        }
+      }
+      if (!imageFile) return;
+
+      const dashboardPanel = document.getElementById('dashboardPanel');
+      const engagementPanel = document.getElementById('engagementPanel');
+
+      if (dashboardPanel && !dashboardPanel.classList.contains('hidden')) {
+        const input = document.getElementById('chartImage');
+        if (input) {
+          const dataTransfer = new DataTransfer();
+          dataTransfer.items.add(imageFile);
+          input.files = dataTransfer.files;
+          if (typeof handleImage === 'function') handleImage({ target: input });
+        }
+      } else if (engagementPanel && !engagementPanel.classList.contains('hidden')) {
+        const input = document.getElementById('engImage');
+        if (input) {
+          const dataTransfer = new DataTransfer();
+          dataTransfer.items.add(imageFile);
+          input.files = dataTransfer.files;
+          if (typeof handleEngImage === 'function') handleEngImage({ target: input });
+        }
+      }
     });
 
 </script>
