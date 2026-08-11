@@ -126,7 +126,7 @@ router.post('/push/subscribe', async (req, res) => {
 router.post('/broadcast', async (req, res) => {
   const token = req.body.token || process.env.TELEGRAM_BOT_TOKEN;
   const chatId = req.body.chatId || process.env.TELEGRAM_CHAT_ID;
-  const { text, imageBase64, stickerId, type = 'signal' } = req.body;
+  const { text, imageBase64, imagesBase64, stickerId, type = 'signal' } = req.body;
 
   if (!token || !chatId) {
     return res.status(400).json({ ok: false, error: 'Missing Telegram credentials.' });
@@ -155,7 +155,26 @@ router.post('/broadcast', async (req, res) => {
     try {
       const chatIds = Array.isArray(chatId) ? chatId : String(chatId).split(',').map(id => id.trim()).filter(Boolean);
       for (const currentChatId of chatIds) {
-        if (imageBase64) {
+        // Multi-image: send as Telegram media group album
+        if (imagesBase64 && imagesBase64.length > 1) {
+          const mediaGroup = [];
+          const form = new FormData();
+          imagesBase64.forEach((imgB64, idx) => {
+            const mimeMatch = imgB64.match(/^data:(image\/[\w+.-]+);base64,/);
+            const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+            const ext = mimeType.split('/')[1].replace('+xml', '');
+            const base64Data = imgB64.replace(/^data:image\/[\w+.-]+;base64,/, '');
+            const imgBuffer = Buffer.from(base64Data, 'base64');
+            const attachKey = `image${idx}`;
+            form.append(attachKey, imgBuffer, { filename: `${attachKey}.${ext}`, contentType: mimeType, knownLength: imgBuffer.length });
+            mediaGroup.push({ type: 'photo', media: `attach://${attachKey}`, ...(idx === 0 && text ? { caption: text, parse_mode: 'Markdown' } : {}) });
+          });
+          form.append('chat_id', currentChatId);
+          form.append('media', JSON.stringify(mediaGroup));
+          const albumRes = await fetch(`${TG_BASE}/sendMediaGroup`, { method: 'POST', body: form, headers: form.getHeaders() });
+          const albumData = await albumRes.json();
+          if (!albumData.ok) throw new Error(`Telegram album send failed for ${currentChatId}: ${albumData.description}`);
+        } else if (imageBase64) {
           const mimeMatch = imageBase64.match(/^data:(image\/[\w+.-]+);base64,/);
           const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
           const ext = mimeType.split('/')[1].replace('+xml', '');

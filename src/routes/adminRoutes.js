@@ -1702,4 +1702,76 @@ router.post('/push/broadcast', validateAdminSession, async (req, res) => {
   }
 });
 
+// ── Scheduled Broadcasts Management ────────────────────────────────
+router.get('/scheduled-broadcasts', validateAdminSession, async (req, res) => {
+  try {
+    const broadcasts = await db.getScheduledBroadcasts();
+    res.json({ ok: true, broadcasts });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.delete('/scheduled-broadcasts/:id', validateAdminSession, async (req, res) => {
+  try {
+    const success = await db.deleteScheduledBroadcast(req.params.id);
+    if (success) {
+      res.json({ ok: true, message: 'Scheduled broadcast cancelled.' });
+    } else {
+      res.status(404).json({ ok: false, error: 'Broadcast not found.' });
+    }
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── Generate AI Rationale for Signals ────────────────────────────
+router.post('/generate-rationale', validateAdminSession, async (req, res) => {
+  try {
+    const { asset, entry, sl, tp, type } = req.body;
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(400).json({ ok: false, error: 'GEMINI_API_KEY is not configured.' });
+    }
+
+    const prompt = `Write a short, professional, 2-3 sentence technical rationale for a Forex/Crypto trading signal. Do not give financial advice, just state the technical structure.
+Asset: ${asset || 'Forex Pair'}
+Direction: ${type || 'Trade'}
+Entry Price: ${entry || 'Market'}
+Stop Loss: ${sl || 'Unknown'}
+Take Profit: ${tp || 'Unknown'}
+
+Keep it strictly about price action, demand/supply zones, or trend continuations. Do not mention indicators you cannot see. Be concise and persuasive.`;
+
+    const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
+    const payload = {
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.7, maxOutputTokens: 150 }
+    };
+
+    const response = await fetch(GEMINI_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Gemini API Error: ${response.status} ${errText}`);
+    }
+
+    const data = await response.json();
+    let rationale = '';
+    if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+      rationale = data.candidates[0].content.parts.map(p => p.text).join(' ').trim();
+    } else {
+      throw new Error('No content returned from Gemini.');
+    }
+
+    res.json({ ok: true, rationale });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;

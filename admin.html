@@ -329,6 +329,22 @@
     <!-- 📊 2. MAIN BROADCAST INTERACTIVE DASHBOARD -->
     <div id="dashboardPanel" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-8">
       
+      <!-- Performance Analytics Chart (Full Width) -->
+      <div class="lg:col-span-12 glass-card rounded-2xl p-6 border border-white/10">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2">
+            <i data-feather="trending-up" class="w-4 h-4"></i> Performance Analytics (Last 30 Days)
+          </span>
+          <div class="flex items-center gap-3">
+            <span id="perfWinRate" class="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded-lg">Win Rate: --</span>
+            <span id="perfNetPips" class="text-xs font-bold text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2 py-1 rounded-lg">Net Pips: --</span>
+          </div>
+        </div>
+        <div class="relative h-40">
+          <canvas id="perfChart"></canvas>
+        </div>
+      </div>
+
       <!-- Left Column: Form Controls (7 cols) -->
       <form id="broadcastForm" onsubmit="sendBroadcast(event)" class="lg:col-span-7 space-y-6">
         
@@ -471,22 +487,29 @@
 
           <div class="grid grid-cols-1 gap-4">
             <div>
-              <label class="block text-[11px] font-semibold text-gray-400 mb-1">📸 Upload Chart Screenshot (Optional)</label>
+              <label class="block text-[11px] font-semibold text-gray-400 mb-1">📸 Chart Screenshot(s) — Up to 4 images</label>
               <div class="flex items-center gap-2">
-                <input type="file" id="chartImage" accept="image/*" onchange="handleImageUpload(event)" class="hidden" />
+                <input type="file" id="chartImage" accept="image/*" multiple onchange="handleImageUpload(event)" class="hidden" />
                 <label for="chartImage" class="flex-1 px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-gray-400 text-sm hover:border-neon-blue hover:text-white transition duration-200 cursor-pointer flex items-center gap-2">
                   <i data-feather="image" class="w-4 h-4"></i>
-                  <span id="fileNameLabel">Choose Image...</span>
+                  <span id="fileNameLabel">Choose Image(s)... (max 4)</span>
                 </label>
                 <button type="button" id="clearImageBtn" onclick="clearImage()" class="hidden px-3.5 py-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 hover:border-rose-500 text-rose-400 hover:text-white transition duration-200 cursor-pointer">
                   <i data-feather="x" class="w-4 h-4"></i>
                 </button>
               </div>
+              <!-- Image Preview Row -->
+              <div id="imagePreviewRow" class="hidden flex gap-2 mt-2 flex-wrap"></div>
             </div>
           </div>
 
           <div>
-            <label class="block text-[11px] font-semibold text-gray-400 mb-1">Analysis Commentary / Notes</label>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-[11px] font-semibold text-gray-400">Analysis Commentary / Notes</label>
+              <button type="button" id="generateRationaleBtn" onclick="generateAIRationale()" class="text-[10px] font-bold text-sky-400 bg-sky-500/10 hover:bg-sky-500/20 px-2 py-1 rounded border border-sky-500/20 transition flex items-center gap-1 cursor-pointer">
+                <span>✨</span> AI Rationale
+              </button>
+            </div>
             <textarea id="notes" oninput="updateLivePreview()" rows="3" placeholder="Explain the setup rationale (e.g. 4H demand zone holding nicely...)"
               class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:border-neon-blue/50 focus:outline-none transition resize-none"></textarea>
           </div>
@@ -673,6 +696,22 @@
           <div class="text-center py-4"><i data-feather="loader" class="w-4 h-4 animate-spin text-gray-500 mx-auto"></i></div>
         </div>
       </div>
+
+      <!-- Pending Scheduled Broadcasts Panel -->
+      <div class="mt-4 glass-card rounded-2xl p-6 border border-amber-500/20">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
+            <i data-feather="clock" class="w-4 h-4"></i> Pending Scheduled Broadcasts
+          </span>
+          <button onclick="loadPendingBroadcasts()" class="text-[10px] text-gray-400 hover:text-white flex items-center gap-1 transition cursor-pointer">
+            <i data-feather="refresh-cw" class="w-3 h-3"></i> Refresh
+          </button>
+        </div>
+        <div id="pendingBroadcastsList" class="space-y-3 max-h-64 overflow-y-auto pr-2">
+          <div class="text-center py-4"><i data-feather="loader" class="w-4 h-4 animate-spin text-gray-500 mx-auto"></i></div>
+        </div>
+      </div>
+
     </div>
 
     <!-- 💬 3. COMMUNITY ENGAGEMENT SECTION -->
@@ -775,9 +814,46 @@
               <button type="button" onclick="applyEngagementTemplate('all_sessions')" class="eng-btn py-3 rounded-xl border border-purple-400/20 bg-purple-400/5 hover:bg-purple-400/10 hover:border-purple-400/50 text-purple-300 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
                 <span class="text-xl">🌍</span><span>All Sessions</span>
               </button>
-              <button type="button" onclick="applyEngagementTemplate('custom')" class="eng-btn py-3 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 hover:border-white/30 text-gray-400 text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
-                <span class="text-xl">✍️</span><span>Custom</span>
+            </div>
+
+            <!-- Custom Templates Row -->
+            <div id="customTemplatesRow" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3 border-t border-white/5 pt-3 hidden"></div>
+
+            <!-- Add Custom Template Button -->
+            <div class="flex justify-end mt-3">
+              <button type="button" onclick="openCustomTemplateModal()" class="text-[10px] font-bold text-neon-purple border border-neon-purple/20 bg-neon-purple/5 hover:bg-neon-purple/15 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 cursor-pointer">
+                <i data-feather="plus" class="w-3 h-3"></i> Add Custom Template
               </button>
+            </div>
+          </div>
+
+          <!-- Custom Template Modal -->
+          <div id="customTemplateModal" class="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
+            <div class="glass-card rounded-2xl p-6 border border-neon-purple/30 w-full max-w-sm mx-4 space-y-4">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-bold text-white">Create Custom Template</h3>
+                <button onclick="closeCustomTemplateModal()" class="text-gray-400 hover:text-white cursor-pointer"><i data-feather="x" class="w-4 h-4"></i></button>
+              </div>
+              <div class="space-y-3">
+                <div class="flex gap-3">
+                  <div class="w-20">
+                    <label class="block text-[10px] text-gray-400 uppercase font-semibold mb-1">Emoji</label>
+                    <input type="text" id="ctEmoji" maxlength="4" placeholder="💡" class="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-lg text-center text-white focus:outline-none focus:border-neon-purple/50">
+                  </div>
+                  <div class="flex-1">
+                    <label class="block text-[10px] text-gray-400 uppercase font-semibold mb-1">Title</label>
+                    <input type="text" id="ctTitle" placeholder="e.g. My Setup Alert" class="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-neon-purple/50">
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-[10px] text-gray-400 uppercase font-semibold mb-1">Message Body</label>
+                  <textarea id="ctMessage" rows="5" placeholder="Type your full template message here..." class="w-full bg-black/40 border border-white/10 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-neon-purple/50 resize-none"></textarea>
+                </div>
+              </div>
+              <div class="flex gap-3">
+                <button onclick="saveCustomTemplate()" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-neon-purple to-violet-600 font-bold text-sm text-white hover:brightness-110 transition cursor-pointer">Save Template</button>
+                <button onclick="closeCustomTemplateModal()" class="px-4 py-2.5 rounded-xl border border-white/10 text-gray-400 hover:text-white text-sm transition cursor-pointer">Cancel</button>
+              </div>
             </div>
           </div>
 
@@ -2836,6 +2912,47 @@
       return message;
     }
 
+    async function generateAIRationale() {
+      const btn = document.getElementById('generateRationaleBtn');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i data-feather="loader" class="w-3 h-3 animate-spin inline"></i> Generating...';
+      btn.disabled = true;
+
+      try {
+        const payload = {
+          asset: document.getElementById('customPair').value || 'Unknown Asset',
+          type: currentSignalType ? currentSignalType.toUpperCase() : 'TRADE',
+          entry: document.getElementById('entryPrice').value,
+          sl: document.getElementById('stopLoss').value,
+          tp: document.getElementById('tp1').value
+        };
+
+        const res = await fetch('/api/admin/generate-rationale', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('pa_admin_token')}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (data.ok) {
+          const notesEl = document.getElementById('notes');
+          notesEl.value = (notesEl.value + (notesEl.value ? '\n\n' : '') + data.rationale).trim();
+          updateLivePreview();
+        } else {
+          alert('AI Generation failed: ' + data.error);
+        }
+      } catch (err) {
+        alert('Failed to connect to AI server: ' + err.message);
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        if (window.feather) feather.replace();
+      }
+    }
+
     function updateLivePreview() {
       const plainText = buildTelegramMessageText();
       
@@ -2906,13 +3023,13 @@
       };
 
       try {
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = async function(event) {
-            payload.imageBase64 = event.target.result;
-            await doBackendBroadcast(payload, broadcastBtn, feedbackMsg);
-          };
-          reader.readAsDataURL(file);
+        // Multi-image support: use the uploadedImagesBase64 array populated by handleImageUpload
+        if (uploadedImagesBase64 && uploadedImagesBase64.length > 1) {
+          payload.imagesBase64 = uploadedImagesBase64;
+          await doBackendBroadcast(payload, broadcastBtn, feedbackMsg);
+        } else if (uploadedImagesBase64 && uploadedImagesBase64.length === 1) {
+          payload.imageBase64 = uploadedImagesBase64[0];
+          await doBackendBroadcast(payload, broadcastBtn, feedbackMsg);
         } else {
           await doBackendBroadcast(payload, broadcastBtn, feedbackMsg);
         }
@@ -2986,31 +3103,55 @@
       }
     }
 
+    let uploadedImagesBase64 = []; // stores array of base64 strings for multi-image
+
     function handleImageUpload(e) {
-      const file = e.target.files[0];
+      const files = Array.from(e.target.files).slice(0, 4); // max 4
       const fileNameLabel = document.getElementById('fileNameLabel');
       const clearBtn = document.getElementById('clearImageBtn');
       const tgImgContainer = document.getElementById('tgImagePreviewContainer');
       const tgImg = document.getElementById('tgImagePreview');
-      
-      if (file) {
-        fileNameLabel.innerText = file.name;
-        clearBtn.classList.remove('hidden');
-        
-        // Show in simulated preview
-        const objectUrl = URL.createObjectURL(file);
-        tgImg.src = objectUrl;
-        tgImgContainer.classList.remove('hidden');
-      }
+      const previewRow = document.getElementById('imagePreviewRow');
+
+      if (files.length === 0) return;
+
+      uploadedImagesBase64 = [];
+      previewRow.innerHTML = '';
+      previewRow.classList.remove('hidden');
+      fileNameLabel.innerText = `${files.length} image${files.length > 1 ? 's' : ''} selected`;
+      clearBtn.classList.remove('hidden');
+
+      files.forEach((file, i) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          uploadedImagesBase64[i] = ev.target.result;
+          // Show first image in TG preview
+          if (i === 0) {
+            tgImg.src = ev.target.result;
+            tgImgContainer.classList.remove('hidden');
+          }
+          // Thumbnail
+          const thumb = document.createElement('img');
+          thumb.src = ev.target.result;
+          thumb.className = 'h-12 w-12 rounded-lg object-cover border border-white/20';
+          thumb.title = file.name;
+          previewRow.appendChild(thumb);
+        };
+        reader.readAsDataURL(file);
+      });
     }
 
     function clearImage() {
       const fileInput = document.getElementById('chartImage');
       fileInput.value = '';
-      
-      document.getElementById('fileNameLabel').innerText = 'Choose Image...';
+      uploadedImagesBase64 = [];
+
+      document.getElementById('fileNameLabel').innerText = 'Choose Image(s)... (max 4)';
       document.getElementById('clearImageBtn').classList.add('hidden');
-      
+
+      const previewRow = document.getElementById('imagePreviewRow');
+      if (previewRow) { previewRow.innerHTML = ''; previewRow.classList.add('hidden'); }
+
       const tgImgContainer = document.getElementById('tgImagePreviewContainer');
       const tgImg = document.getElementById('tgImagePreview');
       tgImg.src = '';
@@ -6195,9 +6336,223 @@
     document.addEventListener('DOMContentLoaded', () => {
       fetchScheduledAlerts();
       loadRecentBroadcasts();
+      loadPendingBroadcasts();
+      loadPerformanceChart();
+      renderCustomTemplateButtons();
     });
 
+    // ── Pending Broadcasts Logic ────────────────────────────────────
+    async function loadPendingBroadcasts() {
+      const listEl = document.getElementById('pendingBroadcastsList');
+      if (!listEl) return;
+      listEl.innerHTML = '<div class="text-center py-4"><i data-feather="loader" class="w-4 h-4 animate-spin text-gray-500 mx-auto"></i></div>';
+      if (window.feather) feather.replace();
+      try {
+        const res = await fetch('/api/admin/scheduled-broadcasts', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('pa_admin_token')}` }
+        });
+        const data = await res.json();
+        const broadcasts = data.broadcasts || [];
+        if (broadcasts.length > 0) {
+          listEl.innerHTML = broadcasts.map(b => {
+            const eta = b.scheduledTime ? new Date(b.scheduledTime).toLocaleString() : 'Unknown time';
+            const type = b.type ? b.type.toUpperCase() : 'BROADCAST';
+            const preview = (b.text || '(Image/Sticker only)').substring(0, 120);
+            return `
+              <div class="flex items-start justify-between bg-black/40 border border-amber-500/10 rounded-xl p-3 hover:bg-amber-500/5 transition gap-3" id="pending-${b._id}">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider">${type}</span>
+                    <span class="text-[9px] text-gray-500">→ ${eta}</span>
+                  </div>
+                  <p class="text-gray-300 text-xs truncate">${preview}</p>
+                </div>
+                <button onclick="cancelPendingBroadcast('${b._id}')" title="Cancel this scheduled broadcast" class="flex-shrink-0 p-1.5 rounded-lg bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/30 text-rose-400 transition cursor-pointer">
+                  <i data-feather="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>`;
+          }).join('');
+          if (window.feather) feather.replace();
+        } else {
+          listEl.innerHTML = '<p class="text-gray-500 text-xs text-center py-4 flex items-center justify-center gap-1.5"><i data-feather="check-circle" class="w-3.5 h-3.5 text-emerald-500"></i> No pending scheduled broadcasts.</p>';
+          if (window.feather) feather.replace();
+        }
+      } catch (err) {
+        listEl.innerHTML = '<p class="text-rose-400 text-xs text-center py-4">Failed to load pending broadcasts.</p>';
+      }
+    }
+
+    async function cancelPendingBroadcast(id) {
+      if (!confirm('Cancel this scheduled broadcast?')) return;
+      try {
+        const res = await fetch(`/api/admin/scheduled-broadcasts/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('pa_admin_token')}` }
+        });
+        const data = await res.json();
+        if (data.ok) {
+          const el = document.getElementById(`pending-${id}`);
+          if (el) {
+            el.style.transition = 'opacity 0.3s, transform 0.3s';
+            el.style.opacity = '0';
+            el.style.transform = 'translateX(20px)';
+            setTimeout(() => loadPendingBroadcasts(), 350);
+          }
+        } else {
+          alert('Failed to cancel: ' + data.error);
+        }
+      } catch (err) {
+        alert('Error cancelling broadcast: ' + err.message);
+      }
+    }
+
+    // ── Custom Template Builder ─────────────────────────────────────
+    const CUSTOM_TEMPLATES_KEY = 'pa_custom_templates';
+
+    function loadCustomTemplates() {
+      try { return JSON.parse(localStorage.getItem(CUSTOM_TEMPLATES_KEY)) || []; }
+      catch(e) { return []; }
+    }
+
+    function saveCustomTemplates(templates) {
+      localStorage.setItem(CUSTOM_TEMPLATES_KEY, JSON.stringify(templates));
+    }
+
+    function renderCustomTemplateButtons() {
+      const row = document.getElementById('customTemplatesRow');
+      if (!row) return;
+      const templates = loadCustomTemplates();
+      if (templates.length === 0) {
+        row.classList.add('hidden');
+        return;
+      }
+      row.classList.remove('hidden');
+      row.innerHTML = templates.map((t, i) => `
+        <div class="relative group">
+          <button type="button" onclick="applyCustomTemplate(${i})"
+            class="w-full py-3 rounded-xl border border-neon-purple/20 bg-neon-purple/5 hover:bg-neon-purple/15 hover:border-neon-purple/50 text-neon-purple text-xs font-bold transition duration-200 cursor-pointer flex flex-col items-center gap-1">
+            <span class="text-xl">${t.emoji || '📝'}</span>
+            <span class="truncate max-w-[80px] text-center">${t.title}</span>
+          </button>
+          <button onclick="deleteCustomTemplate(${i})"
+            class="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-rose-500 text-white text-[9px] hidden group-hover:flex items-center justify-center cursor-pointer font-bold z-10">✕</button>
+        </div>
+      `).join('');
+    }
+
+    function applyCustomTemplate(index) {
+      const templates = loadCustomTemplates();
+      const t = templates[index];
+      if (!t) return;
+      const textEl = document.getElementById('engText');
+      if (textEl) { textEl.value = t.message; updateEngPreview(); }
+      const fb = document.getElementById('templateFeedback');
+      if (fb) { fb.style.opacity = '1'; fb.textContent = `✓ "${t.title}" Applied`; setTimeout(() => fb.style.opacity = '0', 1800); }
+    }
+
+    function deleteCustomTemplate(index) {
+      const templates = loadCustomTemplates();
+      templates.splice(index, 1);
+      saveCustomTemplates(templates);
+      renderCustomTemplateButtons();
+    }
+
+    function openCustomTemplateModal() {
+      document.getElementById('ctEmoji').value = '';
+      document.getElementById('ctTitle').value = '';
+      document.getElementById('ctMessage').value = '';
+      document.getElementById('customTemplateModal').classList.remove('hidden');
+    }
+
+    function closeCustomTemplateModal() {
+      document.getElementById('customTemplateModal').classList.add('hidden');
+    }
+
+    function saveCustomTemplate() {
+      const emoji = document.getElementById('ctEmoji').value.trim() || '📝';
+      const title = document.getElementById('ctTitle').value.trim();
+      const message = document.getElementById('ctMessage').value.trim();
+      if (!title || !message) { alert('Please enter both a title and message.'); return; }
+      const templates = loadCustomTemplates();
+      templates.push({ emoji, title, message });
+      saveCustomTemplates(templates);
+      renderCustomTemplateButtons();
+      closeCustomTemplateModal();
+    }
+
+    // ── Performance Analytics Chart ─────────────────────────────────
+    let perfChartInstance = null;
+
+    async function loadPerformanceChart() {
+      try {
+        const res = await fetch('/api/signals?limit=100');
+        const data = await res.json();
+        if (!data.ok || !data.signals) return;
+
+        const signals = data.signals;
+        // Build 30-day buckets
+        const buckets = {};
+        const now = Date.now();
+        for (let d = 29; d >= 0; d--) {
+          const day = new Date(now - d * 86400000);
+          const label = day.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+          buckets[label] = { wins: 0, losses: 0, pips: 0 };
+        }
+
+        let totalWins = 0, totalLosses = 0, totalPips = 0;
+        signals.forEach(s => {
+          const sentAt = s.sentAt ? new Date(s.sentAt) : null;
+          if (!sentAt || isNaN(sentAt)) return;
+          const label = sentAt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+          if (buckets[label]) {
+            const outcome = (s.outcome || '').toLowerCase();
+            const pips = parseFloat(s.pips) || 0;
+            if (outcome.includes('tp') || outcome.includes('win')) { buckets[label].wins++; buckets[label].pips += pips; totalWins++; totalPips += pips; }
+            else if (outcome.includes('sl') || outcome.includes('loss') || outcome.includes('stop')) { buckets[label].losses++; buckets[label].pips -= pips; totalLosses++; totalPips -= pips; }
+          }
+        });
+
+        const labels = Object.keys(buckets);
+        const winsData = labels.map(l => buckets[l].wins);
+        const lossesData = labels.map(l => buckets[l].losses);
+
+        const total = totalWins + totalLosses;
+        const winRate = total > 0 ? ((totalWins / total) * 100).toFixed(1) : '--';
+        document.getElementById('perfWinRate').textContent = `Win Rate: ${winRate}%`;
+        document.getElementById('perfNetPips').textContent = `Net Pips: ${totalPips >= 0 ? '+' : ''}${totalPips.toFixed(1)}`;
+
+        const ctx = document.getElementById('perfChart');
+        if (!ctx) return;
+        if (perfChartInstance) perfChartInstance.destroy();
+        perfChartInstance = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [
+              { label: 'Wins', data: winsData, backgroundColor: 'rgba(52, 211, 153, 0.6)', borderColor: 'rgba(52, 211, 153, 1)', borderWidth: 1, borderRadius: 4 },
+              { label: 'Losses', data: lossesData, backgroundColor: 'rgba(248, 113, 113, 0.4)', borderColor: 'rgba(248, 113, 113, 0.8)', borderWidth: 1, borderRadius: 4 }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { labels: { color: '#9ca3af', font: { size: 10 } } },
+              tooltip: { backgroundColor: '#0f172a', titleColor: '#e2e8f0', bodyColor: '#94a3b8', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 }
+            },
+            scales: {
+              x: { ticks: { color: '#6b7280', font: { size: 9 }, maxRotation: 45 }, grid: { color: 'rgba(255,255,255,0.05)' } },
+              y: { ticks: { color: '#6b7280', font: { size: 10 }, stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }
+            }
+          }
+        });
+      } catch (err) {
+        console.warn('[PerfChart] Could not load chart data:', err.message);
+      }
+    }
+
     // ── Quick Pip & Risk Calculator Logic ─────────────────────────
+
     function calculateRisk() {
       const asset = document.getElementById('calcAsset').value;
       const lots = parseFloat(document.getElementById('calcLotSize').value) || 0;
