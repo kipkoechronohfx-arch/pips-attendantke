@@ -326,24 +326,24 @@
       </div>
     </div>
 
-    <!-- 📊 2. MAIN BROADCAST INTERACTIVE DASHBOARD -->
-    <div id="dashboardPanel" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-8">
-      
-      <!-- Performance Analytics Chart (Full Width) -->
-      <div class="lg:col-span-12 glass-card rounded-2xl p-6 border border-white/10">
-        <div class="flex items-center justify-between mb-4">
-          <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2">
-            <i data-feather="trending-up" class="w-4 h-4"></i> Performance Analytics (Last 30 Days)
-          </span>
-          <div class="flex items-center gap-3">
-            <span id="perfWinRate" class="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded-lg">Win Rate: --</span>
-            <span id="perfNetPips" class="text-xs font-bold text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2 py-1 rounded-lg">Net Pips: --</span>
-          </div>
-        </div>
-        <div class="relative" style="height:160px;overflow:hidden">
-          <canvas id="perfChart" style="display:block;max-height:160px"></canvas>
+    <!-- Performance Analytics Chart Panel (shown alongside dashboardPanel) -->
+    <div id="perfChartPanel" style="display:none" class="glass-card rounded-2xl p-6 border border-white/10 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2">
+          <i data-feather="trending-up" class="w-4 h-4"></i> Performance Analytics (Last 30 Days)
+        </span>
+        <div class="flex items-center gap-3">
+          <span id="perfWinRate" class="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded-lg">Win Rate: --</span>
+          <span id="perfNetPips" class="text-xs font-bold text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2 py-1 rounded-lg">Net Pips: --</span>
         </div>
       </div>
+      <div style="position:relative;height:160px;overflow:hidden">
+        <canvas id="perfChart" style="display:block;max-height:160px"></canvas>
+      </div>
+    </div>
+
+    <!-- 📊 2. MAIN BROADCAST INTERACTIVE DASHBOARD -->
+    <div id="dashboardPanel" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-8">
 
       <!-- Left Column: Form Controls (7 cols) -->
       <form id="broadcastForm" onsubmit="sendBroadcast(event)" class="lg:col-span-7 space-y-6">
@@ -2562,6 +2562,7 @@
       if (adminToken && token && chat && adminKey) {
         document.getElementById('setupPanel').classList.add('hidden');
         document.getElementById('dashboardPanel').classList.remove('hidden');
+        document.getElementById('perfChartPanel').style.display = 'block';
         document.getElementById('engagementPanel').classList.remove('hidden');
         document.getElementById('livePanel').classList.remove('hidden');
         document.getElementById('perfPanel').classList.remove('hidden');
@@ -2599,6 +2600,7 @@
       } else {
         document.getElementById('setupPanel').classList.remove('hidden');
         document.getElementById('dashboardPanel').classList.add('hidden');
+        document.getElementById('perfChartPanel').style.display = 'none';
         document.getElementById('engagementPanel').classList.add('hidden');
         document.getElementById('livePanel').classList.add('hidden');
         document.getElementById('perfPanel').classList.add('hidden');
@@ -6485,6 +6487,8 @@
 
     async function loadPerformanceChart() {
       try {
+        const panel = document.getElementById('perfChartPanel');
+        if (panel) panel.style.display = 'block';
         const res = await fetch('/api/signals?limit=100');
         const data = await res.json();
         if (!data.ok || !data.signals) return;
