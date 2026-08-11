@@ -6483,7 +6483,7 @@
     }
 
     // ── Performance Analytics Chart ─────────────────────────────────
-    let perfChartInstance = null;
+    let dashboardPerfChartInstance = null;
 
     async function loadPerformanceChart() {
       try {
@@ -6527,8 +6527,8 @@
 
         const ctx = document.getElementById('perfChart');
         if (!ctx) return;
-        if (perfChartInstance) perfChartInstance.destroy();
-        perfChartInstance = new Chart(ctx, {
+        if (dashboardPerfChartInstance) dashboardPerfChartInstance.destroy();
+        dashboardPerfChartInstance = new Chart(ctx, {
           type: 'bar',
           data: {
             labels,
