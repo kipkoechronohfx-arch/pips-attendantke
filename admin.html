@@ -671,9 +671,12 @@
               </div>
               
               <!-- Message Details / Meta info -->
-              <div class="flex items-center justify-end gap-1.5 mt-2.5 text-[9px] text-gray-400 font-medium">
+              <div class="flex items-center justify-end gap-1 mt-1.5 text-[10px] text-[#6b9cc2] font-medium select-none">
                 <span id="tgTime">12:00 PM</span>
-                <i data-feather="check" class="w-3 h-3 text-emerald-400"></i>
+                <div class="flex items-center -space-x-1.5 ml-0.5">
+                  <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="text-[#5eb5f7]"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="text-[#5eb5f7]"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
               </div>
             </div>
 
@@ -2995,8 +2998,15 @@
         const data = await res.json();
         if (data.ok) {
           const notesEl = document.getElementById('notes');
-          notesEl.value = (notesEl.value + (notesEl.value ? '\n\n' : '') + data.rationale).trim();
-          updateLivePreview();
+          notesEl.value = notesEl.value ? notesEl.value + '\n\n' : '';
+          const textToType = data.rationale.trim();
+          let i = 0;
+          const typingInterval = setInterval(() => {
+            notesEl.value += textToType.charAt(i);
+            updateLivePreview();
+            i++;
+            if (i >= textToType.length) clearInterval(typingInterval);
+          }, 15);
         } else {
           alert('AI Generation failed: ' + data.error);
         }
@@ -3012,13 +3022,27 @@
     function updateLivePreview() {
       const plainText = buildTelegramMessageText();
       
-      // Formatting preview for HTML display
       // Convert markdown-like symbols to HTML spans
       let htmlText = plainText
+        .replace(/\n/g, '<br>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-white">$1</strong>')
         .replace(/\*(.*?)\*/g, '<strong class="font-bold text-white">$1</strong>')
-        .replace(/_(.*?)_/g, '<em class="italic text-gray-300">$1</em>');
+        .replace(/_(.*?)_/g, '<em class="italic text-gray-300">$1</em>')
+        .replace(/`([^`]+)`/g, '<code class="bg-[#0e1621] text-[#5eb5f7] px-1.5 py-0.5 rounded text-xs font-mono">$1</code>');
 
       document.getElementById('tgPreviewContent').innerHTML = htmlText;
+      
+      const timeEl = document.getElementById('tgTime');
+      if (timeEl) {
+        const now = new Date();
+        let hours = now.getHours();
+        let minutes = now.getMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12; 
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        timeEl.textContent = hours + ':' + minutes + ' ' + ampm;
+      }
     }
 
     async function sendBroadcast(e) {
@@ -6417,6 +6441,33 @@
 
     // Auto-fetch alerts when admin page loads
     document.addEventListener('DOMContentLoaded', () => {
+      // ── 2. Draft Auto-Save Logic ──
+      const savedDraft = localStorage.getItem('pa_broadcast_draft');
+      if (savedDraft) {
+        try {
+          const draft = JSON.parse(savedDraft);
+          Object.keys(draft).forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+              if (el.type === 'checkbox' || el.type === 'radio') el.checked = draft[id];
+              else el.value = draft[id];
+            }
+          });
+          updateLivePreview();
+        } catch(e){}
+      }
+      
+      const formInputs = document.querySelectorAll('#broadcastForm input, #broadcastForm select, #broadcastForm textarea');
+      formInputs.forEach(el => {
+        el.addEventListener('input', () => {
+          const draft = {};
+          formInputs.forEach(inp => {
+            if (inp.id) draft[inp.id] = (inp.type === 'checkbox' || inp.type === 'radio') ? inp.checked : inp.value;
+          });
+          localStorage.setItem('pa_broadcast_draft', JSON.stringify(draft));
+        });
+      });
+
       fetchScheduledAlerts();
       loadRecentBroadcasts();
       loadPendingBroadcasts();
