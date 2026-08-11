@@ -176,6 +176,54 @@
     <div class="absolute top-[40%] left-[35%] w-[30%] h-[25%] rounded-full mix-blend-screen" style="background: radial-gradient(circle, rgba(251,191,36,0.12) 0%, transparent 70%); filter: blur(80px);"></div>
   </div>
 
+  <!-- Toast Notifications Container -->
+  <div id="toast-container" class="fixed top-4 right-4 z-[9999] flex flex-col gap-3 pointer-events-none w-80"></div>
+
+  <script>
+    // ── Global Toast Notification Override ───────────────────────
+    window.alert = function(message) {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      
+      const toast = document.createElement('div');
+      const msgLower = (message || '').toLowerCase();
+      
+      let icon = '<i data-feather="info" class="w-5 h-5 text-sky-400"></i>';
+      let border = 'border-sky-500/20';
+      let bg = 'bg-[#101827]/95';
+      
+      if (msgLower.includes('success') || msgLower.includes('sent') || msgLower.includes('saved') || msgLower.includes('approved')) {
+        icon = '<i data-feather="check-circle" class="w-5 h-5 text-emerald-400"></i>';
+        border = 'border-emerald-500/30';
+      } else if (msgLower.includes('fail') || msgLower.includes('error') || msgLower.includes('missing') || msgLower.includes('invalid')) {
+        icon = '<i data-feather="alert-triangle" class="w-5 h-5 text-rose-400"></i>';
+        border = 'border-rose-500/30';
+      }
+      
+      toast.className = `flex items-start gap-3 p-4 rounded-xl border ${border} ${bg} backdrop-blur-md shadow-[0_8px_30px_rgb(0,0,0,0.5)] transition-all duration-300 transform translate-x-[120%] opacity-0 pointer-events-auto`;
+      toast.innerHTML = `
+        <div class="mt-0.5 shrink-0">${icon}</div>
+        <span class="text-sm font-medium text-gray-200 leading-snug whitespace-pre-wrap">${message}</span>
+      `;
+      
+      container.appendChild(toast);
+      if (window.feather) feather.replace();
+      
+      // Animate in
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          toast.classList.remove('translate-x-[120%]', 'opacity-0');
+        });
+      });
+      
+      // Animate out and remove
+      setTimeout(() => {
+        toast.classList.add('translate-x-[120%]', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    };
+  </script>
+
   <main class="container mx-auto px-4 max-w-5xl relative z-10">
     
     <!-- Top Navigation / Header -->
