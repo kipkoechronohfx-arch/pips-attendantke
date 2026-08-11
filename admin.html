@@ -718,7 +718,10 @@
 
           <!-- Message Composer -->
           <div class="glass-card rounded-2xl p-6 border border-white/10 space-y-4">
-            <span class="block text-xs font-bold uppercase tracking-wider text-neon-purple mb-2">Compose Message</span>
+            <span class="block text-xs font-bold uppercase tracking-wider text-neon-purple mb-2 flex items-center gap-2">
+              Compose Message 
+              <span id="templateFeedback" class="text-[10px] text-emerald-400 opacity-0 transition-opacity duration-300 normal-case">✓ Template Applied</span>
+            </span>
 
             <!-- Quick Emoji Palette -->
             <div>
@@ -2985,6 +2988,16 @@
     function applyEngagementTemplate(type) {
       document.getElementById('engMessage').value = engTemplates[type] || "";
       updateEngPreview();
+      
+      const feedback = document.getElementById('templateFeedback');
+      if (feedback) {
+        feedback.classList.remove('opacity-0');
+        feedback.classList.add('opacity-100');
+        setTimeout(() => {
+          feedback.classList.remove('opacity-100');
+          feedback.classList.add('opacity-0');
+        }, 2000);
+      }
     }
 
     function insertEngEmoji(emoji) {
@@ -3117,8 +3130,10 @@
       const vipChat = localStorage.getItem('pa_vip_chat_id');
       
       const targetSelection = document.querySelector('input[name="targetChannel"]:checked');
-      const isVip = targetSelection && targetSelection.value === 'vip';
-      const chat = isVip ? vipChat : generalChat;
+      const targetVal = targetSelection ? targetSelection.value : 'general';
+      let chat = generalChat;
+      if (targetVal === 'vip') chat = vipChat;
+      else if (targetVal === 'both') chat = `${generalChat},${vipChat}`;
 
       const btn = event.currentTarget;
       const feedbackMsg = document.getElementById('engFeedback');
@@ -3127,7 +3142,7 @@
         feedbackMsg.innerHTML = '<span class="text-rose-400">Error: Missing credentials in Setup.</span>';
         return;
       }
-      if (isVip && !chat) {
+      if ((targetVal === 'vip' || targetVal === 'both') && !vipChat) {
         feedbackMsg.innerHTML = '<span class="text-rose-400">Error: VIP Channel Chat ID missing in Setup.</span>';
         return;
       }
@@ -3266,8 +3281,10 @@
       const vipChat = localStorage.getItem('pa_vip_chat_id');
       
       const targetSelection = document.querySelector('input[name="targetChannel"]:checked');
-      const isVip = targetSelection && targetSelection.value === 'vip';
-      const chat = isVip ? vipChat : generalChat;
+      const targetVal = targetSelection ? targetSelection.value : 'general';
+      let chat = generalChat;
+      if (targetVal === 'vip') chat = vipChat;
+      else if (targetVal === 'both') chat = `${generalChat},${vipChat}`;
 
       const btn = event.currentTarget;
       const feedbackMsg = document.getElementById('liveFeedback');
@@ -3276,7 +3293,7 @@
         feedbackMsg.innerHTML = '<span class="text-rose-400">Error: Missing credentials in Setup.</span>';
         return;
       }
-      if (isVip && !chat) {
+      if ((targetVal === 'vip' || targetVal === 'both') && !vipChat) {
         feedbackMsg.innerHTML = '<span class="text-rose-400">Error: VIP Channel Chat ID missing in Setup.</span>';
         return;
       }
