@@ -2980,7 +2980,7 @@
       try {
         const payload = {
           asset: document.getElementById('customPair').value || 'Unknown Asset',
-          type: currentSignalType ? currentSignalType.toUpperCase() : 'TRADE',
+          type: currentTemplate ? currentTemplate.toUpperCase() : 'TRADE',
           entry: document.getElementById('entryPrice').value,
           sl: document.getElementById('stopLoss').value,
           tp: document.getElementById('tp1').value
