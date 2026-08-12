@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
@@ -372,271 +372,504 @@
     })();
     </script>
     
-    <!-- ── WhatsApp Broadcast Modal ────────────────────────────────────── -->
-    <div id="waBroadcastModalOverlay" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 hidden" style="opacity:0;transition:opacity 0.25s ease;z-index:9999;position:fixed;" role="presentation">
-      <div id="waBroadcastModalBox" class="relative w-full max-w-[420px] bg-[#111621]/92 backdrop-blur-xl rounded-[20px] shadow-[0_24px_60px_rgba(0,0,0,0.45)] border border-white/[0.08] p-6 sm:p-8" style="transform:scale(0.95);transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1);position:relative;z-index:10000;" role="dialog" aria-modal="true" aria-labelledby="waModalHeadline">
-        
-        <!-- Close Button -->
-        <button id="waModalClose" class="absolute top-4 right-4 w-9 h-9 flex items-center justify-center rounded-full text-gray-500 hover:bg-white/10 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#2FE07A]/50" aria-label="Close modal">
-          <i data-feather="x" class="w-5 h-5"></i>
+    <!-- ── WhatsApp Broadcast Modal (pure CSS – no Tailwind) ────────── -->
+    <style>
+      /* Scoped to modal only – isolated from site-wide styles */
+      #waBroadcastModalOverlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(5,7,13,0.72);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        z-index: 99999;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.25s ease, visibility 0.25s ease;
+      }
+      #waBroadcastModalOverlay.wa-open {
+        opacity: 1;
+        visibility: visible;
+      }
+      #waBroadcastModalBox {
+        width: 100%;
+        max-width: 420px;
+        background: rgba(17, 22, 33, 0.92);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 20px;
+        padding: 28px 28px 24px;
+        position: relative;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.45);
+        transform: scale(0.95);
+        transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+      }
+      #waBroadcastModalOverlay.wa-open #waBroadcastModalBox {
+        transform: scale(1);
+      }
+      #waModalClose {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid transparent;
+        color: #B8C0CE;
+        cursor: pointer;
+        transition: background 0.15s ease, color 0.15s ease;
+        font-family: inherit;
+      }
+      #waModalClose:hover { background: rgba(255,255,255,0.10); color: #fff; }
+      #waModalClose svg { width: 16px; height: 16px; }
+      #waModalClose:focus {
+        outline: 2px solid rgba(47,224,122,0.55);
+        outline-offset: 2px;
+        box-shadow: none !important;
+      }
+      .wa-icon-wrap {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        margin: 4px auto 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at 30% 25%, #2FE07A, #148A4C 75%);
+        box-shadow: 0 8px 24px rgba(47,224,122,0.35);
+      }
+      .wa-icon-wrap svg { width: 28px; height: 28px; fill: #0b1710; }
+      #waBroadcastModalBox h2 {
+        text-align: center;
+        color: #F5F7FA;
+        font-size: 21px;
+        font-weight: 700;
+        margin: 0 0 10px;
+        letter-spacing: -0.01em;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      .wa-subhead {
+        text-align: center;
+        color: #94A0B4;
+        font-size: 14px;
+        line-height: 1.5;
+        margin: 0 0 24px;
+        padding: 0 6px;
+      }
+      .wa-field-group { margin-bottom: 16px; }
+      .wa-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #A6B0C3;
+        margin-bottom: 8px;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      .wa-label .wa-hint {
+        text-transform: none;
+        font-weight: 400;
+        color: #6C7689;
+        letter-spacing: 0;
+      }
+      .wa-select-wrap { position: relative; }
+      #waCountry {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 100%;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.10);
+        border-radius: 12px;
+        color: #F5F7FA;
+        font-size: 15px;
+        font-weight: 500;
+        padding: 14px 40px 14px 16px;
+        cursor: pointer;
+        transition: border-color 0.15s ease, background 0.15s ease;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      #waCountry:hover { background: rgba(255,255,255,0.07); }
+      #waCountry:focus {
+        outline: none;
+        border-color: rgba(47,224,122,0.55);
+        box-shadow: 0 0 0 3px rgba(47,224,122,0.15) !important;
+      }
+      .wa-select-wrap::after {
+        content: '';
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        width: 10px;
+        height: 10px;
+        border-right: 2px solid #C7CEDB;
+        border-bottom: 2px solid #C7CEDB;
+        transform: translateY(-65%) rotate(45deg);
+        pointer-events: none;
+      }
+      #waModalPhoneInput {
+        width: 100%;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.10);
+        border-radius: 12px;
+        color: #F5F7FA;
+        font-size: 15px;
+        padding: 14px 16px;
+        transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        box-sizing: border-box;
+      }
+      #waModalPhoneInput::placeholder { color: #5C6578; }
+      #waModalPhoneInput:hover { background: rgba(255,255,255,0.07); }
+      #waModalPhoneInput:focus {
+        outline: none;
+        border-color: rgba(47,224,122,0.55);
+        background: rgba(255,255,255,0.07);
+        box-shadow: 0 0 0 3px rgba(47,224,122,0.15) !important;
+      }
+      #waModalPhoneInput.wa-error {
+        border-color: #FF6B6B !important;
+        box-shadow: 0 0 0 3px rgba(255,107,107,0.12) !important;
+      }
+      #waErrorMsg {
+        display: none;
+        color: #FF6B6B;
+        font-size: 12.5px;
+        margin-top: 7px;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      #waErrorMsg.wa-show { display: block; }
+      #waHelperMsg {
+        color: #6C7689;
+        font-size: 12px;
+        margin-top: 7px;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      #waSubmitBtn {
+        width: 100%;
+        border: none;
+        border-radius: 12px;
+        padding: 16px;
+        font-size: 15px;
+        font-weight: 700;
+        color: #0B1710;
+        background: linear-gradient(180deg, #2FE07A, #17C964);
+        cursor: pointer;
+        margin-top: 6px;
+        box-shadow: 0 10px 26px rgba(23,201,100,0.35);
+        transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      #waSubmitBtn:hover {
+        filter: brightness(1.05);
+        box-shadow: 0 12px 30px rgba(23,201,100,0.45);
+      }
+      #waSubmitBtn:active { transform: translateY(1px); }
+      #waSubmitBtn:disabled { opacity: 0.7; cursor: not-allowed; }
+      .wa-consent {
+        text-align: center;
+        color: #5C6578;
+        font-size: 11.5px;
+        line-height: 1.5;
+        margin-top: 14px;
+        padding: 0 8px;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      #waNoThanks {
+        display: block;
+        text-align: center;
+        margin-top: 14px;
+        color: #7A8296;
+        font-size: 13px;
+        text-decoration: none;
+        cursor: pointer;
+        background: none;
+        border: none;
+        width: 100%;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      #waNoThanks:hover { color: #B8C0CE; text-decoration: underline; }
+      /* Success state */
+      #waModalSuccess {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 0 30px;
+        text-align: center;
+      }
+      #waModalSuccess.wa-show { display: flex; }
+      .wa-success-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: rgba(47,224,122,0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        margin-bottom: 18px;
+        box-shadow: 0 10px 25px rgba(47,224,122,0.2);
+      }
+      #waModalSuccess h2 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #F5F7FA;
+        margin: 0 0 8px;
+      }
+      #waModalSuccess p {
+        color: #94A0B4;
+        font-size: 14px;
+        margin: 0;
+      }
+      @media (max-width: 400px) {
+        #waBroadcastModalBox { padding: 24px 20px 20px; border-radius: 16px; }
+      }
+      /* Override global gold focus ring for modal inputs */
+      #waBroadcastModalOverlay input:focus,
+      #waBroadcastModalOverlay select:focus {
+        box-shadow: 0 0 0 3px rgba(47,224,122,0.15) !important;
+      }
+    </style>
+
+    <div id="waBroadcastModalOverlay" role="presentation">
+      <div id="waBroadcastModalBox" role="dialog" aria-modal="true" aria-labelledby="waModalHeadline">
+
+        <!-- Close -->
+        <button id="waModalClose" aria-label="Close modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
         </button>
 
-        <!-- Success State -->
-        <div id="waModalSuccess" class="hidden flex-col items-center justify-center py-10 text-center animate-in fade-in zoom-in-95 duration-300">
-          <div class="w-16 h-16 bg-[#2FE07A]/20 rounded-full flex items-center justify-center mb-5 text-4xl shadow-[0_10px_25px_rgba(47,224,122,0.2)]">🎉</div>
-          <h2 class="text-2xl font-bold text-white mb-2">You're in!</h2>
-          <p class="text-gray-400 text-sm">Get ready for your free trade setups.</p>
+        <!-- Success state -->
+        <div id="waModalSuccess">
+          <div class="wa-success-icon">🎉</div>
+          <h2>You're in!</h2>
+          <p>Get ready for your free trade setups.</p>
         </div>
 
-        <!-- Form State -->
+        <!-- Form state -->
         <div id="waModalContent">
-          <!-- Header -->
-          <div class="flex flex-col items-center text-center mb-6 mt-2">
-            <div class="w-16 h-16 rounded-full bg-[radial-gradient(circle_at_center,#2FE07A,#148A4C)] flex items-center justify-center shadow-[0_10px_25px_rgba(47,224,122,0.3)] mb-5">
-              <i data-feather="message-circle" class="w-8 h-8 text-black fill-current"></i>
-            </div>
-            <h2 id="waModalHeadline" class="text-[21px] font-bold text-white mb-2">Free WhatsApp Broadcast</h2>
-            <p class="text-sm text-gray-400 line-clamp-2 max-w-sm">
-              Get 3 free trade setups a week, straight to WhatsApp. No spam, unsubscribe anytime.
-            </p>
+          <div class="wa-icon-wrap">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.82.5 3.53 1.36 5L2 22l5.2-1.36C8.6 21.5 10.26 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm0 18c-1.5 0-2.9-.4-4.1-1.1l-.3-.17-3.06.8.82-2.98-.2-.31A7.93 7.93 0 0 1 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8-3.59 8-8 8z"/></svg>
           </div>
 
-          <!-- Form -->
-          <form id="waModalForm" class="space-y-4">
-            <!-- Country Select -->
-            <div>
-              <label for="waCountry" class="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Select Country</label>
-              <div class="relative">
-                <select id="waCountry" class="w-full appearance-none bg-white/5 hover:bg-white/[0.08] border border-white/10 text-white rounded-xl px-4 py-3.5 pr-12 focus:outline-none focus:border-[#2FE07A]/55 focus:ring-[3px] focus:ring-[#2FE07A]/15 transition-all cursor-pointer">
-                  <!-- Options will be populated by JS -->
-                </select>
-                <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                  <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
-                </div>
+          <h2 id="waModalHeadline">Free WhatsApp Broadcast</h2>
+          <p class="wa-subhead">Get 3 free trade setups a week, straight to WhatsApp. No spam, unsubscribe anytime.</p>
+
+          <form id="waModalForm">
+            <!-- Country -->
+            <div class="wa-field-group">
+              <label for="waCountry" class="wa-label">Select country</label>
+              <div class="wa-select-wrap">
+                <select id="waCountry"><!-- JS populated --></select>
               </div>
             </div>
 
-            <!-- Phone Input -->
-            <div>
-              <label for="waModalPhoneInput" class="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Phone Number (Without Country Code)</label>
-              <div class="flex gap-2">
-                <div id="waDialCode" class="flex-shrink-0 bg-white/5 border border-white/10 text-gray-300 rounded-xl px-4 py-3.5 flex items-center font-medium">
-                  +254
-                </div>
-                <div class="relative flex-grow">
-                  <input id="waModalPhoneInput" type="tel" inputmode="numeric" placeholder="e.g. 712 345 678" class="w-full bg-white/5 hover:bg-white/[0.08] border border-white/10 text-white rounded-xl px-4 py-3.5 focus:outline-none focus:border-[#2FE07A]/55 focus:ring-[3px] focus:ring-[#2FE07A]/15 transition-all placeholder:text-gray-500">
-                </div>
-              </div>
-              <div class="flex justify-between items-start mt-2 px-1 h-4">
-                <p id="waErrorMsg" class="text-xs text-red-400 font-medium hidden">Enter a valid 9-digit phone number.</p>
-                <p id="waHelperMsg" class="text-xs text-gray-500">Expected 9 digits</p>
-              </div>
+            <!-- Phone -->
+            <div class="wa-field-group">
+              <label for="waModalPhoneInput" class="wa-label">
+                Phone number <span class="wa-hint">(without country code)</span>
+              </label>
+              <input type="tel" id="waModalPhoneInput" placeholder="e.g. 712 345 678" inputmode="numeric" autocomplete="tel-national">
+              <div id="waErrorMsg">Enter a valid phone number for the selected country.</div>
+              <div id="waHelperMsg">9 digits, no leading zero</div>
             </div>
 
-            <!-- Submit -->
-            <div class="pt-3">
-              <button id="waSubmitBtn" type="submit" class="w-full bg-gradient-to-r from-[#2FE07A] to-[#17C964] text-black font-bold text-base rounded-xl py-4 px-4 shadow-[0_10px_26px_rgba(23,201,100,0.35)] transform transition-all hover:brightness-110 active:translate-y-px disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center">
-                Send Me Free Signals
-              </button>
-            </div>
-
-            <!-- Footer Consent -->
-            <div class="text-center space-y-3 pt-1">
-              <p class="text-[11px] text-gray-500 leading-relaxed px-2">
-                By joining, you agree to receive WhatsApp messages from us.
-              </p>
-              <button type="button" id="waNoThanks" class="text-sm text-gray-400 hover:text-white transition-colors underline-offset-4 hover:underline">
-                No thanks, maybe later
-              </button>
-            </div>
+            <button type="submit" id="waSubmitBtn">Send Me Free Signals</button>
           </form>
+
+          <p class="wa-consent">By joining, you agree to receive WhatsApp messages from us.</p>
+          <button id="waNoThanks">No thanks, maybe later</button>
         </div>
       </div>
     </div>
 
     <script>
     (function() {
+      'use strict';
+
       var COUNTRIES = [
-        { code: 'KE', name: 'Kenya', dialCode: '+254', flag: '🇰🇪', length: 9 },
-        { code: 'NG', name: 'Nigeria', dialCode: '+234', flag: '🇳🇬', length: 10 },
-        { code: 'ZA', name: 'South Africa', dialCode: '+27', flag: '🇿🇦', length: 9 },
-        { code: 'UG', name: 'Uganda', dialCode: '+256', flag: '🇺🇬', length: 9 },
-        { code: 'GH', name: 'Ghana', dialCode: '+233', flag: '🇬🇭', length: 9 },
-        { code: 'US', name: 'United States', dialCode: '+1', flag: '🇺🇸', length: 10 },
-        { code: 'GB', name: 'United Kingdom', dialCode: '+44', flag: '🇬🇧', length: 10 }
+        { code: 'KE', name: 'Kenya',        dialCode: '+254', flag: '🇰🇪', length: 9 },
+        { code: 'NG', name: 'Nigeria',      dialCode: '+234', flag: '🇳🇬', length: 10 },
+        { code: 'ZA', name: 'South Africa', dialCode: '+27',  flag: '🇿🇦', length: 9 },
+        { code: 'UG', name: 'Uganda',       dialCode: '+256', flag: '🇺🇬', length: 9 },
+        { code: 'GH', name: 'Ghana',        dialCode: '+233', flag: '🇬🇭', length: 9 },
+        { code: 'TZ', name: 'Tanzania',     dialCode: '+255', flag: '🇹🇿', length: 9 },
+        { code: 'RW', name: 'Rwanda',       dialCode: '+250', flag: '🇷🇼', length: 9 },
+        { code: 'GB', name: 'United Kingdom', dialCode: '+44', flag: '🇬🇧', length: 10 },
+        { code: 'US', name: 'United States', dialCode: '+1',  flag: '🇺🇸', length: 10 },
+        { code: 'AE', name: 'UAE',          dialCode: '+971', flag: '🇦🇪', length: 9 }
       ];
+
+      var TZ_MAP = {
+        'Africa/Nairobi':       'KE',
+        'Africa/Lagos':         'NG',
+        'Africa/Johannesburg':  'ZA',
+        'Africa/Kampala':       'UG',
+        'Africa/Accra':         'GH',
+        'Africa/Dar_es_Salaam': 'TZ',
+        'Africa/Kigali':        'RW',
+        'Europe/London':        'GB',
+        'Asia/Dubai':           'AE'
+      };
+
       var selectedCountry = COUNTRIES[0];
 
-      var overlay = document.getElementById('waBroadcastModalOverlay');
-      var box = document.getElementById('waBroadcastModalBox');
-      var closeBtn = document.getElementById('waModalClose');
+      // DOM refs
+      var overlay     = document.getElementById('waBroadcastModalOverlay');
+      var box         = document.getElementById('waBroadcastModalBox');
+      var closeBtn    = document.getElementById('waModalClose');
       var noThanksBtn = document.getElementById('waNoThanks');
-      
-      var countrySelect = document.getElementById('waCountry');
-      var dialCodeDisplay = document.getElementById('waDialCode');
-      var phoneInput = document.getElementById('waModalPhoneInput');
-      var errorMsg = document.getElementById('waErrorMsg');
-      var helperMsg = document.getElementById('waHelperMsg');
-      var form = document.getElementById('waModalForm');
-      var submitBtn = document.getElementById('waSubmitBtn');
-      var contentDiv = document.getElementById('waModalContent');
-      var successDiv = document.getElementById('waModalSuccess');
+      var countrySelect  = document.getElementById('waCountry');
+      var phoneInput     = document.getElementById('waModalPhoneInput');
+      var errorMsg       = document.getElementById('waErrorMsg');
+      var helperMsg      = document.getElementById('waHelperMsg');
+      var form           = document.getElementById('waModalForm');
+      var submitBtn      = document.getElementById('waSubmitBtn');
+      var contentDiv     = document.getElementById('waModalContent');
+      var successDiv     = document.getElementById('waModalSuccess');
 
       if (!overlay) return;
 
-      // Populate countries
+      // Populate select
       COUNTRIES.forEach(function(c) {
         var opt = document.createElement('option');
         opt.value = c.code;
-        opt.textContent = c.flag + ' ' + c.name + ' (' + c.dialCode + ')';
+        opt.textContent = c.flag + ' ' + c.dialCode + ' — ' + c.name;
         countrySelect.appendChild(opt);
       });
 
-      // Auto-detect country based on timezone
+      // Auto-detect timezone
       try {
-        var timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        if (timeZone.indexOf('Africa/Lagos') > -1) selectedCountry = COUNTRIES.find(c => c.code === 'NG');
-        else if (timeZone.indexOf('Africa/Johannesburg') > -1) selectedCountry = COUNTRIES.find(c => c.code === 'ZA');
-        else if (timeZone.indexOf('Africa/Kampala') > -1) selectedCountry = COUNTRIES.find(c => c.code === 'UG');
-        else if (timeZone.indexOf('Africa/Accra') > -1) selectedCountry = COUNTRIES.find(c => c.code === 'GH');
-        else if (timeZone.indexOf('America') > -1) selectedCountry = COUNTRIES.find(c => c.code === 'US');
-        else if (timeZone.indexOf('Europe/London') > -1) selectedCountry = COUNTRIES.find(c => c.code === 'GB');
-        if(!selectedCountry) selectedCountry = COUNTRIES[0];
-      } catch (e) {}
-      countrySelect.value = selectedCountry.code;
-      dialCodeDisplay.textContent = selectedCountry.dialCode;
-      helperMsg.textContent = 'Expected ' + selectedCountry.length + ' digits';
+        var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        var detected = TZ_MAP[tz];
+        if (!detected) {
+          // Fuzzy: Africa/* -> KE, America/* -> US
+          if (tz.indexOf('Africa') > -1) detected = 'KE';
+          else if (tz.indexOf('America') > -1) detected = 'US';
+        }
+        if (detected) {
+          var found = COUNTRIES.find(function(c) { return c.code === detected; });
+          if (found) selectedCountry = found;
+        }
+      } catch(e) {}
 
-      function validatePhone(phone, country) {
-        var cleanPhone = phone.replace(/\D/g, '');
-        if (!cleanPhone || cleanPhone.length !== country.length) return 'Enter a valid ' + country.length + '-digit phone number.';
+      countrySelect.value = selectedCountry.code;
+      updateHelper();
+
+      function updateHelper() {
+        helperMsg.textContent = selectedCountry.length + ' digits, no leading zero';
+      }
+
+      function validate() {
+        var digits = phoneInput.value.replace(/\D/g, '');
+        if (!digits || digits.length !== selectedCountry.length) {
+          return 'Enter a valid ' + selectedCountry.length + '-digit phone number.';
+        }
         return '';
       }
 
-      function showError(msg) {
+      function setError(msg) {
         if (msg) {
+          phoneInput.classList.add('wa-error');
           errorMsg.textContent = msg;
-          errorMsg.classList.remove('hidden');
-          helperMsg.classList.add('hidden');
-          phoneInput.classList.add('border-red-500', 'focus:border-red-500', 'focus:ring-red-500/20');
-          phoneInput.classList.remove('focus:border-[#2FE07A]/55', 'focus:ring-[#2FE07A]/15', 'border-white/10');
+          errorMsg.classList.add('wa-show');
+          helperMsg.style.display = 'none';
         } else {
-          errorMsg.classList.add('hidden');
-          helperMsg.classList.remove('hidden');
-          phoneInput.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-500/20');
-          phoneInput.classList.add('focus:border-[#2FE07A]/55', 'focus:ring-[#2FE07A]/15', 'border-white/10');
+          phoneInput.classList.remove('wa-error');
+          errorMsg.classList.remove('wa-show');
+          helperMsg.style.display = '';
         }
       }
 
-      countrySelect.addEventListener('change', function(e) {
-        selectedCountry = COUNTRIES.find(c => c.code === e.target.value) || COUNTRIES[0];
-        dialCodeDisplay.textContent = selectedCountry.dialCode;
-        helperMsg.textContent = 'Expected ' + selectedCountry.length + ' digits';
-        if (phoneInput.value) showError(validatePhone(phoneInput.value, selectedCountry));
+      countrySelect.addEventListener('change', function() {
+        selectedCountry = COUNTRIES.find(function(c) { return c.code === countrySelect.value; }) || COUNTRIES[0];
+        updateHelper();
+        if (phoneInput.value) setError(validate());
       });
 
-      phoneInput.addEventListener('input', function(e) {
-        var val = e.target.value.replace(/\D/g, '');
-        e.target.value = val;
-        showError(''); // clear error while typing
+      phoneInput.addEventListener('input', function() {
+        // Strip non-digits live
+        var pos = phoneInput.selectionStart;
+        phoneInput.value = phoneInput.value.replace(/\D/g, '');
+        phoneInput.setSelectionRange(pos, pos);
+        setError(''); // clear on typing
       });
 
-      phoneInput.addEventListener('blur', function(e) {
-        if (phoneInput.value) {
-          showError(validatePhone(phoneInput.value, selectedCountry));
-        }
+      phoneInput.addEventListener('blur', function() {
+        if (phoneInput.value) setError(validate());
       });
 
       form.addEventListener('submit', function(e) {
         e.preventDefault();
-        var valErr = validatePhone(phoneInput.value, selectedCountry);
-        if (valErr) {
-          showError(valErr);
-          phoneInput.focus();
-          return;
-        }
+        var err = validate();
+        if (err) { setError(err); phoneInput.focus(); return; }
 
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<svg class="animate-spin h-5 w-5 text-black inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+        submitBtn.innerHTML = '⏺ Sending…';
 
-        // Simulate API call
+        // Mock submit — replace with real API call
+        console.log('WA Broadcast signup:', selectedCountry.dialCode, phoneInput.value);
         setTimeout(function() {
-          console.log('Submitted WhatsApp:', { countryCode: selectedCountry.dialCode, phoneNumber: phoneInput.value });
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'Send Me Free Signals';
-          contentDiv.classList.add('hidden');
-          successDiv.classList.remove('hidden');
-          successDiv.style.display = 'flex';
+          contentDiv.style.display = 'none';
+          successDiv.classList.add('wa-show');
           setTimeout(window.closeWAModal, 2000);
-        }, 1200);
+        }, 1000);
       });
 
+      // Focus trap
+      var FOCUSABLE = 'button, input, select, [tabindex]:not([tabindex="-1"])';
+      document.addEventListener('keydown', function(e) {
+        if (!overlay.classList.contains('wa-open')) return;
+        if (e.key === 'Escape') { window.closeWAModal(); return; }
+        if (e.key === 'Tab') {
+          var els = Array.from(box.querySelectorAll(FOCUSABLE)).filter(function(el) {
+            return !el.disabled && el.offsetParent !== null;
+          });
+          var first = els[0], last = els[els.length - 1];
+          if (e.shiftKey) {
+            if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+          } else {
+            if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+          }
+        }
+      });
+
+      overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) window.closeWAModal();
+      });
+      closeBtn.addEventListener('click', window.closeWAModal);
+      noThanksBtn.addEventListener('click', window.closeWAModal);
+
       window.openWAModal = function() {
-        if (!overlay) return;
-        overlay.classList.remove('hidden');
-        requestAnimationFrame(function() {
-          overlay.style.opacity = '1';
-          if (box) box.style.transform = 'scale(1)';
-        });
+        // Reset form
         phoneInput.value = '';
-        showError('');
-        contentDiv.classList.remove('hidden');
-        successDiv.classList.add('hidden');
-        successDiv.style.display = 'none';
+        setError('');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send Me Free Signals';
+        contentDiv.style.display = '';
+        successDiv.classList.remove('wa-show');
+
+        overlay.classList.add('wa-open');
         document.body.style.overflow = 'hidden';
-        
-        // Setup focus trap initially
-        setTimeout(function() { 
-          phoneInput.focus(); 
-        }, 100);
+        setTimeout(function() { phoneInput.focus(); }, 120);
       };
 
       window.closeWAModal = function() {
-        if (!overlay) return;
-        overlay.style.opacity = '0';
-        if (box) box.style.transform = 'scale(0.95)';
-        setTimeout(function() { 
-          overlay.classList.add('hidden'); 
-          document.body.style.overflow = '';
-        }, 250);
+        overlay.classList.remove('wa-open');
+        document.body.style.overflow = '';
       };
 
-      closeBtn.addEventListener('click', window.closeWAModal);
-      noThanksBtn.addEventListener('click', window.closeWAModal);
-      overlay.addEventListener('click', function(e) { if (e.target === overlay) window.closeWAModal(); });
-      
-      // Focus Trap & Escape key
-      var focusableElementsString = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-      document.addEventListener('keydown', function(e) { 
-        if (overlay.classList.contains('hidden')) return;
-        
-        if (e.key === 'Escape') {
-            window.closeWAModal(); 
-            return;
-        }
-        
-        if (e.key === 'Tab') {
-            var focusable = box.querySelectorAll(focusableElementsString);
-            var firstElement = focusable[0];
-            var lastElement = focusable[focusable.length - 1];
-
-            if (e.shiftKey) { 
-                if (document.activeElement === firstElement) {
-                    lastElement.focus();
-                    e.preventDefault();
-                }
-            } else { 
-                if (document.activeElement === lastElement) {
-                    firstElement.focus();
-                    e.preventDefault();
-                }
-            }
-        }
-      });
-
-      if (typeof feather !== 'undefined') {
-        feather.replace();
-      }
     })();
     </script>
     
