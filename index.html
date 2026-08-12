@@ -373,80 +373,80 @@
     </script>
     
     <!-- ── WhatsApp Broadcast Modal ────────────────────────────────────── -->
-    <div id="waBroadcastModalOverlay" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 hidden" style="opacity:0;transition:opacity 0.2s ease;z-index:9999;position:fixed;" role="presentation">
-      <div id="waBroadcastModalBox" class="relative w-full max-w-[400px] bg-slate-900/90 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-700/50 p-6 sm:p-8" style="transform:scale(0.95);transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1);position:relative;z-index:10000;" role="dialog" aria-modal="true" aria-labelledby="waModalHeadline">
+    <div id="waBroadcastModalOverlay" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 hidden" style="opacity:0;transition:opacity 0.25s ease;z-index:9999;position:fixed;" role="presentation">
+      <div id="waBroadcastModalBox" class="relative w-full max-w-[420px] bg-[#111621]/92 backdrop-blur-xl rounded-[20px] shadow-[0_24px_60px_rgba(0,0,0,0.45)] border border-white/[0.08] p-6 sm:p-8" style="transform:scale(0.95);transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1);position:relative;z-index:10000;" role="dialog" aria-modal="true" aria-labelledby="waModalHeadline">
         
         <!-- Close Button -->
-        <button id="waModalClose" class="absolute top-3 right-3 w-11 h-11 flex items-center justify-center rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Close modal">
+        <button id="waModalClose" class="absolute top-4 right-4 w-9 h-9 flex items-center justify-center rounded-full text-gray-500 hover:bg-white/10 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#2FE07A]/50" aria-label="Close modal">
           <i data-feather="x" class="w-5 h-5"></i>
         </button>
 
-        <!-- Success State (Hidden by default) -->
-        <div id="waModalSuccess" class="hidden flex-col items-center justify-center py-10 text-center animate-in fade-in duration-300">
-          <div class="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mb-4 text-4xl">🎉</div>
+        <!-- Success State -->
+        <div id="waModalSuccess" class="hidden flex-col items-center justify-center py-10 text-center animate-in fade-in zoom-in-95 duration-300">
+          <div class="w-16 h-16 bg-[#2FE07A]/20 rounded-full flex items-center justify-center mb-5 text-4xl shadow-[0_10px_25px_rgba(47,224,122,0.2)]">🎉</div>
           <h2 class="text-2xl font-bold text-white mb-2">You're in!</h2>
-          <p class="text-slate-400 text-sm">Get ready for your free trade setups.</p>
+          <p class="text-gray-400 text-sm">Get ready for your free trade setups.</p>
         </div>
 
         <!-- Form State -->
         <div id="waModalContent">
           <!-- Header -->
           <div class="flex flex-col items-center text-center mb-6 mt-2">
-            <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(34,197,94,0.3)] mb-4">
-              <i data-feather="message-circle" class="w-6 h-6 text-slate-900 fill-current"></i>
+            <div class="w-16 h-16 rounded-full bg-[radial-gradient(circle_at_center,#2FE07A,#148A4C)] flex items-center justify-center shadow-[0_10px_25px_rgba(47,224,122,0.3)] mb-5">
+              <i data-feather="message-circle" class="w-8 h-8 text-black fill-current"></i>
             </div>
-            <h2 id="waModalHeadline" class="text-xl font-bold text-white mb-2">Free WhatsApp Broadcast</h2>
-            <p class="text-sm text-slate-400">
-              Get 3 free trade setups a week straight to WhatsApp — no spam, unsubscribe anytime.
+            <h2 id="waModalHeadline" class="text-[21px] font-bold text-white mb-2">Free WhatsApp Broadcast</h2>
+            <p class="text-sm text-gray-400 line-clamp-2 max-w-sm">
+              Get 3 free trade setups a week, straight to WhatsApp. No spam, unsubscribe anytime.
             </p>
           </div>
 
           <!-- Form -->
-          <form id="waModalForm" class="space-y-5">
+          <form id="waModalForm" class="space-y-4">
             <!-- Country Select -->
-            <div class="space-y-1.5">
-              <label for="waCountry" class="block text-xs font-bold text-slate-300 uppercase tracking-wider">Select Country</label>
+            <div>
+              <label for="waCountry" class="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Select Country</label>
               <div class="relative">
-                <select id="waCountry" class="w-full appearance-none bg-slate-800/80 border border-slate-700 text-white rounded-xl px-4 py-3.5 pr-10 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500 transition-all cursor-pointer">
+                <select id="waCountry" class="w-full appearance-none bg-white/5 hover:bg-white/[0.08] border border-white/10 text-white rounded-xl px-4 py-3.5 pr-12 focus:outline-none focus:border-[#2FE07A]/55 focus:ring-[3px] focus:ring-[#2FE07A]/15 transition-all cursor-pointer">
                   <!-- Options will be populated by JS -->
                 </select>
                 <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                  <i data-feather="chevron-down" class="w-4 h-4 text-slate-400"></i>
+                  <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
                 </div>
               </div>
             </div>
 
             <!-- Phone Input -->
-            <div class="space-y-1.5">
-              <label for="waModalPhoneInput" class="block text-xs font-bold text-slate-300 uppercase tracking-wider">Phone Number (Without Country Code)</label>
+            <div>
+              <label for="waModalPhoneInput" class="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Phone Number (Without Country Code)</label>
               <div class="flex gap-2">
-                <div id="waDialCode" class="flex-shrink-0 bg-slate-800/80 border border-slate-700 text-slate-300 rounded-xl px-4 py-3.5 flex items-center font-medium">
+                <div id="waDialCode" class="flex-shrink-0 bg-white/5 border border-white/10 text-gray-300 rounded-xl px-4 py-3.5 flex items-center font-medium">
                   +254
                 </div>
                 <div class="relative flex-grow">
-                  <input id="waModalPhoneInput" type="tel" placeholder="e.g. 712 345 678" class="w-full bg-slate-800/80 border border-slate-700 text-white rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500 transition-all placeholder:text-slate-500">
+                  <input id="waModalPhoneInput" type="tel" inputmode="numeric" placeholder="e.g. 712 345 678" class="w-full bg-white/5 hover:bg-white/[0.08] border border-white/10 text-white rounded-xl px-4 py-3.5 focus:outline-none focus:border-[#2FE07A]/55 focus:ring-[3px] focus:ring-[#2FE07A]/15 transition-all placeholder:text-gray-500">
                 </div>
               </div>
-              <div class="flex justify-between items-start mt-1 px-1 h-4">
-                <p id="waErrorMsg" class="text-xs text-red-400 font-medium hidden">Error message</p>
-                <p id="waHelperMsg" class="text-xs text-slate-500">Expected 9 digits</p>
+              <div class="flex justify-between items-start mt-2 px-1 h-4">
+                <p id="waErrorMsg" class="text-xs text-red-400 font-medium hidden">Enter a valid 9-digit phone number.</p>
+                <p id="waHelperMsg" class="text-xs text-gray-500">Expected 9 digits</p>
               </div>
             </div>
 
             <!-- Submit -->
-            <div class="pt-2">
-              <button id="waSubmitBtn" type="submit" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-slate-950 font-bold text-base rounded-xl py-3.5 px-4 shadow-[0_0_20px_rgba(34,197,94,0.15)] transform transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center h-[52px]">
+            <div class="pt-3">
+              <button id="waSubmitBtn" type="submit" class="w-full bg-gradient-to-r from-[#2FE07A] to-[#17C964] text-black font-bold text-base rounded-xl py-4 px-4 shadow-[0_10px_26px_rgba(23,201,100,0.35)] transform transition-all hover:brightness-110 active:translate-y-px disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center">
                 Send Me Free Signals
               </button>
             </div>
 
             <!-- Footer Consent -->
-            <div class="text-center space-y-3">
-              <p class="text-[11px] text-slate-500 leading-relaxed px-2">
-                By joining, you agree to receive WhatsApp messages from us. No spam, unsubscribe anytime.
+            <div class="text-center space-y-3 pt-1">
+              <p class="text-[11px] text-gray-500 leading-relaxed px-2">
+                By joining, you agree to receive WhatsApp messages from us.
               </p>
-              <button type="button" id="waNoThanks" class="text-sm text-slate-400 hover:text-white transition-colors underline-offset-4 hover:underline">
-                No thanks
+              <button type="button" id="waNoThanks" class="text-sm text-gray-400 hover:text-white transition-colors underline-offset-4 hover:underline">
+                No thanks, maybe later
               </button>
             </div>
           </form>
@@ -458,10 +458,12 @@
     (function() {
       var COUNTRIES = [
         { code: 'KE', name: 'Kenya', dialCode: '+254', flag: '🇰🇪', length: 9 },
-        { code: 'US', name: 'United States', dialCode: '+1', flag: '🇺🇸', length: 10 },
-        { code: 'GB', name: 'United Kingdom', dialCode: '+44', flag: '🇬🇧', length: 10 },
+        { code: 'NG', name: 'Nigeria', dialCode: '+234', flag: '🇳🇬', length: 10 },
         { code: 'ZA', name: 'South Africa', dialCode: '+27', flag: '🇿🇦', length: 9 },
-        { code: 'NG', name: 'Nigeria', dialCode: '+234', flag: '🇳🇬', length: 10 }
+        { code: 'UG', name: 'Uganda', dialCode: '+256', flag: '🇺🇬', length: 9 },
+        { code: 'GH', name: 'Ghana', dialCode: '+233', flag: '🇬🇭', length: 9 },
+        { code: 'US', name: 'United States', dialCode: '+1', flag: '🇺🇸', length: 10 },
+        { code: 'GB', name: 'United Kingdom', dialCode: '+44', flag: '🇬🇧', length: 10 }
       ];
       var selectedCountry = COUNTRIES[0];
 
@@ -493,10 +495,13 @@
       // Auto-detect country based on timezone
       try {
         var timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        if (timeZone.indexOf('America') > -1) selectedCountry = COUNTRIES.find(c => c.code === 'US') || COUNTRIES[0];
-        else if (timeZone.indexOf('Europe/London') > -1) selectedCountry = COUNTRIES.find(c => c.code === 'GB') || COUNTRIES[0];
-        else if (timeZone.indexOf('Africa/Johannesburg') > -1) selectedCountry = COUNTRIES.find(c => c.code === 'ZA') || COUNTRIES[0];
-        else if (timeZone.indexOf('Africa/Lagos') > -1) selectedCountry = COUNTRIES.find(c => c.code === 'NG') || COUNTRIES[0];
+        if (timeZone.indexOf('Africa/Lagos') > -1) selectedCountry = COUNTRIES.find(c => c.code === 'NG');
+        else if (timeZone.indexOf('Africa/Johannesburg') > -1) selectedCountry = COUNTRIES.find(c => c.code === 'ZA');
+        else if (timeZone.indexOf('Africa/Kampala') > -1) selectedCountry = COUNTRIES.find(c => c.code === 'UG');
+        else if (timeZone.indexOf('Africa/Accra') > -1) selectedCountry = COUNTRIES.find(c => c.code === 'GH');
+        else if (timeZone.indexOf('America') > -1) selectedCountry = COUNTRIES.find(c => c.code === 'US');
+        else if (timeZone.indexOf('Europe/London') > -1) selectedCountry = COUNTRIES.find(c => c.code === 'GB');
+        if(!selectedCountry) selectedCountry = COUNTRIES[0];
       } catch (e) {}
       countrySelect.value = selectedCountry.code;
       dialCodeDisplay.textContent = selectedCountry.dialCode;
@@ -504,8 +509,7 @@
 
       function validatePhone(phone, country) {
         var cleanPhone = phone.replace(/\D/g, '');
-        if (!cleanPhone) return 'Phone number is required';
-        if (cleanPhone.length !== country.length) return 'Expected ' + country.length + ' digits for ' + country.name;
+        if (!cleanPhone || cleanPhone.length !== country.length) return 'Enter a valid ' + country.length + '-digit phone number.';
         return '';
       }
 
@@ -514,13 +518,13 @@
           errorMsg.textContent = msg;
           errorMsg.classList.remove('hidden');
           helperMsg.classList.add('hidden');
-          phoneInput.classList.add('border-red-500', 'focus:ring-red-500');
-          phoneInput.classList.remove('focus:ring-green-500/50', 'focus:border-green-500', 'border-slate-700');
+          phoneInput.classList.add('border-red-500', 'focus:border-red-500', 'focus:ring-red-500/20');
+          phoneInput.classList.remove('focus:border-[#2FE07A]/55', 'focus:ring-[#2FE07A]/15', 'border-white/10');
         } else {
           errorMsg.classList.add('hidden');
           helperMsg.classList.remove('hidden');
-          phoneInput.classList.remove('border-red-500', 'focus:ring-red-500');
-          phoneInput.classList.add('focus:ring-green-500/50', 'focus:border-green-500', 'border-slate-700');
+          phoneInput.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-500/20');
+          phoneInput.classList.add('focus:border-[#2FE07A]/55', 'focus:ring-[#2FE07A]/15', 'border-white/10');
         }
       }
 
@@ -553,7 +557,7 @@
         }
 
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<svg class="animate-spin h-5 w-5 text-slate-900 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+        submitBtn.innerHTML = '<svg class="animate-spin h-5 w-5 text-black inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
 
         // Simulate API call
         setTimeout(function() {
@@ -580,7 +584,11 @@
         successDiv.classList.add('hidden');
         successDiv.style.display = 'none';
         document.body.style.overflow = 'hidden';
-        setTimeout(function() { phoneInput.focus(); }, 100);
+        
+        // Setup focus trap initially
+        setTimeout(function() { 
+          phoneInput.focus(); 
+        }, 100);
       };
 
       window.closeWAModal = function() {
@@ -590,15 +598,42 @@
         setTimeout(function() { 
           overlay.classList.add('hidden'); 
           document.body.style.overflow = '';
-        }, 200);
+        }, 250);
       };
 
       closeBtn.addEventListener('click', window.closeWAModal);
       noThanksBtn.addEventListener('click', window.closeWAModal);
       overlay.addEventListener('click', function(e) { if (e.target === overlay) window.closeWAModal(); });
-      document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && !overlay.classList.contains('hidden')) window.closeWAModal(); });
+      
+      // Focus Trap & Escape key
+      var focusableElementsString = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+      document.addEventListener('keydown', function(e) { 
+        if (overlay.classList.contains('hidden')) return;
+        
+        if (e.key === 'Escape') {
+            window.closeWAModal(); 
+            return;
+        }
+        
+        if (e.key === 'Tab') {
+            var focusable = box.querySelectorAll(focusableElementsString);
+            var firstElement = focusable[0];
+            var lastElement = focusable[focusable.length - 1];
 
-      // If feather is defined, replace icons for the modal
+            if (e.shiftKey) { 
+                if (document.activeElement === firstElement) {
+                    lastElement.focus();
+                    e.preventDefault();
+                }
+            } else { 
+                if (document.activeElement === lastElement) {
+                    firstElement.focus();
+                    e.preventDefault();
+                }
+            }
+        }
+      });
+
       if (typeof feather !== 'undefined') {
         feather.replace();
       }
