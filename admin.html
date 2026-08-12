@@ -3427,6 +3427,11 @@
       }
     }
 
+    function promptBroadcastConfirm(targetLabel, type, preview, onConfirm) {
+      const msg = `Send this ${type} message to: ${targetLabel}\n\nPreview:\n${preview.substring(0, 200)}${preview.length > 200 ? '...' : ''}\n\nProceed?`;
+      if (confirm(msg)) onConfirm();
+    }
+
     async function sendEngagement() {
       const token = localStorage.getItem('pa_bot_token');
       const generalChat = localStorage.getItem('pa_chat_id');
@@ -3464,7 +3469,10 @@
       const payload = { token, chatId: chat, text, stickerId, type: 'engagement', scheduledTime };
       const targetLabel = targetVal === 'both' ? 'General + VIP' : targetVal.toUpperCase();
       
-      promptBroadcastConfirm(targetLabel, 'Engagement', text || '(Sticker/Image only)', async () => {
+      const confirmed = confirm(`Send Engagement message to: ${targetLabel}\n\nPreview:\n${(text || '(Sticker/Image only)').substring(0, 200)}\n\nProceed?`);
+      if (!confirmed) return;
+      {
+        const _go = async () => {
         btn.disabled = true;
         btn.classList.add('opacity-75', 'cursor-not-allowed');
         feedbackMsg.innerHTML = '<span class="text-sky-400 animate-pulse">Sending via API...</span>';
@@ -3496,7 +3504,9 @@
           btn.disabled = false;
           btn.classList.remove('opacity-75', 'cursor-not-allowed');
         }
-      });
+        };
+        _go();
+      }
     }
 
     async function sendPayload(url, payload, btn, feedbackEl, onSuccess) {
@@ -3622,7 +3632,9 @@
       const payload = { token, chatId: chat, text: fullMessage, type: 'live', scheduledTime };
       const targetLabel = targetVal === 'both' ? 'General + VIP' : targetVal.toUpperCase();
 
-      promptBroadcastConfirm(targetLabel, 'Live Session', fullMessage, async () => {
+      const confirmedLive = confirm(`Send Live Session message to: ${targetLabel}\n\nPreview:\n${fullMessage.substring(0, 200)}\n\nProceed?`);
+      if (!confirmedLive) return;
+      {
         btn.disabled = true;
         btn.classList.add('opacity-75', 'cursor-not-allowed');
         feedbackMsg.innerHTML = '<span class="text-sky-400 animate-pulse">Broadcasting via API...</span>';
@@ -3632,7 +3644,7 @@
           document.getElementById('liveInviteLink').value = '';
           updateLiveRoomPreview();
         });
-      });
+      }
     }
 
     function shareLiveToWhatsApp() {
