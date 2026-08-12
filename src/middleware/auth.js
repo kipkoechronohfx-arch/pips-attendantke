@@ -32,7 +32,13 @@ function validateAdminKey(req, res, next) {
 // ── Admin Session Validation ───────────────────────────────────
 // SECURITY: Legacy HMAC fallback removed. JWT-only validation going forward.
 function validateAdminSession(req, res, next) {
-  const token = req.headers['x-admin-token'] || req.query.token;
+  let token = req.headers['x-admin-token'] || req.query.token;
+  if (!token && req.headers['authorization']) {
+    const parts = req.headers['authorization'].split(' ');
+    if (parts.length === 2 && parts[0] === 'Bearer') {
+      token = parts[1];
+    }
+  }
   if (!token) return res.status(401).json({ ok: false, error: 'Missing admin session token.' });
 
   try {
