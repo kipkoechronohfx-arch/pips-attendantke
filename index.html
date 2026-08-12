@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
@@ -669,9 +669,9 @@
           <form id="waModalForm">
             <!-- Country -->
             <div class="wa-field-group">
-              <label for="waCountry" class="wa-label">Select country</label>
+              <label for="waModalCountrySelect" class="wa-label">Select country</label>
               <div class="wa-select-wrap">
-                <select id="waCountry"><!-- JS populated --></select>
+                <select id="waModalCountrySelect"><!-- JS populated --></select>
               </div>
             </div>
 
@@ -730,7 +730,7 @@
       var box         = document.getElementById('waBroadcastModalBox');
       var closeBtn    = document.getElementById('waModalClose');
       var noThanksBtn = document.getElementById('waNoThanks');
-      var countrySelect  = document.getElementById('waCountry');
+      var countrySelect  = document.getElementById('waModalCountrySelect');
       var phoneInput     = document.getElementById('waModalPhoneInput');
       var errorMsg       = document.getElementById('waErrorMsg');
       var helperMsg      = document.getElementById('waHelperMsg');
