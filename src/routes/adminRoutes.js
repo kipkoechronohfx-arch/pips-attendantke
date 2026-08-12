@@ -1744,7 +1744,7 @@ Take Profit: ${tp || 'Unknown'}
 
 Keep the analysis strictly focused on institutional concepts like order blocks, fair value gaps, liquidity sweeps, demand/supply zones, or major trend continuations. Write 2-3 comprehensive paragraphs that sound highly persuasive, analytical, and authoritative. Use appropriate spacing.`;
 
-    const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
     const payload = {
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: { temperature: 0.7, maxOutputTokens: 600 }
