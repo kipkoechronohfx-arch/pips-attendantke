@@ -482,7 +482,7 @@
         letter-spacing: 0;
       }
       .wa-select-wrap { position: relative; }
-      #waCountry {
+      #waModalCountrySelect {
         appearance: none;
         -webkit-appearance: none;
         width: 100%;
@@ -497,8 +497,12 @@
         transition: border-color 0.15s ease, background 0.15s ease;
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       }
-      #waCountry:hover { background: rgba(255,255,255,0.07); }
-      #waCountry:focus {
+      #waModalCountrySelect option {
+        background-color: #111621;
+        color: #F5F7FA;
+      }
+      #waModalCountrySelect:hover { background: rgba(255,255,255,0.07); }
+      #waModalCountrySelect:focus {
         outline: none;
         border-color: rgba(47,224,122,0.55);
         box-shadow: 0 0 0 3px rgba(47,224,122,0.15) !important;
