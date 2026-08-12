@@ -1734,19 +1734,20 @@ router.post('/generate-rationale', validateAdminSession, async (req, res) => {
       return res.status(400).json({ ok: false, error: 'GEMINI_API_KEY is not configured.' });
     }
 
-    const prompt = `Write a short, professional, 2-3 sentence technical rationale for a Forex/Crypto trading signal. Do not give financial advice, just state the technical structure.
+    const prompt = `Act as an elite institutional trader. Write a highly detailed, professional, and powerful technical rationale for a Forex/Crypto trading setup. Break down the market structure, key liquidity levels, and price action that validates this setup. Do not give financial advice.
+
 Asset: ${asset || 'Forex Pair'}
 Direction: ${type || 'Trade'}
 Entry Price: ${entry || 'Market'}
 Stop Loss: ${sl || 'Unknown'}
 Take Profit: ${tp || 'Unknown'}
 
-Keep it strictly about price action, demand/supply zones, or trend continuations. Do not mention indicators you cannot see. Be concise and persuasive.`;
+Keep the analysis strictly focused on institutional concepts like order blocks, fair value gaps, liquidity sweeps, demand/supply zones, or major trend continuations. Write 2-3 comprehensive paragraphs that sound highly persuasive, analytical, and authoritative. Use appropriate spacing.`;
 
-    const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
+    const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
     const payload = {
       contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.7, maxOutputTokens: 150 }
+      generationConfig: { temperature: 0.7, maxOutputTokens: 600 }
     };
 
     const response = await fetch(GEMINI_URL, {
