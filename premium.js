@@ -966,7 +966,8 @@ feather.replace();
         const cat = s.category || 'Forex';
 
         // First 5 are rendered normally; rest rendered but hidden behind scroll
-        return `<div class="flex items-center justify-between py-1.5 px-3 rounded-xl bg-black/30 border border-white/5 hover:bg-white/5 transition">
+        const animDelay = idx < 10 ? `style="animation-delay: ${idx * 0.05}s; opacity: 0;"` : '';
+        return `<div class="flex items-center justify-between py-1.5 px-3 rounded-xl bg-black/30 border border-white/5 hover:bg-white/5 transition animate-slideInUp" ${animDelay}>
           <div class="flex items-center gap-2 min-w-0">
             <span class="text-[9px] text-gray-500 font-bold uppercase tracking-wider w-14 shrink-0">${cat}</span>
             <span class="text-white text-xs font-bold truncate">${pair}</span>

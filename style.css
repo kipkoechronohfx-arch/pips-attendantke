@@ -19,6 +19,14 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 }
 
 /* Glassmorphism Utilities */
+@keyframes slideInUp {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.animate-slideInUp {
+  animation: slideInUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
 .glass-panel {
   background: rgba(255, 255, 255, 0.02);
   backdrop-filter: blur(20px) saturate(180%);

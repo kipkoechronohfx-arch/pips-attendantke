@@ -10,6 +10,13 @@
   <link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png">
   
+  <!-- OpenGraph / Social Sharing Meta Tags -->
+  <meta property="og:title" content="Pips Attendant | Admin Dashboard">
+  <meta property="og:description" content="Secure administration dashboard for Pips Attendant.">
+  <meta property="og:image" content="https://www.pipsattendant.com/avatar.webp">
+  <meta property="og:url" content="https://www.pipsattendant.com/admin.html">
+  <meta property="og:type" content="website">
+  
   <!-- Tailwind CSS (pre-compiled) -->
   <link rel="stylesheet" href="dist.css">
 
@@ -2973,9 +2980,22 @@
 
     async function generateAIRationale() {
       const btn = document.getElementById('generateRationaleBtn');
+      const notesEl = document.getElementById('notes');
       const originalText = btn.innerHTML;
-      btn.innerHTML = '<i data-feather="loader" class="w-3 h-3 animate-spin inline"></i> Generating...';
+      const originalNotes = notesEl.value;
+      
+      btn.innerHTML = '<i data-feather="cpu" class="w-3 h-3 animate-pulse inline"></i> <span class="animate-pulse">Thinking...</span>';
+      btn.classList.add('border-sky-400/50', 'shadow-[0_0_15px_rgba(56,189,248,0.3)]');
       btn.disabled = true;
+      if (window.feather) feather.replace();
+
+      // Show typing skeleton in textarea
+      notesEl.value = 'AI is analyzing market structure...';
+      let skeletonDots = 0;
+      const skeletonInterval = setInterval(() => {
+        skeletonDots = (skeletonDots + 1) % 4;
+        notesEl.value = 'AI is analyzing market structure' + '.'.repeat(skeletonDots);
+      }, 400);
 
       try {
         const payload = {
@@ -2996,9 +3016,10 @@
         });
 
         const data = await res.json();
+        clearInterval(skeletonInterval);
+        
         if (data.ok) {
-          const notesEl = document.getElementById('notes');
-          notesEl.value = notesEl.value ? notesEl.value + '\n\n' : '';
+          notesEl.value = originalNotes ? originalNotes + '\n\n' : '';
           const textToType = data.rationale.trim();
           let i = 0;
           const typingInterval = setInterval(() => {
@@ -3008,12 +3029,16 @@
             if (i >= textToType.length) clearInterval(typingInterval);
           }, 15);
         } else {
+          notesEl.value = originalNotes;
           alert('AI Generation failed: ' + data.error);
         }
       } catch (err) {
+        clearInterval(skeletonInterval);
+        notesEl.value = originalNotes;
         alert('Failed to connect to AI server: ' + err.message);
       } finally {
         btn.innerHTML = originalText;
+        btn.classList.remove('border-sky-400/50', 'shadow-[0_0_15px_rgba(56,189,248,0.3)]');
         btn.disabled = false;
         if (window.feather) feather.replace();
       }
