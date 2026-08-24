@@ -188,6 +188,17 @@ app.use((req, res, next) => {
 
   next();
 });
+// ── SEO: Block Tool/App Pages from Indexing ───────────────────
+// These pages require auth or are pure tools — not content worth indexing.
+// X-Robots-Tag header works even when Googlebot doesn't execute the meta tag.
+const NOINDEX_PAGES = new Set(['/journal.html', '/calculator.html']);
+app.use((req, res, next) => {
+  if (NOINDEX_PAGES.has(req.path)) {
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+  }
+  next();
+});
+
 // ── Security: Admin Panel Protection ───────────────────────────
 // 1. Log every attempt to /admin.html or /admin to probe.log
 app.use(['/admin.html', '/admin', '/admin/*'], (req, res, next) => {

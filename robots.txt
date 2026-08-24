@@ -20,6 +20,9 @@ Disallow: /admin.html.backup
 Disallow: /404.html
 Disallow: /offline.html
 Disallow: /googleb52db227de08e26c.html
+# Tool/App pages — noindex, no crawl needed
+Disallow: /journal.html
+Disallow: /calculator.html
 Disallow: /logs/
 Disallow: /data/
 Disallow: /src/

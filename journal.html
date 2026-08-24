@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
   <title>Free Trading Journal | Track Your Trades | Pips_attendant</title>
   <meta name="description" content="A free private trading journal tool. Log your trades, track your win rate and net profit. All data saved locally to your browser — 100% private and secure.">
   <meta name="keywords" content="trading journal, forex journal, trade tracker, pips attendant, win rate calculator">
@@ -400,6 +401,13 @@
           const res = await fetch('/api/journal', {
             headers: { 'Authorization': `Bearer ${sessionToken}` }
           });
+          // Purge expired/invalid token immediately — prevents persistent 401 state
+          if (res.status === 401) {
+            localStorage.removeItem('vip_session_token');
+            handleLogoutUI();
+            renderTrades();
+            return;
+          }
           const data = await res.json();
           
           if (data.ok) {
@@ -665,6 +673,12 @@
       if (!sessionToken) return;
       try {
         const res = await fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${sessionToken}` } });
+        // If token is expired or invalid, purge it and reset UI — prevents stale 401s
+        if (res.status === 401) {
+          localStorage.removeItem('vip_session_token');
+          handleLogoutUI();
+          return;
+        }
         const data = await res.json();
         if (data.ok && data.user.leaderboardOptIn) {
           document.getElementById('optInToggle').checked = true;
