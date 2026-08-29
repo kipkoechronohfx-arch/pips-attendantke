@@ -228,6 +228,66 @@ router.get('/analytics', validateAdminSession, async (req, res) => {
   }
 });
 
+// ── Weekly Performance Report ───────────────────────────────────
+router.get('/performance/weekly', validateAdminSession, async (req, res) => {
+  try {
+    const signals = await db.getSignals(0); // get all signals
+    const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    
+    // Filter signals sent in the last 7 days
+    const recentSignals = signals.filter(s => {
+      const time = new Date(s.sentAt).getTime();
+      return time >= oneWeekAgo && s.type === 'signal';
+    });
+
+    let wins = 0;
+    let losses = 0;
+    let breakeven = 0;
+    let running = 0;
+    let pipsGained = 0;
+    let pipsLost = 0;
+    let bestTrade = null;
+
+    recentSignals.forEach(s => {
+      const pips = Number(s.pips) || 0;
+      if (s.outcome === 'TP Hit') {
+        wins++;
+        pipsGained += pips;
+        if (!bestTrade || pips > Number(bestTrade.pips)) {
+          bestTrade = s;
+        }
+      } else if (s.outcome === 'SL Hit') {
+        losses++;
+        pipsLost += pips;
+      } else if (s.outcome === 'Breakeven') {
+        breakeven++;
+      } else {
+        running++;
+      }
+    });
+
+    const totalResolved = wins + losses;
+    const winRate = totalResolved > 0 ? Math.round((wins / totalResolved) * 100) : 0;
+    const netPips = pipsGained - pipsLost;
+
+    res.json({
+      ok: true,
+      stats: {
+        total: recentSignals.length,
+        wins,
+        losses,
+        breakeven,
+        running,
+        netPips,
+        winRate,
+        bestTrade: bestTrade ? { pair: bestTrade.pair || 'Unknown', pips: bestTrade.pips } : null
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // ── Send Test Email ─────────────────────────────────────────────
 router.post('/test-email', validateAdminSession, async (req, res) => {
   const { to } = req.body;

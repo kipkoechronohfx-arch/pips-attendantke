@@ -203,17 +203,111 @@
     </div>
   </article>
 
-  <!-- CTA -->
-  <section class="py-16 px-4 bg-gradient-to-br from-[#1a1200] via-black to-black border-t border-gold/10">
-    <div class="max-w-3xl mx-auto text-center">
-      <h2 class="text-2xl md:text-4xl font-black text-white font-heading mb-4">Want Us to <span class="hero-gradient-text">Pass It For You?</span></h2>
-      <p class="text-gray-400 mb-8 max-w-lg mx-auto">Our professional prop firm passing service has an exceptional track record. We trade your challenge account with strict risk management and deliver results.</p>
-      <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <a href="/propfirm.html" class="btn-gold font-bold text-base px-8 py-4 rounded-2xl">View Prop Firm Service</a>
-        <a href="https://wa.me/254107692553?text=Hi%2C%20I%20need%20help%20passing%20a%20prop%20firm%20challenge" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-2 bg-emerald-600/90 hover:bg-emerald-500 text-white font-bold px-8 py-4 rounded-2xl transition-all">💬 Ask on WhatsApp</a>
+  <!-- CTA / Lead Capture Form -->
+  <section class="py-16 px-4 bg-gradient-to-br from-[#1a1200] via-black to-black border-t border-gold/10" id="apply">
+    <div class="max-w-xl mx-auto">
+      <div class="text-center mb-8">
+        <h2 class="text-2xl md:text-4xl font-black text-white font-heading mb-4">Want Us to <span class="hero-gradient-text">Pass It For You?</span></h2>
+        <p class="text-gray-400">Our professional prop firm passing service has an exceptional track record. Fill out the form below to get started and our team will contact you.</p>
+      </div>
+      
+      <div class="bg-[#111] p-6 md:p-8 rounded-2xl border border-gold/20 shadow-[0_0_30px_rgba(212,175,55,0.05)]">
+        <form id="propFirmLeadForm" onsubmit="submitLead(event)" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Your Name</label>
+              <input type="text" id="leadName" required class="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:border-gold/50 focus:outline-none transition" placeholder="John Doe">
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Phone (WhatsApp)</label>
+              <input type="text" id="leadPhone" required class="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:border-gold/50 focus:outline-none transition" placeholder="+123456789">
+            </div>
+          </div>
+          
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Email Address</label>
+            <input type="email" id="leadEmail" required class="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:border-gold/50 focus:outline-none transition" placeholder="john@example.com">
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Prop Firm</label>
+              <select id="leadFirm" class="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:border-gold/50 focus:outline-none transition">
+                <option value="FTMO">FTMO</option>
+                <option value="FundedNext">FundedNext</option>
+                <option value="MyFundedFX">MyFundedFX</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Account Size</label>
+              <select id="leadSize" class="w-full bg-black border border-white/10 rounded-xl p-3 text-white focus:border-gold/50 focus:outline-none transition">
+                <option value="10k">$10,000</option>
+                <option value="25k">$25,000</option>
+                <option value="50k">$50,000</option>
+                <option value="100k">$100,000</option>
+                <option value="200k">$200,000</option>
+              </select>
+            </div>
+          </div>
+          
+          <div id="leadFeedback" class="text-sm font-bold text-center h-5"></div>
+          
+          <button type="submit" id="btnSubmitLead" class="w-full btn-gold font-bold text-base px-8 py-4 rounded-xl flex items-center justify-center gap-2">
+            Submit Application
+          </button>
+        </form>
+      </div>
+      
+      <div class="mt-6 text-center">
+        <a href="https://wa.me/254107692553?text=Hi%2C%20I%20need%20help%20passing%20a%20prop%20firm%20challenge" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 text-gray-400 hover:text-emerald-400 transition-colors text-sm font-semibold">
+          <i data-feather="message-circle" class="w-4 h-4"></i> Or ask us directly on WhatsApp
+        </a>
       </div>
     </div>
   </section>
+
+  <script>
+    async function submitLead(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnSubmitLead');
+      const fb = document.getElementById('leadFeedback');
+      
+      btn.disabled = true;
+      btn.innerHTML = 'Submitting...';
+      fb.innerHTML = '';
+      
+      const payload = {
+        name: document.getElementById('leadName').value,
+        phone: document.getElementById('leadPhone').value,
+        email: document.getElementById('leadEmail').value,
+        firm: document.getElementById('leadFirm').value,
+        size: document.getElementById('leadSize').value,
+        source: 'Prop Firm Article'
+      };
+      
+      try {
+        const res = await fetch('/api/leads/prop-firm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        
+        if (data.ok) {
+          fb.innerHTML = '<span class="text-emerald-400">✅ Application received! We will contact you shortly.</span>';
+          document.getElementById('propFirmLeadForm').reset();
+        } else {
+          fb.innerHTML = `<span class="text-rose-400">Error: ${data.error || 'Failed to submit.'}</span>`;
+        }
+      } catch (err) {
+        fb.innerHTML = '<span class="text-rose-400">Network error. Please try again or use WhatsApp.</span>';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Submit Application';
+      }
+    }
+  </script>
 
   <section class="py-8 px-4 bg-black/20"><div class="max-w-3xl mx-auto"><p class="speakable text-sm text-gray-500 border-t border-white/5 pt-6 mt-6 max-w-2xl mx-auto text-center"><strong class="text-gray-400">Pips Attendant</strong> is a professional <strong class="text-gray-400">Forex trading company</strong> offering Forex signals, copy trading, Forex education, prop firm coaching, and trading analytics. We are not a medical, nursing, or healthcare service.</p></div></section>
   <footer class="bg-black border-t border-white/5 py-10 px-4 text-center text-gray-600 text-sm">

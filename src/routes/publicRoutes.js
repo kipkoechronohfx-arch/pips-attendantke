@@ -352,7 +352,7 @@ router.get('/broadcast/ib-brokers', (req, res) => {
 router.post('/broadcast/ib-blast', async (req, res) => {
   const token   = req.body.token || process.env.TELEGRAM_BOT_TOKEN;
   const chatId  = req.body.chatId || process.env.TELEGRAM_CHAT_ID;
-  const { customMessage, broker } = req.body;
+  const { customMessage, broker, image } = req.body;
   
   // Support multiple IB links based on broker selection
   let envKey = 'IB_LINK';
@@ -388,18 +388,43 @@ router.post('/broadcast/ib-blast', async (req, res) => {
 
   try {
     for (const cid of chatIds) {
-      const msgRes = await fetch(`${TG_BASE}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: cid,
-          text: message,
-          parse_mode: 'Markdown',
-          disable_web_page_preview: false
-        })
-      });
-      const msgData = await msgRes.json();
-      if (!msgData.ok) throw new Error(`Telegram send failed for ${cid}: ${msgData.description}`);
+      if (image) {
+        // Send Photo
+        const fetch = require('node-fetch');
+        const FormData = require('form-data');
+        const form = new FormData();
+        
+        // Remove data URL prefix (e.g., data:image/png;base64,)
+        const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
+        const buffer = Buffer.from(base64Data, 'base64');
+        
+        form.append('chat_id', cid);
+        form.append('photo', buffer, { filename: 'banner.jpg' });
+        form.append('caption', message);
+        form.append('parse_mode', 'Markdown');
+        
+        const msgRes = await fetch(`${TG_BASE}/sendPhoto`, {
+          method: 'POST',
+          body: form
+        });
+        const msgData = await msgRes.json();
+        if (!msgData.ok) throw new Error(`Telegram sendPhoto failed for ${cid}: ${msgData.description}`);
+      } else {
+        // Send Text
+        const fetch = require('node-fetch');
+        const msgRes = await fetch(`${TG_BASE}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: cid,
+            text: message,
+            parse_mode: 'Markdown',
+            disable_web_page_preview: false
+          })
+        });
+        const msgData = await msgRes.json();
+        if (!msgData.ok) throw new Error(`Telegram sendMessage failed for ${cid}: ${msgData.description}`);
+      }
     }
 
     // Log as a broadcast entry (type = 'ib_blast') for the admin panel history
@@ -641,6 +666,66 @@ router.post('/subscribe', leadCaptureLimiter, async (req, res) => {
     return res.json({ ok: true, message: 'Subscribed successfully! Check your email for your free workbook.' });
   } catch (err) {
     console.error('[Subscribe Error]', err);
+    res.status(500).json({ ok: false, error: 'Server error. Please try again.' });
+  }
+});
+
+router.post('/leads/prop-firm', leadCaptureLimiter, async (req, res) => {
+  const { name, phone, email, firm, size, source } = req.body;
+  if (!name || !phone || !email || !firm || !size) {
+    return res.status(400).json({ ok: false, error: 'All fields are required.' });
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ ok: false, error: 'A valid email is required.' });
+  }
+  
+  const lead = {
+    email: email.toLowerCase().trim(),
+    name: name.trim(),
+    phone: phone.trim(),
+    firm: firm,
+    size: size,
+    source: source || 'Prop Firm Article',
+    status: 'new',
+    createdAt: new Date().toISOString()
+  };
+  
+  try {
+    const result = await db.addLead(lead);
+    
+    if (!result.ok && result.duplicate) {
+      // For prop firm, if duplicate email, just append a timestamp so we don't reject returning leads
+      lead.email = `${lead.email.split('@')[0]}+${Date.now()}@${lead.email.split('@')[1]}`;
+      await db.addLead(lead);
+    }
+    
+    // Notify admin via Telegram that a new lead applied
+    try {
+      const token = process.env.TELEGRAM_BOT_TOKEN;
+      const adminChatId = process.env.TELEGRAM_CHAT_ID;
+      if (token && adminChatId) {
+        const fetch = require('node-fetch');
+        const tgMsg = `🚀 *NEW PROP FIRM LEAD* 🚀\n\n` +
+          `*Name:* ${lead.name}\n` +
+          `*Phone:* ${lead.phone}\n` +
+          `*Email:* ${lead.email.split('+')[0]}\n` +
+          `*Firm:* ${lead.firm}\n` +
+          `*Size:* ${lead.size}\n\n` +
+          `[Message on WhatsApp](https://wa.me/${lead.phone.replace(/[^0-9]/g, '')})`;
+        
+        await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: adminChatId, text: tgMsg, parse_mode: 'Markdown', disable_web_page_preview: true })
+        });
+      }
+    } catch (e) {
+      console.warn('[Prop Firm Lead] Telegram notify failed:', e.message);
+    }
+    
+    res.json({ ok: true, message: 'Application received.' });
+  } catch (err) {
+    console.error('[Prop Firm Lead Error]', err);
     res.status(500).json({ ok: false, error: 'Server error. Please try again.' });
   }
 });

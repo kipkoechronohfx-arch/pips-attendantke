@@ -738,6 +738,34 @@
           </div>
         </div>
 
+        <!-- Weekly Performance Report Generator -->
+        <div class="glass-card rounded-2xl p-5 border border-purple-500/30 mt-4 flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-purple-400 flex items-center gap-1.5">
+              <i data-feather="bar-chart-2" class="w-3.5 h-3.5"></i> Weekly Report
+            </span>
+          </div>
+          <p class="text-[10px] text-gray-400">Generate a performance summary for the last 7 days to blast to your free channel (creates FOMO).</p>
+          
+          <button type="button" onclick="generateWeeklyReport()" id="btnGenerateReport" class="w-full py-2.5 rounded-xl font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/40 transition flex items-center justify-center gap-2 text-xs">
+            <i data-feather="cpu" class="w-3.5 h-3.5"></i> Generate Report
+          </button>
+
+          <div id="weeklyReportPreviewContainer" class="hidden flex flex-col gap-2 mt-2">
+            <textarea id="weeklyReportMessage" rows="8" class="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-xs leading-relaxed focus:border-purple-400/50 focus:outline-none transition resize-none font-mono"></textarea>
+            
+            <div class="flex gap-2">
+              <button type="button" onclick="document.getElementById('weeklyReportPreviewContainer').classList.add('hidden')" class="flex-1 py-2 rounded-xl font-bold bg-gray-800 text-gray-300 hover:bg-gray-700 transition text-[10px]">
+                Cancel
+              </button>
+              <button type="button" onclick="blastWeeklyReport()" id="btnBlastReport" class="flex-1 py-2 rounded-xl font-bold bg-gradient-to-r from-purple-600 to-fuchsia-500 text-white shadow-lg hover:shadow-[0_0_15px_rgba(168,85,247,0.4)] transition text-[10px] flex items-center justify-center gap-1.5">
+                <i data-feather="send" class="w-3 h-3"></i> Blast to General
+              </button>
+            </div>
+            <div id="weeklyReportFeedback" class="text-[10px] font-semibold text-center mt-1"></div>
+          </div>
+        </div>
+
       </div>
 
       <!-- ─────────────────────────────────────────────────────────────── -->
@@ -793,6 +821,24 @@
                     <span class="text-xs font-medium text-gray-300 group-hover:text-amber-400 transition">Both Channels</span>
                   </label>
                 </div>
+              </div>
+            </div>
+            
+            <!-- Image Attachment (Optional) -->
+            <div class="glass-card rounded-xl p-4 border border-white/5 space-y-2">
+              <span class="block text-[10px] font-bold uppercase tracking-wider text-amber-300">Promotional Banner (Optional)</span>
+              <label class="flex flex-col items-center justify-center w-full h-16 border-2 border-dashed border-white/10 rounded-xl cursor-pointer hover:bg-white/5 hover:border-amber-500/50 transition">
+                <div class="flex flex-col items-center justify-center pt-2 pb-2">
+                  <i data-feather="image" class="w-4 h-4 text-gray-400 mb-1"></i>
+                  <p class="text-[10px] text-gray-400 font-semibold" id="ibBlastImgLabel">Click to upload banner</p>
+                </div>
+                <input type="file" id="ibBlastImage" class="hidden" accept="image/*" onchange="handleIBBlastImage(event)" />
+              </label>
+              <div id="ibBlastImgPreviewRow" class="hidden flex items-center justify-between mt-2 p-2 bg-black/40 rounded-lg border border-white/5">
+                <img id="ibBlastImgThumb" src="" class="h-10 w-auto rounded border border-white/20 object-cover" />
+                <button type="button" onclick="clearIBBlastImage()" class="text-rose-400 hover:text-rose-300 text-xs font-bold p-1">
+                  <i data-feather="x" class="w-3.5 h-3.5"></i>
+                </button>
               </div>
             </div>
 
@@ -3390,6 +3436,29 @@
       }
     }
 
+    let ibBlastUploadedImageBase64 = null;
+
+    function handleIBBlastImage(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        ibBlastUploadedImageBase64 = ev.target.result;
+        document.getElementById('ibBlastImgThumb').src = ev.target.result;
+        document.getElementById('ibBlastImgPreviewRow').classList.remove('hidden');
+        document.getElementById('ibBlastImgLabel').innerText = file.name;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearIBBlastImage() {
+      document.getElementById('ibBlastImage').value = '';
+      ibBlastUploadedImageBase64 = null;
+      document.getElementById('ibBlastImgThumb').src = '';
+      document.getElementById('ibBlastImgPreviewRow').classList.add('hidden');
+      document.getElementById('ibBlastImgLabel').innerText = 'Click to upload banner';
+    }
+
     async function sendIBBlast() {
       const token      = localStorage.getItem('pa_bot_token');
       const generalId  = localStorage.getItem('pa_chat_id');
@@ -3421,6 +3490,9 @@
 
       try {
         const payload = { token, chatId, broker };
+        if (ibBlastUploadedImageBase64) {
+          payload.image = ibBlastUploadedImageBase64;
+        }
         // Only send customMessage if it differs meaningfully from the placeholder
         if (customMsg && !customMsg.includes('[IB link will be inserted from server]')) {
           payload.customMessage = customMsg;
@@ -3554,6 +3626,84 @@
       const tgImg = document.getElementById('tgImagePreview');
       tgImg.src = '';
       tgImgContainer.classList.add('hidden');
+    }
+
+    async function generateWeeklyReport() {
+      const btn = document.getElementById('btnGenerateReport');
+      const prevIcon = btn.innerHTML;
+      btn.innerHTML = `<i data-feather="loader" class="w-3.5 h-3.5 animate-spin"></i> Generating...`;
+      
+      try {
+        const token = localStorage.getItem('adminToken');
+        const res = await fetch('/api/admin/performance/weekly', {
+          headers: { 'x-admin-key': token }
+        });
+        const data = await res.json();
+        
+        if (data.ok) {
+          const stats = data.stats;
+          const msg = `📊 *WEEKLY PERFORMANCE REPORT* 📊\n\n` +
+            `Here is how we performed over the last 7 days:\n\n` +
+            `🎯 *Total Signals:* ${stats.total}\n` +
+            `✅ *Wins (TP Hit):* ${stats.wins}\n` +
+            `❌ *Losses (SL Hit):* ${stats.losses}\n` +
+            `🛡️ *Breakeven:* ${stats.breakeven}\n` +
+            `📈 *Win Rate:* ${stats.winRate}%\n` +
+            `💰 *Net Pips:* ${stats.netPips > 0 ? '+' : ''}${stats.netPips} pips\n\n` +
+            (stats.bestTrade ? `🏆 *Best Trade:* ${stats.bestTrade.pair} (+${stats.bestTrade.pips} pips)\n\n` : '') +
+            `_Another profitable week! Upgrade to VIP for all premium signals._\n\n` +
+            `— Pips Attendant Team 🎯`;
+          
+          document.getElementById('weeklyReportMessage').value = msg;
+          document.getElementById('weeklyReportPreviewContainer').classList.remove('hidden');
+          document.getElementById('weeklyReportFeedback').innerHTML = '';
+        } else {
+          alert('Failed to generate report: ' + data.error);
+        }
+      } catch (err) {
+        alert('Network error generating report');
+      } finally {
+        btn.innerHTML = prevIcon;
+        if (window.feather) feather.replace();
+      }
+    }
+
+    async function blastWeeklyReport() {
+      const btn = document.getElementById('btnBlastReport');
+      const fb = document.getElementById('weeklyReportFeedback');
+      const prevIcon = btn.innerHTML;
+      
+      btn.disabled = true;
+      btn.innerHTML = `<i data-feather="loader" class="w-3 h-3 animate-spin"></i> Sending...`;
+      
+      try {
+        const token = localStorage.getItem('adminToken');
+        const text = document.getElementById('weeklyReportMessage').value;
+        // Broadcast to general channel ('general') using existing API
+        const payload = { token, chatId: 'general', customMessage: text, broker: 'DEFAULT' };
+        
+        const res = await fetch('/api/broadcast/ib-blast', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        
+        if (data.ok) {
+          fb.innerHTML = '<span class="text-emerald-400">✅ Report blasted to General Channel!</span>';
+          setTimeout(() => {
+            document.getElementById('weeklyReportPreviewContainer').classList.add('hidden');
+          }, 3000);
+        } else {
+          fb.innerHTML = `<span class="text-rose-400">Error: ${data.error}</span>`;
+        }
+      } catch (err) {
+        fb.innerHTML = '<span class="text-rose-400">Network error</span>';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = prevIcon;
+        if (window.feather) feather.replace();
+      }
     }
 
     function shareToWhatsApp() {
@@ -6227,17 +6377,22 @@
         const res = await fetch('/api/admin/leads', { headers: { 'x-admin-key': adminKey, 'x-admin-token': adminToken } });
         const data = await res.json();
         if (data.ok && data.leads.length > 0) {
-          tbody.innerHTML = data.leads.map(l => `
+          tbody.innerHTML = data.leads.map(l => {
+            let details = '';
+            if (l.firm) details += `<br><span class="text-[9px] text-gray-500">Firm: ${l.firm} | Size: ${l.size}</span>`;
+            if (l.phone) details += `<br><span class="text-[9px] text-gray-500">Phone: ${l.phone}</span>`;
+            
+            return `
             <tr class="border-b border-white/5 hover:bg-white/5 transition">
               <td class="px-4 py-3 text-white">${l.email}</td>
-              <td class="px-4 py-3">${l.name || '-'}</td>
+              <td class="px-4 py-3">${l.name || '-'}${details}</td>
               <td class="px-4 py-3 text-xs"><span class="px-2 py-1 rounded bg-white/5 text-amber-400">${l.source || 'web'}</span></td>
               <td class="px-4 py-3 text-xs">${new Date(l.createdAt).toLocaleDateString()}</td>
               <td class="px-4 py-3 text-right">
                 <button onclick="deleteLead('${l._id}')" class="text-rose-500 hover:text-rose-400 transition cursor-pointer"><i data-feather="trash-2" class="w-4 h-4"></i></button>
               </td>
             </tr>
-          `).join('');
+          `}).join('');
         } else {
           tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-xs">No leads found.</td></tr>';
         }
@@ -6758,15 +6913,55 @@
         listEl.innerHTML = '<p class="text-gray-500 text-xs text-center py-4">No matches found.</p>';
         return;
       }
-      listEl.innerHTML = signals.map(s => `
+      listEl.innerHTML = signals.map(s => {
+        const isSignal = (s.type || '').toLowerCase() === 'signal';
+        // Try to extract pair from text if not explicitly provided by backend
+        const pairMatch = isSignal && s.text ? s.text.match(/\b([A-Z]{3,10}(?:\/[A-Z]{3,10})?)\b/i) : null;
+        const pair = s.pair || (pairMatch ? pairMatch[1].toUpperCase() : 'Trade');
+        
+        let quickActions = '';
+        if (isSignal) {
+          quickActions = `
+            <div class="mt-2 pt-2 border-t border-white/5 flex gap-2">
+              <button type="button" onclick="quickTradeUpdate('tp1', '${pair}')" class="flex-1 py-1 text-[9px] font-bold rounded bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 transition">🎯 TP Hit</button>
+              <button type="button" onclick="quickTradeUpdate('breakeven', '${pair}')" class="flex-1 py-1 text-[9px] font-bold rounded bg-sky-500/10 text-sky-400 hover:bg-sky-500/20 border border-sky-500/20 transition">🛡️ Breakeven</button>
+              <button type="button" onclick="quickTradeUpdate('sl', '${pair}')" class="flex-1 py-1 text-[9px] font-bold rounded bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/20 transition">🛑 SL Hit</button>
+            </div>
+          `;
+        }
+
+        return `
         <div class="flex flex-col bg-black/40 border border-white/5 rounded-xl p-3 hover:bg-white/5 transition">
           <div class="flex justify-between items-center mb-1">
             <span class="text-[10px] font-bold text-sky-400 uppercase tracking-wider">${s.type || 'Signal'}</span>
             <span class="text-[9px] text-gray-400">${new Date(s.sentAt).toLocaleString()}</span>
           </div>
           <p class="text-gray-300 text-xs font-sans whitespace-pre-wrap line-clamp-2">${(s.text || '').substring(0, 150)}${s.text && s.text.length > 150 ? '...' : ''}</p>
+          ${quickActions}
         </div>
-      `).join('');
+      `}).join('');
+    }
+
+    function quickTradeUpdate(action, pair) {
+      // Switch to Community Engagement tab
+      document.querySelector('button[onclick="switchAdminTab(\\\'engagementPanel\\\')"]').click();
+      
+      const engMessage = document.getElementById('engMessage');
+      if (action === 'tp1') {
+        engMessage.value = `🎯 *UPDATE: ${pair}*\n\nTake Profit 1 has been HIT! ✅\n\nSecure partial profits and move your Stop Loss to Breakeven (entry price) to enjoy a risk-free ride. 🚀`;
+      } else if (action === 'breakeven') {
+        engMessage.value = `🛡️ *UPDATE: ${pair}*\n\nTrade is running well in profit! Move your Stop Loss to Breakeven (entry price) to protect your capital. Risk-free trade from here. 🚀`;
+      } else if (action === 'sl') {
+        engMessage.value = `🛑 *UPDATE: ${pair}*\n\nStop Loss hit on this setup. ❌\n\nLosses are part of the game. We manage our risk strictly so one loss doesn't hurt us. On to the next setup! 🎯`;
+      }
+      
+      // Flash the composer to draw attention
+      engMessage.classList.add('border-emerald-500/50', 'shadow-[0_0_15px_rgba(16,185,129,0.2)]');
+      setTimeout(() => {
+        engMessage.classList.remove('border-emerald-500/50', 'shadow-[0_0_15px_rgba(16,185,129,0.2)]');
+      }, 1500);
+      
+      engMessage.focus();
     }
 
     // Auto-fetch alerts when admin page loads
