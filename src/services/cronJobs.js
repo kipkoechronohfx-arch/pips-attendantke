@@ -89,6 +89,103 @@ async function sendWeeklyRecapToVIP() {
   }
 }
 
+// ── Monthly Performance Recap ─────────────────────────────────────────────────
+// Fires on the 1st of every month. Reads from public performance logs (same
+// source as /api/performance/stats) and blasts to the GENERAL channel to create
+// FOMO and push free members to upgrade to VIP.
+async function sendMonthlyRecapToGeneral() {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  // Target general channel for FOMO — free members should see this
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+
+  if (!token || !chatId) {
+    const err = 'TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not set.';
+    logger.warn(`[Cron] Monthly recap skipped: ${err}`);
+    return { ok: false, error: err };
+  }
+
+  try {
+    const logs = await db.getPerformanceLogs();
+    const monthAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+
+    const monthLogs = logs.filter(log => {
+      const t = log.date ? new Date(log.date).getTime() : 0;
+      return t >= monthAgo;
+    });
+
+    let wins = 0, losses = 0, breakeven = 0;
+    let pipsGained = 0, pipsLost = 0;
+    let bestTrade = null;
+
+    for (const log of monthLogs) {
+      const pips = Math.abs(Number(log.pips) || 0);
+      if (log.result === 'Win') {
+        wins++;
+        pipsGained += pips;
+        if (!bestTrade || pips > (bestTrade.pips || 0)) {
+          bestTrade = { pair: log.asset || 'Unknown', pips };
+        }
+      } else if (log.result === 'Loss') {
+        losses++;
+        pipsLost += pips;
+      } else if (log.result === 'Breakeven') {
+        breakeven++;
+      }
+    }
+
+    const total = wins + losses;
+    if (total === 0) {
+      logger.info(`[Cron] Monthly recap skipped: No resolved performance logs in the past 30 days.`);
+      return { ok: false, error: 'No resolved performance logs in the past 30 days.' };
+    }
+
+    const winRate = Math.round((wins / total) * 100);
+    const netPips = Number((pipsGained - pipsLost).toFixed(1));
+
+    // Month label: name of the month just ended
+    const now = new Date();
+    const monthName = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+      .toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+    const ratingEmoji = winRate >= 80 ? '🔥🔥' : winRate >= 60 ? '🔥' : '💪';
+
+    let msg = `📆 *MONTHLY PERFORMANCE REPORT* 📆\n`;
+    msg += `🗓️ *${monthName} — Full Month Recap*\n\n`;
+    msg += `━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    msg += `🔢 *Total Signals:* ${monthLogs.length}\n`;
+    msg += `✅ *Wins:* ${wins}\n`;
+    msg += `❌ *Losses:* ${losses}\n`;
+    if (breakeven > 0) msg += `🛡️ *Breakeven:* ${breakeven}\n`;
+    msg += `🎯 *Win Rate:* ${winRate}% ${ratingEmoji}\n`;
+    msg += `💰 *Net Pips:* ${netPips >= 0 ? '+' : ''}${netPips} pips\n`;
+    if (bestTrade) msg += `🏆 *Best Trade:* ${bestTrade.pair} (+${bestTrade.pips} pips)\n`;
+    msg += `━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+    msg += `These results are from our *VIP signals only* — the ones you've been missing. 👀\n\n`;
+    msg += `🚀 *Join VIP today and never miss a winning signal again!*\n`;
+    msg += `👉 ${process.env.APP_URL || 'https://www.pipsattendant.com'}/premium.html`;
+
+    const tgUrl = `https://api.telegram.org/bot${token}/sendMessage`;
+    const response = await fetch(tgUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text: msg, parse_mode: 'Markdown', disable_web_page_preview: true })
+    });
+    const result = await response.json();
+
+    if (result.ok) {
+      const successMsg = `Monthly recap sent to General (${monthName}): ${wins}W/${losses}L, ${netPips >= 0 ? '+' : ''}${netPips} pips.`;
+      logger.info(`[Cron] ${successMsg}`);
+      return { ok: true, message: successMsg };
+    } else {
+      logger.error(`[Cron] Monthly recap Telegram error: ${result.description}`);
+      return { ok: false, error: result.description };
+    }
+  } catch (err) {
+    logger.error(`[Cron] Monthly recap job failed: ${err.message}`);
+    return { ok: false, error: err.message };
+  }
+}
+
 function buildRenewalReminderHtml({ userName, expiryDate, renewalUrl, daysLeft }) {
   return `
   <!DOCTYPE html>
@@ -404,8 +501,14 @@ function startCronJobs() {
     logger.info("[Cron] Sending weekly performance recap to VIP channel...");
     sendWeeklyRecapToVIP();
   }, { timezone: "Africa/Nairobi" });
-  
-  logger.info("[Cron] Jobs scheduled: VIP expiry daily, Signal Auto-Archive hourly, Alerts minutely, Weekly Recap every Sunday midnight");
+
+  // ── Monthly Performance Recap — 1st of every month at 9 AM (General Telegram) ──
+  cron.schedule("0 9 1 * *", () => {
+    logger.info("[Cron] Sending monthly performance recap to General channel...");
+    sendMonthlyRecapToGeneral();
+  }, { timezone: "Africa/Nairobi" });
+
+  logger.info("[Cron] Jobs scheduled: VIP expiry daily, Signal Auto-Archive hourly, Alerts minutely, Weekly Recap every Sunday midnight, Monthly Recap on 1st of each month at 9 AM");
 }
 
-module.exports = { startCronJobs, computeAndSaveBadges, BADGE_DEFINITIONS, autoArchiveSignals, processScheduledAlerts, sendWeeklyRecapToVIP };
+module.exports = { startCronJobs, computeAndSaveBadges, BADGE_DEFINITIONS, autoArchiveSignals, processScheduledAlerts, sendWeeklyRecapToVIP, sendMonthlyRecapToGeneral };

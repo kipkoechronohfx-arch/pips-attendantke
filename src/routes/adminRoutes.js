@@ -1747,6 +1747,25 @@ router.post('/trigger-weekly-recap', validateAdminSession, async (req, res) => {
   }
 });
 
+// ── Manual Trigger: Monthly Performance Recap ──────────────────
+router.post('/trigger-monthly-recap', validateAdminSession, async (req, res) => {
+  try {
+    const { sendMonthlyRecapToGeneral } = require('../services/cronJobs');
+    const result = await sendMonthlyRecapToGeneral();
+    
+    if (result && !result.ok) {
+      return res.status(400).json(result);
+    }
+    
+    res.json({ 
+      ok: true, 
+      message: result && result.message ? result.message : 'Monthly performance recap triggered and sent to General channel.' 
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // ── Push Notification Broadcast ──────────────────────────────────
 router.post('/push/broadcast', validateAdminSession, async (req, res) => {
   try {
