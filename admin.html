@@ -3002,6 +3002,7 @@
 
     async function registerTelegramWebhook() {
       const adminKey = document.getElementById('adminKey').value.trim() || localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       const botToken = document.getElementById('botToken').value.trim() || localStorage.getItem('pa_bot_token');
       if (!adminKey || !botToken) {
         alert('Please enter your Admin Access Key and Bot Token first.');
@@ -3010,7 +3011,7 @@
       try {
         const res = await fetch('/api/admin/bot/register-webhook', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey, 'x-admin-token': adminToken },
           body: JSON.stringify({ botToken })
         });
         const data = await res.json();
@@ -3281,6 +3282,7 @@
 
     async function blastTradeOfTheWeek() {
       const adminKey = localStorage.getItem('pa_admin_key');
+      const adminToken = localStorage.getItem('pa_admin_token');
       if (!adminKey) {
         alert('Please login/setup first.');
         return;
@@ -3309,7 +3311,7 @@
         };
         const res = await fetch('/api/admin/push/trade-of-the-week', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey, 'x-admin-token': adminToken },
           body: JSON.stringify(payload)
         });
         const data = await res.json();
