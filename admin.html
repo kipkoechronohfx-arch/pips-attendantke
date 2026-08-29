@@ -771,7 +771,7 @@
               <!-- Broker Selection -->
               <div class="glass-card rounded-xl p-4 border border-white/5">
                 <span class="block text-[10px] font-bold uppercase tracking-wider text-amber-300 mb-3">Select Broker</span>
-                <select id="ibBlastBroker" onchange="updateIBBlastPreview()" class="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-amber-400/50">
+                <select id="ibBlastBroker" onchange="localStorage.setItem('pa_last_ib_broker', this.value); updateIBBlastPreview()" class="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-amber-400/50">
                   <option value="DEFAULT">Loading brokers...</option>
                 </select>
               </div>
@@ -3343,7 +3343,18 @@
 
     function resetIBBlastMessage() {
       const el = document.getElementById('ibBlastMessage');
-      if (el) { el.value = IB_BLAST_DEFAULT_TEMPLATE; updateIBBlastPreview(); }
+      if (el) el.value = IB_BLAST_DEFAULT_TEMPLATE;
+      
+      const brokerSel = document.getElementById('ibBlastBroker');
+      if (brokerSel && brokerSel.options.length > 0) {
+        brokerSel.selectedIndex = 0;
+        localStorage.removeItem('pa_last_ib_broker');
+      }
+
+      const defaultTarget = document.querySelector('input[name="ibBlastTarget"][value="general"]');
+      if (defaultTarget) defaultTarget.checked = true;
+
+      updateIBBlastPreview();
     }
 
     function updateIBBlastPreview() {
@@ -3474,6 +3485,14 @@
               select.appendChild(opt);
             });
           }
+          
+          // Restore last selected broker if it exists
+          const lastBroker = localStorage.getItem('pa_last_ib_broker');
+          if (lastBroker) {
+            const optionExists = Array.from(select.options).some(opt => opt.value === lastBroker);
+            if (optionExists) select.value = lastBroker;
+          }
+
           // Update the preview now that the real brokers are loaded
           updateIBBlastPreview();
         }
