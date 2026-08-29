@@ -772,11 +772,7 @@
               <div class="glass-card rounded-xl p-4 border border-white/5">
                 <span class="block text-[10px] font-bold uppercase tracking-wider text-amber-300 mb-3">Select Broker</span>
                 <select id="ibBlastBroker" class="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-amber-400/50">
-                  <option value="DEFAULT">Default (IB_LINK)</option>
-                  <option value="JUSTMARKETS">JustMarkets</option>
-                  <option value="XM">XM</option>
-                  <option value="EXNESS">Exness</option>
-                  <option value="DERIV">Deriv</option>
+                  <option value="DEFAULT">Loading brokers...</option>
                 </select>
               </div>
 
@@ -3446,9 +3442,32 @@
       setTimeout(() => { toast.classList.add('translate-x-[120%]', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 4000);
     }
 
-    function initIBBlast() {
+    async function initIBBlast() {
       const el = document.getElementById('ibBlastMessage');
       if (el && !el.value) { el.value = IB_BLAST_DEFAULT_TEMPLATE; updateIBBlastPreview(); }
+      
+      // Dynamically load available brokers
+      try {
+        const res = await fetch('/api/broadcast/ib-brokers');
+        const data = await res.json();
+        const select = document.getElementById('ibBlastBroker');
+        
+        if (data.ok && select) {
+          select.innerHTML = ''; // clear loading state
+          if (data.brokers.length === 0) {
+            select.innerHTML = '<option value="DEFAULT">Default (IB_LINK)</option>';
+          } else {
+            data.brokers.forEach(b => {
+              const opt = document.createElement('option');
+              opt.value = b.id;
+              opt.textContent = b.name;
+              select.appendChild(opt);
+            });
+          }
+        }
+      } catch (err) {
+        console.error('[IB Blast] Failed to load brokers:', err);
+      }
     }
     // ── End IB Broker Blast Functions ─────────────────────────────────
 

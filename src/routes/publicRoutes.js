@@ -328,6 +328,24 @@ router.post('/engagement', async (req, res) => {
   res.redirect(307, '/api/broadcast');
 });
 
+// ── Get Available IB Brokers ───────────────────────────────────
+// Scans environment variables for any starting with IB_LINK_ (and the default IB_LINK)
+// Returns a list to populate the admin panel dropdown dynamically.
+router.get('/broadcast/ib-brokers', (req, res) => {
+  const brokers = [{ id: 'DEFAULT', name: 'Default (IB_LINK)' }];
+  
+  for (const key of Object.keys(process.env)) {
+    if (key.startsWith('IB_LINK_') && key !== 'IB_LINK') {
+      const brokerId = key.replace('IB_LINK_', '');
+      // Format name nicely (e.g., "JUSTMARKETS" -> "Justmarkets")
+      const brokerName = brokerId.charAt(0) + brokerId.slice(1).toLowerCase();
+      brokers.push({ id: brokerId, name: brokerName });
+    }
+  }
+  
+  res.json({ ok: true, brokers });
+});
+
 // ── IB Broker Blast Endpoint ───────────────────────────────────
 // Sends a broker referral (IB link) blast to Telegram.
 // Reads IB_LINK from environment so the URL stays out of client-side code.
