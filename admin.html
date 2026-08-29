@@ -3744,46 +3744,78 @@
       const btn = document.getElementById('btnGenerateReport');
       const prevIcon = btn.innerHTML;
       btn.innerHTML = `<i data-feather="loader" class="w-3.5 h-3.5 animate-spin"></i> Generating...`;
-      
+
       try {
-        const token = localStorage.getItem('pa_admin_token');
-        const endpoint = _reportPeriod === 'monthly'
-          ? '/api/admin/performance/monthly'
-          : '/api/admin/performance/weekly';
-
-        const res = await fetch(endpoint, {
-          headers: { 'x-admin-token': token }
-        });
+        // ── Use the public endpoint — no admin token needed ──────────
+        const res = await fetch('/api/performance/all');
         const data = await res.json();
-        
-        if (data.ok) {
-          const stats = data.stats;
-          const isMonthly = _reportPeriod === 'monthly';
-          const periodLabel = isMonthly ? '30 days' : '7 days';
-          const title = isMonthly ? '📆 *MONTHLY PERFORMANCE REPORT*' : '📊 *WEEKLY PERFORMANCE REPORT*';
-          const emoji = isMonthly ? '📆' : '📅';
-          const closingLine = isMonthly
-            ? `_An incredible month for Pips Attendant VIP members! Don't miss next month — upgrade to VIP today._`
-            : `_Another profitable week! Upgrade to VIP for all premium signals._`;
 
-          const msg = `${title} ${emoji}\n\n` +
-            `Here is how we performed over the last ${periodLabel}:\n\n` +
-            `🎯 *Total Signals:* ${stats.total}\n` +
-            `✅ *Wins (TP Hit):* ${stats.wins}\n` +
-            `❌ *Losses (SL Hit):* ${stats.losses}\n` +
-            `🛡️ *Breakeven:* ${stats.breakeven}\n` +
-            `📈 *Win Rate:* ${stats.winRate}%\n` +
-            `💰 *Net Pips:* ${stats.netPips > 0 ? '+' : ''}${stats.netPips} pips\n\n` +
-            (stats.bestTrade ? `🏆 *Best Trade:* ${stats.bestTrade.pair} (+${stats.bestTrade.pips} pips)\n\n` : '') +
-            `${closingLine}\n\n` +
-            `— Pips Attendant Team 🎯`;
-          
-          document.getElementById('weeklyReportMessage').value = msg;
-          document.getElementById('weeklyReportPreviewContainer').classList.remove('hidden');
-          document.getElementById('weeklyReportFeedback').innerHTML = '';
-        } else {
-          alert('Failed to generate report: ' + data.error);
+        if (!data.ok) {
+          alert('Failed to fetch stats: ' + (data.error || 'Unknown error'));
+          return;
         }
+
+        // ── Filter by selected period client-side ────────────────────
+        const isMonthly = _reportPeriod === 'monthly';
+        const days = isMonthly ? 30 : 7;
+        const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+
+        const logs = (data.logs || []).filter(log => {
+          const t = log.date ? new Date(log.date).getTime() : 0;
+          return t >= cutoff;
+        });
+
+        // ── Compute stats (mirrors server buildPerformanceStats) ─────
+        let wins = 0, losses = 0, breakeven = 0;
+        let pipsGained = 0, pipsLost = 0;
+        let bestTrade = null;
+
+        logs.forEach(log => {
+          const pips = Math.abs(Number(log.pips) || 0);
+          if (log.result === 'Win') {
+            wins++;
+            pipsGained += pips;
+            if (!bestTrade || pips > (bestTrade.pips || 0)) {
+              bestTrade = { pair: log.asset || 'Unknown', pips };
+            }
+          } else if (log.result === 'Loss') {
+            losses++;
+            pipsLost += pips;
+          } else if (log.result === 'Breakeven') {
+            breakeven++;
+          }
+        });
+
+        const totalResolved = wins + losses;
+        const winRate = totalResolved > 0 ? Math.round((wins / totalResolved) * 100) : 0;
+        const netPips = pipsGained - pipsLost;
+
+        const stats = { total: logs.length, wins, losses, breakeven, winRate, netPips, bestTrade };
+
+        // ── Build the message ────────────────────────────────────────
+        const periodLabel = isMonthly ? '30 days' : '7 days';
+        const title = isMonthly ? '📆 *MONTHLY PERFORMANCE REPORT*' : '📊 *WEEKLY PERFORMANCE REPORT*';
+        const emoji = isMonthly ? '📆' : '📅';
+        const closingLine = isMonthly
+          ? `_An incredible month for Pips Attendant VIP members! Don't miss next month — upgrade to VIP today._`
+          : `_Another profitable week! Upgrade to VIP for all premium signals._`;
+
+        const msg = `${title} ${emoji}\n\n` +
+          `Here is how we performed over the last ${periodLabel}:\n\n` +
+          `🎯 *Total Signals:* ${stats.total}\n` +
+          `✅ *Wins (TP Hit):* ${stats.wins}\n` +
+          `❌ *Losses (SL Hit):* ${stats.losses}\n` +
+          `🛡️ *Breakeven:* ${stats.breakeven}\n` +
+          `📈 *Win Rate:* ${stats.winRate}%\n` +
+          `💰 *Net Pips:* ${stats.netPips > 0 ? '+' : ''}${stats.netPips} pips\n\n` +
+          (stats.bestTrade ? `🏆 *Best Trade:* ${stats.bestTrade.pair} (+${stats.bestTrade.pips} pips)\n\n` : '') +
+          `${closingLine}\n\n` +
+          `— Pips Attendant Team 🎯`;
+
+        document.getElementById('weeklyReportMessage').value = msg;
+        document.getElementById('weeklyReportPreviewContainer').classList.remove('hidden');
+        document.getElementById('weeklyReportFeedback').innerHTML = '';
+
       } catch (err) {
         alert('Network error generating report');
       } finally {
