@@ -165,6 +165,8 @@ async function sendMonthlyRecapToGeneral() {
     msg += `👉 ${process.env.APP_URL || 'https://www.pipsattendant.com'}/premium.html`;
 
     const tgUrl = `https://api.telegram.org/bot${token}/sendMessage`;
+    
+    // 1. Send FOMO message to General
     const response = await fetch(tgUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -172,8 +174,31 @@ async function sendMonthlyRecapToGeneral() {
     });
     const result = await response.json();
 
+    // 2. Send congratulatory message to VIP
+    const vipChatId = process.env.TELEGRAM_VIP_CHAT_ID;
+    if (vipChatId && vipChatId !== chatId) {
+      let vipMsg = `📆 *MONTHLY PERFORMANCE REPORT* 📆\n`;
+      vipMsg += `🗓️ *${monthName} — Full Month Recap*\n\n`;
+      vipMsg += `━━━━━━━━━━━━━━━━━━━━━━━\n`;
+      vipMsg += `🔢 *Total Signals:* ${monthLogs.length}\n`;
+      vipMsg += `✅ *Wins:* ${wins}\n`;
+      vipMsg += `❌ *Losses:* ${losses}\n`;
+      if (breakeven > 0) vipMsg += `🛡️ *Breakeven:* ${breakeven}\n`;
+      vipMsg += `🎯 *Win Rate:* ${winRate}% ${ratingEmoji}\n`;
+      vipMsg += `💰 *Net Pips:* ${netPips >= 0 ? '+' : ''}${netPips} pips\n`;
+      if (bestTrade) vipMsg += `🏆 *Best Trade:* ${bestTrade.pair} (+${bestTrade.pips} pips)\n`;
+      vipMsg += `━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+      vipMsg += `An incredible month for Pips Attendant VIP members! Thank you for trusting us with your trading journey. Let's make next month even better! 🚀💰`;
+
+      await fetch(tgUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: vipChatId, text: vipMsg, parse_mode: 'Markdown' })
+      }).catch(err => logger.error(`[Cron] Monthly recap VIP send error: ${err.message}`));
+    }
+
     if (result.ok) {
-      const successMsg = `Monthly recap sent to General (${monthName}): ${wins}W/${losses}L, ${netPips >= 0 ? '+' : ''}${netPips} pips.`;
+      const successMsg = `Monthly recap sent to General & VIP (${monthName}): ${wins}W/${losses}L, ${netPips >= 0 ? '+' : ''}${netPips} pips.`;
       logger.info(`[Cron] ${successMsg}`);
       return { ok: true, message: successMsg };
     } else {

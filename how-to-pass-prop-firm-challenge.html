@@ -297,6 +297,16 @@
         if (data.ok) {
           fb.innerHTML = '<span class="text-emerald-400">✅ Application received! We will contact you shortly.</span>';
           document.getElementById('propFirmLeadForm').reset();
+          
+          // Trigger confetti animation
+          if (window.confetti) {
+            confetti({
+              particleCount: 100,
+              spread: 70,
+              origin: { y: 0.6 },
+              colors: ['#a855f7', '#d946ef', '#10b981'] // Purple, Fuchsia, Emerald
+            });
+          }
         } else {
           fb.innerHTML = `<span class="text-rose-400">Error: ${data.error || 'Failed to submit.'}</span>`;
         }
@@ -308,6 +318,9 @@
       }
     }
   </script>
+  <!-- Confetti library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
 
   <section class="py-8 px-4 bg-black/20"><div class="max-w-3xl mx-auto"><p class="speakable text-sm text-gray-500 border-t border-white/5 pt-6 mt-6 max-w-2xl mx-auto text-center"><strong class="text-gray-400">Pips Attendant</strong> is a professional <strong class="text-gray-400">Forex trading company</strong> offering Forex signals, copy trading, Forex education, prop firm coaching, and trading analytics. We are not a medical, nursing, or healthcare service.</p></div></section>
   <footer class="bg-black border-t border-white/5 py-10 px-4 text-center text-gray-600 text-sm">
