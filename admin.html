@@ -377,6 +377,9 @@
           <button type="button" onclick="reset2FA()" class="w-full py-2.5 rounded-xl font-bold text-sm border border-rose-500/40 bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white transition cursor-pointer mt-2">
             <span class="flex items-center justify-center gap-2"><i data-feather="refresh-cw" class="w-4 h-4"></i> Reset 2FA (If Locked Out)</span>
           </button>
+          <button type="button" onclick="registerTelegramWebhook()" class="w-full py-2.5 rounded-xl font-bold text-sm border border-sky-500/40 bg-sky-500/10 text-sky-400 hover:bg-sky-500 hover:text-white transition cursor-pointer mt-2">
+            <span class="flex items-center justify-center gap-2"><i data-feather="link" class="w-4 h-4"></i> Register Telegram Webhook</span>
+          </button>
         </form>
       </div>
     </div>
@@ -594,6 +597,12 @@
                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
               </svg>
               <span>Share to WhatsApp</span>
+            </button>
+            
+            <!-- Trade of the week button -->
+            <button type="button" onclick="blastTradeOfTheWeek()" id="tradeOfWeekBtn" class="flex-1 py-4 px-6 rounded-xl font-bold flex items-center justify-center gap-2.5 border border-pink-500/40 bg-pink-500/10 hover:bg-pink-500/20 hover:border-pink-400 hover:shadow-[0_0_20px_rgba(236,72,153,0.3)] active:scale-95 text-pink-400 hover:text-white transition duration-300 shadow-lg cursor-pointer">
+              <i data-feather="star" class="w-4 h-4"></i>
+              <span>Blast Trade of the Week</span>
             </button>
           </div>
 
@@ -2991,6 +3000,31 @@
       }
     }
 
+    async function registerTelegramWebhook() {
+      const adminKey = document.getElementById('adminKey').value.trim() || localStorage.getItem('pa_admin_key');
+      const botToken = document.getElementById('botToken').value.trim() || localStorage.getItem('pa_bot_token');
+      if (!adminKey || !botToken) {
+        alert('Please enter your Admin Access Key and Bot Token first.');
+        return;
+      }
+      try {
+        const res = await fetch('/api/admin/bot/register-webhook', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+          body: JSON.stringify({ botToken })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          alert('Webhook registered successfully!');
+        } else {
+          alert('Failed to register webhook: ' + data.error);
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error connecting to server.');
+      }
+    }
+
     async function reset2FA(silent = false) {
       const adminKey = document.getElementById('adminKey').value.trim();
       if (!adminKey) {
@@ -3242,6 +3276,54 @@
         hours = hours ? hours : 12; 
         minutes = minutes < 10 ? '0' + minutes : minutes;
         timeEl.textContent = hours + ':' + minutes + ' ' + ampm;
+      }
+    }
+
+    async function blastTradeOfTheWeek() {
+      const adminKey = localStorage.getItem('pa_admin_key');
+      if (!adminKey) {
+        alert('Please login/setup first.');
+        return;
+      }
+      const pair = document.getElementById('assetPair').value.toUpperCase();
+      const customPair = document.getElementById('customPair').value.toUpperCase();
+      const finalPair = pair === 'CUSTOM' ? customPair : pair;
+      if (!finalPair) {
+        alert('Please select or enter an asset pair first.');
+        return;
+      }
+      
+      const confirmSend = confirm(`Are you sure you want to blast a PUSH notification for ${finalPair} to all subscribers as the Trade of the Week?`);
+      if (!confirmSend) return;
+      
+      const btn = document.getElementById('tradeOfWeekBtn');
+      const originalHtml = btn.innerHTML;
+      btn.innerHTML = '<i data-feather="loader" class="w-4 h-4 animate-spin"></i><span>Sending...</span>';
+      if(window.feather) feather.replace();
+      
+      try {
+        const payload = {
+          title: `FREE Trade of the Week! 🌟`,
+          body: `New highly probable setup on ${finalPair}. Check it out now!`,
+          url: 'https://www.pipsattendant.com'
+        };
+        const res = await fetch('/api/admin/push/trade-of-the-week', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.ok) {
+          alert('Trade of the week push sent to ' + (data.sentCount || 0) + ' subscribers!');
+        } else {
+          alert('Error sending push: ' + data.error);
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Network error sending push.');
+      } finally {
+        btn.innerHTML = originalHtml;
+        if(window.feather) feather.replace();
       }
     }
 
@@ -7001,11 +7083,14 @@
         
         let quickActions = '';
         if (isSignal) {
+          // Escape quotes in text to pass safely to onclick
+          const safeText = (s.text || '').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n');
           quickActions = `
             <div class="mt-2 pt-2 border-t border-white/5 flex gap-2">
               <button type="button" onclick="quickTradeUpdate('tp1', '${pair}')" class="flex-1 py-1 text-[9px] font-bold rounded bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 transition">🎯 TP Hit</button>
               <button type="button" onclick="quickTradeUpdate('breakeven', '${pair}')" class="flex-1 py-1 text-[9px] font-bold rounded bg-sky-500/10 text-sky-400 hover:bg-sky-500/20 border border-sky-500/20 transition">🛡️ Breakeven</button>
               <button type="button" onclick="quickTradeUpdate('sl', '${pair}')" class="flex-1 py-1 text-[9px] font-bold rounded bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/20 transition">🛑 SL Hit</button>
+              <button type="button" onclick="openTradingCardModal('${pair}', '${safeText}')" class="flex-1 py-1 text-[9px] font-bold rounded bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 border border-purple-500/20 transition">🎨 Card</button>
             </div>
           `;
         }
@@ -7368,5 +7453,135 @@
     });
 
 </script>
+  <div id="tradingCardModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+    <div class="bg-gray-900 border border-purple-500/30 rounded-2xl p-6 max-w-md w-full relative flex flex-col items-center">
+      <button type="button" onclick="document.getElementById('tradingCardModal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+        <i data-feather="x" class="w-5 h-5"></i>
+      </button>
+      <h3 class="text-white font-bold text-lg mb-4 flex items-center gap-2">
+        <i data-feather="image" class="w-5 h-5 text-purple-400"></i> Signal Card Generator
+      </h3>
+      
+      <!-- Canvas Container (scaled down for preview, but actual size is 1080x1080) -->
+      <div class="w-full aspect-square bg-black border border-white/10 rounded-xl overflow-hidden shadow-2xl relative mb-4 flex items-center justify-center">
+        <canvas id="tradingCardCanvas" width="1080" height="1080" class="w-full h-full object-contain"></canvas>
+      </div>
+
+      <button type="button" onclick="downloadTradingCard()" class="w-full py-3 rounded-xl font-bold bg-gradient-to-r from-purple-600 to-fuchsia-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(168,85,247,0.6)] transition flex items-center justify-center gap-2">
+        <i data-feather="download" class="w-4 h-4"></i> Download Image for Socials
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Make openTradingCardModal global
+    window.openTradingCardModal = function(pair, text) {
+      document.getElementById('tradingCardModal').classList.remove('hidden');
+      drawTradingCard(pair, text);
+    };
+
+    function drawTradingCard(pair, text) {
+      const canvas = document.getElementById('tradingCardCanvas');
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      // Extract details from text
+      const isBuy = text.toLowerCase().includes('buy');
+      const isSell = text.toLowerCase().includes('sell');
+      const direction = isBuy ? 'BUY' : (isSell ? 'SELL' : 'TRADE');
+      const dirColor = isBuy ? '#10b981' : (isSell ? '#f43f5e' : '#a855f7');
+      
+      // Simple regex extraction (can be improved)
+      const entryMatch = text.match(/(?:Entry|@)\s*([\d\.]+)/i);
+      const tpMatch = text.match(/TP\s*1?\s*[:\-]?\s*([\d\.]+)/i);
+      const slMatch = text.match(/SL\s*[:\-]?\s*([\d\.]+)/i);
+      
+      const entry = entryMatch ? entryMatch[1] : 'Market';
+      const tp = tpMatch ? tpMatch[1] : 'N/A';
+      const sl = slMatch ? slMatch[1] : 'N/A';
+
+      // 1. Draw Background (Dark Gradient)
+      const grad = ctx.createLinearGradient(0, 0, w, h);
+      grad.addColorStop(0, '#020617'); // slate-950
+      grad.addColorStop(1, '#0f172a'); // slate-900
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      // 2. Draw Glow Orbs
+      const glow1 = ctx.createRadialGradient(w*0.8, h*0.2, 0, w*0.8, h*0.2, 500);
+      glow1.addColorStop(0, 'rgba(168, 85, 247, 0.2)'); // Purple
+      glow1.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = glow1;
+      ctx.fillRect(0, 0, w, h);
+
+      const glow2 = ctx.createRadialGradient(w*0.2, h*0.8, 0, w*0.2, h*0.8, 600);
+      glow2.addColorStop(0, isBuy ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)'); // Emerald or Rose
+      glow2.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = glow2;
+      ctx.fillRect(0, 0, w, h);
+
+      // 3. Draw Brand & Logo (Mockup text)
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 48px Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('PIPS ATTENDANT', w / 2, 120);
+      ctx.fillStyle = '#a855f7';
+      ctx.font = '32px Arial, sans-serif';
+      ctx.fillText('VIP SIGNAL', w / 2, 170);
+
+      // 4. Draw Pair Name (Massive text)
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 160px Arial, sans-serif';
+      ctx.fillText(pair, w / 2, h * 0.4);
+
+      // 5. Draw Direction Badge
+      const badgeW = 300;
+      const badgeH = 80;
+      const badgeX = (w - badgeW) / 2;
+      const badgeY = h * 0.45;
+      
+      ctx.fillStyle = dirColor;
+      ctx.beginPath();
+      ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 40);
+      ctx.fill();
+      
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 42px Arial, sans-serif';
+      ctx.fillText(direction, w / 2, badgeY + 55);
+
+      // 6. Draw Details Grid (Entry, TP, SL)
+      const startY = h * 0.65;
+      ctx.font = 'bold 36px Arial, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#94a3b8'; // gray-400
+      ctx.fillText('ENTRY :', w/2 - 20, startY);
+      ctx.fillText('TARGET (TP) :', w/2 - 20, startY + 80);
+      ctx.fillText('STOP LOSS :', w/2 - 20, startY + 160);
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(entry, w/2 + 20, startY);
+      ctx.fillStyle = '#10b981'; // Emerald
+      ctx.fillText(tp, w/2 + 20, startY + 80);
+      ctx.fillStyle = '#f43f5e'; // Rose
+      ctx.fillText(sl, w/2 + 20, startY + 160);
+
+      // 7. Footer
+      ctx.fillStyle = '#64748b'; // slate-500
+      ctx.font = '28px Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Join the winning team: www.pipsattendant.com', w / 2, h - 60);
+    }
+
+    function downloadTradingCard() {
+      const canvas = document.getElementById('tradingCardCanvas');
+      const dataUrl = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = `pips-attendant-card-${Date.now()}.png`;
+      a.click();
+    }
+  </script>
 </body>
 </html>
