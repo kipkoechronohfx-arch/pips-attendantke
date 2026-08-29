@@ -771,7 +771,7 @@
               <!-- Broker Selection -->
               <div class="glass-card rounded-xl p-4 border border-white/5">
                 <span class="block text-[10px] font-bold uppercase tracking-wider text-amber-300 mb-3">Select Broker</span>
-                <select id="ibBlastBroker" class="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-amber-400/50">
+                <select id="ibBlastBroker" onchange="updateIBBlastPreview()" class="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-amber-400/50">
                   <option value="DEFAULT">Loading brokers...</option>
                 </select>
               </div>
@@ -3348,7 +3348,17 @@
 
     function updateIBBlastPreview() {
       const text   = (document.getElementById('ibBlastMessage') || {}).value || '';
+      
+      // Get the currently selected broker name for the preview placeholder
+      const brokerSel = document.getElementById('ibBlastBroker');
+      let brokerName = 'IB';
+      if (brokerSel && brokerSel.options[brokerSel.selectedIndex]) {
+        brokerName = brokerSel.options[brokerSel.selectedIndex].text.split(' ')[0];
+        if (brokerName === 'Loading...') brokerName = 'IB';
+      }
+
       const htmlTx = text
+        .replace(/\[IB link will be inserted from server\]/g, `[${brokerName} link will be inserted from server]`)
         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
         .replace(/\n/g, '<br>')
         .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-white">$1</strong>')
@@ -3464,6 +3474,8 @@
               select.appendChild(opt);
             });
           }
+          // Update the preview now that the real brokers are loaded
+          updateIBBlastPreview();
         }
       } catch (err) {
         console.error('[IB Blast] Failed to load brokers:', err);
