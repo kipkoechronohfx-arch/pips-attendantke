@@ -365,7 +365,9 @@ router.post('/broadcast/ib-blast', async (req, res) => {
   if (!token || !chatId) {
     return res.status(400).json({ ok: false, error: 'Missing Telegram credentials.' });
   }
-  if (!ibLink) {
+  // IB_LINK is only required when sending the default broker template.
+  // Custom messages (e.g. performance reports) don't embed the link, so we skip the check.
+  if (!ibLink && !(customMessage && customMessage.trim())) {
     return res.status(503).json({ ok: false, error: `${envKey} is not configured on the server. Add it to your .env file.` });
   }
 
