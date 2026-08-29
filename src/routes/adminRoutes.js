@@ -228,59 +228,61 @@ router.get('/analytics', validateAdminSession, async (req, res) => {
   }
 });
 
-// ── Weekly Performance Report ───────────────────────────────────
+// ── Performance Report Helper ────────────────────────────────────
+// Shared by both weekly and monthly report endpoints.
 // Uses the same public performance logs as /api/performance/stats so the
 // numbers always match what members see on the public-facing site.
+async function buildPerformanceStats(days) {
+  const logs = await db.getPerformanceLogs();
+  const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+
+  const recentLogs = logs.filter(log => {
+    const t = log.date ? new Date(log.date).getTime() : 0;
+    return t >= cutoff;
+  });
+
+  let wins = 0, losses = 0, breakeven = 0;
+  let pipsGained = 0, pipsLost = 0;
+  let bestTrade = null;
+
+  recentLogs.forEach(log => {
+    const pips = Math.abs(Number(log.pips) || 0);
+    if (log.result === 'Win') {
+      wins++;
+      pipsGained += pips;
+      if (!bestTrade || pips > (bestTrade.pips || 0)) {
+        bestTrade = { pair: log.asset || 'Unknown', pips };
+      }
+    } else if (log.result === 'Loss') {
+      losses++;
+      pipsLost += pips;
+    } else if (log.result === 'Breakeven') {
+      breakeven++;
+    }
+  });
+
+  const totalResolved = wins + losses;
+  const winRate = totalResolved > 0 ? Math.round((wins / totalResolved) * 100) : 0;
+  const netPips = pipsGained - pipsLost;
+
+  return { total: recentLogs.length, wins, losses, breakeven, netPips, winRate, bestTrade: bestTrade || null };
+}
+
+// ── Weekly Performance Report ────────────────────────────────────
 router.get('/performance/weekly', validateAdminSession, async (req, res) => {
   try {
-    const logs = await db.getPerformanceLogs();
-    const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const stats = await buildPerformanceStats(7);
+    res.json({ ok: true, period: 'weekly', days: 7, stats });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
 
-    // Filter to the last 7 days using the log's `date` field
-    const recentLogs = logs.filter(log => {
-      const t = log.date ? new Date(log.date).getTime() : 0;
-      return t >= oneWeekAgo;
-    });
-
-    let wins = 0;
-    let losses = 0;
-    let breakeven = 0;
-    let pipsGained = 0;
-    let pipsLost = 0;
-    let bestTrade = null;
-
-    recentLogs.forEach(log => {
-      const pips = Math.abs(Number(log.pips) || 0);
-      if (log.result === 'Win') {
-        wins++;
-        pipsGained += pips;
-        if (!bestTrade || pips > (bestTrade.pips || 0)) {
-          bestTrade = { pair: log.asset || 'Unknown', pips };
-        }
-      } else if (log.result === 'Loss') {
-        losses++;
-        pipsLost += pips;
-      } else if (log.result === 'Breakeven') {
-        breakeven++;
-      }
-    });
-
-    const totalResolved = wins + losses;
-    const winRate = totalResolved > 0 ? Math.round((wins / totalResolved) * 100) : 0;
-    const netPips = pipsGained - pipsLost;
-
-    res.json({
-      ok: true,
-      stats: {
-        total: recentLogs.length,
-        wins,
-        losses,
-        breakeven,
-        netPips,
-        winRate,
-        bestTrade: bestTrade || null
-      }
-    });
+// ── Monthly Performance Report ───────────────────────────────────
+router.get('/performance/monthly', validateAdminSession, async (req, res) => {
+  try {
+    const stats = await buildPerformanceStats(30);
+    res.json({ ok: true, period: 'monthly', days: 30, stats });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
