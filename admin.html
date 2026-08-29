@@ -766,22 +766,37 @@
           <!-- Left: controls -->
           <div class="lg:col-span-7 space-y-4">
 
-            <!-- Target Channel -->
-            <div class="glass-card rounded-xl p-4 border border-white/5">
-              <span class="block text-[10px] font-bold uppercase tracking-wider text-amber-300 mb-3">Target Audience</span>
-              <div class="flex flex-wrap items-center gap-4">
-                <label class="flex items-center gap-2 cursor-pointer group">
-                  <input type="radio" name="ibBlastTarget" value="general" checked class="w-4 h-4 text-amber-400 bg-black border-white/20 focus:ring-amber-400 focus:ring-offset-gray-900" />
-                  <span class="text-sm font-medium text-gray-300 group-hover:text-white transition">General Community</span>
-                </label>
-                <label class="flex items-center gap-2 cursor-pointer group">
-                  <input type="radio" name="ibBlastTarget" value="vip" class="w-4 h-4 text-amber-400 bg-black border-white/20 focus:ring-amber-400 focus:ring-offset-gray-900" />
-                  <span class="text-sm font-medium text-gray-300 group-hover:text-amber-400 transition">VIP Channel</span>
-                </label>
-                <label class="flex items-center gap-2 cursor-pointer group">
-                  <input type="radio" name="ibBlastTarget" value="both" class="w-4 h-4 text-amber-400 bg-black border-white/20 focus:ring-amber-400 focus:ring-offset-gray-900" />
-                  <span class="text-sm font-medium text-gray-300 group-hover:text-amber-400 transition">Both Channels</span>
-                </label>
+            <!-- Broker Selection & Target Channel -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Broker Selection -->
+              <div class="glass-card rounded-xl p-4 border border-white/5">
+                <span class="block text-[10px] font-bold uppercase tracking-wider text-amber-300 mb-3">Select Broker</span>
+                <select id="ibBlastBroker" class="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-amber-400/50">
+                  <option value="DEFAULT">Default (IB_LINK)</option>
+                  <option value="JUSTMARKETS">JustMarkets</option>
+                  <option value="XM">XM</option>
+                  <option value="EXNESS">Exness</option>
+                  <option value="DERIV">Deriv</option>
+                </select>
+              </div>
+
+              <!-- Target Channel -->
+              <div class="glass-card rounded-xl p-4 border border-white/5">
+                <span class="block text-[10px] font-bold uppercase tracking-wider text-amber-300 mb-3">Target Audience</span>
+                <div class="flex flex-col gap-2">
+                  <label class="flex items-center gap-2 cursor-pointer group">
+                    <input type="radio" name="ibBlastTarget" value="general" checked class="w-4 h-4 text-amber-400 bg-black border-white/20 focus:ring-amber-400 focus:ring-offset-gray-900" />
+                    <span class="text-xs font-medium text-gray-300 group-hover:text-white transition">General Community</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer group">
+                    <input type="radio" name="ibBlastTarget" value="vip" class="w-4 h-4 text-amber-400 bg-black border-white/20 focus:ring-amber-400 focus:ring-offset-gray-900" />
+                    <span class="text-xs font-medium text-gray-300 group-hover:text-amber-400 transition">VIP Channel</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer group">
+                    <input type="radio" name="ibBlastTarget" value="both" class="w-4 h-4 text-amber-400 bg-black border-white/20 focus:ring-amber-400 focus:ring-offset-gray-900" />
+                    <span class="text-xs font-medium text-gray-300 group-hover:text-amber-400 transition">Both Channels</span>
+                  </label>
+                </div>
               </div>
             </div>
 
@@ -3365,6 +3380,8 @@
       const targetSel  = document.querySelector('input[name="ibBlastTarget"]:checked');
       const target     = targetSel ? targetSel.value : 'general';
       const customMsg  = (document.getElementById('ibBlastMessage') || {}).value || '';
+      const brokerSel  = document.getElementById('ibBlastBroker');
+      const broker     = brokerSel ? brokerSel.value : 'DEFAULT';
 
       if (!token || !generalId) {
         showToastMsg('❌ Credentials missing! Please configure settings first.', 'error');
@@ -3386,7 +3403,7 @@
       feedback.innerHTML = '<span class="text-amber-400 animate-pulse flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>Sending IB blast...</span>';
 
       try {
-        const payload = { token, chatId };
+        const payload = { token, chatId, broker };
         // Only send customMessage if it differs meaningfully from the placeholder
         if (customMsg && !customMsg.includes('[IB link will be inserted from server]')) {
           payload.customMessage = customMsg;

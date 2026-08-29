@@ -334,14 +334,21 @@ router.post('/engagement', async (req, res) => {
 router.post('/broadcast/ib-blast', async (req, res) => {
   const token   = req.body.token || process.env.TELEGRAM_BOT_TOKEN;
   const chatId  = req.body.chatId || process.env.TELEGRAM_CHAT_ID;
-  const ibLink  = process.env.IB_LINK;
-  const { customMessage } = req.body;
+  const { customMessage, broker } = req.body;
+  
+  // Support multiple IB links based on broker selection
+  let envKey = 'IB_LINK';
+  if (broker && broker !== 'DEFAULT' && broker !== 'default') {
+    envKey = `IB_LINK_${broker.toUpperCase()}`;
+  }
+  
+  const ibLink = process.env[envKey] || process.env.IB_LINK;
 
   if (!token || !chatId) {
     return res.status(400).json({ ok: false, error: 'Missing Telegram credentials.' });
   }
   if (!ibLink) {
-    return res.status(503).json({ ok: false, error: 'IB_LINK is not configured on the server. Add it to your .env file.' });
+    return res.status(503).json({ ok: false, error: `${envKey} is not configured on the server. Add it to your .env file.` });
   }
 
   // Build the message — use a custom override or the default compelling template
