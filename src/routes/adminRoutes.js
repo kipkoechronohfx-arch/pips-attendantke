@@ -229,40 +229,39 @@ router.get('/analytics', validateAdminSession, async (req, res) => {
 });
 
 // ── Weekly Performance Report ───────────────────────────────────
+// Uses the same public performance logs as /api/performance/stats so the
+// numbers always match what members see on the public-facing site.
 router.get('/performance/weekly', validateAdminSession, async (req, res) => {
   try {
-    const signals = await db.getSignals(0); // get all signals
+    const logs = await db.getPerformanceLogs();
     const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    
-    // Filter signals sent in the last 7 days
-    const recentSignals = signals.filter(s => {
-      const time = new Date(s.sentAt).getTime();
-      return time >= oneWeekAgo && s.type === 'signal';
+
+    // Filter to the last 7 days using the log's `date` field
+    const recentLogs = logs.filter(log => {
+      const t = log.date ? new Date(log.date).getTime() : 0;
+      return t >= oneWeekAgo;
     });
 
     let wins = 0;
     let losses = 0;
     let breakeven = 0;
-    let running = 0;
     let pipsGained = 0;
     let pipsLost = 0;
     let bestTrade = null;
 
-    recentSignals.forEach(s => {
-      const pips = Number(s.pips) || 0;
-      if (s.outcome === 'TP Hit') {
+    recentLogs.forEach(log => {
+      const pips = Math.abs(Number(log.pips) || 0);
+      if (log.result === 'Win') {
         wins++;
         pipsGained += pips;
-        if (!bestTrade || pips > Number(bestTrade.pips)) {
-          bestTrade = s;
+        if (!bestTrade || pips > (bestTrade.pips || 0)) {
+          bestTrade = { pair: log.asset || 'Unknown', pips };
         }
-      } else if (s.outcome === 'SL Hit') {
+      } else if (log.result === 'Loss') {
         losses++;
         pipsLost += pips;
-      } else if (s.outcome === 'Breakeven') {
+      } else if (log.result === 'Breakeven') {
         breakeven++;
-      } else {
-        running++;
       }
     });
 
@@ -273,14 +272,13 @@ router.get('/performance/weekly', validateAdminSession, async (req, res) => {
     res.json({
       ok: true,
       stats: {
-        total: recentSignals.length,
+        total: recentLogs.length,
         wins,
         losses,
         breakeven,
-        running,
         netPips,
         winRate,
-        bestTrade: bestTrade ? { pair: bestTrade.pair || 'Unknown', pips: bestTrade.pips } : null
+        bestTrade: bestTrade || null
       }
     });
   } catch (err) {
