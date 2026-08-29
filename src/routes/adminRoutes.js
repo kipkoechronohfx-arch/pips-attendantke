@@ -1854,4 +1854,44 @@ Keep the analysis strictly focused on institutional concepts like order blocks, 
   }
 });
 
+// ── Telegram Webhook Registration ──────────────────────────────
+router.post('/bot/register-webhook', validateAdminSession, async (req, res) => {
+  try {
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    const { url } = req.body;
+    if (!token) return res.status(400).json({ ok: false, error: 'TELEGRAM_BOT_TOKEN not set' });
+    if (!url) return res.status(400).json({ ok: false, error: 'Webhook URL is required' });
+
+    const tgUrl = `https://api.telegram.org/bot${token}/setWebhook?url=${encodeURIComponent(url)}`;
+    const tgRes = await fetch(tgUrl);
+    const tgData = await tgRes.json();
+
+    if (tgData.ok) {
+      res.json({ ok: true, message: 'Webhook registered successfully!' });
+    } else {
+      res.status(400).json({ ok: false, error: tgData.description });
+    }
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── Trade of the Week Push Notification ────────────────────────
+const pushService = require('../services/pushService');
+router.post('/push/trade-of-the-week', validateAdminSession, async (req, res) => {
+  try {
+    const { pair, direction } = req.body;
+    if (!pair) return res.status(400).json({ ok: false, error: 'Pair is required' });
+
+    const title = `🔥 Trade of the Week: ${pair}`;
+    const body = `Our VIPs are taking a ${direction || 'trade'} on ${pair}. Join Premium to get the exact entry, stop loss, and take profit targets right now!`;
+    const url = '/premium.html';
+
+    const result = await pushService.broadcastPush(title, body, url);
+    res.json({ ok: true, message: `Push sent! Success: ${result.success}, Failed: ${result.failed}` });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;

@@ -22,6 +22,7 @@ const journalRoutes = require('./src/routes/journalRoutes');
 const chatRoutes   = require('./src/routes/chatRoutes');
 const partnerRoutes = require('./src/routes/partnerRoutes');
 const propfirmRoutes = require('./src/routes/propfirmRoutes');
+const botRoutes = require('./src/routes/botRoutes');
 
 // ── Environment Validation ─────────────────────────────────────
 // SECURITY: JWT_SECRET, ADMIN_KEY, and PAYHERO_WEBHOOK_SECRET are required at startup.
@@ -259,6 +260,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api', vipRoutes);
 app.use('/api', paymentRoutes);
 app.use('/api', publicRoutes);
+app.use('/api/bot', botRoutes);
 app.use('/api/journal', journalRoutes);
 app.use('/api/partner', partnerRoutes);
 app.use('/api/propfirm', propfirmRoutes);

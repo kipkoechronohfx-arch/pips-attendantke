@@ -219,6 +219,8 @@
     
     <!-- AOS Animation CSS -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- Google Analytics 4 (GA4) - Replace G-DT79HX5XCJ with your actual Measurement ID -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-DT79HX5XCJ"></script>
@@ -995,6 +997,7 @@
 
             <div data-aos="fade-up" data-aos-delay="300" class="flex flex-col items-center gap-6 mb-16">
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
+                    <a href="premium.html?v=5" class="w-full sm:w-auto px-8 py-3.5 rounded-full bg-gradient-to-r from-gold to-yellow-500 text-dark-navy font-bold hover:brightness-110 transition-all shadow-[0_0_20px_rgba(212,175,55,0.3)] flex items-center justify-center gap-2">
                         Join Now
                         <i data-feather="star" class="w-4 h-4"></i>
                     </a>
@@ -1064,6 +1067,17 @@
                     <button class="w-10 h-10 rounded-full glass-card flex items-center justify-center hover:bg-white/10 transition-colors" onclick="document.getElementById('results-scroll').scrollBy({left: 300, behavior: 'smooth'})">
                         <i data-feather="chevron-right"></i>
                     </button>
+                </div>
+            </div>
+
+            <!-- Equity Curve Chart -->
+            <div data-aos="fade-up" class="w-full bg-black/40 border border-white/5 rounded-2xl p-6 mb-12 shadow-2xl">
+                <h3 class="text-white text-lg font-bold mb-4 flex items-center gap-2">
+                    <i data-feather="trending-up" class="w-5 h-5 text-emerald-400"></i>
+                    Growth History (Cumulative Pips)
+                </h3>
+                <div class="relative h-64 md:h-80 w-full">
+                    <canvas id="equityChart"></canvas>
                 </div>
             </div>
 
@@ -2107,7 +2121,88 @@
                 });
             } catch (e) { console.warn('VanillaTilt init failed', e); }
 
-            // ── Live Signals Results Cards ────────────────────────────────────────────
+            // ── Live Signals Results Cards & Equity Curve ────────────────────────────────────────────
+            async function loadEquityCurve() {
+                try {
+                    const res = await fetch('/api/performance/all');
+                    const data = await res.json();
+                    if (data.ok && data.logs && data.logs.length > 0) {
+                        const sortedLogs = data.logs.sort((a, b) => new Date(a.date || a.createdAt) - new Date(b.date || b.createdAt));
+                        
+                        let cumulative = 0;
+                        const labels = ['Start'];
+                        const dataPoints = [0];
+
+                        sortedLogs.forEach(log => {
+                            const pips = Number(log.pips) || 0;
+                            if (log.result === 'Win') {
+                                cumulative += Math.abs(pips);
+                            } else if (log.result === 'Loss') {
+                                cumulative -= Math.abs(pips);
+                            }
+                            
+                            const dateLabel = log.date ? new Date(log.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+                            labels.push(dateLabel);
+                            dataPoints.push(cumulative);
+                        });
+
+                        const canvas = document.getElementById('equityChart');
+                        if (!canvas) return;
+                        const ctx = canvas.getContext('2d');
+                        
+                        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                        gradient.addColorStop(0, 'rgba(16, 185, 129, 0.4)'); // Emerald
+                        gradient.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'Net Pips',
+                                    data: dataPoints,
+                                    borderColor: '#10b981',
+                                    backgroundColor: gradient,
+                                    borderWidth: 3,
+                                    pointBackgroundColor: '#10b981',
+                                    pointBorderColor: '#000',
+                                    pointBorderWidth: 2,
+                                    pointRadius: 3,
+                                    pointHoverRadius: 6,
+                                    fill: true,
+                                    tension: 0.3
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: {
+                                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                        titleColor: '#fff',
+                                        bodyColor: '#10b981',
+                                        callbacks: {
+                                            label: function(context) {
+                                                const val = context.parsed.y;
+                                                return val >= 0 ? `+${val} pips` : `${val} pips`;
+                                            }
+                                        }
+                                    }
+                                },
+                                scales: {
+                                    x: { grid: { display: false }, ticks: { color: '#64748b', maxTicksLimit: 10 } },
+                                    y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b' } }
+                                },
+                                interaction: { intersect: false, mode: 'index' }
+                            }
+                        });
+                    }
+                } catch (err) {
+                    console.error('Failed to load equity curve:', err);
+                }
+            }
+
             async function loadLiveResults() {
                 const container = document.getElementById('results-scroll');
                 if (!container) return;
@@ -2206,6 +2301,7 @@
                 }
             }
             loadLiveResults();
+            loadEquityCurve();
 
             // ── Also fetch live stats from /api/performance/stats ─────────────
             async function loadLiveStats() {

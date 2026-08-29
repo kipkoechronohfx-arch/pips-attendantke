@@ -3746,13 +3746,13 @@
       btn.innerHTML = `<i data-feather="loader" class="w-3.5 h-3.5 animate-spin"></i> Generating...`;
       
       try {
-        const token = localStorage.getItem('adminToken');
+        const token = localStorage.getItem('pa_admin_token');
         const endpoint = _reportPeriod === 'monthly'
           ? '/api/admin/performance/monthly'
           : '/api/admin/performance/weekly';
 
         const res = await fetch(endpoint, {
-          headers: { 'x-admin-key': token }
+          headers: { 'x-admin-token': token }
         });
         const data = await res.json();
         
