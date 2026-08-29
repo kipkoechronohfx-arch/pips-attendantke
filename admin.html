@@ -3846,11 +3846,11 @@
       btn.innerHTML = `<i data-feather="loader" class="w-3 h-3 animate-spin"></i> Firing...`;
 
       try {
-        const token = localStorage.getItem('adminToken');
+        const token = localStorage.getItem('pa_admin_token');
         const endpoint = _reportPeriod === 'monthly' ? '/api/admin/trigger-monthly-recap' : '/api/admin/trigger-weekly-recap';
         const res = await fetch(endpoint, {
           method: 'POST',
-          headers: { 'x-admin-key': token }
+          headers: { 'x-admin-token': token }
         });
         const data = await res.json();
         
