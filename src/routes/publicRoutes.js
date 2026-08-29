@@ -328,6 +328,67 @@ router.post('/engagement', async (req, res) => {
   res.redirect(307, '/api/broadcast');
 });
 
+// ── IB Broker Blast Endpoint ───────────────────────────────────
+// Sends a broker referral (IB link) blast to Telegram.
+// Reads IB_LINK from environment so the URL stays out of client-side code.
+router.post('/broadcast/ib-blast', async (req, res) => {
+  const token   = req.body.token || process.env.TELEGRAM_BOT_TOKEN;
+  const chatId  = req.body.chatId || process.env.TELEGRAM_CHAT_ID;
+  const ibLink  = process.env.IB_LINK;
+  const { customMessage } = req.body;
+
+  if (!token || !chatId) {
+    return res.status(400).json({ ok: false, error: 'Missing Telegram credentials.' });
+  }
+  if (!ibLink) {
+    return res.status(503).json({ ok: false, error: 'IB_LINK is not configured on the server. Add it to your .env file.' });
+  }
+
+  // Build the message — use a custom override or the default compelling template
+  const message = customMessage && customMessage.trim()
+    ? customMessage.trim()
+    : `🏦 *FUND YOUR TRADING ACCOUNT — OFFICIAL PARTNER BROKER* 🏦\n\n` +
+      `Are you looking for a reliable, regulated broker to execute our signals with?\n\n` +
+      `✅ *Tight spreads* — ideal for Gold & Forex signals\n` +
+      `✅ *Fast execution* — no requotes, no slippage\n` +
+      `✅ *Trusted & regulated* platform\n` +
+      `✅ *Deposit & withdraw instantly*\n\n` +
+      `📲 *Open your account through our exclusive link and get started today:*\n` +
+      `👉 ${ibLink}\n\n` +
+      `💡 _Trading with the right broker makes ALL the difference. This is the one we personally use and recommend._\n\n` +
+      `— Pips Attendant Team 🎯`;
+
+  const TG_BASE = `https://api.telegram.org/bot${token}`;
+  const chatIds = Array.isArray(chatId) ? chatId : String(chatId).split(',').map(id => id.trim()).filter(Boolean);
+
+  try {
+    for (const cid of chatIds) {
+      const msgRes = await fetch(`${TG_BASE}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: cid,
+          text: message,
+          parse_mode: 'Markdown',
+          disable_web_page_preview: false
+        })
+      });
+      const msgData = await msgRes.json();
+      if (!msgData.ok) throw new Error(`Telegram send failed for ${cid}: ${msgData.description}`);
+    }
+
+    // Log as a broadcast entry (type = 'ib_blast') for the admin panel history
+    try {
+      await db.addSignal({ id: Date.now(), type: 'ib_blast', text: message, sentAt: new Date().toISOString() });
+    } catch (_) {}
+
+    res.json({ ok: true, message: 'IB broker blast sent successfully.' });
+  } catch (err) {
+    console.error('[IB Blast Error]', err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // Helper: extract trading pair from Telegram signal text
 function parsePairFromText(text) {
   if (!text) return null;
