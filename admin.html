@@ -754,7 +754,42 @@
               <i data-feather="bar-chart-2" class="w-3.5 h-3.5"></i> Performance Report
             </span>
           </div>
-          <p class="text-[10px] text-gray-400">Generate a FOMO-inducing performance summary to blast to your free channel.</p>
+          <p class="text-[10px] text-gray-400">Generate a FOMO-inducing performance summary to blast to your channels.</p>
+
+          <!-- 0. TARGET AUDIENCE -->
+          <div class="rounded-xl border border-amber-500/30 bg-[#1a1200]/60 p-3.5 flex flex-col gap-3">
+            <p class="text-[10px] font-black uppercase tracking-[0.18em] text-amber-400">0. Target Audience</p>
+            <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
+
+              <!-- General Community -->
+              <label for="perfChanGeneral" class="flex items-center gap-2 cursor-pointer select-none group">
+                <input type="radio" name="perfChannel" value="general" id="perfChanGeneral" class="sr-only peer" checked onchange="updateBlastLabel()">
+                <span class="w-[17px] h-[17px] rounded-full border-2 border-gray-600 peer-checked:border-amber-400 flex items-center justify-center transition-all duration-200 shrink-0">
+                  <span class="w-[8px] h-[8px] rounded-full bg-amber-400 scale-0 peer-checked:scale-100 transition-transform duration-200 block"></span>
+                </span>
+                <span class="text-[11px] font-semibold text-gray-400 group-hover:text-white peer-checked:text-white transition-colors">General Community</span>
+              </label>
+
+              <!-- VIP Channel -->
+              <label for="perfChanVip" class="flex items-center gap-2 cursor-pointer select-none group">
+                <input type="radio" name="perfChannel" value="vip" id="perfChanVip" class="sr-only peer" onchange="updateBlastLabel()">
+                <span class="w-[17px] h-[17px] rounded-full border-2 border-gray-600 peer-checked:border-amber-400 flex items-center justify-center transition-all duration-200 shrink-0">
+                  <span class="w-[8px] h-[8px] rounded-full bg-amber-400 scale-0 peer-checked:scale-100 transition-transform duration-200 block"></span>
+                </span>
+                <span class="text-[11px] font-semibold text-gray-400 group-hover:text-white peer-checked:text-white transition-colors">VIP Channel</span>
+              </label>
+
+              <!-- Both -->
+              <label for="perfChanBoth" class="flex items-center gap-2 cursor-pointer select-none group">
+                <input type="radio" name="perfChannel" value="both" id="perfChanBoth" class="sr-only peer" onchange="updateBlastLabel()">
+                <span class="w-[17px] h-[17px] rounded-full border-2 border-gray-600 peer-checked:border-amber-400 flex items-center justify-center transition-all duration-200 shrink-0">
+                  <span class="w-[8px] h-[8px] rounded-full bg-amber-400 scale-0 peer-checked:scale-100 transition-transform duration-200 block"></span>
+                </span>
+                <span class="text-[11px] font-bold text-amber-400 group-hover:text-amber-300 peer-checked:text-amber-300 transition-colors">Both (General + VIP)</span>
+              </label>
+
+            </div>
+          </div>
 
           <!-- Period Toggle -->
           <div class="flex rounded-xl overflow-hidden border border-white/10 text-[10px] font-bold">
@@ -771,15 +806,14 @@
             </button>
           </div>
 
-          <div id="weeklyReportPreviewContainer" class="hidden flex flex-col gap-2 mt-2">
+          <div id="weeklyReportPreviewContainer" class="hidden flex flex-col gap-2 mt-1">
             <textarea id="weeklyReportMessage" rows="8" class="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-xs leading-relaxed focus:border-purple-400/50 focus:outline-none transition resize-none font-mono"></textarea>
-            
             <div class="flex gap-2">
               <button type="button" onclick="document.getElementById('weeklyReportPreviewContainer').classList.add('hidden')" class="flex-1 py-2 rounded-xl font-bold bg-gray-800 text-gray-300 hover:bg-gray-700 transition text-[10px]">
                 Cancel
               </button>
               <button type="button" onclick="blastWeeklyReport()" id="btnBlastReport" class="flex-1 py-2 rounded-xl font-bold bg-gradient-to-r from-purple-600 to-fuchsia-500 text-white shadow-lg hover:shadow-[0_0_15px_rgba(168,85,247,0.4)] transition text-[10px] flex items-center justify-center gap-1.5">
-                <i data-feather="send" class="w-3 h-3"></i> Blast to General
+                <i data-feather="send" class="w-3 h-3"></i> <span id="blastBtnLabel">Blast to General</span>
               </button>
             </div>
             <div id="weeklyReportFeedback" class="text-[10px] font-semibold text-center mt-1"></div>
@@ -1537,22 +1571,7 @@
             </div>
           </div>
 
-          <!-- Channel Selector for Recap -->
-          <div class="flex items-center gap-3 p-3 rounded-xl bg-black/30 border border-white/10">
-            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider whitespace-nowrap">📡 Send To:</span>
-            <label class="flex items-center gap-1.5 cursor-pointer">
-              <input type="radio" name="perfChannel" value="general" class="accent-amber-400" checked>
-              <span class="text-xs text-gray-300 font-semibold">General</span>
-            </label>
-            <label class="flex items-center gap-1.5 cursor-pointer">
-              <input type="radio" name="perfChannel" value="vip" class="accent-amber-400">
-              <span class="text-xs text-gray-300 font-semibold">VIP</span>
-            </label>
-            <label class="flex items-center gap-1.5 cursor-pointer">
-              <input type="radio" name="perfChannel" value="both" class="accent-amber-400">
-              <span class="text-xs text-amber-400 font-bold">Both ✨</span>
-            </label>
-          </div>
+
 
           <!-- Action Buttons -->
           <div class="flex flex-col sm:flex-row gap-3">
@@ -3723,6 +3742,16 @@
       tgImgContainer.classList.add('hidden');
     }
 
+    function updateBlastLabel() {
+      const sel = document.querySelector('input[name="perfChannel"]:checked');
+      const val = sel ? sel.value : 'general';
+      const labelEl = document.getElementById('blastBtnLabel');
+      if (!labelEl) return;
+      if (val === 'vip') labelEl.textContent = 'Blast to VIP';
+      else if (val === 'both') labelEl.textContent = 'Blast to Both';
+      else labelEl.textContent = 'Blast to General';
+    }
+
     let _reportPeriod = 'weekly';
 
     function setReportPeriod(period) {
@@ -3832,40 +3861,66 @@
       const fb = document.getElementById('weeklyReportFeedback');
       const prevIcon = btn.innerHTML;
 
-      // Validate credentials before sending
+      // Read which channel the admin selected
+      const channelSel = document.querySelector('input[name="perfChannel"]:checked');
+      const target = channelSel ? channelSel.value : 'general';
+
       const token = localStorage.getItem('pa_bot_token');
-      const chatId = localStorage.getItem('pa_chat_id');
-      if (!token || !chatId) {
-        fb.innerHTML = '<span class="text-rose-400">❌ Missing Telegram credentials — check the Setup tab first.</span>';
+      const generalChat = localStorage.getItem('pa_chat_id');
+      const vipChat = localStorage.getItem('pa_vip_chat_id');
+
+      if (!token) {
+        fb.innerHTML = '<span class="text-rose-400">❌ Missing Telegram bot token — check Setup tab.</span>';
         return;
       }
-      
+      if ((target === 'general' || target === 'both') && !generalChat) {
+        fb.innerHTML = '<span class="text-rose-400">❌ General chat ID missing — check Setup tab.</span>';
+        return;
+      }
+      if ((target === 'vip' || target === 'both') && !vipChat) {
+        fb.innerHTML = '<span class="text-rose-400">❌ VIP chat ID missing — add it in Settings.</span>';
+        return;
+      }
+
       btn.disabled = true;
       btn.innerHTML = `<i data-feather="loader" class="w-3 h-3 animate-spin"></i> Sending...`;
-      
+
       try {
-        const token = localStorage.getItem('pa_bot_token');
-        const chatId = localStorage.getItem('pa_chat_id');
         const text = document.getElementById('weeklyReportMessage').value;
-        const payload = { token, chatId, customMessage: text, broker: 'DEFAULT' };
-        
-        const res = await fetch('/api/broadcast/ib-blast', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        
-        if (data.ok) {
-          fb.innerHTML = '<span class="text-emerald-400">✅ Report blasted to General Channel!</span>';
+
+        // Build list of target chat IDs
+        const chatsToSend = [];
+        if (target === 'general' || target === 'both') chatsToSend.push(generalChat);
+        if (target === 'vip' || target === 'both') chatsToSend.push(vipChat);
+
+        const results = await Promise.allSettled(
+          chatsToSend.map(chatId =>
+            fetch('/api/broadcast', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ token, chatId, text, type: 'performance' })
+            }).then(r => r.json())
+          )
+        );
+
+        const failed = results.filter(r => r.status === 'rejected' || (r.value && !r.value.ok));
+        const succeeded = results.length - failed.length;
+
+        if (failed.length === 0) {
+          const label = target === 'both' ? 'General + VIP' : (target === 'vip' ? 'VIP' : 'General');
+          fb.innerHTML = `<span class="text-emerald-400">✅ Report blasted to ${label} channel${succeeded > 1 ? 's' : ''}!</span>`;
           setTimeout(() => {
             document.getElementById('weeklyReportPreviewContainer').classList.add('hidden');
           }, 3000);
+        } else if (succeeded > 0) {
+          const errMsg = failed[0].reason?.message || failed[0].value?.error || 'Unknown error';
+          fb.innerHTML = `<span class="text-amber-400">⚠️ Sent to ${succeeded}/${results.length} channel(s). Error: ${errMsg}</span>`;
         } else {
-          fb.innerHTML = `<span class="text-rose-400">Error: ${data.error}</span>`;
+          const errMsg = failed[0].reason?.message || failed[0].value?.error || 'Telegram rejected the request';
+          fb.innerHTML = `<span class="text-rose-400">❌ Failed: ${errMsg}</span>`;
         }
       } catch (err) {
-        fb.innerHTML = '<span class="text-rose-400">Network error</span>';
+        fb.innerHTML = `<span class="text-rose-400">❌ Network error: ${err.message}</span>`;
       } finally {
         btn.disabled = false;
         btn.innerHTML = prevIcon;
