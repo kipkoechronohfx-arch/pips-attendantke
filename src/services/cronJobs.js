@@ -65,18 +65,40 @@ async function sendWeeklyRecapToVIP() {
     msg += `📈 Net Pips: *${netPips >= 0 ? '+' : ''}${netPips} pips*\n`;
     msg += `🔢 Total Signals: *${weekSignals.length}*\n`;
     msg += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
-    msg += `Stay consistent, manage risk, and let's go even harder next week! 💪💰`;
+
+    let generalMsg = msg + `These results are from our *VIP signals only* — the ones you've been missing. 👀\n\n`;
+    generalMsg += `🚀 *Join VIP today and never miss a winning signal again!*\n`;
+    generalMsg += `👉 ${process.env.APP_URL || 'https://www.pipsattendant.com'}/premium.html`;
+
+    let vipMsg = msg + `Stay consistent, manage risk, and let's go even harder next week! 💪💰`;
 
     const tgUrl = `https://api.telegram.org/bot${token}/sendMessage`;
-    const response = await fetch(tgUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text: msg, parse_mode: 'Markdown' })
-    });
-    const result = await response.json();
+    
+    // 1. Send FOMO message to General
+    const generalChatId = process.env.TELEGRAM_CHAT_ID;
+    let result = { ok: true };
+    
+    if (generalChatId) {
+      const response = await fetch(tgUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: generalChatId, text: generalMsg, parse_mode: 'Markdown', disable_web_page_preview: true })
+      });
+      result = await response.json();
+    }
 
-    if (result.ok) {
-      const successMsg = `Weekly recap sent to VIP (${weekLabel}): ${wins}W/${losses}L, ${netPips >= 0 ? '+' : ''}${netPips} pips.`;
+    // 2. Send standard message to VIP
+    const vipChatId = process.env.TELEGRAM_VIP_CHAT_ID;
+    if (vipChatId && vipChatId !== generalChatId) {
+      await fetch(tgUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: vipChatId, text: vipMsg, parse_mode: 'Markdown' })
+      }).catch(err => logger.error(`[Cron] Weekly recap VIP send error: ${err.message}`));
+    }
+
+    if (result.ok || !generalChatId) {
+      const successMsg = `Weekly recap sent to General & VIP (${weekLabel}): ${wins}W/${losses}L, ${netPips >= 0 ? '+' : ''}${netPips} pips.`;
       logger.info(`[Cron] ${successMsg}`);
       return { ok: true, message: successMsg };
     } else {
