@@ -3944,12 +3944,13 @@
         const data = await res.json();
         
         if (data.ok) {
-          alert('✅ Cron test fired successfully!\n\nMessage: ' + (data.message || 'Check telegram channel.'));
+          if (typeof showToastMsg !== 'undefined') showToastMsg('✅ Cron fired: ' + (data.message || 'Check telegram'), 'success');
+          else if (typeof showToast !== 'undefined') showToast();
         } else {
-          alert('❌ Cron test failed:\n\n' + data.error);
+          if (typeof showToastMsg !== 'undefined') showToastMsg('❌ Cron failed: ' + data.error, 'error');
         }
       } catch (err) {
-        alert('❌ Network error while test firing.');
+        if (typeof showToastMsg !== 'undefined') showToastMsg('❌ Network error while test firing.', 'error');
       } finally {
         btn.disabled = false;
         btn.innerHTML = prevIcon;
@@ -6894,43 +6895,77 @@
         const ctx = document.getElementById('performanceChart').getContext('2d');
         if (perfChartInstance) perfChartInstance.destroy();
         
-        Chart.defaults.color = 'rgba(255, 255, 255, 0.5)';
+        Chart.defaults.color = 'rgba(255, 255, 255, 0.4)';
         Chart.defaults.font.family = 'Inter';
 
+        // Create glowing gradient
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(251, 191, 36, 0.4)'); // Amber glow
+        gradient.addColorStop(1, 'rgba(251, 191, 36, 0)');
+
+        // Define point colors based on profit/loss
+        const pointColors = chartData.map(val => val >= 0 ? '#10B981' : '#F43F5E');
+
         perfChartInstance = new Chart(ctx, {
-          type: 'bar',
+          type: 'line',
           data: {
             labels,
             datasets: [{
-              label: 'Pips Caught',
+              label: 'Net Pips',
               data: chartData,
-              backgroundColor: bgColors,
-              borderRadius: 4
+              borderColor: '#fbbf24', // Amber line
+              borderWidth: 2,
+              backgroundColor: gradient,
+              fill: true,
+              tension: 0.4, // Smooth curves
+              pointBackgroundColor: pointColors,
+              pointBorderColor: 'rgba(255,255,255,0.8)',
+              pointBorderWidth: 1.5,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              pointHoverBackgroundColor: pointColors,
+              pointHoverBorderColor: '#fff',
+              pointHoverBorderWidth: 2
             }]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
+            interaction: {
+              mode: 'index',
+              intersect: false,
+            },
             plugins: {
               legend: { display: false },
               tooltip: {
-                backgroundColor: 'rgba(0,0,0,0.8)',
-                titleFont: { size: 13, family: 'Inter' },
-                bodyFont: { size: 14, family: 'Inter', weight: 'bold' },
+                backgroundColor: 'rgba(15, 23, 42, 0.9)', // Slate-900 with opacity
+                titleColor: '#94a3b8',
+                titleFont: { size: 12, family: 'Inter', weight: 'normal' },
+                bodyColor: '#fff',
+                bodyFont: { size: 15, family: 'Inter', weight: 'bold' },
+                padding: 12,
+                cornerRadius: 8,
+                borderColor: 'rgba(255,255,255,0.1)',
+                borderWidth: 1,
+                displayColors: false,
                 callbacks: {
-                  label: (ctx) => `${ctx.raw > 0 ? '+' : ''}${ctx.raw} pips`
+                  label: (ctx) => {
+                    const val = ctx.raw;
+                    return val > 0 ? `+${val} pips 📈` : `${val} pips 📉`;
+                  }
                 }
               }
             },
             scales: {
               y: {
-                grid: { color: 'rgba(255,255,255,0.05)' },
-                border: { display: false }
+                grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false },
+                border: { display: false },
+                ticks: { padding: 10 }
               },
               x: {
-                grid: { display: false },
+                grid: { display: false, drawBorder: false },
                 border: { display: false },
-                ticks: { maxTicksLimit: 10 }
+                ticks: { maxTicksLimit: 8, padding: 10 }
               }
             }
           }
