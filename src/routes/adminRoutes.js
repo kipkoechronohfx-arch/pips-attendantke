@@ -1731,8 +1731,8 @@ router.delete('/propfirm-accounts/:userId', validateAdminSession, async (req, re
 // ── Manual Trigger: Weekly Performance Recap ───────────────────
 router.post('/trigger-weekly-recap', validateAdminSession, async (req, res) => {
   try {
-    const { sendWeeklyRecapToVIP } = require('../services/cronJobs');
-    const result = await sendWeeklyRecapToVIP();
+    const { sendWeeklyRecap } = require('../services/cronJobs');
+    const result = await sendWeeklyRecap();
     
     if (result && !result.ok) {
       return res.status(400).json(result);
@@ -1750,8 +1750,8 @@ router.post('/trigger-weekly-recap', validateAdminSession, async (req, res) => {
 // ── Manual Trigger: Monthly Performance Recap ──────────────────
 router.post('/trigger-monthly-recap', validateAdminSession, async (req, res) => {
   try {
-    const { sendMonthlyRecapToGeneral } = require('../services/cronJobs');
-    const result = await sendMonthlyRecapToGeneral();
+    const { sendMonthlyRecap } = require('../services/cronJobs');
+    const result = await sendMonthlyRecap();
     
     if (result && !result.ok) {
       return res.status(400).json(result);

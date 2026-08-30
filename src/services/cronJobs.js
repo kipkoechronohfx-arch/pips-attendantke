@@ -6,7 +6,7 @@ const fetch = require('node-fetch');
 const FormData = require('form-data');
 
 // ── Weekly Performance Recap ──────────────────────────────────────────────────
-async function sendWeeklyRecapToVIP() {
+async function sendWeeklyRecap() {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_VIP_CHAT_ID || process.env.TELEGRAM_CHAT_ID;
 
@@ -115,7 +115,7 @@ async function sendWeeklyRecapToVIP() {
 // Fires on the 1st of every month. Reads from public performance logs (same
 // source as /api/performance/stats) and blasts to the GENERAL channel to create
 // FOMO and push free members to upgrade to VIP.
-async function sendMonthlyRecapToGeneral() {
+async function sendMonthlyRecap() {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   // Target general channel for FOMO — free members should see this
   const chatId = process.env.TELEGRAM_CHAT_ID;
@@ -543,19 +543,19 @@ function startCronJobs() {
     processScheduledBroadcasts();
   });
 
-  // ── Weekly Performance Recap — Every Sunday at midnight (VIP Telegram) ──
+  // ── Weekly Performance Recap — Every Sunday at midnight (Both Channels) ──
   cron.schedule("0 0 * * 0", () => {
-    logger.info("[Cron] Sending weekly performance recap to VIP channel...");
-    sendWeeklyRecapToVIP();
+    logger.info("[Cron] Sending weekly performance recap to BOTH channels...");
+    sendWeeklyRecap();
   }, { timezone: "Africa/Nairobi" });
 
-  // ── Monthly Performance Recap — 1st of every month at 9 AM (General Telegram) ──
+  // ── Monthly Performance Recap — 1st of every month at 9 AM (Both Channels) ──
   cron.schedule("0 9 1 * *", () => {
-    logger.info("[Cron] Sending monthly performance recap to General channel...");
-    sendMonthlyRecapToGeneral();
+    logger.info("[Cron] Sending monthly performance recap to BOTH channels...");
+    sendMonthlyRecap();
   }, { timezone: "Africa/Nairobi" });
 
-  logger.info("[Cron] Jobs scheduled: VIP expiry daily, Signal Auto-Archive hourly, Alerts minutely, Weekly Recap every Sunday midnight, Monthly Recap on 1st of each month at 9 AM");
+  logger.info("[Cron] Jobs scheduled: VIP expiry daily, Signal Auto-Archive hourly, Alerts minutely, Weekly & Monthly Recaps");
 }
 
-module.exports = { startCronJobs, computeAndSaveBadges, BADGE_DEFINITIONS, autoArchiveSignals, processScheduledAlerts, sendWeeklyRecapToVIP, sendMonthlyRecapToGeneral };
+module.exports = { startCronJobs, computeAndSaveBadges, BADGE_DEFINITIONS, autoArchiveSignals, processScheduledAlerts, sendWeeklyRecap, sendMonthlyRecap };
