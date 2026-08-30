@@ -1049,58 +1049,6 @@
         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gold/5 rounded-full blur-[120px] pointer-events-none -z-10"></div>
     </section>
 
-    <!-- 5. RESULTS SECTION -->
-    <section id="results" class="py-24 px-6 overflow-hidden">
-        <div class="max-w-7xl mx-auto">
-            <div class="flex justify-between items-end mb-12">
-                <div>
-                    <div data-aos="fade-right" class="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full mb-3">
-                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Live Verified
-                    </div>
-                    <h2 data-aos="fade-right" class="text-3xl md:text-4xl font-black text-white mb-2 font-heading">Recent Performance</h2>
-                    <p data-aos="fade-right" data-aos-delay="100" class="text-gray-400 text-sm">Verified setups from the VIP community.</p>
-                </div>
-                <div class="hidden md:flex gap-2">
-                    <button class="w-10 h-10 rounded-full glass-card flex items-center justify-center hover:bg-white/10 transition-colors" onclick="document.getElementById('results-scroll').scrollBy({left: -300, behavior: 'smooth'})">
-                        <i data-feather="chevron-left"></i>
-                    </button>
-                    <button class="w-10 h-10 rounded-full glass-card flex items-center justify-center hover:bg-white/10 transition-colors" onclick="document.getElementById('results-scroll').scrollBy({left: 300, behavior: 'smooth'})">
-                        <i data-feather="chevron-right"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Equity Curve Chart -->
-            <div data-aos="fade-up" class="w-full bg-black/40 border border-white/5 rounded-2xl p-6 mb-12 shadow-2xl">
-                <h3 class="text-white text-lg font-bold mb-4 flex items-center gap-2">
-                    <i data-feather="trending-up" class="w-5 h-5 text-emerald-400"></i>
-                    Growth History (Cumulative Pips)
-                </h3>
-                <div class="relative h-64 md:h-80 w-full">
-                    <canvas id="equityChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Horizontal Scroll Container (Live from API) -->
-            <div class="relative w-full overflow-hidden after:absolute after:right-0 after:top-0 after:bottom-0 after:w-16 after:bg-gradient-to-l after:from-[#050505] after:to-transparent after:pointer-events-none before:absolute before:left-0 before:top-0 before:bottom-0 before:w-16 before:bg-gradient-to-r before:from-[#050505] before:to-transparent before:pointer-events-none before:z-10 after:z-10">
-                <div id="results-scroll" class="flex overflow-x-auto hide-scrollbar gap-6 pb-8 snap-x-mandatory px-8 -mx-8 md:mx-0 md:px-16">
-                <!-- Loading placeholders -->
-                <div class="min-w-[280px] md:min-w-[320px] glass-card p-6 snap-start flex-shrink-0 animate-pulse">
-                    <div class="h-5 bg-white/10 rounded mb-4 w-2/3"></div>
-                    <div class="h-3 bg-white/5 rounded mb-2"></div><div class="h-3 bg-white/5 rounded mb-2"></div><div class="h-3 bg-white/5 rounded mb-2"></div>
-                </div>
-                <div class="min-w-[280px] md:min-w-[320px] glass-card p-6 snap-start flex-shrink-0 animate-pulse">
-                    <div class="h-5 bg-white/10 rounded mb-4 w-2/3"></div>
-                    <div class="h-3 bg-white/5 rounded mb-2"></div><div class="h-3 bg-white/5 rounded mb-2"></div><div class="h-3 bg-white/5 rounded mb-2"></div>
-                </div>
-                <div class="min-w-[280px] md:min-w-[320px] glass-card p-6 snap-start flex-shrink-0 animate-pulse">
-                    <div class="h-5 bg-white/10 rounded mb-4 w-2/3"></div>
-                    <div class="h-3 bg-white/5 rounded mb-2"></div><div class="h-3 bg-white/5 rounded mb-2"></div><div class="h-3 bg-white/5 rounded mb-2"></div>
-                </div>
-            </div>
-        </div>
-    </section>
-
 
     <!-- 4. TRUSTED PARTNERS SECTION -->
     <section class="py-12 relative overflow-hidden" style="background:linear-gradient(180deg,rgba(0,0,0,0.4) 0%,rgba(5,5,5,0) 100%);border-top:1px solid rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.05);">
@@ -1805,6 +1753,58 @@
 
 
     </div>
+
+    <!-- 5. RESULTS SECTION -->
+    <section id="results" class="py-24 px-6 overflow-hidden">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex justify-between items-end mb-12">
+                <div>
+                    <div data-aos="fade-right" class="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full mb-3">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Live Verified
+                    </div>
+                    <h2 data-aos="fade-right" class="text-3xl md:text-4xl font-black text-white mb-2 font-heading">Recent Performance</h2>
+                    <p data-aos="fade-right" data-aos-delay="100" class="text-gray-400 text-sm">Verified setups from the VIP community.</p>
+                </div>
+                <div class="hidden md:flex gap-2">
+                    <button class="w-10 h-10 rounded-full glass-card flex items-center justify-center hover:bg-white/10 transition-colors" onclick="document.getElementById('results-scroll').scrollBy({left: -300, behavior: 'smooth'})">
+                        <i data-feather="chevron-left"></i>
+                    </button>
+                    <button class="w-10 h-10 rounded-full glass-card flex items-center justify-center hover:bg-white/10 transition-colors" onclick="document.getElementById('results-scroll').scrollBy({left: 300, behavior: 'smooth'})">
+                        <i data-feather="chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Equity Curve Chart -->
+            <div data-aos="fade-up" class="w-full bg-black/40 border border-white/5 rounded-2xl p-6 mb-12 shadow-2xl">
+                <h3 class="text-white text-lg font-bold mb-4 flex items-center gap-2">
+                    <i data-feather="trending-up" class="w-5 h-5 text-emerald-400"></i>
+                    Growth History (Cumulative Pips)
+                </h3>
+                <div class="relative h-64 md:h-80 w-full">
+                    <canvas id="equityChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Horizontal Scroll Container (Live from API) -->
+            <div class="relative w-full overflow-hidden after:absolute after:right-0 after:top-0 after:bottom-0 after:w-16 after:bg-gradient-to-l after:from-[#050505] after:to-transparent after:pointer-events-none before:absolute before:left-0 before:top-0 before:bottom-0 before:w-16 before:bg-gradient-to-r before:from-[#050505] before:to-transparent before:pointer-events-none before:z-10 after:z-10">
+                <div id="results-scroll" class="flex overflow-x-auto hide-scrollbar gap-6 pb-8 snap-x-mandatory px-8 -mx-8 md:mx-0 md:px-16">
+                <!-- Loading placeholders -->
+                <div class="min-w-[280px] md:min-w-[320px] glass-card p-6 snap-start flex-shrink-0 animate-pulse">
+                    <div class="h-5 bg-white/10 rounded mb-4 w-2/3"></div>
+                    <div class="h-3 bg-white/5 rounded mb-2"></div><div class="h-3 bg-white/5 rounded mb-2"></div><div class="h-3 bg-white/5 rounded mb-2"></div>
+                </div>
+                <div class="min-w-[280px] md:min-w-[320px] glass-card p-6 snap-start flex-shrink-0 animate-pulse">
+                    <div class="h-5 bg-white/10 rounded mb-4 w-2/3"></div>
+                    <div class="h-3 bg-white/5 rounded mb-2"></div><div class="h-3 bg-white/5 rounded mb-2"></div><div class="h-3 bg-white/5 rounded mb-2"></div>
+                </div>
+                <div class="min-w-[280px] md:min-w-[320px] glass-card p-6 snap-start flex-shrink-0 animate-pulse">
+                    <div class="h-5 bg-white/10 rounded mb-4 w-2/3"></div>
+                    <div class="h-3 bg-white/5 rounded mb-2"></div><div class="h-3 bg-white/5 rounded mb-2"></div><div class="h-3 bg-white/5 rounded mb-2"></div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- 9. FOOTER -->
     <footer class="border-t border-white/5 pt-16 pb-32 px-6 bg-black">
