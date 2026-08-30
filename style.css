@@ -404,39 +404,42 @@ input:focus, textarea:focus, select:focus {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 13px;
+  gap: 7px;
+  padding: 6px 14px;
   border-radius: 999px;
   font-weight: 700;
   font-size: 0.8rem;
   letter-spacing: 0.01em;
-  color: #ffffff;
   text-decoration: none;
   overflow: hidden;
-  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
-  /* Shimmer sweep layer */
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
 }
 
-/* Dark heavy background with gold border glow */
+/* Signals — gold pill with strong glow */
 .nav-hot-signals {
-  background: linear-gradient(135deg, #0d0f14 0%, #161a24 100%);
-  border: 1.5px solid rgba(212, 175, 55, 0.55);
+  background: linear-gradient(135deg, #2a1f00 0%, #3a2a00 60%, #2a1f00 100%);
+  border: 1.5px solid rgba(212, 175, 55, 0.80);
+  color: #f5d060;
   box-shadow:
-    0 0 12px rgba(212, 175, 55, 0.18),
-    0 0 28px rgba(212, 175, 55, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    0 0 0 1px rgba(212, 175, 55, 0.15),
+    0 0 16px rgba(212, 175, 55, 0.35),
+    0 0 40px rgba(212, 175, 55, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
 }
 
+/* Copy Trading — blue pill with strong glow */
 .nav-hot-copy {
-  background: linear-gradient(135deg, #0c0f1a 0%, #141926 100%);
-  border: 1.5px solid rgba(99, 179, 255, 0.45);
+  background: linear-gradient(135deg, #001a2e 0%, #002540 60%, #001a2e 100%);
+  border: 1.5px solid rgba(59, 175, 255, 0.75);
+  color: #7dd3fc;
   box-shadow:
-    0 0 12px rgba(99, 179, 255, 0.15),
-    0 0 28px rgba(99, 179, 255, 0.07),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    0 0 0 1px rgba(59, 175, 255, 0.12),
+    0 0 16px rgba(59, 175, 255, 0.30),
+    0 0 40px rgba(59, 175, 255, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
 }
 
-/* Animated live dot before text */
+/* Pulsing live dot */
 .nav-hot-signals::before,
 .nav-hot-copy::before {
   content: '';
@@ -445,18 +448,18 @@ input:focus, textarea:focus, select:focus {
   height: 6px;
   border-radius: 50%;
   flex-shrink: 0;
-  animation: nav-dot-pulse 2s infinite;
+  animation: nav-dot-pulse 1.8s infinite;
 }
 
 .nav-hot-signals::before {
-  background: #D4AF37;
-  box-shadow: 0 0 6px #D4AF37, 0 0 12px rgba(212, 175, 55, 0.5);
+  background: #f5d060;
+  box-shadow: 0 0 8px #D4AF37, 0 0 16px rgba(212, 175, 55, 0.6);
 }
 
 .nav-hot-copy::before {
-  background: #63b3ff;
-  box-shadow: 0 0 6px #63b3ff, 0 0 12px rgba(99, 179, 255, 0.5);
-  animation-delay: 0.6s;
+  background: #7dd3fc;
+  box-shadow: 0 0 8px #3bafff, 0 0 16px rgba(59, 175, 255, 0.6);
+  animation-delay: 0.5s;
 }
 
 /* Shimmer sweep on hover */
@@ -467,46 +470,42 @@ input:focus, textarea:focus, select:focus {
   left: -100%;
   width: 60%;
   height: 100%;
-  background: linear-gradient(to right, transparent, rgba(255,255,255,0.12), transparent);
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.15), transparent);
   transform: skewX(-20deg);
   transition: left 0.5s ease;
   pointer-events: none;
 }
 
-.nav-hot-link:hover::after {
-  left: 160%;
-}
+.nav-hot-link:hover::after { left: 160%; }
 
 .nav-hot-signals:hover {
-  background: linear-gradient(135deg, #141208 0%, #1e1a0a 100%);
-  border-color: rgba(212, 175, 55, 0.9);
+  border-color: #D4AF37;
   box-shadow:
-    0 0 22px rgba(212, 175, 55, 0.4),
-    0 0 50px rgba(212, 175, 55, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  transform: translateY(-1px) scale(1.04);
+    0 0 24px rgba(212, 175, 55, 0.55),
+    0 0 60px rgba(212, 175, 55, 0.20);
+  transform: translateY(-1px) scale(1.05);
+  filter: brightness(1.15);
 }
 
 .nav-hot-copy:hover {
-  background: linear-gradient(135deg, #08111f 0%, #0f1a2e 100%);
-  border-color: rgba(99, 179, 255, 0.85);
+  border-color: #3bafff;
   box-shadow:
-    0 0 22px rgba(99, 179, 255, 0.38),
-    0 0 50px rgba(99, 179, 255, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  transform: translateY(-1px) scale(1.04);
+    0 0 24px rgba(59, 175, 255, 0.50),
+    0 0 60px rgba(59, 175, 255, 0.18);
+  transform: translateY(-1px) scale(1.05);
+  filter: brightness(1.15);
 }
 
 /* Dot pulse keyframes */
 @keyframes nav-dot-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: 0.55; transform: scale(0.75); }
+  0%, 100% { opacity: 1;    transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.7); }
 }
 
 /* Mobile adjustments */
 @media (max-width: 767px) {
   .nav-hot-link {
-    padding: 6px 14px;
+    padding: 7px 14px;
     font-size: 0.875rem;
     border-radius: 10px;
   }
