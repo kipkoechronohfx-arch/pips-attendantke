@@ -31,7 +31,7 @@ const PRECACHE_ASSETS = [
   '/favicon.webp',
   '/dubai_bg.webp',
   '/justmarkets.webp',
-  '/xm.webp',
+  '/dupoin.webp',
   '/image.webp'
 ];
 
