@@ -400,17 +400,18 @@ input:focus, textarea:focus, select:focus {
 }
 
 
-/* Blog Article Container Visibility Fix */
+
+}
+
+/* Blog Article Container Solid Background */
 .article-body, .article-content {
-  background: rgba(10, 10, 15, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: #0B0E14;
+  border: 1px solid rgba(212, 175, 55, 0.4);
   border-radius: 1.5rem;
-  padding: 2.5rem;
+  padding: 3rem;
   margin-top: 2rem;
   margin-bottom: 2rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.9);
 }
 
 @media (max-width: 768px) {
