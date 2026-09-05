@@ -660,6 +660,49 @@ router.delete('/promos/:code', validateAdminSession, async (req, res) => {
   res.json({ ok: true });
 });
 
+// ── Prop Firm Leads ─────────────────────────────────────────────
+router.get('/leads', validateAdminSession, async (req, res) => {
+  try {
+    const leads = await db.getLeads();
+    const propFirmLeads = leads.filter(l => l.firm);
+    propFirmLeads.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    res.json({ ok: true, count: propFirmLeads.length, leads: propFirmLeads });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.delete('/leads/:id', validateAdminSession, async (req, res) => {
+  try {
+    await db.deleteLeadById(req.params.id);
+    res.json({ ok: true, message: 'Lead deleted.' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.get('/leads/export-csv', validateAdminSession, async (req, res) => {
+  try {
+    const leads = await db.getLeads();
+    const propFirmLeads = leads.filter(l => l.firm);
+    propFirmLeads.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const rows = [
+      ['Name', 'Email', 'Phone', 'Firm', 'Account Size', 'Source', 'Date'],
+      ...propFirmLeads.map(l => [
+        l.name || '', l.email || '', l.phone || '',
+        l.firm || '', l.size || '', l.source || '',
+        l.createdAt ? new Date(l.createdAt).toLocaleDateString() : ''
+      ])
+    ];
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="prop-firm-leads.csv"');
+    res.send(csv);
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // ── Tickets ─────────────────────────────────────────────────────
 router.get('/tickets', validateAdminSession, async (req, res) => {
   const tickets = await db.getTickets();
