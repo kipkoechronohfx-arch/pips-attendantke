@@ -661,7 +661,7 @@ router.delete('/promos/:code', validateAdminSession, async (req, res) => {
 });
 
 // ── Prop Firm Leads ─────────────────────────────────────────────
-router.get('/leads', validateAdminSession, async (req, res) => {
+router.get('/propfirm-leads', validateAdminSession, async (req, res) => {
   try {
     const leads = await db.getLeads();
     const propFirmLeads = leads.filter(l => l.firm);
