@@ -128,7 +128,7 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  filter: drop-shadow(0 0 20px rgba(212,175,55,0.25));
+  filter: drop-shadow(0 0 20px rgba(212,175,55,0.7));
 }
 
 .secondary-gradient-text {
