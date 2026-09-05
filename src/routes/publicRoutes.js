@@ -701,10 +701,11 @@ router.post('/leads/prop-firm', leadCaptureLimiter, async (req, res) => {
       await db.addLead(lead);
     }
     
-    // Notify admin via Telegram that a new lead applied
+    // Notify admin via Telegram (personal inbox) that a new lead applied
     try {
       const token = process.env.TELEGRAM_BOT_TOKEN;
-      const adminChatId = process.env.TELEGRAM_CHAT_ID;
+      // Use personal admin chat ID — NOT the public/VIP channel
+      const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID || process.env.TELEGRAM_CHAT_ID;
       if (token && adminChatId) {
         const fetch = require('node-fetch');
         const tgMsg = `🚀 *NEW PROP FIRM LEAD* 🚀\n\n` +
