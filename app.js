@@ -41,10 +41,13 @@ window.addEventListener('DOMContentLoaded', () => {
 // --- BROKER VISIBILITY ---
 async function applyBrokerVisibility() {
   const brokerElements = document.querySelectorAll('[data-broker]');
-  if (brokerElements.length === 0) return;
+  const brokerContainers = document.querySelectorAll('[data-broker-container="true"]');
+  
+  if (brokerElements.length === 0 && brokerContainers.length === 0) return;
 
   // Temporarily make them invisible while we check to prevent FOUC
   brokerElements.forEach(el => el.style.opacity = '0');
+  brokerContainers.forEach(container => container.style.opacity = '0');
 
   try {
     const res = await fetch('/api/config/public');
@@ -67,12 +70,34 @@ async function applyBrokerVisibility() {
         el.style.opacity = '1';
       });
     }
+
+    // Hide containers if all their brokers are hidden
+    brokerContainers.forEach(container => {
+      const childBrokers = container.querySelectorAll('[data-broker]');
+      let allHidden = true;
+      childBrokers.forEach(broker => {
+        if (broker.style.display !== 'none') {
+          allHidden = false;
+        }
+      });
+      if (allHidden && childBrokers.length > 0) {
+        container.style.display = 'none';
+      } else {
+        container.style.transition = 'opacity 0.5s ease-in';
+        container.style.opacity = '1';
+      }
+    });
+
   } catch (err) {
     console.error('Failed to fetch broker visibility state:', err);
     // On error, default to showing them
     brokerElements.forEach(el => {
         el.style.transition = 'opacity 0.5s ease-in';
         el.style.opacity = '1';
+    });
+    brokerContainers.forEach(container => {
+        container.style.transition = 'opacity 0.5s ease-in';
+        container.style.opacity = '1';
     });
   }
 }
