@@ -407,18 +407,39 @@
       <form id="broadcastForm" onsubmit="sendBroadcast(event)" class="lg:col-span-7 space-y-6">
         
         <!-- Global Settings -->
-        <div class="glass-card rounded-2xl p-6 border border-white/10 mb-6 flex items-center justify-between">
-          <div>
-            <span class="block text-xs font-bold uppercase tracking-wider text-neon-blue mb-1 flex items-center gap-2">
-              Broker Visibility 
-              <span id="brokerVisibilityStatus" class="px-2 py-0.5 rounded text-[10px] font-black tracking-widest uppercase transition-colors duration-300 bg-gray-500/20 text-gray-400">Loading...</span>
-            </span>
-            <p class="text-[10px] text-gray-400">Toggle whether recommended brokers appear on the public site.</p>
+        <div class="glass-card rounded-2xl p-6 border border-white/10 mb-6">
+          <div class="mb-4">
+            <span class="block text-xs font-bold uppercase tracking-wider text-neon-blue mb-1">Broker Visibility</span>
+            <p class="text-[10px] text-gray-400">Toggle whether recommended brokers appear on the public site independently.</p>
           </div>
-          <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" id="toggleBrokersVisibility" onchange="updateBrokerVisibility(this.checked)" class="sr-only peer">
-            <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
-          </label>
+          
+          <div class="space-y-4">
+            <!-- Dupoin Toggle -->
+            <div class="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+              <div class="flex items-center gap-3">
+                <img src="dupoin.webp" class="h-6 object-contain" alt="Dupoin">
+                <span class="text-xs font-bold text-gray-300">Dupoin</span>
+                <span id="brokerVisibilityStatus-dupoin" class="px-2 py-0.5 rounded text-[10px] font-black tracking-widest uppercase transition-colors duration-300 bg-gray-500/20 text-gray-400">...</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="toggleBroker-dupoin" onchange="updateBrokerVisibility('dupoin', this.checked)" class="sr-only peer">
+                <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+              </label>
+            </div>
+
+            <!-- JustMarkets Toggle -->
+            <div class="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+              <div class="flex items-center gap-3">
+                <img src="justmarkets.webp" class="h-6 object-contain" alt="JustMarkets">
+                <span class="text-xs font-bold text-gray-300">JustMarkets</span>
+                <span id="brokerVisibilityStatus-justmarkets" class="px-2 py-0.5 rounded text-[10px] font-black tracking-widest uppercase transition-colors duration-300 bg-gray-500/20 text-gray-400">...</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="toggleBroker-justmarkets" onchange="updateBrokerVisibility('justmarkets', this.checked)" class="sr-only peer">
+                <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+              </label>
+            </div>
+          </div>
         </div>
 
         <!-- Target Audience Selection -->
@@ -7727,20 +7748,21 @@
       try {
         const res = await fetch('/api/config/public');
         const data = await res.json();
-        if (data.ok) {
-          const toggle = document.getElementById('toggleBrokersVisibility');
-          if (toggle) {
-            toggle.checked = data.showBrokers;
-            updateBrokerStatusUI(data.showBrokers);
-          }
+        if (data.ok && data.brokerVisibility) {
+          ['dupoin', 'justmarkets'].forEach(broker => {
+            const isVisible = data.brokerVisibility[broker] !== false; // Default true
+            const toggle = document.getElementById('toggleBroker-' + broker);
+            if (toggle) toggle.checked = isVisible;
+            updateBrokerStatusUI(broker, isVisible);
+          });
         }
       } catch (err) {
         console.error('Failed to load broker visibility state', err);
       }
     }
     
-    function updateBrokerStatusUI(isVisible) {
-      const statusBadge = document.getElementById('brokerVisibilityStatus');
+    function updateBrokerStatusUI(broker, isVisible) {
+      const statusBadge = document.getElementById('brokerVisibilityStatus-' + broker);
       if (!statusBadge) return;
       if (isVisible) {
         statusBadge.textContent = 'Visible';
@@ -7751,7 +7773,7 @@
       }
     }
 
-    async function updateBrokerVisibility(showBrokers) {
+    async function updateBrokerVisibility(broker, isVisible) {
       try {
         const token = localStorage.getItem('pips_admin_token');
         const res = await fetch('/api/config/toggle-brokers', {
@@ -7760,19 +7782,19 @@
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + token
           },
-          body: JSON.stringify({ showBrokers })
+          body: JSON.stringify({ broker, isVisible })
         });
         const data = await res.json();
         if (data.ok) {
-          window.alert('Broker visibility updated successfully!');
-          updateBrokerStatusUI(showBrokers);
+          window.alert(broker + ' visibility updated successfully!');
+          updateBrokerStatusUI(broker, isVisible);
         } else {
-          window.alert('Error updating broker visibility: ' + data.error);
-          document.getElementById('toggleBrokersVisibility').checked = !showBrokers;
+          window.alert('Error updating visibility: ' + data.error);
+          document.getElementById('toggleBroker-' + broker).checked = !isVisible;
         }
       } catch (err) {
         window.alert('Network error updating broker visibility.');
-        document.getElementById('toggleBrokersVisibility').checked = !showBrokers;
+        document.getElementById('toggleBroker-' + broker).checked = !isVisible;
       }
     }
 

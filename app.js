@@ -40,7 +40,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // --- BROKER VISIBILITY ---
 async function applyBrokerVisibility() {
-  const brokerElements = document.querySelectorAll('[data-broker-section="true"]');
+  const brokerElements = document.querySelectorAll('[data-broker]');
   if (brokerElements.length === 0) return;
 
   // Temporarily make them invisible while we check to prevent FOUC
@@ -50,12 +50,18 @@ async function applyBrokerVisibility() {
     const res = await fetch('/api/config/public');
     const data = await res.json();
     
-    if (data.ok && data.showBrokers === false) {
+    if (data.ok && data.brokerVisibility) {
       brokerElements.forEach(el => {
-        el.style.display = 'none';
+        const brokerName = el.getAttribute('data-broker');
+        if (data.brokerVisibility[brokerName] === false) {
+          el.style.display = 'none';
+        } else {
+          el.style.transition = 'opacity 0.5s ease-in';
+          el.style.opacity = '1';
+        }
       });
     } else {
-      // Fade in
+      // Default to showing them if no specific config
       brokerElements.forEach(el => {
         el.style.transition = 'opacity 0.5s ease-in';
         el.style.opacity = '1';

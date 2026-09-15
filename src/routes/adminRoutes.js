@@ -1320,14 +1320,17 @@ router.post('/livestream', validateAdminSession, async (req, res) => {
 // ── Broker Visibility Toggle ─────────────────────────────────────────
 router.post('/config/toggle-brokers', validateAdminSession, async (req, res) => {
   try {
-    const { showBrokers } = req.body;
-    if (typeof showBrokers !== 'boolean') {
-      return res.status(400).json({ ok: false, error: 'showBrokers must be a boolean.' });
+    const { broker, isVisible } = req.body;
+    if (typeof broker !== 'string' || typeof isVisible !== 'boolean') {
+      return res.status(400).json({ ok: false, error: 'broker must be a string and isVisible must be a boolean.' });
     }
     const conf = await db.getAppConfig();
-    conf.showBrokers = showBrokers;
+    if (!conf.brokerVisibility) {
+      conf.brokerVisibility = { dupoin: true, justmarkets: true };
+    }
+    conf.brokerVisibility[broker] = isVisible;
     await db.saveAppConfig(conf);
-    res.json({ ok: true, showBrokers: conf.showBrokers });
+    res.json({ ok: true, brokerVisibility: conf.brokerVisibility });
   } catch (err) {
     res.status(500).json({ ok: false, error: 'Failed to update broker visibility.' });
   }

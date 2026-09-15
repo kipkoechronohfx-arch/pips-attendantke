@@ -61,7 +61,8 @@ router.get('/plans', (req, res) => {
 router.get('/config/public', async (req, res) => {
   try {
     const config = await db.getAppConfig();
-    res.json({ ok: true, showBrokers: config.showBrokers !== false });
+    const brokerVisibility = config.brokerVisibility || { dupoin: true, justmarkets: true };
+    res.json({ ok: true, brokerVisibility });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
