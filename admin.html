@@ -7776,7 +7776,7 @@
     async function updateBrokerVisibility(broker, isVisible) {
       try {
         const token = localStorage.getItem('pips_admin_token');
-        const res = await fetch('/api/config/toggle-brokers', {
+        const res = await fetch('/api/admin/config/toggle-brokers', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
