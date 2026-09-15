@@ -406,6 +406,18 @@
       <!-- Left Column: Form Controls (7 cols) -->
       <form id="broadcastForm" onsubmit="sendBroadcast(event)" class="lg:col-span-7 space-y-6">
         
+        <!-- Global Settings -->
+        <div class="glass-card rounded-2xl p-6 border border-white/10 mb-6 flex items-center justify-between">
+          <div>
+            <span class="block text-xs font-bold uppercase tracking-wider text-neon-blue mb-1">Broker Visibility</span>
+            <p class="text-[10px] text-gray-400">Toggle whether recommended brokers appear on the public site.</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="toggleBrokersVisibility" onchange="updateBrokerVisibility(this.checked)" class="sr-only peer">
+            <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+          </label>
+        </div>
+
         <!-- Target Audience Selection -->
         <div class="glass-card rounded-2xl p-6 border border-white/10">
           <span class="block text-xs font-bold uppercase tracking-wider text-neon-blue mb-4">0. Target Audience</span>
@@ -7706,6 +7718,47 @@
       a.download = `pips-attendant-card-${Date.now()}.png`;
       a.click();
     }
+
+    // Broker Visibility Logic
+    async function initBrokerVisibility() {
+      try {
+        const res = await fetch('/api/config/public');
+        const data = await res.json();
+        if (data.ok) {
+          const toggle = document.getElementById('toggleBrokersVisibility');
+          if (toggle) toggle.checked = data.showBrokers;
+        }
+      } catch (err) {
+        console.error('Failed to load broker visibility state', err);
+      }
+    }
+    
+    async function updateBrokerVisibility(showBrokers) {
+      try {
+        const token = localStorage.getItem('pips_admin_token');
+        const res = await fetch('/api/config/toggle-brokers', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ showBrokers })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          window.alert('Broker visibility updated successfully!');
+        } else {
+          window.alert('Error updating broker visibility: ' + data.error);
+          document.getElementById('toggleBrokersVisibility').checked = !showBrokers;
+        }
+      } catch (err) {
+        window.alert('Network error updating broker visibility.');
+        document.getElementById('toggleBrokersVisibility').checked = !showBrokers;
+      }
+    }
+
+    // Initialize state when script runs
+    initBrokerVisibility();
   </script>
 </body>
 </html>

@@ -35,7 +35,24 @@ window.addEventListener('DOMContentLoaded', () => {
   initTheme();
   fetchPerformanceStats();
   initPushNotifications();
+  applyBrokerVisibility();
 });
+
+// --- BROKER VISIBILITY ---
+async function applyBrokerVisibility() {
+  try {
+    const res = await fetch('/api/config/public');
+    const data = await res.json();
+    if (data.ok && data.showBrokers === false) {
+      const brokerElements = document.querySelectorAll('[data-broker-section="true"]');
+      brokerElements.forEach(el => {
+        el.style.display = 'none';
+      });
+    }
+  } catch (err) {
+    console.error('Failed to fetch broker visibility state:', err);
+  }
+}
 
 // --- PERFORMANCE DASHBOARD ---
 async function fetchPerformanceStats() {

@@ -58,6 +58,15 @@ router.get('/plans', (req, res) => {
   res.json({ ok: true, plans: PLANS });
 });
 
+router.get('/config/public', async (req, res) => {
+  try {
+    const config = await db.getAppConfig();
+    res.json({ ok: true, showBrokers: config.showBrokers !== false });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 router.get('/crypto-wallets', (req, res) => {
   res.json({
     ok: true,
