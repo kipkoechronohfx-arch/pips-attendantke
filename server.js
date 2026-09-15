@@ -192,7 +192,7 @@ app.use((req, res, next) => {
 // ── SEO: Block Tool/App Pages from Indexing ───────────────────
 // These pages require auth or are pure tools — not content worth indexing.
 // X-Robots-Tag header works even when Googlebot doesn't execute the meta tag.
-const NOINDEX_PAGES = new Set(['/journal.html', '/calculator.html']);
+const NOINDEX_PAGES = new Set(['/journal.html', '/calculator.html', '/history.html', '/article.html']);
 app.use((req, res, next) => {
   if (NOINDEX_PAGES.has(req.path)) {
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');

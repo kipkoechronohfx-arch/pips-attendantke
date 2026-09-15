@@ -23,6 +23,7 @@ Disallow: /googleb52db227de08e26c.html
 # Tool/App pages — noindex, no crawl needed
 Disallow: /journal.html
 Disallow: /calculator.html
+Disallow: /history.html
 Disallow: /logs/
 Disallow: /data/
 Disallow: /src/
