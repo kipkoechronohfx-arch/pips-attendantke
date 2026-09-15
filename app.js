@@ -40,17 +40,34 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // --- BROKER VISIBILITY ---
 async function applyBrokerVisibility() {
+  const brokerElements = document.querySelectorAll('[data-broker-section="true"]');
+  if (brokerElements.length === 0) return;
+
+  // Temporarily make them invisible while we check to prevent FOUC
+  brokerElements.forEach(el => el.style.opacity = '0');
+
   try {
     const res = await fetch('/api/config/public');
     const data = await res.json();
+    
     if (data.ok && data.showBrokers === false) {
-      const brokerElements = document.querySelectorAll('[data-broker-section="true"]');
       brokerElements.forEach(el => {
         el.style.display = 'none';
+      });
+    } else {
+      // Fade in
+      brokerElements.forEach(el => {
+        el.style.transition = 'opacity 0.5s ease-in';
+        el.style.opacity = '1';
       });
     }
   } catch (err) {
     console.error('Failed to fetch broker visibility state:', err);
+    // On error, default to showing them
+    brokerElements.forEach(el => {
+        el.style.transition = 'opacity 0.5s ease-in';
+        el.style.opacity = '1';
+    });
   }
 }
 

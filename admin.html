@@ -409,7 +409,10 @@
         <!-- Global Settings -->
         <div class="glass-card rounded-2xl p-6 border border-white/10 mb-6 flex items-center justify-between">
           <div>
-            <span class="block text-xs font-bold uppercase tracking-wider text-neon-blue mb-1">Broker Visibility</span>
+            <span class="block text-xs font-bold uppercase tracking-wider text-neon-blue mb-1 flex items-center gap-2">
+              Broker Visibility 
+              <span id="brokerVisibilityStatus" class="px-2 py-0.5 rounded text-[10px] font-black tracking-widest uppercase transition-colors duration-300 bg-gray-500/20 text-gray-400">Loading...</span>
+            </span>
             <p class="text-[10px] text-gray-400">Toggle whether recommended brokers appear on the public site.</p>
           </div>
           <label class="relative inline-flex items-center cursor-pointer">
@@ -7726,13 +7729,28 @@
         const data = await res.json();
         if (data.ok) {
           const toggle = document.getElementById('toggleBrokersVisibility');
-          if (toggle) toggle.checked = data.showBrokers;
+          if (toggle) {
+            toggle.checked = data.showBrokers;
+            updateBrokerStatusUI(data.showBrokers);
+          }
         }
       } catch (err) {
         console.error('Failed to load broker visibility state', err);
       }
     }
     
+    function updateBrokerStatusUI(isVisible) {
+      const statusBadge = document.getElementById('brokerVisibilityStatus');
+      if (!statusBadge) return;
+      if (isVisible) {
+        statusBadge.textContent = 'Visible';
+        statusBadge.className = 'px-2 py-0.5 rounded text-[10px] font-black tracking-widest uppercase transition-colors duration-300 bg-emerald-500/20 text-emerald-400';
+      } else {
+        statusBadge.textContent = 'Hidden';
+        statusBadge.className = 'px-2 py-0.5 rounded text-[10px] font-black tracking-widest uppercase transition-colors duration-300 bg-rose-500/20 text-rose-400';
+      }
+    }
+
     async function updateBrokerVisibility(showBrokers) {
       try {
         const token = localStorage.getItem('pips_admin_token');
@@ -7747,6 +7765,7 @@
         const data = await res.json();
         if (data.ok) {
           window.alert('Broker visibility updated successfully!');
+          updateBrokerStatusUI(showBrokers);
         } else {
           window.alert('Error updating broker visibility: ' + data.error);
           document.getElementById('toggleBrokersVisibility').checked = !showBrokers;
