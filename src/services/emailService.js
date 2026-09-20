@@ -113,4 +113,132 @@ async function sendLeadMagnetEmail(email, name) {
   return sendEmail(email, subject, buildLeadMagnetHtml(name));
 }
 
-module.exports = { sendEmail, buildReceiptHtml, sendLeadMagnetEmail };
+// ── IP Geo-Lookup ────────────────────────────────────────────────
+// Uses ip-api.com (free, no API key, 45 req/min). Returns safe defaults on error.
+// Private/local IPs (127.x, ::1) are automatically skipped by the caller.
+async function lookupIpGeo(ip) {
+  try {
+    const fetch = require('node-fetch');
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3000); // 3s timeout
+    const res = await fetch(
+      `http://ip-api.com/json/${encodeURIComponent(ip)}?fields=status,country,countryCode,city,isp`,
+      { signal: controller.signal }
+    );
+    clearTimeout(timeout);
+    const data = await res.json();
+    if (data.status === 'success') {
+      return {
+        country: data.country || 'Unknown',
+        countryCode: (data.countryCode || '').toLowerCase(),
+        city: data.city || 'Unknown',
+        isp: data.isp || 'Unknown'
+      };
+    }
+  } catch (_) { /* network error or timeout — fall through */ }
+  return { country: 'Unknown', countryCode: '', city: 'Unknown', isp: 'Unknown' };
+}
+
+// ── New Login Alert Email ────────────────────────────────────────
+function buildNewLoginAlertHtml({ userName, userEmail, ip, geo, loginAt }) {
+  const appUrl = process.env.APP_URL || 'https://www.pipsattendant.com';
+  const resetLink = `${appUrl}/premium.html?action=forgot-password`;
+  const flag = geo.countryCode ? `https://flagcdn.com/20x15/${geo.countryCode}.png` : '';
+  const formattedTime = loginAt ? new Date(loginAt).toUTCString() : new Date().toUTCString();
+
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#0a0a0a;font-family:'Segoe UI',Arial,sans-serif;">
+<div style="max-width:540px;margin:0 auto;background:#111827;border-radius:16px;border:1px solid rgba(239,68,68,0.3);overflow:hidden;">
+
+  <!-- Header -->
+  <div style="background:linear-gradient(135deg,#7f1d1d,#991b1b,#b91c1c);padding:32px 28px;text-align:center;">
+    <div style="font-size:48px;margin-bottom:8px;">🔐</div>
+    <h1 style="color:#fff;margin:0;font-size:22px;font-weight:800;letter-spacing:-0.5px;">New Login Detected</h1>
+    <p style="color:rgba(255,255,255,0.75);margin:6px 0 0;font-size:13px;">Security alert for your Pips Attendant account</p>
+  </div>
+
+  <!-- Body -->
+  <div style="padding:32px 28px;">
+    <p style="color:#d1d5db;font-size:15px;margin:0 0 6px;">Hi <strong style="color:#fbbf24;">${userName || 'Trader'}</strong>,</p>
+    <p style="color:#9ca3af;font-size:14px;line-height:1.7;margin:0 0 28px;">
+      We detected a login to your Pips Attendant account from a <strong style="color:#f87171;">new IP address</strong> or location. 
+      If this was you, no action is needed. If not, secure your account immediately.
+    </p>
+
+    <!-- Login Details Card -->
+    <div style="background:#1f2937;border-radius:12px;padding:20px;margin-bottom:24px;border:1px solid rgba(239,68,68,0.15);">
+      <p style="color:#ef4444;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin:0 0 16px;">Login Details</p>
+
+      <table style="width:100%;border-collapse:collapse;">
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+          <td style="color:#6b7280;padding:9px 0;font-size:13px;width:40%;">🌐 IP Address</td>
+          <td style="color:#f9fafb;padding:9px 0;font-size:13px;font-family:monospace;text-align:right;">${ip}</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+          <td style="color:#6b7280;padding:9px 0;font-size:13px;">
+            ${flag ? `<img src="${flag}" alt="" style="vertical-align:middle;margin-right:4px;">` : '🌍'} Country
+          </td>
+          <td style="color:#f9fafb;padding:9px 0;font-size:13px;text-align:right;">${geo.country}</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+          <td style="color:#6b7280;padding:9px 0;font-size:13px;">🏙️ City</td>
+          <td style="color:#f9fafb;padding:9px 0;font-size:13px;text-align:right;">${geo.city}</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+          <td style="color:#6b7280;padding:9px 0;font-size:13px;">🏢 ISP / Network</td>
+          <td style="color:#f9fafb;padding:9px 0;font-size:13px;text-align:right;">${geo.isp}</td>
+        </tr>
+        <tr>
+          <td style="color:#6b7280;padding:9px 0;font-size:13px;">🕐 Time</td>
+          <td style="color:#f9fafb;padding:9px 0;font-size:13px;text-align:right;">${formattedTime}</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- CTA Buttons -->
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:28px;">
+      <a href="${resetLink}"
+         style="background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;font-weight:700;padding:13px 24px;border-radius:10px;text-decoration:none;display:inline-block;font-size:14px;">
+        🚨 This wasn't me — Secure Account
+      </a>
+      <a href="${appUrl}/premium.html"
+         style="background:#1f2937;color:#9ca3af;font-weight:600;padding:13px 24px;border-radius:10px;text-decoration:none;display:inline-block;font-size:14px;border:1px solid rgba(255,255,255,0.1);">
+        ✅ This was me
+      </a>
+    </div>
+
+    <!-- Tips -->
+    <div style="background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.15);border-radius:10px;padding:16px;margin-bottom:8px;">
+      <p style="color:#fbbf24;font-size:12px;font-weight:700;margin:0 0 8px;text-transform:uppercase;letter-spacing:1px;">🔒 Security Tips</p>
+      <p style="color:#6b7280;font-size:12px;margin:0 0 4px;">• Use a strong, unique password you don't use elsewhere</p>
+      <p style="color:#6b7280;font-size:12px;margin:0 0 4px;">• Never share your login code with anyone</p>
+      <p style="color:#6b7280;font-size:12px;margin:0;">• Contact support if you notice any suspicious activity</p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div style="padding:16px 28px;border-top:1px solid rgba(255,255,255,0.06);text-align:center;">
+    <p style="color:#374151;font-size:11px;margin:0;">
+      Pips Attendant · <a href="mailto:support@pipsattendant.com" style="color:#4b5563;text-decoration:none;">support@pipsattendant.com</a>
+      <br>This alert was sent to ${userEmail} because a new login was detected on your account.
+    </p>
+  </div>
+</div>
+</body></html>`;
+}
+
+async function sendNewLoginAlertEmail(user, ip, geo) {
+  const subject = '🔐 New Login Detected — Pips Attendant Security Alert';
+  const html = buildNewLoginAlertHtml({
+    userName: user.name,
+    userEmail: user.email,
+    ip,
+    geo,
+    loginAt: new Date().toISOString()
+  });
+  return sendEmail(user.email, subject, html);
+}
+
+module.exports = { sendEmail, buildReceiptHtml, sendLeadMagnetEmail, lookupIpGeo, sendNewLoginAlertEmail };

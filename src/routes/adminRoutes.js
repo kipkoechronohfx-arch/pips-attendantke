@@ -333,6 +333,33 @@ router.get('/users', validateAdminSession, async (req, res) => {
   }
 });
 
+// ── User Login History ─────────────────────────────────────────
+// Returns the last 20 login events for a user, including IP, geo-data, and timestamp.
+// isNew=true entries are logins that triggered a security alert email.
+router.get('/users/:id/login-history', validateAdminSession, async (req, res) => {
+  try {
+    const user = await db.getUserById(req.params.id);
+    if (!user) return res.status(404).json({ ok: false, error: 'User not found.' });
+    res.json({
+      ok: true,
+      userId: user._id || user.id,
+      email: user.email,
+      knownIps: user.knownIps || [],
+      loginHistory: (user.loginHistory || []).map(entry => ({
+        ip: entry.ip,
+        country: entry.geo?.country || 'Unknown',
+        city: entry.geo?.city || 'Unknown',
+        isp: entry.geo?.isp || 'Unknown',
+        at: entry.at,
+        isNew: !!entry.isNew
+      }))
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+
 router.post('/users/:id/tier', validateAdminSession, async (req, res) => {
   try {
     const { tier } = req.body;

@@ -6,7 +6,7 @@ const crypto = require('crypto');
 const { authLimiter, passwordResetLimiter } = require('../middleware/rateLimiters');
 const { validateUserSession, JWT_SECRET } = require('../middleware/auth');
 const { getUserByEmail, getUserById, saveUser, getPaymentByAccessCode, getAppConfig } = require('../services/db');
-const { sendEmail } = require('../services/emailService');
+const { sendEmail, lookupIpGeo, sendNewLoginAlertEmail } = require('../services/emailService');
 const { sendTelegramMessage } = require('../services/telegramBot');
 const logger = require('../utils/logger');
 
@@ -219,6 +219,66 @@ router.post('/verify-2fa', authLimiter, async (req, res) => {
   _otpStore.delete(email); // consume OTP
   const user = await getUserByEmail(email);
   if (!user) return res.status(404).json({ ok: false, error: 'User not found.' });
+
+  // ── New IP / Location Detection ───────────────────────────────
+  // Captures both direct IPs and those forwarded by reverse-proxies (e.g. Render, Nginx).
+  const clientIp = (
+    (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
+    req.ip ||
+    req.connection?.remoteAddress ||
+    'unknown'
+  );
+
+  // Skip detection for private/local addresses to avoid spurious alerts during development.
+  const isPrivateIp = /^(::1|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.)/.test(clientIp);
+
+  if (clientIp !== 'unknown' && !isPrivateIp) {
+    const knownIps = user.knownIps || [];
+    if (!knownIps.includes(clientIp)) {
+      // Run geo-lookup and notifications asynchronously — never block the login response.
+      (async () => {
+        try {
+          const geo = await lookupIpGeo(clientIp);
+          const loginEntry = { ip: clientIp, geo, at: new Date().toISOString(), isNew: true };
+
+          // 1. Security alert email to the user
+          sendNewLoginAlertEmail(user, clientIp, geo).catch(e =>
+            logger.error('[NewIP] Alert email failed: ' + e.message)
+          );
+
+          // 2. Telegram admin notification
+          const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
+          if (adminChatId) {
+            const { sendTelegramMessage } = require('../services/telegramBot');
+            sendTelegramMessage(
+              adminChatId,
+              `🚨 *New IP Login*\n\n👤 ${user.name || user.email}\n📧 ${user.email}\n🌐 IP: \`${clientIp}\`\n🌍 ${geo.city}, ${geo.country}\n🏢 ${geo.isp}\n🕐 ${new Date().toUTCString()}`
+            ).catch(() => {});
+          }
+
+          // 3. Persist new IP and login history (keep last 10 IPs, last 20 history entries)
+          user.knownIps = [...knownIps, clientIp].slice(-10);
+          user.loginHistory = [
+            loginEntry,
+            ...(user.loginHistory || [])
+          ].slice(0, 20);
+          await saveUser(user);
+
+          logger.info(`[NewIP] Alert sent for ${email} from ${clientIp} (${geo.city}, ${geo.country})`);
+        } catch (err) {
+          logger.error('[NewIP] Detection pipeline error: ' + err.message);
+        }
+      })();
+    } else {
+      // Known IP — still log the visit (no alert)
+      user.loginHistory = [
+        { ip: clientIp, geo: null, at: new Date().toISOString(), isNew: false },
+        ...(user.loginHistory || [])
+      ].slice(0, 20);
+      saveUser(user).catch(() => {}); // fire-and-forget
+    }
+  }
+  // ─────────────────────────────────────────────────────────────
 
   const sessionToken = generateUserToken(user);
   logger.info(`[2FA] User ${email} verified successfully.`);
