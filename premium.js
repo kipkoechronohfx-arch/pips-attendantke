@@ -1836,6 +1836,93 @@ feather.replace();
       }
     }
 
+    // ── Password Strength & HIBP ────────────────────────────────
+    async function checkHIBP(password) {
+      try {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password);
+        const hashBuffer = await crypto.subtle.digest('SHA-1', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+        
+        const prefix = hashHex.slice(0, 5);
+        const suffix = hashHex.slice(5);
+        
+        const res = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`);
+        const text = await res.text();
+        
+        const lines = text.split('\n');
+        for (const line of lines) {
+          const [hashSuffix, count] = line.split(':');
+          if (hashSuffix === suffix) {
+            return parseInt(count.trim(), 10);
+          }
+        }
+        return 0;
+      } catch (err) {
+        console.error('HIBP check failed:', err);
+        return 0;
+      }
+    }
+
+    let hibpDebounce;
+    document.addEventListener('DOMContentLoaded', () => {
+      const pwInput = document.getElementById('authPassword');
+      const meterContainer = document.getElementById('passwordMeterContainer');
+      const m1 = document.getElementById('pwMeter1');
+      const m2 = document.getElementById('pwMeter2');
+      const m3 = document.getElementById('pwMeter3');
+      const text = document.getElementById('pwMeterText');
+      
+      if (!pwInput) return;
+
+      pwInput.addEventListener('input', (e) => {
+        if (typeof authMode !== 'undefined' && authMode === 'login') {
+          if (meterContainer) meterContainer.classList.add('hidden');
+          return;
+        }
+        
+        const val = e.target.value;
+        if (!val) {
+          if (meterContainer) meterContainer.classList.add('hidden');
+          return;
+        }
+        
+        if (meterContainer) meterContainer.classList.remove('hidden');
+        
+        // Basic Strength Calc
+        let strength = 0;
+        if (val.length >= 8) strength++;
+        if (/[A-Z]/.test(val) && /[a-z]/.test(val)) strength++;
+        if (/\d/.test(val) && /[\W_]/.test(val)) strength++;
+        
+        if (m1) m1.className = 'h-full w-1/3 transition-all duration-300 ' + (strength >= 1 ? 'bg-rose-400' : 'bg-white/10');
+        if (m2) m2.className = 'h-full w-1/3 transition-all duration-300 ' + (strength >= 2 ? 'bg-amber-400' : 'bg-white/10');
+        if (m3) m3.className = 'h-full w-1/3 transition-all duration-300 ' + (strength >= 3 ? 'bg-emerald-400' : 'bg-white/10');
+        
+        if (text) {
+          if (strength === 1) text.innerHTML = 'Weak (add uppercase, numbers, symbols)';
+          else if (strength === 2) text.innerHTML = 'Medium (add more variety)';
+          else if (strength === 3) text.innerHTML = 'Strong ✅';
+          else text.innerHTML = 'Too short';
+        }
+
+        // Debounced HIBP Check
+        clearTimeout(hibpDebounce);
+        if (val.length >= 6) {
+          hibpDebounce = setTimeout(async () => {
+            const breaches = await checkHIBP(val);
+            if (breaches > 0 && text) {
+              text.innerHTML += ` <span class="text-rose-400 font-bold ml-1">⚠️ Breached ${breaches} times! Do not use!</span>`;
+              if (m1) m1.classList.replace('bg-rose-400', 'bg-rose-600');
+              if (m2) m2.classList.replace('bg-amber-400', 'bg-rose-600');
+              if (m3) m3.classList.replace('bg-emerald-400', 'bg-rose-600');
+            }
+          }, 600);
+        }
+      });
+    });
+
     let isAuthenticating = false;
     async function handleAuth(e) {
       e.preventDefault();

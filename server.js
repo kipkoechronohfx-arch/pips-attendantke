@@ -42,15 +42,15 @@ const RECOMMENDED_ENV = [
 function validateEnv() {
   const missing = REQUIRED_ENV.filter(k => !process.env[k]);
   if (missing.length) {
-    console.warn('\n⚠️  [Config Warning] Missing required environment variables:');
-    missing.forEach(k => console.warn('   - ' + k));
+    logger.warn('\n⚠️  [Config Warning] Missing required environment variables:');
+    missing.forEach(k => logger.warn('   - ' + k));
   }
   const missingRec = RECOMMENDED_ENV.filter(k => !process.env[k]);
   if (missingRec.length) {
-    console.warn('\n⚠️  [Config Warning] Missing recommended env vars (some features disabled):');
-    missingRec.forEach(k => console.warn('   - ' + k));
+    logger.warn('\n⚠️  [Config Warning] Missing recommended env vars (some features disabled):');
+    missingRec.forEach(k => logger.warn('   - ' + k));
   }
-  console.log('');
+  logger.info('');
 }
 
 const app = express();
@@ -267,7 +267,7 @@ app.post('/telegram-webhook', express.json(), async (req, res) => {
   try {
     await handleTelegramUpdate(req.body);
   } catch (err) {
-    console.error('[Telegram Webhook] Error:', err.message);
+    logger.error('[Telegram Webhook] Error:', err.message);
   }
 });
 
@@ -342,7 +342,7 @@ app.get('*', (req, res) => {
 
 // ── Centralized Error Handler ─────────────────────────────────
 app.use((err, req, res, next) => {
-  console.error('[Unhandled Error]', err.stack || err.message);
+  logger.error('[Unhandled Error]', err.stack || err.message);
   const status = err.status || err.statusCode || 500;
   res.status(status).json({
     ok: false,
@@ -352,17 +352,17 @@ app.use((err, req, res, next) => {
 
 // ── Graceful Shutdown ──────────────────────────────────────────
 function shutdown(signal) {
-  console.log('\n[Server] ' + signal + ' received — shutting down gracefully...');
+  logger.info('\n[Server] ' + signal + ' received — shutting down gracefully...');
   // Give in-flight requests 10s to complete, then force exit
   const timeout = setTimeout(() => {
-    console.error('[Server] Forced shutdown after timeout.');
+    logger.error('[Server] Forced shutdown after timeout.');
     process.exit(1);
   }, 10000);
   timeout.unref(); // Don't block event loop
   // Close DB client if exposed
   if (db.closeDB) {
     db.closeDB().then(() => {
-      console.log('[Server] MongoDB connection closed.');
+      logger.info('[Server] MongoDB connection closed.');
       process.exit(0);
     }).catch(() => process.exit(0));
   } else {
@@ -384,7 +384,7 @@ async function startServer() {
   startCronJobs();
 
   server.listen(PORT, () => {
-    console.log(`
+    logger.info(`
     ╔═══════════════════════════════════════╗
     ║   Pips_attendant API Server           ║
     ║   Running on http://localhost:${PORT}   ║

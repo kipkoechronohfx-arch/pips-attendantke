@@ -1,3 +1,4 @@
+const logger = require('../utils/logger');
 const fetch = require('node-fetch');
 const { getPerformanceLogs, getUserById, saveUser } = require('./db');
 
@@ -84,7 +85,7 @@ async function registerTelegramWebhook() {
   const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
   const BASE_URL = process.env.RENDER_EXTERNAL_URL || process.env.APP_URL;
   if (!TOKEN || !BASE_URL) {
-    console.warn('[Telegram Bot] No token or URL set — skipping webhook registration.');
+    logger.warn('[Telegram Bot] No token or URL set — skipping webhook registration.');
     return;
   }
   const webhookUrl = `${BASE_URL}/telegram-webhook`;
@@ -96,12 +97,12 @@ async function registerTelegramWebhook() {
     });
     const data = await res.json();
     if (data.ok) {
-      console.log(`[Telegram Bot] Webhook registered: ${webhookUrl}`);
+      logger.info(`[Telegram Bot] Webhook registered: ${webhookUrl}`);
     } else {
-      console.error('[Telegram Bot] Webhook registration failed:', data.description);
+      logger.error('[Telegram Bot] Webhook registration failed:', data.description);
     }
   } catch (err) {
-    console.error('[Telegram Bot] Failed to register webhook:', err.message);
+    logger.error('[Telegram Bot] Failed to register webhook:', err.message);
   }
 }
 
@@ -120,7 +121,7 @@ async function kickUserFromTelegram(telegramId) {
     });
     await sendTelegramMessage(telegramId, `⚠️ Your Pips Attendant VIP subscription has expired. You have been removed from the VIP group.\n\nRenew at: ${process.env.APP_URL || 'https://pips-attendantke.onrender.com'}/premium.html`);
   } catch(e) {
-    console.warn(`[Auto-Kick] Failed to kick TG: ${telegramId}:`, e.message);
+    logger.warn(`[Auto-Kick] Failed to kick TG: ${telegramId}:`, e.message);
   }
 }
 

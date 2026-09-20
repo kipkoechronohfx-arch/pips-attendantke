@@ -1,6 +1,7 @@
 const { MongoClient } = require('mongodb');
 const fs = require('fs');
 const path = require('path');
+const logger = require('../utils/logger');
 
 const DATA_DIR     = path.join(process.cwd(), 'data');
 const SIGNALS_FILE = path.join(DATA_DIR, 'signals.json');
@@ -38,7 +39,7 @@ let client = null;
 async function connectDB() {
   const MONGODB_URI = process.env.MONGODB_URI;
   if (!MONGODB_URI || MONGODB_URI.includes('your_mongodb_atlas_uri_here')) {
-    console.warn('\n[Database Warning] MONGODB_URI is not configured. Running in Local File Mode.\n');
+    logger.warn('\n[Database Warning] MONGODB_URI is not configured. Running in Local File Mode.\n');
     return;
   }
 
@@ -46,14 +47,14 @@ async function connectDB() {
     client = new MongoClient(MONGODB_URI);
     await client.connect();
     db = client.db('pips_attendant');
-    console.log('\n========================================');
-    console.log('  Connected successfully to MongoDB Atlas');
-    console.log('========================================\n');
+    logger.info('\n========================================');
+    logger.info('  Connected successfully to MongoDB Atlas');
+    logger.info('========================================\n');
     await runMigrations();
     await ensureIndexes();
   } catch (err) {
-    console.error('[MongoDB connection failed]', err.message);
-    console.log('Retrying DB connection in 5 seconds...');
+    logger.error('[MongoDB connection failed]', err.message);
+    logger.info('Retrying DB connection in 5 seconds...');
     setTimeout(connectDB, 5000);
   }
 }
@@ -74,17 +75,21 @@ async function ping() {
 async function ensureIndexes() {
   if (!db) return;
   try {
-    console.log('[Database] Ensuring indexes...');
+    logger.info('[Database] Ensuring indexes...');
     await getUsersColl().createIndex({ email: 1 }, { unique: true, sparse: true });
     await getUsersColl().createIndex({ id: 1 }, { unique: true, sparse: true });
+    await getUsersColl().createIndex({ subscriptionExpiry: 1 });
+    await getUsersColl().createIndex({ role: 1 });
     await getSubsColl().createIndex({ telegram: 1 }, { unique: true, sparse: true });
     await getPaymentsColl().createIndex({ reference: 1 }, { unique: true, sparse: true });
     await getPaymentsColl().createIndex({ accessCode: 1 }, { sparse: true });
     await getTicketsColl().createIndex({ userEmail: 1 });
     await getChatColl().createIndex({ timestamp: -1 });
-    console.log('[Database] Indexes ensured successfully.');
+    await getPerformanceColl().createIndex({ date: -1 });
+    await getJournalColl().createIndex({ userId: 1 });
+    logger.info('[Database] Indexes ensured successfully.');
   } catch (err) {
-    console.error('[Database Warning] Failed to create indexes:', err.message);
+    logger.error('[Database Warning] Failed to create indexes:', err.message);
   }
 }
 
@@ -112,7 +117,7 @@ const getLeadsColl         = () => db.collection('leads');
 const getBlogColl          = () => db.collection('blog_posts');
 
 async function runMigrations() {
-  console.log('[Migration] Checking for local data to migrate to MongoDB Atlas...');
+  logger.info('[Migration] Checking for local data to migrate to MongoDB Atlas...');
 
   const readRawJSON = (file) => {
     try {
@@ -131,10 +136,10 @@ async function runMigrations() {
         { $set: { vipPassword: localConfig.vipPassword } },
         { upsert: true }
       );
-      console.log('[Migration] VIP password configuration successfully migrated.');
+      logger.info('[Migration] VIP password configuration successfully migrated.');
       fs.renameSync(CONFIG_FILE, CONFIG_FILE + '.migrated');
     } catch (err) {
-      console.error('[Migration Error] Config migration failed:', err.message);
+      logger.error('[Migration Error] Config migration failed:', err.message);
     }
   }
 
@@ -144,11 +149,11 @@ async function runMigrations() {
       const count = await getSignalsColl().countDocuments();
       if (count === 0) {
         await getSignalsColl().insertMany(localSignals);
-        console.log(`[Migration] Migrated ${localSignals.length} signals history to MongoDB.`);
+        logger.info(`[Migration] Migrated ${localSignals.length} signals history to MongoDB.`);
       }
       fs.renameSync(SIGNALS_FILE, SIGNALS_FILE + '.migrated');
     } catch (err) {
-      console.error('[Migration Error] Signals migration failed:', err.message);
+      logger.error('[Migration Error] Signals migration failed:', err.message);
     }
   }
 
@@ -158,11 +163,11 @@ async function runMigrations() {
       const count = await getSubsColl().countDocuments();
       if (count === 0) {
         await getSubsColl().insertMany(localSubs);
-        console.log(`[Migration] Migrated ${localSubs.length} subscribers list to MongoDB.`);
+        logger.info(`[Migration] Migrated ${localSubs.length} subscribers list to MongoDB.`);
       }
       fs.renameSync(SUBS_FILE, SUBS_FILE + '.migrated');
     } catch (err) {
-      console.error('[Migration Error] Subscribers migration failed:', err.message);
+      logger.error('[Migration Error] Subscribers migration failed:', err.message);
     }
   }
 
@@ -177,10 +182,10 @@ async function runMigrations() {
         }
       }));
       await getPaymentsColl().bulkWrite(operations);
-      console.log(`[Migration] Migrated ${operations.length} payment records to MongoDB.`);
+      logger.info(`[Migration] Migrated ${operations.length} payment records to MongoDB.`);
       fs.renameSync(PAYMENTS_FILE, PAYMENTS_FILE + '.migrated');
     } catch (err) {
-      console.error('[Migration Error] Payments migration failed:', err.message);
+      logger.error('[Migration Error] Payments migration failed:', err.message);
     }
   }
 
@@ -192,10 +197,10 @@ async function runMigrations() {
         { $set: { type: 'todays_setup', ...localSetup } },
         { upsert: true }
       );
-      console.log("[Migration] Today's setup image successfully migrated.");
+      logger.info("[Migration] Today's setup image successfully migrated.");
       fs.renameSync(TODAYS_SETUP_FILE, TODAYS_SETUP_FILE + '.migrated');
     } catch (err) {
-      console.error("[Migration Error] Today's setup migration failed:", err.message);
+      logger.error("[Migration Error] Today's setup migration failed:", err.message);
     }
   }
 
@@ -207,10 +212,10 @@ async function runMigrations() {
         { $set: { type: 'todays_setup_results', ...localSetupResults } },
         { upsert: true }
       );
-      console.log("[Migration] Today's setup results image successfully migrated.");
+      logger.info("[Migration] Today's setup results image successfully migrated.");
       fs.renameSync(TODAYS_SETUP_RESULTS_FILE, TODAYS_SETUP_RESULTS_FILE + '.migrated');
     } catch (err) {
-      console.error("[Migration Error] Today's setup results migration failed:", err.message);
+      logger.error("[Migration Error] Today's setup results migration failed:", err.message);
     }
   }
 
@@ -246,7 +251,7 @@ async function runMigrations() {
       }
 
       if (migratedCount > 0) {
-        console.log(`[Migration] Migrated ${migratedCount} VIP guides & documents to MongoDB Atlas.`);
+        logger.info(`[Migration] Migrated ${migratedCount} VIP guides & documents to MongoDB Atlas.`);
       }
 
       files.forEach(filename => {
@@ -256,11 +261,11 @@ async function runMigrations() {
         }
       });
     } catch (err) {
-      console.error('[Migration Error] Documents migration failed:', err.message);
+      logger.error('[Migration Error] Documents migration failed:', err.message);
     }
   }
 
-  console.log('[Migration] Database migration check completed.');
+  logger.info('[Migration] Database migration check completed.');
 }
 
 function readJSON(filePath) {
@@ -282,7 +287,7 @@ async function getAppConfig() {
       }
       return config;
     } catch (err) {
-      console.error('[DB Config Error]', err.message);
+      logger.error('[DB Config Error]', err.message);
     }
   }
   let fileConfig = {};
@@ -307,7 +312,7 @@ async function saveAppConfig(config) {
       );
       return true;
     } catch (err) {
-      console.error('[DB Config Save Error]', err.message);
+      logger.error('[DB Config Save Error]', err.message);
       return false;
     }
   }
@@ -330,7 +335,7 @@ async function getSignals(limit) {
         .limit(safeLimit)
         .toArray();
     } catch (err) {
-      console.error('[DB Signals Error]', err.message);
+      logger.error('[DB Signals Error]', err.message);
     }
   }
   const signals = readJSON(SIGNALS_FILE);
@@ -343,7 +348,7 @@ async function addSignal(signal) {
       await getSignalsColl().insertOne(signal);
       return;
     } catch (err) {
-      console.error('[DB Add Signal Error]', err.message);
+      logger.error('[DB Add Signal Error]', err.message);
     }
   }
   const signals = readJSON(SIGNALS_FILE);
@@ -362,7 +367,7 @@ async function updateSignalOutcome(id, outcome) {
       await getSignalsColl().updateOne(filter, { $set: { outcome, outcomeAt: new Date().toISOString() } });
       return true;
     } catch (err) {
-      console.error('[DB Update Signal Outcome Error]', err.message);
+      logger.error('[DB Update Signal Outcome Error]', err.message);
     }
   }
   const signals = readJSON(SIGNALS_FILE);
@@ -385,7 +390,7 @@ async function updateSignalCategory(id, category) {
       await getSignalsColl().updateOne(filter, { $set: { category } });
       return true;
     } catch (err) {
-      console.error('[DB Update Signal Category Error]', err.message);
+      logger.error('[DB Update Signal Category Error]', err.message);
     }
   }
   const signals = readJSON(SIGNALS_FILE);
@@ -436,7 +441,7 @@ async function getSubscribers() {
     try {
       return await getSubsColl().find({}).toArray();
     } catch (err) {
-      console.error('[DB Subs Error]', err.message);
+      logger.error('[DB Subs Error]', err.message);
     }
   }
   return readJSON(SUBS_FILE);
@@ -448,7 +453,7 @@ async function addSubscriber(sub) {
       await getSubsColl().insertOne(sub);
       return;
     } catch (err) {
-      console.error('[DB Add Sub Error]', err.message);
+      logger.error('[DB Add Sub Error]', err.message);
     }
   }
   const subscribers = readJSON(SUBS_FILE);
@@ -461,7 +466,7 @@ async function getSubscriberByTelegram(telegram) {
     try {
       return await getSubsColl().findOne({ telegram });
     } catch (err) {
-      console.error('[DB Get Sub Error]', err.message);
+      logger.error('[DB Get Sub Error]', err.message);
     }
   }
   const subscribers = readJSON(SUBS_FILE);
@@ -474,7 +479,7 @@ async function addWhatsApp(phone) {
       await getWhatsappColl().updateOne({ phone }, { $set: { phone, joinedAt: Date.now() } }, { upsert: true });
       return;
     } catch (err) {
-      console.error('[DB WhatsApp Save Error]', err.message);
+      logger.error('[DB WhatsApp Save Error]', err.message);
     }
   }
   const list = readJSON(WHATSAPP_FILE);
@@ -489,7 +494,7 @@ async function getWhatsAppList() {
     try {
       return await getWhatsappColl().find({}).toArray();
     } catch (err) {
-      console.error('[DB WhatsApp Get Error]', err.message);
+      logger.error('[DB WhatsApp Get Error]', err.message);
     }
   }
   return readJSON(WHATSAPP_FILE);
@@ -502,7 +507,7 @@ async function addChatMessage(msg) {
       await getChatColl().insertOne(message);
       return message;
     } catch (err) {
-      console.error('[DB Chat Save Error]', err.message);
+      logger.error('[DB Chat Save Error]', err.message);
     }
   }
   const list = readJSON(CHAT_FILE);
@@ -518,7 +523,7 @@ async function getChatMessages(room) {
     try {
       return await getChatColl().find(filter).sort({ timestamp: -1 }).limit(100).toArray();
     } catch (err) {
-      console.error('[DB Chat Get Error]', err.message);
+      logger.error('[DB Chat Get Error]', err.message);
     }
   }
   const all = readJSON(CHAT_FILE);
@@ -531,7 +536,7 @@ async function getPayment(ref) {
     try {
       return await getPaymentsColl().findOne({ reference: ref });
     } catch (err) {
-      console.error('[DB Payment Find Error]', err.message);
+      logger.error('[DB Payment Find Error]', err.message);
     }
   }
   const payments = readJSON(PAYMENTS_FILE);
@@ -543,7 +548,7 @@ async function getPaymentByAccessCode(code) {
     try {
       return await getPaymentsColl().findOne({ accessCode: code });
     } catch (err) {
-      console.error('[DB Payment Code Lookup Error]', err.message);
+      logger.error('[DB Payment Code Lookup Error]', err.message);
     }
   }
   const payments = readJSON(PAYMENTS_FILE);
@@ -560,7 +565,7 @@ async function savePayment(ref, paymentData) {
       );
       return;
     } catch (err) {
-      console.error('[DB Payment Save Error]', err.message);
+      logger.error('[DB Payment Save Error]', err.message);
     }
   }
   const payments = readJSON(PAYMENTS_FILE);
@@ -573,7 +578,7 @@ async function getAllPayments() {
     try {
       return await getPaymentsColl().find({}).toArray();
     } catch (err) {
-      console.error('[DB All Payments Error]', err.message);
+      logger.error('[DB All Payments Error]', err.message);
     }
   }
   const raw = readJSON(PAYMENTS_FILE);
@@ -588,7 +593,7 @@ async function getTodaysSetup() {
     try {
       setup = await getSetupColl().findOne({ type: 'todays_setup' });
     } catch (err) {
-      console.error('[DB Setup Find Error]', err.message);
+      logger.error('[DB Setup Find Error]', err.message);
     }
   } else {
     setup = readJSON(TODAYS_SETUP_FILE);
@@ -610,7 +615,7 @@ async function saveTodaysSetup(setupData) {
       );
       return;
     } catch (err) {
-      console.error('[DB Setup Save Error]', err.message);
+      logger.error('[DB Setup Save Error]', err.message);
     }
   }
   writeJSON(TODAYS_SETUP_FILE, setupData);
@@ -622,7 +627,7 @@ async function getTodaysSetupResults() {
     try {
       setup = await getSetupResultsColl().findOne({ type: 'todays_setup_results' });
     } catch (err) {
-      console.error('[DB Setup Results Find Error]', err.message);
+      logger.error('[DB Setup Results Find Error]', err.message);
     }
   } else {
     setup = readJSON(TODAYS_SETUP_RESULTS_FILE);
@@ -644,7 +649,7 @@ async function saveTodaysSetupResults(setupData) {
       );
       return;
     } catch (err) {
-      console.error('[DB Setup Results Save Error]', err.message);
+      logger.error('[DB Setup Results Save Error]', err.message);
     }
   }
   writeJSON(TODAYS_SETUP_RESULTS_FILE, setupData);
@@ -658,7 +663,7 @@ async function getVipDocuments() {
         .project({ fileData: 0 })
         .toArray();
     } catch (err) {
-      console.error('[DB Docs Find Error]', err.message);
+      logger.error('[DB Docs Find Error]', err.message);
     }
   }
   try {
@@ -684,7 +689,7 @@ async function getVipDocument(filename) {
     try {
       return await getDocsColl().findOne({ filename });
     } catch (err) {
-      console.error('[DB Doc Query Error]', err.message);
+      logger.error('[DB Doc Query Error]', err.message);
     }
   }
   try {
@@ -722,7 +727,7 @@ async function saveVipDocument(filename, fileData) {
       );
       return;
     } catch (err) {
-      console.error('[DB Doc Save Error]', err.message);
+      logger.error('[DB Doc Save Error]', err.message);
     }
   }
   try {
@@ -732,7 +737,7 @@ async function saveVipDocument(filename, fileData) {
     const buffer = Buffer.from(base64Clean, 'base64');
     fs.writeFileSync(filePath, buffer);
   } catch (err) {
-    console.error('[Local File Save Error]', err.message);
+    logger.error('[Local File Save Error]', err.message);
   }
 }
 
@@ -742,7 +747,7 @@ async function deleteVipDocument(filename) {
       const res = await getDocsColl().deleteOne({ filename });
       return res.deletedCount > 0;
     } catch (err) {
-      console.error('[DB Doc Delete Error]', err.message);
+      logger.error('[DB Doc Delete Error]', err.message);
     }
   }
   try {
@@ -770,7 +775,7 @@ async function getUserById(id) {
       // Fallback: search by string _id or id field (for legacy USER_xxx format or stringified ObjectIds)
       return await getUsersColl().findOne({ $or: [{ _id: String(id) }, { id: String(id) }] }) || null;
     } catch (err) {
-      console.error('[DB Get User By Id Error]', err.message);
+      logger.error('[DB Get User By Id Error]', err.message);
     }
   }
   const users = readJSON(USERS_FILE);
@@ -782,7 +787,7 @@ async function getUserByEmail(email) {
     try {
       return await getUsersColl().findOne({ email });
     } catch (err) {
-      console.error('[DB Get User By Email Error]', err.message);
+      logger.error('[DB Get User By Email Error]', err.message);
     }
   }
   const users = readJSON(USERS_FILE);
@@ -794,7 +799,7 @@ async function getUserByTelegramId(telegramId) {
     try {
       return await getUsersColl().findOne({ telegramId: String(telegramId) });
     } catch (err) {
-      console.error('[DB Get User By TG Error]', err.message);
+      logger.error('[DB Get User By TG Error]', err.message);
     }
   }
   const users = readJSON(USERS_FILE);
@@ -818,7 +823,7 @@ async function saveUser(user) {
       }
       return user;
     } catch (err) {
-      console.error('[DB Save User Error]', err.message);
+      logger.error('[DB Save User Error]', err.message);
     }
   }
   const users = readJSON(USERS_FILE);
@@ -839,7 +844,7 @@ async function getPushSubscriptions() {
     try {
       return await getPushSubsColl().find({}).toArray();
     } catch (err) {
-      console.error('[DB Push Subs Error]', err.message);
+      logger.error('[DB Push Subs Error]', err.message);
     }
   }
   return readJSON(PUSH_SUBS_FILE);
@@ -851,7 +856,7 @@ async function addPushSubscription(sub) {
       await getPushSubsColl().insertOne(sub);
       return;
     } catch (err) {
-      console.error('[DB Add Push Sub Error]', err.message);
+      logger.error('[DB Add Push Sub Error]', err.message);
     }
   }
   const subs = readJSON(PUSH_SUBS_FILE);
@@ -867,7 +872,7 @@ async function deletePushSubscription(sub) {
       await getPushSubsColl().deleteOne({ endpoint: sub.endpoint });
       return;
     } catch (err) {
-      console.error('[DB Delete Push Sub Error]', err.message);
+      logger.error('[DB Delete Push Sub Error]', err.message);
     }
   }
   let subs = readJSON(PUSH_SUBS_FILE);
@@ -905,7 +910,7 @@ async function updateCryptoRequest(id, update) {
       await getCryptoRequestsColl().updateOne(filter, { $set: update });
       return;
     } catch (err) {
-      console.error('[DB Crypto Request Update Error]', err.message);
+      logger.error('[DB Crypto Request Update Error]', err.message);
     }
   }
   const requests = readJSON(CRYPTO_REQ_FILE);
@@ -1136,7 +1141,7 @@ async function savePropFirmAccount(accountData) {
         { upsert: true }
       );
       return;
-    } catch (err) { console.error('[DB PropFirm Save Error]', err.message); }
+    } catch (err) { logger.error('[DB PropFirm Save Error]', err.message); }
   }
   let accounts = readJSON(PROP_FIRM_FILE);
   const idx = accounts.findIndex(a => a.userId === accountData.userId);
@@ -1210,7 +1215,7 @@ async function saveReceipt(ref, receiptData) {
       await coll.updateOne({ ref }, { $set: { ref, ...receiptData, savedAt: new Date().toISOString() } }, { upsert: true });
       return true;
     } catch (err) {
-      console.error('[DB Receipt Save Error]', err.message);
+      logger.error('[DB Receipt Save Error]', err.message);
     }
   }
   const receipts = readJSON(RECEIPTS_FILE);
@@ -1227,7 +1232,7 @@ async function getReceipt(ref) {
       const coll = await getReceiptsColl();
       return await coll.findOne({ ref });
     } catch (err) {
-      console.error('[DB Receipt Get Error]', err.message);
+      logger.error('[DB Receipt Get Error]', err.message);
     }
   }
   const receipts = readJSON(RECEIPTS_FILE);
@@ -1244,7 +1249,7 @@ async function saveWebhookLog(entry) {
       await db.collection('webhook_logs').insertOne({ ...entry, savedAt: new Date().toISOString() });
       return true;
     } catch (err) {
-      console.error('[DB Webhook Log Error]', err.message);
+      logger.error('[DB Webhook Log Error]', err.message);
     }
   }
   const logs = readJSON(WEBHOOK_LOGS_FILE);
@@ -1260,7 +1265,7 @@ async function getWebhookLogs(limit = 100) {
     try {
       return await db.collection('webhook_logs').find({}).sort({ savedAt: -1 }).limit(limit).toArray();
     } catch (err) {
-      console.error('[DB Webhook Logs Error]', err.message);
+      logger.error('[DB Webhook Logs Error]', err.message);
     }
   }
   const logs = readJSON(WEBHOOK_LOGS_FILE);
