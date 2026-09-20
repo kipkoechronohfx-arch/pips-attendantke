@@ -23,6 +23,7 @@ const chatRoutes   = require('./src/routes/chatRoutes');
 const partnerRoutes = require('./src/routes/partnerRoutes');
 const propfirmRoutes = require('./src/routes/propfirmRoutes');
 const botRoutes = require('./src/routes/botRoutes');
+const { suspiciousActivityMonitor } = require('./src/middleware/activityMonitor');
 
 // ── Environment Validation ─────────────────────────────────────
 // SECURITY: JWT_SECRET, ADMIN_KEY, and PAYHERO_WEBHOOK_SECRET are required at startup.
@@ -141,6 +142,26 @@ app.use(cors({
   credentials: true
 }));
 
+// ── CSRF Origin Check ──────────────────────────────────────────
+app.use((req, res, next) => {
+  // Only check state-changing methods
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+    const origin = req.headers.origin || req.headers.referer;
+    if (origin) {
+      try {
+        const originUrl = new URL(origin).origin;
+        // Allow mobile apps/curl that might not have an origin header, but if they do, it must match
+        if (!ALLOWED_ORIGINS.includes(originUrl)) {
+          return res.status(403).json({ ok: false, error: 'CSRF validation failed: Origin not allowed' });
+        }
+      } catch (e) {
+        // Ignore parsing errors and let CORS/helmet handle it
+      }
+    }
+  }
+  next();
+});
+
 // ── Response Compression ───────────────────────────────────────
 app.use(compression());
 
@@ -253,6 +274,21 @@ app.post('/telegram-webhook', express.json(), async (req, res) => {
 // ── Body Parsers ───────────────────────────────────────────────
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// ── Suspicious Activity Monitor ─────────────────────────────────
+app.use('/api', suspiciousActivityMonitor);
+
+// ── Admin IP Allowlist ──────────────────────────────────────────
+const ADMIN_IP_ALLOWLIST = process.env.ADMIN_IP_ALLOWLIST ? process.env.ADMIN_IP_ALLOWLIST.split(',').map(ip => ip.trim()) : null;
+app.use('/api/admin', (req, res, next) => {
+  if (ADMIN_IP_ALLOWLIST) {
+    const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || req.connection?.remoteAddress || 'unknown';
+    if (!ADMIN_IP_ALLOWLIST.includes(clientIp)) {
+      return res.status(403).json({ ok: false, error: 'Admin access denied from this IP.' });
+    }
+  }
+  next();
+});
 
 // ── API Routes ─────────────────────────────────────────────────
 app.use('/api', authRoutes);

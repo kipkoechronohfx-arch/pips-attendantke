@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { getUserById } = require('../services/db');
+const { isTokenRevoked } = require('./tokenRevocation');
 
 // ── Secret Validation ──────────────────────────────────────────
 // SECURITY: No hardcoded fallback secrets. Missing secrets cause a hard startup failure.
@@ -46,6 +47,9 @@ function validateAdminSession(req, res, next) {
     if (decoded.role !== 'admin') {
       return res.status(403).json({ ok: false, error: 'Unauthorized role.' });
     }
+    if (decoded.jti && isTokenRevoked(decoded.jti)) {
+      return res.status(401).json({ ok: false, error: 'Session revoked. Please login again.' });
+    }
     req.admin = decoded;
     next();
   } catch (err) {
@@ -64,12 +68,16 @@ async function validateUserSession(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
+    if (decoded.jti && isTokenRevoked(decoded.jti)) {
+      return res.status(401).json({ error: 'Session revoked. Please login again.' });
+    }
     const user = await getUserById(decoded.id);
     if (!user) {
       console.error('[Auth Error] User not found for ID:', decoded.id);
       return res.status(401).json({ error: 'User not found.' });
     }
     req.user = user;
+    req.jti = decoded.jti; // Attach jti to request for logout
     next();
   } catch (err) {
     console.error('[Auth Error] JWT Verify Error:', err.message);

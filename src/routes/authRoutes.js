@@ -6,9 +6,10 @@ const crypto = require('crypto');
 const { authLimiter, passwordResetLimiter } = require('../middleware/rateLimiters');
 const { validateUserSession, JWT_SECRET } = require('../middleware/auth');
 const { getUserByEmail, getUserById, saveUser, getPaymentByAccessCode, getAppConfig } = require('../services/db');
-const { sendEmail, lookupIpGeo, sendNewLoginAlertEmail } = require('../services/emailService');
+const { sendEmail, lookupIpGeo, sendNewLoginAlertEmail, sendLockoutAlertEmail, sendVerificationEmail } = require('../services/emailService');
 const { sendTelegramMessage } = require('../services/telegramBot');
 const logger = require('../utils/logger');
+const { revokeToken } = require('../middleware/tokenRevocation');
 
 // In-memory 2FA OTP store: { email -> { otp, expiresAt, userId } }
 const _otpStore = new Map();
@@ -19,6 +20,26 @@ const registrationIPs = new Map();
 setInterval(() => {
   registrationIPs.clear();
 }, 24 * 60 * 60 * 1000);
+
+// In-memory lockout tracking: { email -> { attempts, lockedUntil } }
+const lockoutStore = new Map();
+setInterval(() => lockoutStore.clear(), 24 * 60 * 60 * 1000);
+
+// Check if password has been breached using HIBP k-anonymity
+async function checkPasswordBreached(password) {
+  const sha1 = crypto.createHash('sha1').update(password).digest('hex').toUpperCase();
+  const prefix = sha1.slice(0, 5);
+  const suffix = sha1.slice(5);
+  try {
+    const fetch = require('node-fetch');
+    const res = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`);
+    if (!res.ok) return false; // fail open if HIBP is down
+    const text = await res.text();
+    return text.includes(suffix);
+  } catch (err) {
+    return false; // fail open
+  }
+}
 
 function hashPassword(password) {
   return bcrypt.hashSync(password, 10);
@@ -36,16 +57,18 @@ function verifyPassword(password, hash) {
   return bcrypt.compareSync(password, hash);
 }
 
-function generateUserToken(user) {
+function generateUserToken(user, options = {}) {
   let role = user.role || 'user';
   if (process.env.ADMIN_EMAIL && user.email && user.email.toLowerCase() === process.env.ADMIN_EMAIL.toLowerCase()) {
     role = 'admin';
   }
-  return jwt.sign(
-    { id: user._id || user.id, email: user.email, role },
+  const jti = crypto.randomBytes(16).toString('hex');
+  const token = jwt.sign(
+    { id: user._id || user.id, email: user.email, role, jti },
     JWT_SECRET,
-    { expiresIn: '30d' }
+    { expiresIn: options.expiresIn || '30d' }
   );
+  return { token, jti };
 }
 
 router.post('/register', authLimiter, async (req, res) => {
@@ -61,6 +84,11 @@ router.post('/register', authLimiter, async (req, res) => {
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
   if (!passwordRegex.test(password)) {
     return res.status(400).json({ ok: false, error: 'Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.' });
+  }
+
+  const isBreached = await checkPasswordBreached(password);
+  if (isBreached) {
+    return res.status(400).json({ ok: false, error: 'This password has appeared in a known data breach. Please choose a different, secure password.' });
   }
 
   const existingUser = await getUserByEmail(email);
@@ -102,7 +130,22 @@ router.post('/register', authLimiter, async (req, res) => {
   }
 
   registrationIPs.set(clientIp, ipCount + 1);
-  const sessionToken = generateUserToken(user);
+  const { token: sessionToken, jti } = generateUserToken(user);
+  user.sessions = [{ jti, ip: clientIp, createdAt: new Date().toISOString() }];
+  
+  // Email verification token
+  const verifyToken = crypto.randomBytes(32).toString('hex');
+  user.emailVerifyToken = verifyToken;
+  user.emailVerifyExpiry = Date.now() + 24 * 60 * 60 * 1000;
+  user.emailVerified = false;
+  
+  await saveUser(user);
+
+  try {
+    await sendVerificationEmail(user.email, user.name, verifyToken);
+  } catch (err) {
+    logger.error('[Email] Failed to send verification email: ' + err.message);
+  }
   
   try {
     const appUrl = process.env.APP_URL || 'https://www.pipsattendant.com';
@@ -152,10 +195,33 @@ router.post('/login', authLimiter, async (req, res) => {
   if (!rawEmail || !password) return res.status(400).json({ ok: false, error: 'Email and password required.' });
   const email = rawEmail.toLowerCase().trim();
 
+  // Lockout check
+  const lockout = lockoutStore.get(email);
+  if (lockout && lockout.lockedUntil > Date.now()) {
+    const mins = Math.ceil((lockout.lockedUntil - Date.now()) / 60000);
+    return res.status(403).json({ ok: false, error: \`Account locked due to too many failed attempts. Try again in \${mins} minutes.\` });
+  } else if (lockout && lockout.lockedUntil <= Date.now()) {
+    lockoutStore.delete(email); // Unlock
+  }
+
   const user = await getUserByEmail(email);
   if (!user || !verifyPassword(password, user.passwordHash)) {
+    // Record failed attempt
+    const currentLockout = lockoutStore.get(email) || { attempts: 0, lockedUntil: 0 };
+    currentLockout.attempts += 1;
+    if (currentLockout.attempts >= 5) {
+      currentLockout.lockedUntil = Date.now() + 30 * 60 * 1000; // Lock for 30 minutes
+      if (user) {
+        sendLockoutAlertEmail(user.email, user.name, currentLockout.lockedUntil).catch(() => {});
+      }
+    }
+    lockoutStore.set(email, currentLockout);
+    
     return res.status(401).json({ ok: false, error: 'Invalid email or password.' });
   }
+
+  // Successful login, clear lockout
+  lockoutStore.delete(email);
 
   // Silent upgrade of password hash if it's the old scrypt format
   if (user.passwordHash.includes(':')) {
@@ -194,7 +260,10 @@ router.post('/login', authLimiter, async (req, res) => {
   } catch (err) {
     // If email fails for any reason, fall back to direct login so users are never locked out
     logger.error('[2FA] Failed to send OTP email — falling back to direct login: ' + err.message);
-    const sessionToken = generateUserToken(user);
+    const { token: sessionToken, jti } = generateUserToken(user);
+    const clientIp = req.ip || req.connection?.remoteAddress || 'unknown';
+    user.sessions = [{ jti, ip: clientIp, createdAt: new Date().toISOString() }, ...(user.sessions || [])].slice(0, 10);
+    saveUser(user).catch(()=>{});
     return res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, avatar: user.avatar, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier || (user.isTrial ? 'Platinum' : 'Gold'), telegramId: user.telegramId, badges: user.badges || [], role: user.role || 'user', isTrial: user.isTrial || false, createdAt: user.registeredAt || user.createdAt, referralCode: user.referralCode || null, referralCount: user.referralCount || 0 } });
   }
 });
@@ -280,7 +349,10 @@ router.post('/verify-2fa', authLimiter, async (req, res) => {
   }
   // ─────────────────────────────────────────────────────────────
 
-  const sessionToken = generateUserToken(user);
+  const { token: sessionToken, jti } = generateUserToken(user);
+  user.sessions = [{ jti, ip: clientIp, createdAt: new Date().toISOString() }, ...(user.sessions || [])].slice(0, 10);
+  await saveUser(user);
+  
   logger.info(`[2FA] User ${email} verified successfully.`);
   res.json({ ok: true, sessionToken, user: { id: user._id || user.id, email: user.email, name: user.name, avatar: user.avatar, subscriptionExpiry: user.subscriptionExpiry, subscriptionTier: user.subscriptionTier || (user.isTrial ? 'Platinum' : 'Gold'), telegramId: user.telegramId, badges: user.badges || [], role: user.role || 'user', isTrial: user.isTrial || false, createdAt: user.registeredAt || user.createdAt, referralCode: user.referralCode || null, referralCount: user.referralCount || 0 } });
 });
@@ -307,6 +379,7 @@ router.get('/me', validateUserSession, (req, res) => {
       createdAt: req.user.registeredAt || req.user.createdAt,
       referralCode: req.user.referralCode || null,
       referralCount: req.user.referralCount || 0,
+      emailVerified: req.user.emailVerified,
       adminKey: (req.user.role === 'admin' || (process.env.ADMIN_EMAIL && req.user.email.toLowerCase() === process.env.ADMIN_EMAIL.toLowerCase())) ? process.env.ADMIN_KEY : undefined
     }
   });
@@ -413,6 +486,11 @@ router.post('/change-password', validateUserSession, authLimiter, async (req, re
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
   if (!passwordRegex.test(newPassword)) {
     return res.status(400).json({ ok: false, error: 'Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.' });
+  }
+
+  const isBreached = await checkPasswordBreached(newPassword);
+  if (isBreached) {
+    return res.status(400).json({ ok: false, error: 'This password has appeared in a known data breach. Please choose a different, secure password.' });
   }
 
   user.passwordHash = hashPassword(newPassword);
@@ -633,6 +711,42 @@ router.get('/livestream', validateUserSession, async (req, res) => {
   } catch (err) {
     res.json({ ok: true, youtubeLiveId: null });
   }
+});
+
+// ── Logout (Revoke Token) ────────────────────────────────────────────────────
+router.post('/logout', validateUserSession, (req, res) => {
+  if (req.jti) {
+    revokeToken(req.jti);
+  }
+  res.json({ ok: true, message: 'Logged out successfully.' });
+});
+
+// ── Email Verification ────────────────────────────────────────────────────────
+router.get('/verify-email', async (req, res) => {
+  const { token, email } = req.query;
+  if (!token || !email) {
+    return res.status(400).send('Invalid verification link.');
+  }
+  
+  const user = await getUserByEmail(email.toLowerCase().trim());
+  if (!user) {
+    return res.status(400).send('User not found.');
+  }
+
+  if (user.emailVerified) {
+    return res.send('Email already verified. You can close this page.');
+  }
+
+  if (user.emailVerifyToken !== token || !user.emailVerifyExpiry || Date.now() > user.emailVerifyExpiry) {
+    return res.status(400).send('Verification link expired or invalid.');
+  }
+
+  user.emailVerified = true;
+  user.emailVerifyToken = null;
+  user.emailVerifyExpiry = null;
+  await saveUser(user);
+
+  res.send('Email verified successfully! You can now close this page and return to the app.');
 });
 
 module.exports = router;

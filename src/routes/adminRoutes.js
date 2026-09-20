@@ -11,6 +11,7 @@ const { validateAdminKey, validateAdminSession, JWT_SECRET } = require('../middl
 const { adminLoginLimiter, twoFASetupLimiter } = require('../middleware/rateLimiters');
 const db = require('../services/db');
 const { sendEmail, buildReceiptHtml } = require('../services/emailService');
+const { auditLog, getAuditLogs } = require('../middleware/auditLog');
 
 const CONFIG_FILE = path.join(process.cwd(), 'data', 'config.json');
 
@@ -115,7 +116,7 @@ router.post('/2fa/verify-setup', twoFASetupLimiter, validateAdminKey, async (req
 });
 
 // ── Reset 2FA — clears stored secret so admin can re-scan a fresh QR ──
-router.post('/2fa/reset', validateAdminKey, async (req, res) => {
+router.post('/2fa/reset', validateAdminKey, auditLog('RESET_2FA'), async (req, res) => {
   try {
     const conf = await db.getAppConfig();
     conf.admin2FASecret = null;
@@ -360,7 +361,7 @@ router.get('/users/:id/login-history', validateAdminSession, async (req, res) =>
 });
 
 
-router.post('/users/:id/tier', validateAdminSession, async (req, res) => {
+router.post('/users/:id/tier', validateAdminSession, auditLog('UPDATE_USER_TIER'), async (req, res) => {
   try {
     const { tier } = req.body;
     if (!['Gold', 'Platinum'].includes(tier)) {
@@ -405,7 +406,7 @@ router.get('/vip-documents', validateAdminSession, async (req, res) => {
   }
 });
 
-router.post('/upload-vip-document', validateAdminSession, async (req, res) => {
+router.post('/upload-vip-document', validateAdminSession, auditLog('UPLOAD_VIP_DOCUMENT'), async (req, res) => {
   const { filename, fileData } = req.body;
   if (!filename || !fileData) return res.status(400).json({ ok: false, error: 'Missing filename or fileData.' });
   if (fileData.length > 14 * 1024 * 1024) return res.status(400).json({ ok: false, error: 'File size exceeds 10MB limit.' });
@@ -417,7 +418,7 @@ router.post('/upload-vip-document', validateAdminSession, async (req, res) => {
   }
 });
 
-router.delete('/delete-vip-document/:filename', validateAdminSession, async (req, res) => {
+router.delete('/delete-vip-document/:filename', validateAdminSession, auditLog('DELETE_VIP_DOCUMENT'), async (req, res) => {
   const { filename } = req.params;
   if (!filename) return res.status(400).json({ ok: false, error: 'Missing filename.' });
   try {
@@ -429,7 +430,7 @@ router.delete('/delete-vip-document/:filename', validateAdminSession, async (req
   }
 });
 
-router.post('/update-vip-password', validateAdminSession, async (req, res) => {
+router.post('/update-vip-password', validateAdminSession, auditLog('UPDATE_VIP_PASSWORD'), async (req, res) => {
   const { vipPassword } = req.body;
   if (!vipPassword || vipPassword.trim().length < 6) {
     return res.status(400).json({ ok: false, error: 'Password must be at least 6 characters.' });
@@ -456,7 +457,7 @@ router.get('/todays-setup', validateAdminSession, async (req, res) => {
   }
 });
 
-router.post('/upload-todays-setup', validateAdminSession, async (req, res) => {
+router.post('/upload-todays-setup', validateAdminSession, auditLog('UPLOAD_TODAYS_SETUP'), async (req, res) => {
   const { image, analysis, signalType } = req.body;
   if (!image) return res.status(400).json({ ok: false, error: 'Image required.' });
   try {
@@ -467,7 +468,7 @@ router.post('/upload-todays-setup', validateAdminSession, async (req, res) => {
   }
 });
 
-router.delete('/todays-setup', validateAdminSession, async (req, res) => {
+router.delete('/todays-setup', validateAdminSession, auditLog('DELETE_TODAYS_SETUP'), async (req, res) => {
   try {
     await db.saveTodaysSetup({ image: null, analysis: null, signalType: null, timestamp: null });
     res.json({ ok: true, message: 'Setup cleared.' });
@@ -486,7 +487,7 @@ router.get('/todays-setup-results', validateAdminSession, async (req, res) => {
   }
 });
 
-router.post('/upload-todays-setup-results', validateAdminSession, async (req, res) => {
+router.post('/upload-todays-setup-results', validateAdminSession, auditLog('UPLOAD_TODAYS_SETUP_RESULTS'), async (req, res) => {
   const { image } = req.body;
   if (!image) return res.status(400).json({ ok: false, error: 'Image required.' });
   try {
@@ -497,7 +498,7 @@ router.post('/upload-todays-setup-results', validateAdminSession, async (req, re
   }
 });
 
-router.delete('/todays-setup-results', validateAdminSession, async (req, res) => {
+router.delete('/todays-setup-results', validateAdminSession, auditLog('DELETE_TODAYS_SETUP_RESULTS'), async (req, res) => {
   try {
     await db.saveTodaysSetupResults({ image: null, timestamp: null });
     res.json({ ok: true, message: 'Setup results cleared.' });
@@ -516,7 +517,7 @@ router.get('/crypto-requests', validateAdminSession, async (req, res) => {
   }
 });
 
-router.post('/approve-crypto-request', validateAdminSession, async (req, res) => {
+router.post('/approve-crypto-request', validateAdminSession, auditLog('APPROVE_CRYPTO'), async (req, res) => {
   const { requestId, upgradeToPlatinum } = req.body;
   if (!requestId) return res.status(400).json({ ok: false, error: 'Request ID required.' });
   try {
@@ -632,7 +633,7 @@ router.post('/approve-crypto-request', validateAdminSession, async (req, res) =>
   }
 });
 
-router.post('/reject-crypto-request', validateAdminSession, async (req, res) => {
+router.post('/reject-crypto-request', validateAdminSession, auditLog('REJECT_CRYPTO'), async (req, res) => {
   const { requestId } = req.body;
   if (!requestId) return res.status(400).json({ ok: false, error: 'Request ID required.' });
   try {
@@ -656,7 +657,7 @@ router.get('/promos', validateAdminSession, async (req, res) => {
   res.json({ ok: true, promos, promoCodesEnabled: config?.promoCodesEnabled || false });
 });
 
-router.post('/toggle-promo-codes', validateAdminSession, async (req, res) => {
+router.post('/toggle-promo-codes', validateAdminSession, auditLog('TOGGLE_PROMO_CODES'), async (req, res) => {
   const { enabled } = req.body;
   const config = await db.getAppConfig();
   config.promoCodesEnabled = !!enabled;
@@ -667,7 +668,7 @@ router.post('/toggle-promo-codes', validateAdminSession, async (req, res) => {
   }
 });
 
-router.post('/promos', validateAdminSession, async (req, res) => {
+router.post('/promos', validateAdminSession, auditLog('CREATE_PROMO'), async (req, res) => {
   const { code, discountPercentage, expiresAt, usageLimit } = req.body;
   if (!code || !discountPercentage) return res.status(400).json({ ok: false, error: 'Missing fields' });
   await db.savePromo({
@@ -682,7 +683,7 @@ router.post('/promos', validateAdminSession, async (req, res) => {
   res.json({ ok: true });
 });
 
-router.delete('/promos/:code', validateAdminSession, async (req, res) => {
+router.delete('/promos/:code', validateAdminSession, auditLog('DELETE_PROMO'), async (req, res) => {
   await db.deletePromo(req.params.code);
   res.json({ ok: true });
 });
@@ -699,7 +700,7 @@ router.get('/propfirm-leads', validateAdminSession, async (req, res) => {
   }
 });
 
-router.delete('/leads/:id', validateAdminSession, async (req, res) => {
+router.delete('/leads/:id', validateAdminSession, auditLog('DELETE_LEAD'), async (req, res) => {
   try {
     await db.deleteLeadById(req.params.id);
     res.json({ ok: true, message: 'Lead deleted.' });
@@ -736,7 +737,7 @@ router.get('/tickets', validateAdminSession, async (req, res) => {
   res.json({ ok: true, tickets });
 });
 
-router.post('/tickets/:id/reply', validateAdminSession, async (req, res) => {
+router.post('/tickets/:id/reply', validateAdminSession, auditLog('REPLY_TICKET'), async (req, res) => {
   const { message } = req.body;
   const ticket = (await db.getTickets()).find(t => t._id?.toString() === req.params.id);
   if (ticket) {
@@ -748,7 +749,7 @@ router.post('/tickets/:id/reply', validateAdminSession, async (req, res) => {
   res.json({ ok: true });
 });
 
-router.post('/tickets/:id/close', validateAdminSession, async (req, res) => {
+router.post('/tickets/:id/close', validateAdminSession, auditLog('CLOSE_TICKET'), async (req, res) => {
   const ticket = (await db.getTickets()).find(t => t._id?.toString() === req.params.id);
   if (ticket) {
     ticket.status = 'Closed';
@@ -759,7 +760,7 @@ router.post('/tickets/:id/close', validateAdminSession, async (req, res) => {
 });
 
 // ── Broadcast to Tickets ───────────────────────────────────────────
-router.post('/broadcast-to-tickets', validateAdminSession, async (req, res) => {
+router.post('/broadcast-to-tickets', validateAdminSession, auditLog('BROADCAST_TICKETS'), async (req, res) => {
   const { message } = req.body;
   if (!message || !message.trim()) {
     return res.status(400).json({ ok: false, error: 'Message is required.' });
@@ -791,7 +792,7 @@ router.post('/broadcast-to-tickets', validateAdminSession, async (req, res) => {
 });
 
 // ── High Impact News Broadcast ──────────────────────────────────
-router.post('/broadcast-news', validateAdminSession, async (req, res) => {
+router.post('/broadcast-news', validateAdminSession, auditLog('BROADCAST_NEWS'), async (req, res) => {
   const { title, message, type, botToken, generalChat, vipChat } = req.body;
   if (!message || !message.trim()) {
     return res.status(400).json({ ok: false, error: 'Message is required.' });
@@ -1978,6 +1979,16 @@ router.post('/push/trade-of-the-week', validateAdminSession, async (req, res) =>
 
     const result = await pushService.broadcastPush(title, body, url);
     res.json({ ok: true, message: `Push sent! Success: ${result.success}, Failed: ${result.failed}` });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── Audit Logs ────────────────────────────────────────────────────
+router.get('/audit-log', validateAdminSession, async (req, res) => {
+  try {
+    const logs = getAuditLogs();
+    res.json({ ok: true, logs });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }

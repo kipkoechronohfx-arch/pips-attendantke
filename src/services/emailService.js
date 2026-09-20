@@ -241,4 +241,80 @@ async function sendNewLoginAlertEmail(user, ip, geo) {
   return sendEmail(user.email, subject, html);
 }
 
-module.exports = { sendEmail, buildReceiptHtml, sendLeadMagnetEmail, lookupIpGeo, sendNewLoginAlertEmail };
+// ── Account Lockout Alert Email ────────────────────────────────
+function buildLockoutAlertHtml(userName, lockedUntil) {
+  const appUrl = process.env.APP_URL || 'https://www.pipsattendant.com';
+  const resetLink = `${appUrl}/premium.html?action=forgot-password`;
+  const timeStr = new Date(lockedUntil).toLocaleTimeString();
+
+  return `<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background:#0a0a0a;font-family:'Segoe UI',Arial,sans-serif;">
+<div style="max-width:540px;margin:0 auto;background:#111827;border-radius:16px;border:1px solid rgba(239,68,68,0.3);overflow:hidden;">
+  <div style="background:linear-gradient(135deg,#7f1d1d,#991b1b,#b91c1c);padding:32px 28px;text-align:center;">
+    <div style="font-size:48px;margin-bottom:8px;">🛑</div>
+    <h1 style="color:#fff;margin:0;font-size:22px;font-weight:800;letter-spacing:-0.5px;">Account Locked</h1>
+  </div>
+  <div style="padding:32px 28px;">
+    <p style="color:#d1d5db;font-size:15px;margin:0 0 6px;">Hi <strong style="color:#fbbf24;">${userName || 'Trader'}</strong>,</p>
+    <p style="color:#9ca3af;font-size:14px;line-height:1.7;margin:0 0 28px;">
+      There have been too many failed login attempts on your account. For your security, your account has been temporarily locked until <strong>${timeStr}</strong>.
+    </p>
+    <div style="text-align:center;margin-bottom:28px;">
+      <a href="${resetLink}"
+         style="background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;font-weight:700;padding:13px 24px;border-radius:10px;text-decoration:none;display:inline-block;font-size:14px;">
+        Reset Password to Unlock
+      </a>
+    </div>
+  </div>
+</div>
+</body></html>`;
+}
+
+async function sendLockoutAlertEmail(email, name, lockedUntil) {
+  return sendEmail(email, '🛑 Account Temporarily Locked — Pips Attendant', buildLockoutAlertHtml(name, lockedUntil));
+}
+
+// ── Email Verification Email ──────────────────────────────────
+function buildVerificationHtml(userName, token, email) {
+  const appUrl = process.env.APP_URL || 'https://www.pipsattendant.com';
+  // Use publicRoutes endpoint for verification
+  const verifyLink = `${appUrl}/api/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
+
+  return `<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background:#0a0a0a;font-family:'Segoe UI',Arial,sans-serif;">
+<div style="max-width:540px;margin:0 auto;background:#111827;border-radius:16px;border:1px solid rgba(16,185,129,0.3);overflow:hidden;">
+  <div style="background:linear-gradient(135deg,#064e3b,#047857,#059669);padding:32px 28px;text-align:center;">
+    <div style="font-size:48px;margin-bottom:8px;">✅</div>
+    <h1 style="color:#fff;margin:0;font-size:22px;font-weight:800;letter-spacing:-0.5px;">Verify Your Email</h1>
+  </div>
+  <div style="padding:32px 28px;">
+    <p style="color:#d1d5db;font-size:15px;margin:0 0 6px;">Hi <strong style="color:#fbbf24;">${userName || 'Trader'}</strong>,</p>
+    <p style="color:#9ca3af;font-size:14px;line-height:1.7;margin:0 0 28px;">
+      Welcome to Pips Attendant! Please click the button below to verify your email address. This link expires in 24 hours.
+    </p>
+    <div style="text-align:center;margin-bottom:28px;">
+      <a href="${verifyLink}"
+         style="background:linear-gradient(135deg,#10b981,#34d399);color:#064e3b;font-weight:700;padding:13px 24px;border-radius:10px;text-decoration:none;display:inline-block;font-size:14px;">
+        Verify Email Address
+      </a>
+    </div>
+  </div>
+</div>
+</body></html>`;
+}
+
+async function sendVerificationEmail(email, name, token) {
+  return sendEmail(email, '✅ Verify Your Email Address — Pips Attendant', buildVerificationHtml(name, token, email));
+}
+
+module.exports = { 
+  sendEmail, 
+  buildReceiptHtml, 
+  sendLeadMagnetEmail, 
+  lookupIpGeo, 
+  sendNewLoginAlertEmail,
+  sendLockoutAlertEmail,
+  sendVerificationEmail
+};
