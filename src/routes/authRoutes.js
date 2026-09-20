@@ -199,7 +199,7 @@ router.post('/login', authLimiter, async (req, res) => {
   const lockout = lockoutStore.get(email);
   if (lockout && lockout.lockedUntil > Date.now()) {
     const mins = Math.ceil((lockout.lockedUntil - Date.now()) / 60000);
-    return res.status(403).json({ ok: false, error: \`Account locked due to too many failed attempts. Try again in \${mins} minutes.\` });
+    return res.status(403).json({ ok: false, error: `Account locked due to too many failed attempts. Try again in ${mins} minutes.` });
   } else if (lockout && lockout.lockedUntil <= Date.now()) {
     lockoutStore.delete(email); // Unlock
   }
