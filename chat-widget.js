@@ -10,8 +10,8 @@
     /* ── WhatsApp Launcher Button ── */
     #wa-launcher {
       position: fixed;
-      bottom: 28px;
-      left: 28px;
+      bottom: 24px;
+      right: 24px;
       width: 60px;
       height: 60px;
       border-radius: 50%;
@@ -75,7 +75,7 @@
 
     /* ── Mobile responsive ── */
     @media (max-width: 420px) {
-      #wa-launcher { left: 16px; bottom: 20px; }
+      #wa-launcher { right: 16px; bottom: 20px; }
     }
   `;
 
