@@ -1,123 +1,2614 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accelerated Mobile Pages</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-            background-color: #f5f7f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+    <title>Pips Attendant | Premium Forex Signals & Trading Education</title>
+    
+    <!-- Meta Tags -->
+    <meta name="description" content="Pips Attendant is a Forex trading company offering premium signals, copy trading, prop firm coaching, trading analytics, and daily market analysis for traders worldwide.">
+    <meta name="keywords" content="forex signals, forex trading platform, forex for beginners, daily market analysis, prop firm challenge, forex VIP membership, gold trading signals, forex mentorship Kenya">
+    <meta name="theme-color" content="#050505">
+    
+    <!-- OpenGraph / Social Sharing Meta Tags -->
+    <meta property="og:title" content="Pips Attendant | Premium Forex Signals & Trading Education">
+    <meta property="og:description" content="Join Pips Attendant for premium Forex/Gold signals, expert prop firm coaching, and daily market analysis. Elevate your trading journey today.">
+    <meta property="og:image" content="https://www.pipsattendant.com/avatar.webp">
+    <meta property="og:url" content="https://www.pipsattendant.com/">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Pips Attendant | Premium Forex Signals">
+    <meta name="twitter:description" content="Premium Forex/Gold signals, expert prop firm coaching, and daily market analysis.">
+    <meta name="twitter:image" content="https://www.pipsattendant.com/avatar.webp">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="canonical" href="https://www.pipsattendant.com/">
+    
+    <!-- Preload critical background image -->
+    <link rel="preload" as="image" href="dubai_bg.webp">
+    
+    <!-- Structured Data / Schema.org -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FinancialService",
+      "name": "Pips Attendant",
+      "url": "https://www.pipsattendant.com/",
+      "logo": "https://www.pipsattendant.com/favicon.png",
+      "image": "https://www.pipsattendant.com/avatar.webp",
+      "description": "Pips Attendant is a forex trading signals platform providing premium currency and gold signals, daily market analysis, prop firm challenge passing, and VIP trading mentorship. This is a forex financial service — not a medical, nursing, or patient attendant course.",
+      "telephone": "+254714488340",
+      "serviceType": "Forex Trading Signals and Mentorship",
+      "areaServed": "Worldwide",
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "VIP Forex Trading Membership",
+        "itemListElement": [
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Premium Forex Signals" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Prop Firm Challenge Passing" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Forex Mentorship" } }
+        ]
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Pips Attendant",
+      "alternateName": "Pips Attendant Forex",
+      "url": "https://www.pipsattendant.com/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.pipsattendant.com/favicon.png",
+        "width": 512,
+        "height": 512
+      },
+      "image": "https://www.pipsattendant.com/avatar.webp",
+      "description": "Pips Attendant is a professional Forex trading company offering premium Forex signals, copy trading, Forex education, prop firm coaching, trading account analytics, and daily market analysis. Pips Attendant is a Forex financial services company, not a medical, nursing, healthcare, or patient attendant service.",
+      "foundingDate": "2021",
+      "industry": "Financial Services — Forex Trading",
+      "knowsAbout": [
+        "Forex Trading",
+        "XAUUSD Gold Trading",
+        "Forex Signals",
+        "Copy Trading",
+        "Prop Firm Challenge Passing",
+        "Trading Analytics",
+        "Risk Management",
+        "Trading Psychology",
+        "Price Action Trading",
+        "Smart Money Concepts"
+      ],
+      "email": "support@pipsattendant.com",
+      "telephone": "+254714488340",
+      "areaServed": "Worldwide",
+      "sameAs": [
+        "https://t.me/pipsattendant",
+        "https://t.me/pips_attendant",
+        "https://instagram.com/pips_attendant",
+        "https://youtube.com/@pips_attendant",
+        "https://tiktok.com/@pips_attendant",
+        "https://twitter.com/pips_attendant"
+      ]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [{
+        "@type": "Question",
+        "name": "What is Pips Attendant VIP?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Pips Attendant VIP gives you access to premium forex and gold trading signals, our proprietary trade journal, risk management calculator, and an exclusive community."
         }
-
-        .card {
-            background-color: #ffffff;
-            border: 1px solid #e0e0e0;
-            border-radius: 4px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            padding: 40px;
-            max-width: 650px;
-            text-align: center;
+      }, {
+        "@type": "Question",
+        "name": "How does the Prop Firm passing service work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Our Prop Firm passing service trades your challenge account using our proven risk management strategies. We guarantee the pass, or we offer a full refund."
         }
-
-        .icon {
-            display: inline-block;
-            margin-bottom: 15px;
-            color: #9e9e9e;
+      }, {
+        "@type": "Question",
+        "name": "Does Pips Attendant offer 1-on-1 mentorship?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, our Platinum tier includes 1-on-1 personalized mentorship sessions where you can learn advanced trading strategies and psychology directly from experienced traders."
         }
-
-        .icon svg {
-            width: 48px;
-            height: 48px;
-            fill: currentColor;
+      }, {
+        "@type": "Question",
+        "name": "What is forex trading for beginners?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Forex trading is the buying and selling of global currencies. Beginners should start by learning risk management, understanding pips, and following professional daily market analysis to minimize risks."
         }
-
-        h2 {
-            font-size: 20px;
-            color: #212121;
-            margin: 0 0 12px 0;
-            font-weight: 500;
+      }, {
+        "@type": "Question",
+        "name": "How do forex signals work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Forex signals are trade alerts that tell you exactly when to buy or sell a currency pair. They include the entry price, stop loss, and take profit targets to help you catch pips consistently."
         }
-
-        .description {
-            color: #757575;
-            font-size: 14px;
-            line-height: 1.5;
-            margin: 0 0 30px 0;
-            padding: 0 20px;
+      }, {
+        "@type": "Question",
+        "name": "Which broker is best for forex trading?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The best brokers offer low spreads, fast execution speeds, and reliable support. We highly recommend Dupoin for executing our premium signals."
         }
-
-        .btn {
-            background-color: #4285f4;
-            color: #ffffff;
-            border: none;
-            border-radius: 2px;
-            padding: 10px 24px;
-            font-size: 13px;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-            margin-bottom: 40px;
-            text-transform: uppercase;
-        }
-
-        .btn:hover {
-            background-color: #3b78e7;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-        }
-
-        .footer-heading {
-            font-size: 18px;
-            color: #212121;
-            margin: 0 0 10px 0;
-            font-weight: 500;
-        }
-
-        .footer-text {
-            color: #757575;
-            font-size: 14px;
-            margin: 0;
-        }
-
-        .footer-link {
-            color: #4285f4;
-            text-decoration: none;
-        }
-
-        .footer-link:hover {
-            text-decoration: underline;
-        }
-    </style>
+      }]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Course",
+      "name": "Pips Attendant VIP Mentorship",
+      "description": "1-on-1 Advanced Forex and Gold Trading Mentorship. Learn price action, risk management, and trading psychology.",
+      "provider": {
+        "@type": "Organization",
+        "name": "Pips Attendant",
+        "sameAs": "https://www.pipsattendant.com/"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": "Pips Attendant VIP Forex Signals Membership",
+      "description": "Premium forex and gold trading signals, daily market analysis, prop firm challenge passing, and VIP mentorship for disciplined traders.",
+      "brand": {
+        "@type": "Brand",
+        "name": "Pips Attendant"
+      },
+      "url": "https://www.pipsattendant.com/premium.html",
+      "image": "https://www.pipsattendant.com/avatar.webp",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "reviewCount": "312",
+        "bestRating": "5",
+        "worstRating": "1"
+      },
+      "offers": {
+        "@type": "AggregateOffer",
+        "lowPrice": "50",
+        "highPrice": "140",
+        "priceCurrency": "USD",
+        "offerCount": "3"
+      }
+    }
+    </script>
+    
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="Pips Attendant | Forex Signals, Trading Tools & VIP Mentorship">
+    <meta property="og:description" content="Join 5,000+ traders getting premium forex & gold signals, daily market analysis, and prop firm challenge passing. Start catching consistent pips today.">
+    <meta property="og:image" content="https://www.pipsattendant.com/avatar.webp">
+    <meta property="og:image:width" content="400">
+    <meta property="og:image:height" content="400">
+    <meta property="og:image:alt" content="Pips Attendant - Forex Trading Signals Platform">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.pipsattendant.com/">
+    <meta property="og:site_name" content="Pips Attendant">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@pips_attendant">
+    <meta name="twitter:creator" content="@pips_attendant">
+    <meta name="twitter:title" content="Pips Attendant | Forex Signals & VIP Mentorship">
+    <meta name="twitter:description" content="Pips Attendant is a Forex trading company. Get premium Forex signals, copy trading, prop firm coaching, and trading analytics.">
+    <meta name="twitter:image" content="https://www.pipsattendant.com/avatar.webp">
+    
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=Outfit:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <!-- Preconnect for external CDNs (improves Core Web Vitals) -->
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
+    <link rel="preconnect" href="https://s3.tradingview.com" crossorigin>
+    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    
+    <!-- AOS Animation CSS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Google Analytics 4 (GA4) - Replace G-DT79HX5XCJ with your actual Measurement ID -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DT79HX5XCJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-DT79HX5XCJ');
+    </script>
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Pips Attendant — Professional Forex Trading Company",
+      "alternateName": "Pips Attendant Forex Signals",
+      "url": "https://www.pipsattendant.com/",
+      "description": "Pips Attendant is a professional Forex trading company, not a medical or healthcare service. We provide Forex signals, copy trading, Forex education, and prop firm coaching.",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://www.pipsattendant.com/blog.html?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Pips Attendant | Professional Forex Signals, Copy Trading & Education",
+      "url": "https://www.pipsattendant.com/",
+      "description": "Pips Attendant is a professional Forex trading company offering premium Forex signals, copy trading, prop firm coaching, and trading analytics.",
+      "isPartOf": { "@type": "WebSite", "url": "https://www.pipsattendant.com/" },
+      "about": {
+        "@type": "Thing",
+        "name": "Forex Trading",
+        "description": "Forex trading is the buying and selling of global currency pairs. Pips Attendant specialises in Forex signals, education, and trading analytics."
+      },
+      "speakableSpecification": {
+        "@type": "SpeakableSpecification",
+        "cssSelector": ["#entity-statement", "#hero", "h1", ".speakable"]
+      }
+    }
+    </script>
+    <!-- Tailwind CSS (Compiled Static File) -->
+    <link rel="stylesheet" href="dist.css">
+    
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="bg-primary text-gray-300 font-sans antialiased selection:bg-gold/30 selection:text-white pt-[72px] md:pt-[46px] relative">
 
-    <div class="card">
-        <div class="icon">
-            <svg viewBox="0 0 24 24">
-                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" stroke-width="2" stroke="currentColor" fill="none"/>
-            </svg>
+    <!-- Scroll Progress Bar -->
+    <div id="scrollProgressContainer">
+      <div id="scrollProgressBar"></div>
+    </div>
+
+    <!-- ── Lead Capture Popup ────────────────────────────────────── -->
+    <div id="leadPopupOverlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden" style="opacity:0;transition:opacity 0.4s ease;z-index:9999;position:fixed;">
+      <div class="relative bg-[#0f1520] border border-amber-400/30 rounded-3xl shadow-[0_0_60px_rgba(245,158,11,0.2)] max-w-md w-full p-8 overflow-hidden" style="transform:scale(0.92);transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);position:relative;z-index:10000;">
+        <!-- Glow accents -->
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent"></div>
+        <div class="absolute -top-20 left-1/2 -translate-x-1/2 w-48 h-48 bg-amber-400/10 rounded-full blur-3xl pointer-events-none"></div>
+        <!-- Close button -->
+        <button id="leadPopupClose" class="absolute top-4 right-4 text-gray-500 hover:text-white transition" aria-label="Close">
+          <i data-feather="x" class="w-5 h-5"></i>
+        </button>
+        <!-- Icon -->
+        <div class="flex justify-center mb-5">
+          <div class="w-16 h-16 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-3xl shadow-[0_0_20px_rgba(245,158,11,0.2)]">📊</div>
+        </div>
+        <!-- Copy -->
+        <h2 class="text-2xl font-black text-white text-center mb-2">Free Risk Management<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-200">Workbook</span></h2>
+        <p class="text-gray-400 text-sm text-center mb-6 leading-relaxed">The same exact risk rules we use to capture <strong class="text-white">1000+ pips monthly</strong>. Drop your email and we'll send it instantly — no spam, ever.</p>
+        <!-- Form -->
+        <form id="leadCaptureForm" class="space-y-3">
+          <input type="text" id="leadName" placeholder="Your first name (optional)" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400/50 transition" autocomplete="given-name">
+          <input type="email" id="leadEmail" placeholder="your@email.com" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400/50 transition" autocomplete="email">
+          <button id="leadSubmitBtn" type="submit" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-dark-navy font-bold text-sm shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:brightness-110 active:scale-95 transition flex items-center justify-center gap-2">
+            <i data-feather="send" class="w-4 h-4"></i>
+            Send Me the Workbook
+          </button>
+        </form>
+        <p id="leadFormMsg" class="text-center text-xs mt-3 hidden"></p>
+        <p class="text-gray-400 text-[10px] text-center mt-4">No spam. Unsubscribe anytime.</p>
+      </div>
+    </div>
+    <script>
+    (function() {
+      var POPUP_KEY = 'pa_lead_dismissed';
+      var overlay = document.getElementById('leadPopupOverlay');
+      var box = overlay ? overlay.querySelector('div') : null;
+      function showPopup() {
+        if (!overlay) return;
+        if (sessionStorage.getItem(POPUP_KEY)) return;
+        overlay.classList.remove('hidden');
+        requestAnimationFrame(function() {
+          overlay.style.opacity = '1';
+          if (box) box.style.transform = 'scale(1)';
+        });
+      }
+      function closePopup() {
+        if (!overlay) return;
+        overlay.style.opacity = '0';
+        if (box) box.style.transform = 'scale(0.92)';
+        setTimeout(function() { overlay.classList.add('hidden'); }, 400);
+        sessionStorage.setItem(POPUP_KEY, '1');
+      }
+      var closeBtn = document.getElementById('leadPopupClose');
+      if (closeBtn) closeBtn.addEventListener('click', closePopup);
+      overlay.addEventListener('click', function(e) { if (e.target === overlay) closePopup(); });
+      // Exit-intent on desktop
+      document.addEventListener('mouseleave', function(e) { if (e.clientY < 10) showPopup(); }, { once: true });
+      // Time-based trigger on mobile (12 seconds)
+      setTimeout(showPopup, 12000);
+      // Form submission
+      var form = document.getElementById('leadCaptureForm');
+      if (form) {
+        form.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          var btn = document.getElementById('leadSubmitBtn');
+          var msg = document.getElementById('leadFormMsg');
+          var email = document.getElementById('leadEmail').value.trim();
+          var name = document.getElementById('leadName').value.trim();
+          if (!email) return;
+          btn.disabled = true;
+          btn.textContent = 'Sending...';
+          try {
+            var res = await fetch('/api/public/subscribe', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, name, source: 'homepage_popup' })
+            });
+            var data = await res.json();
+            msg.classList.remove('hidden');
+            if (data.ok) {
+              msg.className = 'text-center text-xs mt-3 text-emerald-400';
+              msg.textContent = data.message || 'Sent! Check your inbox.';
+              setTimeout(closePopup, 2500);
+            } else {
+              msg.className = 'text-center text-xs mt-3 text-rose-400';
+              msg.textContent = data.error || 'Something went wrong. Please try again.';
+              btn.disabled = false;
+              btn.innerHTML = '<i data-feather="send" class="w-4 h-4 inline mr-1"></i>Try Again';
+              feather.replace();
+            }
+          } catch (err) {
+            msg.classList.remove('hidden');
+            msg.className = 'text-center text-xs mt-3 text-rose-400';
+            msg.textContent = 'Network error. Please try again.';
+            btn.disabled = false;
+            btn.textContent = 'Try Again';
+          }
+        });
+      }
+    })();
+    </script>
+    
+    <!-- ── WhatsApp Broadcast Modal (pure CSS – no Tailwind) ────────── -->
+    <style>
+      /* Scoped to modal only – isolated from site-wide styles */
+      #waBroadcastModalOverlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(5,7,13,0.72);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        z-index: 99999;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.25s ease, visibility 0.25s ease;
+      }
+      #waBroadcastModalOverlay.wa-open {
+        opacity: 1;
+        visibility: visible;
+      }
+      #waBroadcastModalBox {
+        width: 100%;
+        max-width: 420px;
+        background: rgba(17, 22, 33, 0.92);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 20px;
+        padding: 28px 28px 24px;
+        position: relative;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.45);
+        transform: scale(0.95);
+        transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+      }
+      #waBroadcastModalOverlay.wa-open #waBroadcastModalBox {
+        transform: scale(1);
+      }
+      #waModalClose {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid transparent;
+        color: #B8C0CE;
+        cursor: pointer;
+        transition: background 0.15s ease, color 0.15s ease;
+        font-family: inherit;
+      }
+      #waModalClose:hover { background: rgba(255,255,255,0.10); color: #fff; }
+      #waModalClose svg { width: 16px; height: 16px; }
+      #waModalClose:focus {
+        outline: 2px solid rgba(47,224,122,0.55);
+        outline-offset: 2px;
+        box-shadow: none !important;
+      }
+      .wa-icon-wrap {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        margin: 4px auto 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at 30% 25%, #2FE07A, #148A4C 75%);
+        box-shadow: 0 8px 24px rgba(47,224,122,0.35);
+      }
+      .wa-icon-wrap svg { width: 28px; height: 28px; fill: #0b1710; }
+      #waBroadcastModalBox h2 {
+        text-align: center;
+        color: #F5F7FA;
+        font-size: 21px;
+        font-weight: 700;
+        margin: 0 0 10px;
+        letter-spacing: -0.01em;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      .wa-subhead {
+        text-align: center;
+        color: #94A0B4;
+        font-size: 14px;
+        line-height: 1.5;
+        margin: 0 0 24px;
+        padding: 0 6px;
+      }
+      .wa-field-group { margin-bottom: 16px; }
+      .wa-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #A6B0C3;
+        margin-bottom: 8px;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      .wa-label .wa-hint {
+        text-transform: none;
+        font-weight: 400;
+        color: #6C7689;
+        letter-spacing: 0;
+      }
+      .wa-select-wrap { position: relative; }
+      #waModalCountrySelect {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 100%;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.10);
+        border-radius: 12px;
+        color: #F5F7FA;
+        font-size: 15px;
+        font-weight: 500;
+        padding: 14px 40px 14px 16px;
+        cursor: pointer;
+        transition: border-color 0.15s ease, background 0.15s ease;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      #waModalCountrySelect option {
+        background-color: #111621;
+        color: #F5F7FA;
+      }
+      #waModalCountrySelect:hover { background: rgba(255,255,255,0.07); }
+      #waModalCountrySelect:focus {
+        outline: none;
+        border-color: rgba(47,224,122,0.55);
+        box-shadow: 0 0 0 3px rgba(47,224,122,0.15) !important;
+      }
+      .wa-select-wrap::after {
+        content: '';
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        width: 10px;
+        height: 10px;
+        border-right: 2px solid #C7CEDB;
+        border-bottom: 2px solid #C7CEDB;
+        transform: translateY(-65%) rotate(45deg);
+        pointer-events: none;
+      }
+      #waModalPhoneInput {
+        width: 100%;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.10);
+        border-radius: 12px;
+        color: #F5F7FA;
+        font-size: 15px;
+        padding: 14px 16px;
+        transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        box-sizing: border-box;
+      }
+      #waModalPhoneInput::placeholder { color: #5C6578; }
+      #waModalPhoneInput:hover { background: rgba(255,255,255,0.07); }
+      #waModalPhoneInput:focus {
+        outline: none;
+        border-color: rgba(47,224,122,0.55);
+        background: rgba(255,255,255,0.07);
+        box-shadow: 0 0 0 3px rgba(47,224,122,0.15) !important;
+      }
+      #waModalPhoneInput.wa-error {
+        border-color: #FF6B6B !important;
+        box-shadow: 0 0 0 3px rgba(255,107,107,0.12) !important;
+      }
+      #waErrorMsg {
+        display: none;
+        color: #FF6B6B;
+        font-size: 12.5px;
+        margin-top: 7px;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      #waErrorMsg.wa-show { display: block; }
+      #waHelperMsg {
+        color: #6C7689;
+        font-size: 12px;
+        margin-top: 7px;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      #waSubmitBtn {
+        width: 100%;
+        border: none;
+        border-radius: 12px;
+        padding: 16px;
+        font-size: 15px;
+        font-weight: 700;
+        color: #0B1710;
+        background: linear-gradient(180deg, #2FE07A, #17C964);
+        cursor: pointer;
+        margin-top: 6px;
+        box-shadow: 0 10px 26px rgba(23,201,100,0.35);
+        transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      #waSubmitBtn:hover {
+        filter: brightness(1.05);
+        box-shadow: 0 12px 30px rgba(23,201,100,0.45);
+      }
+      #waSubmitBtn:active { transform: translateY(1px); }
+      #waSubmitBtn:disabled { opacity: 0.7; cursor: not-allowed; }
+      .wa-consent {
+        text-align: center;
+        color: #5C6578;
+        font-size: 11.5px;
+        line-height: 1.5;
+        margin-top: 14px;
+        padding: 0 8px;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      #waNoThanks {
+        display: block;
+        text-align: center;
+        margin-top: 14px;
+        color: #7A8296;
+        font-size: 13px;
+        text-decoration: none;
+        cursor: pointer;
+        background: none;
+        border: none;
+        width: 100%;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      #waNoThanks:hover { color: #B8C0CE; text-decoration: underline; }
+      /* Success state */
+      #waModalSuccess {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 0 30px;
+        text-align: center;
+      }
+      #waModalSuccess.wa-show { display: flex; }
+      .wa-success-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: rgba(47,224,122,0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        margin-bottom: 18px;
+        box-shadow: 0 10px 25px rgba(47,224,122,0.2);
+      }
+      #waModalSuccess h2 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #F5F7FA;
+        margin: 0 0 8px;
+      }
+      #waModalSuccess p {
+        color: #94A0B4;
+        font-size: 14px;
+        margin: 0;
+      }
+      @media (max-width: 400px) {
+        #waBroadcastModalBox { padding: 24px 20px 20px; border-radius: 16px; }
+      }
+      /* Override global gold focus ring for modal inputs */
+      #waBroadcastModalOverlay input:focus,
+      #waBroadcastModalOverlay select:focus {
+        box-shadow: 0 0 0 3px rgba(47,224,122,0.15) !important;
+      }
+    </style>
+
+    <div id="waBroadcastModalOverlay" role="presentation">
+      <div id="waBroadcastModalBox" role="dialog" aria-modal="true" aria-labelledby="waModalHeadline">
+
+        <!-- Close -->
+        <button id="waModalClose" aria-label="Close modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+
+        <!-- Success state -->
+        <div id="waModalSuccess">
+          <div class="wa-success-icon">🎉</div>
+          <h2>You're in!</h2>
+          <p>Get ready for your free trade setups.</p>
+        </div>
+
+        <!-- Form state -->
+        <div id="waModalContent">
+          <div class="wa-icon-wrap">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.82.5 3.53 1.36 5L2 22l5.2-1.36C8.6 21.5 10.26 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm0 18c-1.5 0-2.9-.4-4.1-1.1l-.3-.17-3.06.8.82-2.98-.2-.31A7.93 7.93 0 0 1 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8-3.59 8-8 8z"/></svg>
+          </div>
+
+          <h2 id="waModalHeadline">Free WhatsApp Broadcast</h2>
+          <p class="wa-subhead">Get 3 free trade setups a week, straight to WhatsApp. No spam, unsubscribe anytime.</p>
+
+          <form id="waModalForm">
+            <!-- Country -->
+            <div class="wa-field-group">
+              <label for="waModalCountrySelect" class="wa-label">Select country</label>
+              <div class="wa-select-wrap">
+                <select id="waModalCountrySelect"><!-- JS populated --></select>
+              </div>
+            </div>
+
+            <!-- Phone -->
+            <div class="wa-field-group">
+              <label for="waModalPhoneInput" class="wa-label">
+                Phone number <span class="wa-hint">(without country code)</span>
+              </label>
+              <input type="tel" id="waModalPhoneInput" placeholder="e.g. 712 345 678" inputmode="numeric" autocomplete="tel-national">
+              <div id="waErrorMsg">Enter a valid phone number for the selected country.</div>
+              <div id="waHelperMsg">9 digits, no leading zero</div>
+            </div>
+
+            <button type="submit" id="waSubmitBtn">Send Me Free Signals</button>
+          </form>
+
+          <p class="wa-consent">By joining, you agree to receive WhatsApp messages from us.</p>
+          <button id="waNoThanks">No thanks, maybe later</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+    (function() {
+      'use strict';
+
+      var COUNTRIES = [
+        { code: 'KE', name: 'Kenya',        dialCode: '+254', flag: '🇰🇪', length: 9 },
+        { code: 'NG', name: 'Nigeria',      dialCode: '+234', flag: '🇳🇬', length: 10 },
+        { code: 'ZA', name: 'South Africa', dialCode: '+27',  flag: '🇿🇦', length: 9 },
+        { code: 'UG', name: 'Uganda',       dialCode: '+256', flag: '🇺🇬', length: 9 },
+        { code: 'GH', name: 'Ghana',        dialCode: '+233', flag: '🇬🇭', length: 9 },
+        { code: 'TZ', name: 'Tanzania',     dialCode: '+255', flag: '🇹🇿', length: 9 },
+        { code: 'RW', name: 'Rwanda',       dialCode: '+250', flag: '🇷🇼', length: 9 },
+        { code: 'GB', name: 'United Kingdom', dialCode: '+44', flag: '🇬🇧', length: 10 },
+        { code: 'US', name: 'United States', dialCode: '+1',  flag: '🇺🇸', length: 10 },
+        { code: 'AE', name: 'UAE',          dialCode: '+971', flag: '🇦🇪', length: 9 }
+      ];
+
+      var TZ_MAP = {
+        'Africa/Nairobi':       'KE',
+        'Africa/Lagos':         'NG',
+        'Africa/Johannesburg':  'ZA',
+        'Africa/Kampala':       'UG',
+        'Africa/Accra':         'GH',
+        'Africa/Dar_es_Salaam': 'TZ',
+        'Africa/Kigali':        'RW',
+        'Europe/London':        'GB',
+        'Asia/Dubai':           'AE'
+      };
+
+      var selectedCountry = COUNTRIES[0];
+
+      // DOM refs
+      var overlay     = document.getElementById('waBroadcastModalOverlay');
+      var box         = document.getElementById('waBroadcastModalBox');
+      var closeBtn    = document.getElementById('waModalClose');
+      var noThanksBtn = document.getElementById('waNoThanks');
+      var countrySelect  = document.getElementById('waModalCountrySelect');
+      var phoneInput     = document.getElementById('waModalPhoneInput');
+      var errorMsg       = document.getElementById('waErrorMsg');
+      var helperMsg      = document.getElementById('waHelperMsg');
+      var form           = document.getElementById('waModalForm');
+      var submitBtn      = document.getElementById('waSubmitBtn');
+      var contentDiv     = document.getElementById('waModalContent');
+      var successDiv     = document.getElementById('waModalSuccess');
+
+      if (!overlay) return;
+
+      // Populate select
+      COUNTRIES.forEach(function(c) {
+        var opt = document.createElement('option');
+        opt.value = c.code;
+        opt.textContent = c.flag + ' ' + c.dialCode + ' — ' + c.name;
+        countrySelect.appendChild(opt);
+      });
+
+      // Auto-detect timezone
+      try {
+        var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        var detected = TZ_MAP[tz];
+        if (!detected) {
+          // Fuzzy: Africa/* -> KE, America/* -> US
+          if (tz.indexOf('Africa') > -1) detected = 'KE';
+          else if (tz.indexOf('America') > -1) detected = 'US';
+        }
+        if (detected) {
+          var found = COUNTRIES.find(function(c) { return c.code === detected; });
+          if (found) selectedCountry = found;
+        }
+      } catch(e) {}
+
+      countrySelect.value = selectedCountry.code;
+      updateHelper();
+
+      function updateHelper() {
+        helperMsg.textContent = selectedCountry.length + ' digits, no leading zero';
+      }
+
+      function validate() {
+        var digits = phoneInput.value.replace(/\D/g, '');
+        if (!digits || digits.length !== selectedCountry.length) {
+          return 'Enter a valid ' + selectedCountry.length + '-digit phone number.';
+        }
+        return '';
+      }
+
+      function setError(msg) {
+        if (msg) {
+          phoneInput.classList.add('wa-error');
+          errorMsg.textContent = msg;
+          errorMsg.classList.add('wa-show');
+          helperMsg.style.display = 'none';
+        } else {
+          phoneInput.classList.remove('wa-error');
+          errorMsg.classList.remove('wa-show');
+          helperMsg.style.display = '';
+        }
+      }
+
+      countrySelect.addEventListener('change', function() {
+        selectedCountry = COUNTRIES.find(function(c) { return c.code === countrySelect.value; }) || COUNTRIES[0];
+        updateHelper();
+        if (phoneInput.value) setError(validate());
+      });
+
+      phoneInput.addEventListener('input', function() {
+        // Strip non-digits live
+        var pos = phoneInput.selectionStart;
+        phoneInput.value = phoneInput.value.replace(/\D/g, '');
+        phoneInput.setSelectionRange(pos, pos);
+        setError(''); // clear on typing
+      });
+
+      phoneInput.addEventListener('blur', function() {
+        if (phoneInput.value) setError(validate());
+      });
+
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var err = validate();
+        if (err) { setError(err); phoneInput.focus(); return; }
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '⏺ Sending…';
+
+        // Mock submit — replace with real API call
+        console.log('WA Broadcast signup:', selectedCountry.dialCode, phoneInput.value);
+        setTimeout(function() {
+          contentDiv.style.display = 'none';
+          successDiv.classList.add('wa-show');
+          setTimeout(window.closeWAModal, 2000);
+        }, 1000);
+      });
+
+      // Focus trap
+      var FOCUSABLE = 'button, input, select, [tabindex]:not([tabindex="-1"])';
+      document.addEventListener('keydown', function(e) {
+        if (!overlay.classList.contains('wa-open')) return;
+        if (e.key === 'Escape') { window.closeWAModal(); return; }
+        if (e.key === 'Tab') {
+          var els = Array.from(box.querySelectorAll(FOCUSABLE)).filter(function(el) {
+            return !el.disabled && el.offsetParent !== null;
+          });
+          var first = els[0], last = els[els.length - 1];
+          if (e.shiftKey) {
+            if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+          } else {
+            if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+          }
+        }
+      });
+
+      overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) window.closeWAModal();
+      });
+      closeBtn.addEventListener('click', window.closeWAModal);
+      noThanksBtn.addEventListener('click', window.closeWAModal);
+
+      window.openWAModal = function() {
+        // Reset form
+        phoneInput.value = '';
+        setError('');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send Me Free Signals';
+        contentDiv.style.display = '';
+        successDiv.classList.remove('wa-show');
+
+        overlay.classList.add('wa-open');
+        document.body.style.overflow = 'hidden';
+        setTimeout(function() { phoneInput.focus(); }, 120);
+      };
+
+      window.closeWAModal = function() {
+        overlay.classList.remove('wa-open');
+        document.body.style.overflow = '';
+      };
+
+    })();
+    </script>
+    
+    <!-- Ambient Glows -->
+    <div class="ambient-glow-1"></div>
+    <div class="ambient-glow-2"></div>
+
+    <!-- Header Ticker -->
+    <div class="fixed top-0 left-0 w-full z-[100] pointer-events-none" style="-webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%); mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);">
+        <div class="tradingview-widget-container pointer-events-auto">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+            {
+            "symbols": [
+                { "proName": "FX_IDC:EURUSD", "title": "EUR/USD" },
+                { "proName": "FX_IDC:GBPUSD", "title": "GBP/USD" },
+                { "proName": "FX_IDC:USDJPY", "title": "USD/JPY" },
+                { "proName": "FX_IDC:AUDUSD", "title": "AUD/USD" },
+                { "proName": "FX_IDC:GBPJPY", "title": "GBP/JPY" },
+                { "proName": "OANDA:XAUUSD", "title": "XAU/USD" }
+            ],
+            "showSymbolLogo": true,
+            "isTransparent": false,
+            "displayMode": "adaptive",
+            "colorTheme": "dark",
+            "locale": "en"
+            }
+            </script>
+        </div>
+    </div>
+
+    <!-- Parallax Background -->
+    <div class="parallax-bg"></div>
+    <div class="gradient-overlay"></div>
+    <canvas id="bgCanvas" class="fixed inset-0 z-[-1] pointer-events-none opacity-25"></canvas>
+
+
+
+    <!-- 1. STICKY NAVBAR -->
+    <nav class="fixed top-[72px] md:top-[46px] left-0 w-full z-50 glass-panel border-b border-white/5 transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-full bg-surface border border-white/10 flex items-center justify-center overflow-hidden transition-transform group-hover:scale-105">
+                    <img src="avatar.webp" alt="Logo" loading="lazy" class="w-full h-full object-cover">
+                </div>
+                <span class="text-white font-bold text-lg tracking-tight">Pips Attendant</span>
+            </a>
+            
+            <!-- Desktop Links -->
+            <div class="hidden md:flex items-center gap-8 text-sm font-medium">
+                <a href="/" class="hover:text-white transition-colors">Home</a>
+                <a href="forex-signals.html" class="hover:text-white transition-colors">Signals</a>
+                <a href="copy-trading.html" class="hover:text-white transition-colors">Copy Trading</a>
+                <a href="propfirm.html" class="hover:text-white transition-colors">Prop Firms</a>
+                <a href="education.html" class="hover:text-white transition-colors">Education</a>
+                <a href="about.html" class="hover:text-white transition-colors">About</a>
+                <a href="blog.html" class="hover:text-white transition-colors">Blog</a>
+            </div>
+
+            <!-- CTA -->
+            <div class="hidden md:flex items-center gap-3">
+                <button id="pwa-install-btn" onclick="triggerPwaInstall()" class="hidden items-center gap-2 px-4 py-2 rounded-full text-xs font-bold border border-amber-400/40 text-amber-400 hover:bg-amber-400/10 transition-all">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13M8 11l4 4 4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+                  Install App
+                </button>
+                <a href="premium.html?v=5" class="btn-gold px-6 py-2.5 rounded-full text-sm">Join VIP</a>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden text-white focus:outline-none" id="mobile-menu-btn">
+                <i data-feather="menu"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="md:hidden hidden bg-black/95 backdrop-blur-xl border-t border-white/5 absolute top-full left-0 w-full transition-all duration-300 shadow-2xl">
+            <div class="flex flex-col px-6 py-4 gap-2 text-base font-medium">
+                <a href="/" class="mobile-link block py-3 text-gray-300 hover:text-white transition-colors border-b border-white/5">Home</a>
+                <a href="forex-signals.html" class="mobile-link block py-3 text-gray-300 hover:text-white transition-colors border-b border-white/5">Signals</a>
+                <a href="copy-trading.html" class="mobile-link block py-3 text-gray-300 hover:text-white transition-colors border-b border-white/5">Copy Trading</a>
+                <a href="propfirm.html" class="mobile-link block py-3 text-gray-300 hover:text-white transition-colors border-b border-white/5">Prop Firms</a>
+                <a href="education.html" class="mobile-link block py-3 text-gray-300 hover:text-white transition-colors border-b border-white/5">Education</a>
+                <a href="about.html" class="mobile-link block py-3 text-gray-300 hover:text-white transition-colors border-b border-white/5">About</a>
+                <a href="blog.html" class="mobile-link block py-3 text-gray-300 hover:text-white transition-colors border-b border-white/5">Blog</a>
+                <a href="premium.html?v=5" class="btn-gold block w-full py-3.5 rounded-full text-center mt-4 text-primary font-bold">Join VIP</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 2. HERO SECTION -->
+    <section id="hero" class="relative pt-32 pb-16 lg:pt-48 lg:pb-32 px-4 sm:px-6 flex flex-col items-center justify-start lg:justify-center min-h-[90vh] text-center overflow-hidden">
+        <div class="max-w-4xl mx-auto z-10 w-full mt-10 lg:mt-0">
+            <div class="flex flex-col md:flex-row items-center justify-center gap-3 mb-8">
+                <div data-aos="fade-down" class="inline-flex items-center border border-gold/40 text-gold bg-transparent text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full">
+                    Forex Signals · Copy Trading · Prop Firm Coaching
+                </div>
+                
+                <a href="premium.html?v=5" data-aos="fade-down" data-aos-delay="50" class="inline-flex items-center bg-red-500 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full hover:bg-red-600 transition-colors cursor-pointer shadow-lg shadow-red-500/20 hover:scale-105">
+                    NEW: LIVE TRADING ROOM INSIDE VIP
+                </a>
+            </div>
+            
+            <h1 data-aos="fade-up" data-aos-delay="100" class="text-4xl md:text-6xl lg:text-7xl font-black text-white tracking-tight leading-tight mb-6 font-heading">Professional Forex Signals, Copy Trading &amp; <span class="hero-gradient-text">Forex Education</span></h1>
+            
+            <p data-aos="fade-up" data-aos-delay="200" id="entity-statement" class="speakable text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+                <strong class="text-white">Pips Attendant is a professional Forex trading company.</strong> We help traders worldwide achieve consistent results through premium Forex signals, copy trading, prop firm coaching, expert mentorship, and advanced trading analytics.
+            </p>
+
+            <div data-aos="fade-up" data-aos-delay="300" class="flex flex-col items-center gap-6 mb-16">
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
+                    <a href="premium.html?v=5" class="w-full sm:w-auto px-8 py-3.5 rounded-full bg-gradient-to-r from-gold to-yellow-500 text-dark-navy font-bold hover:brightness-110 transition-all shadow-[0_0_20px_rgba(212,175,55,0.3)] flex items-center justify-center gap-2">
+                        Join Now
+                        <i data-feather="star" class="w-4 h-4"></i>
+                    </a>
+                    <a href="forex-signals.html" class="w-full sm:w-auto px-8 py-3.5 rounded-full glass-card text-white font-medium hover:bg-white/10 transition-all border border-white/10 flex items-center justify-center gap-2">
+                        View Signals
+                        <i data-feather="trending-up" class="w-4 h-4"></i>
+                    </a>
+                    <a href="education.html" class="hidden sm:flex w-full sm:w-auto px-8 py-3.5 rounded-full glass-card text-white font-medium hover:bg-white/10 transition-all border border-white/10 items-center justify-center gap-2">
+                        Start Learning
+                        <i data-feather="book-open" class="w-4 h-4"></i>
+                    </a>
+                </div>
+                <!-- Push Opt-In -->
+                <div id="pushOptInContainer">
+                    <button onclick="subscribeToPush()" class="px-6 py-2.5 rounded-full text-sm font-bold border border-gold/50 text-gold bg-black hover:bg-gold/10 transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(212,175,55,0.15)] cursor-pointer">
+                        <i data-feather="bell" class="w-4 h-4"></i> Enable VIP Push Alerts
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+                <div data-aos="zoom-in" data-aos-delay="100" data-tilt data-tilt-max="3" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.1" class="glass-card p-6 text-center group">
+                    <h3 class="text-3xl font-black text-white flex items-center justify-center gap-1 font-heading mb-1"><span id="publicWinRate">85</span>%</h3>
+                    <div class="w-6 h-0.5 rounded-full bg-gradient-to-r from-transparent via-gold to-transparent mx-auto mb-2 opacity-60"></div>
+                    <p class="text-xs text-gray-400 uppercase tracking-wider">Verified Win Rate</p>
+                </div>
+                <div data-aos="zoom-in" data-aos-delay="200" data-tilt data-tilt-max="3" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.1" class="glass-card p-6 text-center group">
+                    <h3 class="text-3xl font-black text-white flex items-center justify-center gap-1 font-heading mb-1"><span id="publicTotalPips">12k</span>+</h3>
+                    <div class="w-6 h-0.5 rounded-full bg-gradient-to-r from-transparent via-gold to-transparent mx-auto mb-2 opacity-60"></div>
+                    <p class="text-xs text-gray-400 uppercase tracking-wider">Pips Shared</p>
+                </div>
+                <div data-aos="zoom-in" data-aos-delay="300" data-tilt data-tilt-max="3" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.1" class="glass-card p-6 text-center group">
+                    <h3 class="text-3xl font-black text-white flex items-center justify-center gap-1 font-heading mb-1"><span id="publicTotalTrades">4</span>+</h3>
+                    <div class="w-6 h-0.5 rounded-full bg-gradient-to-r from-transparent via-gold to-transparent mx-auto mb-2 opacity-60"></div>
+                    <p class="text-xs text-gray-400 uppercase tracking-wider">Years Experience</p>
+                </div>
+                <div data-aos="zoom-in" data-aos-delay="400" data-tilt data-tilt-max="3" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.1" class="glass-card p-6 text-center group">
+                    <h3 class="text-3xl font-black text-white font-heading mb-1">5k+</h3>
+                    <div class="w-6 h-0.5 rounded-full bg-gradient-to-r from-transparent via-gold to-transparent mx-auto mb-2 opacity-60"></div>
+                    <p class="text-xs text-gray-400 uppercase tracking-wider">Community Members</p>
+                </div>
+            </div>
+
+
         </div>
         
-        <h2>We did not find any Accelerated Mobile Pages in your site.</h2>
-        
-        <p class="description">
-            Accelerated Mobile Pages (AMP) are an open-source initiative to provide web pages that load fast and look good on mobile devices, even over slow networks.
-        </p>
+        <!-- Subtle Glow -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gold/5 rounded-full blur-[120px] pointer-events-none -z-10"></div>
+    </section>
 
-        <button class="btn">GET STARTED WITH AMP</button>
 
-        <h3 class="footer-heading">Where are my pages?</h3>
-        
-        <p class="footer-text">
-            Think your pages aren't showing up when they should? <a href="#" class="footer-link">Read some basic troubleshooting tips.</a>
-        </p>
+    <!-- 4. TRUSTED PARTNERS SECTION -->
+    <section data-broker-container="true" class="py-12 relative overflow-hidden" style="background:linear-gradient(180deg,rgba(0,0,0,0.4) 0%,rgba(5,5,5,0) 100%);border-top:1px solid rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.05);">
+        <div class="max-w-5xl mx-auto px-6 text-center">
+            <p class="text-[10px] text-gray-500 uppercase tracking-[0.25em] font-bold mb-8 flex items-center justify-center gap-3">
+              <span class="w-10 h-px bg-gradient-to-r from-transparent to-white/20"></span>
+              Trusted Broker Partners
+              <span class="w-10 h-px bg-gradient-to-l from-transparent to-white/20"></span>
+            </p>
+            <div class="flex flex-wrap justify-center items-center gap-12 md:gap-20">
+                <!-- Dupoin - Priority Broker -->
+                <a data-broker="dupoin" href="https://dupoin.me/4xtk2hd5w" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center gap-3 group transition-all duration-400">
+                    <div class="relative">
+                      <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-yellow-300 text-black text-[9px] font-black px-3 py-0.5 rounded-full uppercase tracking-widest shadow-lg whitespace-nowrap z-10">⭐ #1 Recommended</span>
+                      <div class="px-8 py-5 rounded-2xl bg-white/10 border-2 border-amber-400/50 group-hover:bg-amber-400/10 group-hover:border-amber-400 group-hover:shadow-[0_0_30px_rgba(212,175,55,0.3)] transition-all duration-400 backdrop-blur-sm mt-3">
+                        <img src="dupoin.webp" alt="Dupoin Logo" loading="lazy" class="h-10 md:h-14 object-contain group-hover:scale-105 transition-transform" onerror="this.src='https://via.placeholder.com/150x50?text=Dupoin'">
+                      </div>
+                    </div>
+                    <span class="text-xs font-black text-amber-400 tracking-wider uppercase">Dupoin</span>
+                </a>
+                <!-- JustMarkets -->
+                <a data-broker="justmarkets" href="https://one.justmarkets.link/a/by21d0s1wd" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center gap-3 group transition-all duration-400">
+                    <div class="px-8 py-5 rounded-2xl bg-white/10 border border-white/20 group-hover:bg-amber-400/5 group-hover:border-amber-400/40 group-hover:shadow-[0_0_20px_rgba(212,175,55,0.2)] transition-all duration-400 backdrop-blur-sm">
+                      <img src="justmarkets.webp" alt="JustMarkets Logo" loading="lazy" class="h-10 md:h-14 object-contain group-hover:scale-105 transition-transform" onerror="this.src='https://via.placeholder.com/150x50?text=JustMarkets'">
+                    </div>
+                    <span class="text-xs font-black text-gray-300 group-hover:text-amber-400 tracking-wider uppercase transition">JustMarkets</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. FEATURED SERVICES SECTION -->
+    <section id="services" class="py-24 px-6 relative">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <div data-aos="fade-up" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.15em] mb-4 border" style="background:rgba(212,175,55,0.08);border-color:rgba(212,175,55,0.25);color:#D4AF37;">
+                  <span class="w-1.5 h-1.5 rounded-full bg-gold animate-pulse"></span> What We Offer
+                </div>
+                <h2 data-aos="fade-up" class="text-3xl md:text-5xl font-black text-white mb-4 font-heading">Our Core Trading Ecosystem: <span class="hero-gradient-text">Signals, Analytics & Prop Firms</span></h2>
+                <p data-aos="fade-up" data-aos-delay="100" class="text-gray-400 max-w-2xl mx-auto">Everything you need to analyze, execute, and grow your trading account.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- VIP Signals -->
+                <div data-aos="fade-right" data-aos-delay="100" data-tilt data-tilt-max="3" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.1" class="glass-card p-8 group relative overflow-hidden lg:col-span-2">
+                    <div class="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-15 transition-opacity duration-700">
+                        <i data-feather="trending-up" class="w-32 h-32 text-gold"></i>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-6 transition-all duration-300 group-hover:scale-110" style="background:linear-gradient(135deg,rgba(212,175,55,0.2),rgba(212,175,55,0.05));border:1px solid rgba(212,175,55,0.3);box-shadow:0 0 16px rgba(212,175,55,0.1);">
+                        <i data-feather="activity" class="text-gold"></i>
+                    </div>
+                    <h3 class="text-2xl font-black text-white mb-3 font-heading">VIP Signals</h3>
+                    <p class="text-gray-400 mb-6 leading-relaxed">Real-time premium trading signals with exact entry, stop loss, and take profit levels. Push notifications to ensure you never miss a setup.</p>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-2 text-sm text-gray-300"><span class="w-4 h-4 rounded-full bg-gold/20 border border-gold/40 flex items-center justify-center flex-shrink-0"><i data-feather="check" class="w-2.5 h-2.5 text-gold"></i></span> Verified results with screenshots</li>
+                        <li class="flex items-center gap-2 text-sm text-gray-300"><span class="w-4 h-4 rounded-full bg-gold/20 border border-gold/40 flex items-center justify-center flex-shrink-0"><i data-feather="check" class="w-2.5 h-2.5 text-gold"></i></span> Instant Telegram push alerts</li>
+                    </ul>
+                    <a href="premium.html?v=5" class="inline-flex items-center gap-2 text-sm font-medium border border-white/10 bg-white/5 hover:bg-gold/10 hover:border-gold/30 hover:text-gold text-white px-5 py-2 rounded-full transition-all group/link">
+                        Explore Signals <i data-feather="arrow-right" class="w-4 h-4 group-hover/link:translate-x-1 transition-transform"></i>
+                    </a>
+                </div>
+
+                <!-- Prop Firm Passing -->
+                <div data-aos="fade-left" data-aos-delay="200" data-tilt data-tilt-max="3" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.1" class="glass-card p-8 group relative overflow-hidden border border-gold/10">
+                    <div class="absolute top-6 right-6">
+                        <span class="bg-red-500 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg shadow-red-500/20">HOT</span>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-surface border border-white/10 flex items-center justify-center mb-6 text-white group-hover:text-gold transition-colors">
+                        <i data-feather="award"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-3">Prop Firm Passing</h3>
+                    <p class="text-gray-400 mb-6 leading-relaxed">Let our automated systems and professional traders help you pass your prop firm challenges and get funded.</p>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-2 text-sm text-gray-300"><i data-feather="check" class="w-4 h-4 text-gold"></i> HFT Support</li>
+                        <li class="flex items-center gap-2 text-sm text-gray-300"><i data-feather="check" class="w-4 h-4 text-gold"></i> Strict Risk Management</li>
+                    </ul>
+                    <a href="propfirm.html" class="inline-flex items-center gap-2 text-sm font-medium border border-white/10 bg-white/5 hover:bg-gold/10 hover:border-gold/30 hover:text-gold text-white px-5 py-2 rounded-full transition-all group/link">
+                        Get Funded <i data-feather="arrow-right" class="w-4 h-4 group-hover/link:translate-x-1 transition-transform"></i>
+                    </a>
+                </div>
+
+                <!-- Trading Journal -->
+                <div data-aos="fade-right" data-aos-delay="300" data-tilt data-tilt-max="3" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.1" class="glass-card p-8 group relative overflow-hidden">
+                    <div class="absolute top-6 right-6">
+                        <span class="border border-white/20 text-gray-300 bg-transparent text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full">FREE TOOL</span>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-surface border border-white/10 flex items-center justify-center mb-6 text-white group-hover:text-gold transition-colors">
+                        <i data-feather="book-open"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-3">Trading Journal</h3>
+                    <p class="text-gray-400 mb-6 leading-relaxed">Track your performance, analyze your psychology, and optimize your strategy with our built-in digital journal.</p>
+                    <a href="journal.html" class="inline-flex items-center gap-2 text-sm font-medium border border-white/10 bg-white/5 hover:bg-gold/10 hover:border-gold/30 hover:text-gold text-white px-5 py-2 rounded-full transition-all group/link">
+                        Start Tracking <i data-feather="arrow-right" class="w-4 h-4 group-hover/link:translate-x-1 transition-transform"></i>
+                    </a>
+                </div>
+
+                <!-- Risk Calculator -->
+                <div data-aos="fade-left" data-aos-delay="400" data-tilt data-tilt-max="3" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.1" class="glass-card p-8 group relative overflow-hidden lg:col-span-2 lg:col-start-2">
+                    <div class="w-12 h-12 rounded-xl bg-surface border border-white/10 flex items-center justify-center mb-6 text-white group-hover:text-gold transition-colors">
+                        <i data-feather="pie-chart"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-3">Risk Calculator</h3>
+                    <p class="text-gray-400 mb-6 leading-relaxed">Calculate exact position sizes based on your account balance, risk percentage, and stop loss distance in pips.</p>
+                    <a href="#" onclick="openCalculatorModal(event)" class="inline-flex items-center gap-2 text-sm font-medium border border-white/10 bg-white/5 hover:bg-gold/10 hover:border-gold/30 hover:text-gold text-white px-5 py-2 rounded-full transition-all group/link">
+                        Use Calculator <i data-feather="arrow-right" class="w-4 h-4 group-hover/link:translate-x-1 transition-transform"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5.5 LIVE RISK CALCULATOR MODAL -->
+    <div id="calculatorModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md opacity-0 transition-opacity duration-300">
+        <div class="max-w-4xl w-full max-h-[90vh] overflow-y-auto hide-scrollbar custom-scrollbar relative rounded-3xl">
+            
+            <!-- Close Button -->
+            <button onclick="closeCalculatorModal()" class="absolute top-4 right-4 z-10 w-10 h-10 bg-black/50 hover:bg-red-500/80 hover:text-white rounded-full flex items-center justify-center transition-colors border border-white/10 text-gray-400">
+                <i data-feather="x" class="w-5 h-5"></i>
+            </button>
+
+            <div data-tilt data-tilt-max="3" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.1" class="glass-card border border-gold/30 rounded-3xl overflow-hidden shadow-[0_20px_60px_rgba(212,175,55,0.15)] bg-[#050505]/95 transition-transform duration-500 hover:shadow-[0_20px_80px_rgba(212,175,55,0.25)] relative group">
+                <div class="absolute -top-32 -right-32 w-64 h-64 bg-gold/10 rounded-full blur-[80px] pointer-events-none group-hover:bg-gold/20 transition-all duration-700"></div>
+                <div class="bg-gradient-to-r from-gold/15 to-transparent p-6 border-b border-white/5 flex flex-col sm:flex-row items-start sm:items-center gap-4 relative z-10">
+                    <div class="p-3 bg-gold/20 rounded-xl">
+                        <i data-feather="crosshair" class="w-6 h-6 text-gold"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white font-bold text-xl leading-tight">Position Size Calculator</h3>
+                        <p class="text-xs text-gray-400 mt-1">Calculate your exact position size before entering any trade.</p>
+                    </div>
+                </div>
+
+                <div class="p-6 md:p-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Inputs -->
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Account Balance (USD)</label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500 font-medium">$</span>
+                                    <input type="number" id="rc_balance" placeholder="e.g. 10000" min="1"
+                                        class="w-full bg-black/60 border border-white/10 rounded-xl pl-10 pr-4 py-3.5 text-white focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/30 transition-all placeholder-gray-600">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Risk (%)</label>
+                                    <div class="relative">
+                                        <input type="number" id="rc_risk" placeholder="1.0" step="0.1" min="0.1" max="100"
+                                            class="w-full bg-black/60 border border-white/10 rounded-xl pl-4 pr-10 py-3.5 text-white focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/30 transition-all placeholder-gray-600">
+                                        <span class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500 font-medium">%</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Stop Loss (Pips)</label>
+                                    <input type="number" id="rc_sl" placeholder="e.g. 50" min="1"
+                                        class="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/30 transition-all placeholder-gray-600">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Instrument / Pair</label>
+                                <select id="rc_pair"
+                                    class="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/30 transition-all appearance-none cursor-pointer">
+                                    <option value="10">Forex Majors (EURUSD, GBPUSD…) — $10/pip</option>
+                                    <option value="100">Gold (XAUUSD) — $10/pip per 0.1 lot</option>
+                                    <option value="1">Indices (US30, NAS100) — $1/pt per 0.01 lot</option>
+                                    <option value="5">Forex Minors/Exotics — $5/pip</option>
+                                </select>
+                            </div>
+
+                            <button type="button" onclick="runRiskCalc()"
+                                class="w-full py-4 rounded-xl font-bold text-primary flex items-center justify-center gap-2 transition-all duration-300 hover:brightness-110 active:scale-95 shadow-[0_0_20px_rgba(212,175,55,0.2)]"
+                                style="background: linear-gradient(135deg, #D4AF37, #E5C158);">
+                                <i data-feather="calculator" class="w-5 h-5"></i> Calculate Lot Size
+                            </button>
+                        </div>
+
+                        <!-- Results Panel -->
+                        <div class="flex flex-col gap-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-black/60 backdrop-blur-md border border-white/10 rounded-2xl p-5 text-center flex flex-col justify-center hover:border-red-500/30 transition-all duration-300 hover:shadow-[0_0_20px_rgba(248,113,113,0.1)] group/risk relative overflow-hidden">
+                                    <div class="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent opacity-0 group-hover/risk:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+                                    <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-2 font-semibold group-hover/risk:text-red-400/70 transition-colors relative z-10">Amount at Risk</p>
+                                    <p class="text-2xl font-black text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.3)] relative z-10">$<span id="rc_riskAmount">—</span></p>
+                                </div>
+                                <div class="bg-black/60 backdrop-blur-md border border-gold/40 rounded-2xl p-5 text-center flex flex-col justify-center relative overflow-hidden transition-all duration-500 hover:shadow-[0_0_30px_rgba(212,175,55,0.2)] hover:scale-[1.02] hover:border-gold/60 group/lot">
+                                    <div class="absolute inset-0 bg-gradient-to-br from-gold/10 to-transparent group-hover/lot:opacity-80 transition-opacity duration-500"></div>
+                                    <p class="text-[10px] text-gold uppercase tracking-widest mb-2 font-semibold relative z-10">Recommended Lot</p>
+                                    <p class="text-4xl font-black text-white relative z-10 drop-shadow-[0_0_12px_rgba(255,255,255,0.2)] group-hover/lot:text-gold transition-colors duration-300" id="rc_lots">—</p>
+                                </div>
+                            </div>
+
+                            <div class="relative bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-6 space-y-3 flex-1 flex flex-col justify-center overflow-hidden hover:border-gold/30 transition-all duration-500 group/results">
+                                <div class="absolute inset-0 bg-gradient-to-br from-gold/5 to-transparent opacity-0 group-hover/results:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+                                <div class="flex justify-between items-center text-sm relative z-10">
+                                    <span class="text-gray-400 font-medium group-hover/results:text-gray-300 transition-colors">Account Balance</span>
+                                    <span class="text-white font-mono tracking-wider" id="rc_disp_balance">—</span>
+                                </div>
+                                <div class="flex justify-between items-center text-sm relative z-10">
+                                    <span class="text-gray-400 font-medium group-hover/results:text-gray-300 transition-colors">Risk Percentage</span>
+                                    <span class="text-white font-mono tracking-wider" id="rc_disp_risk">—</span>
+                                </div>
+                                <div class="flex justify-between items-center text-sm relative z-10">
+                                    <span class="text-gray-400 font-medium group-hover/results:text-gray-300 transition-colors">Stop Loss Size</span>
+                                    <span class="text-white font-mono tracking-wider" id="rc_disp_sl">—</span>
+                                </div>
+                                <div class="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent my-3 relative z-10"></div>
+                                <div class="flex justify-between items-center relative z-10">
+                                    <span class="text-gray-200 font-bold tracking-wide">Optimal Position</span>
+                                    <span class="text-gold font-black text-xl font-mono tracking-wider drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]" id="rc_disp_lots">—</span>
+                                </div>
+                            </div>
+
+                            <div id="rc_warning" style="display: none;" class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-start gap-3">
+                                <i data-feather="alert-triangle" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+                                <span id="rc_warning_text" class="leading-relaxed"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- 6. TESTIMONIALS (Carousel via CSS snap) -->
+    <section class="py-24 px-6 border-y border-white/5">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+              <div data-aos="fade-up" class="inline-flex items-center border border-gold/40 text-gold bg-transparent text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full mb-4">
+                ⭐ Member Testimonials
+              </div>
+              <h2 data-aos="fade-up" class="text-3xl md:text-4xl font-black text-white font-heading">Verified Results & <span class="hero-gradient-text">Member Testimonials</span></h2>
+            </div>
+            
+            <div class="relative w-full overflow-hidden after:absolute after:right-0 after:top-0 after:bottom-0 after:w-16 after:bg-gradient-to-l after:from-[#050505] after:to-transparent after:pointer-events-none before:absolute before:left-0 before:top-0 before:bottom-0 before:w-16 before:bg-gradient-to-r before:from-[#050505] before:to-transparent before:pointer-events-none before:z-10 after:z-10">
+                <div id="testimonials-carousel" class="flex overflow-x-auto gap-8 pb-8 snap-x-mandatory px-8 md:px-4 scroll-smooth custom-scrollbar" style="scroll-padding-left: 2rem; -webkit-overflow-scrolling: touch;">
+                <!-- Testimonial 1 -->
+                <div class="min-w-[300px] md:min-w-[420px] p-8 glass-card snap-center flex-shrink-0 overflow-hidden">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 rounded-full bg-gray-800 overflow-hidden">
+                            <img src="https://ui-avatars.com/api/?name=Michael+T&background=D4AF37&color=000" alt="Avatar" loading="lazy">
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold">Michael T.</h4>
+                            <div class="text-gold text-xs font-medium flex items-center gap-1">
+                                <i data-feather="award" class="w-3 h-3"></i> Funded $100k
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 text-sm italic mb-4">"The risk management tools and exact setups completely changed my psychology. Passed my prop firm challenge in 3 weeks using the VIP signals."</p>
+                </div>
+
+                <!-- Testimonial 2 -->
+                <div class="min-w-[300px] md:min-w-[420px] p-8 glass-card snap-center flex-shrink-0 overflow-hidden">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 rounded-full bg-gray-800 overflow-hidden">
+                            <img src="https://ui-avatars.com/api/?name=Sarah+J&background=1f2937&color=fff" alt="Avatar" loading="lazy">
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold">Sarah J.</h4>
+                            <div class="text-green-400 text-xs font-medium flex items-center gap-1">
+                                <i data-feather="trending-up" class="w-3 h-3"></i> Consistent Profit
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 text-sm italic mb-4">"No noise, just clean setups. The UI is amazing, but the education and community support is what keeps me here. Worth every penny."</p>
+                </div>
+                
+                <!-- Testimonial 3 -->
+                <div class="min-w-[300px] md:min-w-[420px] p-8 glass-card snap-center flex-shrink-0 overflow-hidden">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 rounded-full bg-gray-800 overflow-hidden">
+                            <img src="https://ui-avatars.com/api/?name=David+O&background=374151&color=D4AF37" alt="Avatar" loading="lazy">
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold">David O.</h4>
+                            <div class="text-gold text-xs font-medium flex items-center gap-1">
+                                <i data-feather="star" class="w-3 h-3"></i> 2 Yrs Member
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 text-sm italic mb-4">"Finally a platform that feels professional. The journal feature is incredible and the analysis is top tier. Best decision for my trading journey."</p>
+                </div>
+            </div>
+            </div>
+        </div>
+    </section>
+    <!-- 6.5 NEWS SECTION -->
+    <section id="news" class="py-24 px-6 relative overflow-hidden bg-black/40 border-y border-white/5">
+        <!-- Background Elements -->
+        <div class="absolute top-0 right-0 w-[400px] h-[400px] bg-gold/5 rounded-full blur-[100px] pointer-events-none"></div>
+        <div class="absolute bottom-0 left-0 w-[300px] h-[300px] bg-white/5 rounded-full blur-[80px] pointer-events-none"></div>
+
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16 relative z-10">
+                <div class="w-16 h-16 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center mx-auto mb-6">
+                    <i data-feather="zap" class="w-6 h-6 text-gold"></i>
+                </div>
+                <h2 class="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight">📅 Upcoming <span class="secondary-gradient-text drop-shadow-[0_0_15px_rgba(255,215,0,0.3)]">High-Impact News</span></h2>
+                <p class="text-gray-400 max-w-2xl mx-auto text-sm md:text-base">Know before you trade. Real-time high-impact economic events that move the markets.</p>
+
+                <!-- Impact legend & Myfxbook link -->
+                <div class="flex flex-wrap justify-center gap-3 mt-6">
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-red-500/15 text-red-400 border border-red-500/20 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-red-500 inline-block animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]"></span> High Impact</span>
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/20 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span> Medium Impact</span>
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-500/15 text-gray-400 border border-gray-500/20">USD · EUR · GBP · JPY · CNY</span>
+                    <a href="https://www.myfxbook.com/forex-economic-calendar" target="_blank" class="px-3 py-1 rounded-full text-xs font-semibold bg-gold/15 text-gold border border-gold/20 hover:bg-gold/25 transition-colors flex items-center gap-1">
+                        <i data-feather="external-link" class="w-3 h-3"></i> Full calendar on Myfxbook
+                    </a>
+                </div>
+            </div>
+
+            <!-- Events widget card -->
+            <div data-tilt data-tilt-max="3" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.1" class="glass-card rounded-3xl overflow-hidden border border-gold/20 shadow-[0_8px_40px_rgba(0,0,0,0.6)] hover:border-gold/40 hover:shadow-[0_0_40px_rgba(255,215,0,0.15)] transition-all duration-500 bg-black/40 backdrop-blur-xl">
+                <!-- Top bar -->
+                <div class="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-transparent">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-red-500 opacity-70"></div>
+                        <div class="w-3 h-3 rounded-full bg-amber-400 opacity-70"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500 opacity-70"></div>
+                        <span class="ml-3 text-gray-500 text-xs font-bold uppercase tracking-wider">High-Impact Events Feed</span>
+                    </div>
+                    <a href="https://www.myfxbook.com/forex-economic-calendar" target="_blank"
+                        class="text-gray-500 hover:text-gold transition-colors text-xs flex items-center gap-1 font-bold">
+                        <i data-feather="external-link" class="w-3 h-3"></i> Myfxbook
+                    </a>
+                </div>
+
+                <!-- TradingView Economic Calendar Widget (Lazy Loaded) -->
+                <div class="tradingview-widget-container bg-transparent" id="tv-calendar-container" style="height:600px; width:100%;">
+                    <div class="tradingview-widget-container__widget" style="height:600px; width:100%;"></div>
+                </div>
+
+                <!-- Footer -->
+                <div class="px-6 py-3 border-t border-white/5 flex items-center justify-between bg-transparent">
+                    <span class="text-xs text-gray-400 font-medium">News events by <a href="https://www.tradingview.com/" target="_blank" class="text-gold hover:text-gold/80 transition-colors font-bold">TradingView</a></span>
+                    <a href="https://www.myfxbook.com/forex-economic-calendar" target="_blank" class="text-xs text-gray-400 hover:text-gold transition-colors flex items-center gap-1 font-bold">
+                        <i data-feather="trending-up" class="w-3 h-3"></i> More on Myfxbook
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. COMMUNITY SECTION -->
+    <section id="community" class="py-24 px-6 text-center">
+        <div class="max-w-4xl mx-auto">
+            <h2 data-aos="fade-up" class="text-3xl md:text-5xl font-bold text-white mb-6 font-heading">Join Thousands of Traders Worldwide</h2>
+            <p data-aos="fade-up" data-aos-delay="100" class="text-gray-400 text-lg mb-12 max-w-2xl mx-auto">Free education, daily market insights, and a supportive network of traders aiming for consistency.</p>
+            
+            <div class="flex flex-wrap justify-center gap-4 md:gap-8">
+                <!-- Telegram -->
+                <a href="https://t.me/pips_attendant" target="_blank" aria-label="Telegram" class="flex items-center justify-center w-16 h-16 rounded-2xl glass-card text-[#0088cc] border-[#0088cc]/20 hover:border-[#0088cc]/50 transition-all group">
+                    <i data-feather="send" class="w-6 h-6 group-hover:scale-110 transition-transform"></i>
+                </a>
+                <!-- Instagram -->
+                <a href="https://instagram.com/pips_attendant" target="_blank" aria-label="Instagram" class="flex items-center justify-center w-16 h-16 rounded-2xl glass-card text-[#E1306C] border-[#E1306C]/20 hover:border-[#E1306C]/50 transition-all group">
+                    <i data-feather="instagram" class="w-6 h-6 group-hover:scale-110 transition-transform"></i>
+                </a>
+                <!-- YouTube -->
+                <a href="https://youtube.com/@pips_attendant" target="_blank" aria-label="YouTube" class="flex items-center justify-center w-16 h-16 rounded-2xl glass-card text-[#FF0000] border-[#FF0000]/20 hover:border-[#FF0000]/50 transition-all group">
+                    <i data-feather="youtube" class="w-6 h-6 group-hover:scale-110 transition-transform"></i>
+                </a>
+                <!-- TikTok -->
+                <a href="https://tiktok.com/@pips_attendant" target="_blank" aria-label="TikTok" class="flex items-center justify-center w-16 h-16 rounded-2xl glass-card text-[#25f4ee] border-[#25f4ee]/20 hover:border-[#25f4ee]/50 transition-all group">
+                    <svg class="w-6 h-6 group-hover:scale-110 transition-transform fill-current" viewBox="0 0 24 24">
+                        <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                    </svg>
+                </a>
+                <!-- Twitter/X -->
+                <a href="https://twitter.com/pips_attendant" target="_blank" aria-label="X (Twitter)" class="flex items-center justify-center w-16 h-16 rounded-2xl glass-card text-[#1DA1F2] border-[#1DA1F2]/20 hover:border-[#1DA1F2]/50 transition-all group">
+                    <i data-feather="twitter" class="w-6 h-6 group-hover:scale-110 transition-transform"></i>
+                </a>
+                <!-- WhatsApp -->
+                <a href="https://wa.me/254700000000?text=Hello%20Pips%20Attendant,%20I'm%20interested%20in%20your%20services!" target="_blank" aria-label="WhatsApp" class="flex items-center justify-center w-16 h-16 rounded-2xl glass-card text-[#25D366] border-[#25D366]/20 hover:border-[#25D366]/50 transition-all group">
+                    <svg class="w-6 h-6 group-hover:scale-110 transition-transform fill-current" viewBox="0 0 24 24">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+                    </svg>
+                </a>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- 8. VIP SECTION -->
+    <section id="vip" class="py-24 px-6">
+        <div class="max-w-5xl mx-auto relative">
+            <!-- Gold glow behind card -->
+            <div class="absolute inset-0 bg-gold/10 blur-[80px] rounded-[3rem] -z-10"></div>
+            
+            <div data-aos="zoom-in" data-tilt data-tilt-max="3" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.1" class="glass-card rounded-[2.5rem] p-8 md:p-16 border-gold/20 flex flex-col md:flex-row items-center justify-between gap-12 overflow-hidden relative">
+                <!-- Background pattern -->
+                <div class="absolute top-0 right-0 w-64 h-64 bg-gold/5 rounded-full blur-[50px]"></div>
+
+                <div data-aos="fade-right" data-aos-delay="200" class="flex-1 z-10">
+                    <h2 class="text-3xl md:text-5xl font-extrabold text-white mb-6 font-heading">Unlock the Full<br/> Trading Experience</h2>
+                    <p class="text-gray-400 mb-8 text-lg">Gain the edge you need with our premium toolkit, exact market setups, and private mentorship.</p>
+                    
+                    <ul class="space-y-4 mb-10">
+                        <li class="flex items-center gap-3 text-gray-200">
+                            <div class="w-6 h-6 rounded-full bg-gold/25 border border-gold/40 flex items-center justify-center flex-shrink-0"><i data-feather="check" class="w-3 h-3 text-gold"></i></div>
+                            Instant push alerts & signals
+                        </li>
+                        <li class="flex items-center gap-3 text-gray-200">
+                            <div class="w-6 h-6 rounded-full bg-gold/25 border border-gold/40 flex items-center justify-center flex-shrink-0"><i data-feather="check" class="w-3 h-3 text-gold"></i></div>
+                            VIP market analysis & breakdowns
+                        </li>
+                        <li class="flex items-center gap-3 text-gray-200">
+                            <div class="w-6 h-6 rounded-full bg-gold/25 border border-gold/40 flex items-center justify-center flex-shrink-0"><i data-feather="check" class="w-3 h-3 text-gold"></i></div>
+                            Exclusive, high-probability setups
+                        </li>
+                        <li class="flex items-center gap-3 text-gray-200">
+                            <div class="w-6 h-6 rounded-full bg-gold/25 border border-gold/40 flex items-center justify-center flex-shrink-0"><i data-feather="check" class="w-3 h-3 text-gold"></i></div>
+                            Private mentorship sessions
+                        </li>
+                        <li class="flex items-center gap-3 text-gray-200">
+                            <div class="w-6 h-6 rounded-full bg-gold/25 border border-gold/40 flex items-center justify-center flex-shrink-0"><i data-feather="check" class="w-3 h-3 text-gold"></i></div>
+                            Priority support & guidance
+                        </li>
+                    </ul>
+
+                    <a href="premium.html?v=5" class="inline-block btn-gold px-10 py-4 rounded-full text-lg font-bold">
+                        Become VIP
+                    </a>
+                </div>
+
+                <div class="flex-1 z-10 hidden md:block">
+                    <!-- Dashboard Preview Element -->
+                    <div class="w-full aspect-[4/3] bg-[#0A0A0A]/90 backdrop-blur-xl rounded-2xl border border-gold/20 p-6 relative shadow-[0_0_40px_rgba(212,175,55,0.15)] transform rotate-2 hover:rotate-0 transition-transform duration-500 overflow-hidden flex flex-col">
+                        
+                        <!-- Header -->
+                        <div class="flex justify-between items-center mb-6 pb-4 border-b border-white/5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center border border-gold/20">
+                                    <i data-feather="star" class="w-4 h-4 text-gold"></i>
+                                </div>
+                                <span class="text-white font-bold text-sm tracking-wide">VIP Dashboard</span>
+                            </div>
+                            <div class="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] font-bold rounded-full border border-emerald-500/20 flex items-center gap-1.5">
+                                <div class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></div> Live
+                            </div>
+                        </div>
+
+                        <!-- Content Grid -->
+                        <div class="grid grid-cols-2 gap-4 flex-1">
+                            
+                            <!-- Signal Card -->
+                            <div class="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col justify-between hover:bg-white/10 transition-colors cursor-default">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <div class="text-xs text-gray-400 font-semibold mb-1">XAUUSD</div>
+                                        <div class="text-white font-bold">BUY LIMIT</div>
+                                    </div>
+                                    <i data-feather="trending-up" class="w-4 h-4 text-emerald-400"></i>
+                                </div>
+                                <div class="mt-4 space-y-2">
+                                    <div class="flex justify-between text-[10px]"><span class="text-gray-500">Entry</span><span class="text-white font-mono">2340.50</span></div>
+                                    <div class="flex justify-between text-[10px]"><span class="text-gray-500">TP</span><span class="text-gold font-mono">2355.00</span></div>
+                                </div>
+                            </div>
+
+                            <!-- Performance Stats -->
+                            <div class="flex flex-col gap-4">
+                                <div class="bg-gold/10 border border-gold/20 rounded-xl p-4 flex-1 flex flex-col justify-center relative overflow-hidden">
+                                    <div class="absolute top-0 right-0 w-16 h-16 bg-gold/20 blur-xl rounded-full"></div>
+                                    <div class="text-[10px] text-gold uppercase tracking-widest font-bold mb-1 relative z-10">Weekly Win Rate</div>
+                                    <div class="text-2xl font-black text-white relative z-10">89<span class="text-lg text-gray-400">%</span></div>
+                                </div>
+                                <div class="bg-white/5 border border-white/10 rounded-xl p-3 flex items-center justify-between">
+                                    <span class="text-[10px] text-gray-400 font-medium">Active Setups</span>
+                                    <span class="bg-white/10 text-white text-xs font-bold px-2 py-0.5 rounded">3</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 8.5 SEO KNOWLEDGE BASE -->
+    <!-- WhatsApp Broadcast Widget (Moved to bottom) -->
+    <div class="flex justify-center mb-12">
+            <!-- WhatsApp Broadcast Widget -->
+            <div id="waBroadcastCard" class="w-full max-w-sm mx-auto p-7 glass-card border border-gold/20 relative overflow-hidden text-center transition-all duration-300 rounded-2xl">
+                <button type="button" onclick="document.getElementById('waBroadcastCard').style.display='none'" class="absolute top-3 right-3 text-gray-500 hover:text-white transition z-20"><i data-feather="x" class="w-4 h-4"></i></button>
+                <div class="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent"></div>
+                <div class="relative z-10">
+                    <div class="w-14 h-14 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4 border border-green-500/30">
+                        <i data-feather="message-circle" class="w-7 h-7 text-green-400"></i>
+                    </div>
+                    <h3 class="text-white font-bold text-lg mb-1">Free WhatsApp Broadcast</h3>
+                    <p class="text-xs text-gray-400 mb-6 leading-relaxed">Get occasional free Forex signal teasers delivered directly to your WhatsApp.</p>
+                    <form onsubmit="subscribeWhatsApp(event)" class="space-y-3 text-left">
+                        <div>
+                            <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1.5 block">Select Country</label>
+                            <select id="waCountry" class="w-full bg-black/60 text-white text-sm px-4 py-3 rounded-xl border border-white/10 focus:outline-none focus:border-green-400/50 cursor-pointer">
+                                <option value="+93">🇦🇫 +93 — Afghanistan</option>
+                                <option value="+355">🇦🇱 +355 — Albania</option>
+                                <option value="+213">🇩🇿 +213 — Algeria</option>
+                                <option value="+376">🇦🇩 +376 — Andorra</option>
+                                <option value="+244">🇦🇴 +244 — Angola</option>
+                                <option value="+1">🇦🇬 +1 — Antigua and Barbuda</option>
+                                <option value="+54">🇦🇷 +54 — Argentina</option>
+                                <option value="+374">🇦🇲 +374 — Armenia</option>
+                                <option value="+61">🇦🇺 +61 — Australia</option>
+                                <option value="+43">🇦🇹 +43 — Austria</option>
+                                <option value="+994">🇦🇿 +994 — Azerbaijan</option>
+                                <option value="+1">🇧🇸 +1 — Bahamas</option>
+                                <option value="+973">🇧🇭 +973 — Bahrain</option>
+                                <option value="+880">🇧🇩 +880 — Bangladesh</option>
+                                <option value="+1">🇧🇧 +1 — Barbados</option>
+                                <option value="+375">🇧🇾 +375 — Belarus</option>
+                                <option value="+32">🇧🇪 +32 — Belgium</option>
+                                <option value="+501">🇧🇿 +501 — Belize</option>
+                                <option value="+229">🇧🇯 +229 — Benin</option>
+                                <option value="+975">🇧🇹 +975 — Bhutan</option>
+                                <option value="+591">🇧🇴 +591 — Bolivia</option>
+                                <option value="+387">🇧🇦 +387 — Bosnia and Herzegovina</option>
+                                <option value="+267">🇧🇼 +267 — Botswana</option>
+                                <option value="+55">🇧🇷 +55 — Brazil</option>
+                                <option value="+673">🇧🇳 +673 — Brunei</option>
+                                <option value="+359">🇧🇬 +359 — Bulgaria</option>
+                                <option value="+226">🇧🇫 +226 — Burkina Faso</option>
+                                <option value="+257">🇧🇮 +257 — Burundi</option>
+                                <option value="+238">🇨🇻 +238 — Cabo Verde</option>
+                                <option value="+855">🇰🇭 +855 — Cambodia</option>
+                                <option value="+237">🇨🇲 +237 — Cameroon</option>
+                                <option value="+1">🇨🇦 +1 — Canada</option>
+                                <option value="+236">🇨🇫 +236 — Central African Republic</option>
+                                <option value="+235">🇹🇩 +235 — Chad</option>
+                                <option value="+56">🇨🇱 +56 — Chile</option>
+                                <option value="+86">🇨🇳 +86 — China</option>
+                                <option value="+57">🇨🇴 +57 — Colombia</option>
+                                <option value="+269">🇰🇲 +269 — Comoros</option>
+                                <option value="+242">🇨🇬 +242 — Congo</option>
+                                <option value="+506">🇨🇷 +506 — Costa Rica</option>
+                                <option value="+385">🇭🇷 +385 — Croatia</option>
+                                <option value="+53">🇨🇺 +53 — Cuba</option>
+                                <option value="+357">🇨🇾 +357 — Cyprus</option>
+                                <option value="+420">🇨🇿 +420 — Czech Republic</option>
+                                <option value="+243">🇨🇩 +243 — DR Congo</option>
+                                <option value="+45">🇩🇰 +45 — Denmark</option>
+                                <option value="+253">🇩🇯 +253 — Djibouti</option>
+                                <option value="+1">🇩🇲 +1 — Dominica</option>
+                                <option value="+1">🇩🇴 +1 — Dominican Republic</option>
+                                <option value="+593">🇪🇨 +593 — Ecuador</option>
+                                <option value="+20">🇪🇬 +20 — Egypt</option>
+                                <option value="+503">🇸🇻 +503 — El Salvador</option>
+                                <option value="+240">🇬🇶 +240 — Equatorial Guinea</option>
+                                <option value="+291">🇪🇷 +291 — Eritrea</option>
+                                <option value="+372">🇪🇪 +372 — Estonia</option>
+                                <option value="+268">🇸🇿 +268 — Eswatini</option>
+                                <option value="+251">🇪🇹 +251 — Ethiopia</option>
+                                <option value="+679">🇫🇯 +679 — Fiji</option>
+                                <option value="+358">🇫🇮 +358 — Finland</option>
+                                <option value="+33">🇫🇷 +33 — France</option>
+                                <option value="+241">🇬🇦 +241 — Gabon</option>
+                                <option value="+220">🇬🇲 +220 — Gambia</option>
+                                <option value="+995">🇬🇪 +995 — Georgia</option>
+                                <option value="+49">🇩🇪 +49 — Germany</option>
+                                <option value="+233">🇬🇭 +233 — Ghana</option>
+                                <option value="+30">🇬🇷 +30 — Greece</option>
+                                <option value="+1">🇬🇩 +1 — Grenada</option>
+                                <option value="+502">🇬🇹 +502 — Guatemala</option>
+                                <option value="+224">🇬🇳 +224 — Guinea</option>
+                                <option value="+245">🇬🇼 +245 — Guinea-Bissau</option>
+                                <option value="+592">🇬🇾 +592 — Guyana</option>
+                                <option value="+509">🇭🇹 +509 — Haiti</option>
+                                <option value="+504">🇭🇳 +504 — Honduras</option>
+                                <option value="+36">🇭🇺 +36 — Hungary</option>
+                                <option value="+354">🇮🇸 +354 — Iceland</option>
+                                <option value="+91">🇮🇳 +91 — India</option>
+                                <option value="+62">🇮🇩 +62 — Indonesia</option>
+                                <option value="+98">🇮🇷 +98 — Iran</option>
+                                <option value="+964">🇮🇶 +964 — Iraq</option>
+                                <option value="+353">🇮🇪 +353 — Ireland</option>
+                                <option value="+972">🇮🇱 +972 — Israel</option>
+                                <option value="+39">🇮🇹 +39 — Italy</option>
+                                <option value="+1">🇯🇲 +1 — Jamaica</option>
+                                <option value="+81">🇯🇵 +81 — Japan</option>
+                                <option value="+962">🇯🇴 +962 — Jordan</option>
+                                <option value="+7">🇰🇿 +7 — Kazakhstan</option>
+                                <option value="+254" selected>🇰🇪 +254 — Kenya</option>
+                                <option value="+686">🇰🇮 +686 — Kiribati</option>
+                                <option value="+965">🇰🇼 +965 — Kuwait</option>
+                                <option value="+996">🇰🇬 +996 — Kyrgyzstan</option>
+                                <option value="+856">🇱🇦 +856 — Laos</option>
+                                <option value="+371">🇱🇻 +371 — Latvia</option>
+                                <option value="+961">🇱🇧 +961 — Lebanon</option>
+                                <option value="+266">🇱🇸 +266 — Lesotho</option>
+                                <option value="+231">🇱🇷 +231 — Liberia</option>
+                                <option value="+218">🇱🇾 +218 — Libya</option>
+                                <option value="+423">🇱🇮 +423 — Liechtenstein</option>
+                                <option value="+370">🇱🇹 +370 — Lithuania</option>
+                                <option value="+352">🇱🇺 +352 — Luxembourg</option>
+                                <option value="+261">🇲🇬 +261 — Madagascar</option>
+                                <option value="+265">🇲🇼 +265 — Malawi</option>
+                                <option value="+60">🇲🇾 +60 — Malaysia</option>
+                                <option value="+960">🇲🇻 +960 — Maldives</option>
+                                <option value="+223">🇲🇱 +223 — Mali</option>
+                                <option value="+356">🇲🇹 +356 — Malta</option>
+                                <option value="+692">🇲🇭 +692 — Marshall Islands</option>
+                                <option value="+222">🇲🇷 +222 — Mauritania</option>
+                                <option value="+230">🇲🇺 +230 — Mauritius</option>
+                                <option value="+52">🇲🇽 +52 — Mexico</option>
+                                <option value="+691">🇫🇲 +691 — Micronesia</option>
+                                <option value="+373">🇲🇩 +373 — Moldova</option>
+                                <option value="+377">🇲🇨 +377 — Monaco</option>
+                                <option value="+976">🇲🇳 +976 — Mongolia</option>
+                                <option value="+382">🇲🇪 +382 — Montenegro</option>
+                                <option value="+212">🇲🇦 +212 — Morocco</option>
+                                <option value="+258">🇲🇿 +258 — Mozambique</option>
+                                <option value="+95">🇲🇲 +95 — Myanmar</option>
+                                <option value="+264">🇳🇦 +264 — Namibia</option>
+                                <option value="+674">🇳🇷 +674 — Nauru</option>
+                                <option value="+977">🇳🇵 +977 — Nepal</option>
+                                <option value="+31">🇳🇱 +31 — Netherlands</option>
+                                <option value="+64">🇳🇿 +64 — New Zealand</option>
+                                <option value="+505">🇳🇮 +505 — Nicaragua</option>
+                                <option value="+227">🇳🇪 +227 — Niger</option>
+                                <option value="+234">🇳🇬 +234 — Nigeria</option>
+                                <option value="+850">🇰🇵 +850 — North Korea</option>
+                                <option value="+389">🇲🇰 +389 — North Macedonia</option>
+                                <option value="+47">🇳🇴 +47 — Norway</option>
+                                <option value="+968">🇴🇲 +968 — Oman</option>
+                                <option value="+92">🇵🇰 +92 — Pakistan</option>
+                                <option value="+680">🇵🇼 +680 — Palau</option>
+                                <option value="+970">🇵🇸 +970 — Palestine</option>
+                                <option value="+507">🇵🇦 +507 — Panama</option>
+                                <option value="+675">🇵🇬 +675 — Papua New Guinea</option>
+                                <option value="+595">🇵🇾 +595 — Paraguay</option>
+                                <option value="+51">🇵🇪 +51 — Peru</option>
+                                <option value="+63">🇵🇭 +63 — Philippines</option>
+                                <option value="+48">🇵🇱 +48 — Poland</option>
+                                <option value="+351">🇵🇹 +351 — Portugal</option>
+                                <option value="+974">🇶🇦 +974 — Qatar</option>
+                                <option value="+40">🇷🇴 +40 — Romania</option>
+                                <option value="+7">🇷🇺 +7 — Russia</option>
+                                <option value="+250">🇷🇼 +250 — Rwanda</option>
+                                <option value="+1">🇰🇳 +1 — Saint Kitts and Nevis</option>
+                                <option value="+1">🇱🇨 +1 — Saint Lucia</option>
+                                <option value="+1">🇻🇨 +1 — Saint Vincent and the Grenadines</option>
+                                <option value="+685">🇼🇸 +685 — Samoa</option>
+                                <option value="+378">🇸🇲 +378 — San Marino</option>
+                                <option value="+239">🇸🇹 +239 — Sao Tome and Principe</option>
+                                <option value="+966">🇸🇦 +966 — Saudi Arabia</option>
+                                <option value="+221">🇸🇳 +221 — Senegal</option>
+                                <option value="+381">🇷🇸 +381 — Serbia</option>
+                                <option value="+248">🇸🇨 +248 — Seychelles</option>
+                                <option value="+232">🇸🇱 +232 — Sierra Leone</option>
+                                <option value="+65">🇸🇬 +65 — Singapore</option>
+                                <option value="+421">🇸🇰 +421 — Slovakia</option>
+                                <option value="+386">🇸🇮 +386 — Slovenia</option>
+                                <option value="+677">🇸🇧 +677 — Solomon Islands</option>
+                                <option value="+252">🇸🇴 +252 — Somalia</option>
+                                <option value="+27">🇿🇦 +27 — South Africa</option>
+                                <option value="+82">🇰🇷 +82 — South Korea</option>
+                                <option value="+211">🇸🇸 +211 — South Sudan</option>
+                                <option value="+34">🇪🇸 +34 — Spain</option>
+                                <option value="+94">🇱🇰 +94 — Sri Lanka</option>
+                                <option value="+249">🇸🇩 +249 — Sudan</option>
+                                <option value="+597">🇸🇷 +597 — Suriname</option>
+                                <option value="+46">🇸🇪 +46 — Sweden</option>
+                                <option value="+41">🇨🇭 +41 — Switzerland</option>
+                                <option value="+963">🇸🇾 +963 — Syria</option>
+                                <option value="+992">🇹🇯 +992 — Tajikistan</option>
+                                <option value="+255">🇹🇿 +255 — Tanzania</option>
+                                <option value="+66">🇹🇭 +66 — Thailand</option>
+                                <option value="+670">🇹🇱 +670 — Timor-Leste</option>
+                                <option value="+228">🇹🇬 +228 — Togo</option>
+                                <option value="+676">🇹🇴 +676 — Tonga</option>
+                                <option value="+1">🇹🇹 +1 — Trinidad and Tobago</option>
+                                <option value="+216">🇹🇳 +216 — Tunisia</option>
+                                <option value="+90">🇹🇷 +90 — Turkey</option>
+                                <option value="+993">🇹🇲 +993 — Turkmenistan</option>
+                                <option value="+688">🇹🇻 +688 — Tuvalu</option>
+                                <option value="+256">🇺🇬 +256 — Uganda</option>
+                                <option value="+380">🇺🇦 +380 — Ukraine</option>
+                                <option value="+971">🇦🇪 +971 — United Arab Emirates</option>
+                                <option value="+44">🇬🇧 +44 — United Kingdom</option>
+                                <option value="+1">🇺🇸 +1 — United States</option>
+                                <option value="+598">🇺🇾 +598 — Uruguay</option>
+                                <option value="+998">🇺🇿 +998 — Uzbekistan</option>
+                                <option value="+678">🇻🇺 +678 — Vanuatu</option>
+                                <option value="+58">🇻🇪 +58 — Venezuela</option>
+                                <option value="+84">🇻🇳 +84 — Vietnam</option>
+                                <option value="+967">🇾🇪 +967 — Yemen</option>
+                                <option value="+260">🇿🇲 +260 — Zambia</option>
+                                <option value="+263">🇿🇼 +263 — Zimbabwe</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1.5 block">Phone Number <span class="normal-case text-gray-600">(without country code)</span></label>
+                            <input type="tel" id="waPhone" placeholder="e.g. 712 345 678" required class="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 focus:outline-none focus:border-green-400/50 text-white text-sm font-mono transition" />
+                        </div>
+                        <button type="submit" id="waBtn" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r from-green-500 to-green-400 text-black hover:brightness-110 active:scale-95 transition duration-300 text-sm shadow-lg shadow-green-500/20">
+                            Join Broadcast
+                        </button>
+                        <div id="waStatus" class="text-xs min-h-[16px] text-center"></div>
+                    </form>
+                </div>
+            </div>
+
+
+    </div>
+
+    <!-- 5. RESULTS SECTION -->
+    <section id="results" class="py-24 px-6 overflow-hidden">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex justify-between items-end mb-12">
+                <div>
+                    <div data-aos="fade-right" class="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full mb-3">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Live Verified
+                    </div>
+                    <h2 data-aos="fade-right" class="text-3xl md:text-4xl font-black text-white mb-2 font-heading">Recent Performance</h2>
+                    <p data-aos="fade-right" data-aos-delay="100" class="text-gray-400 text-sm">Verified setups from the VIP community.</p>
+                </div>
+                <div class="hidden md:flex gap-2">
+                    <button class="w-10 h-10 rounded-full glass-card flex items-center justify-center hover:bg-white/10 transition-colors" onclick="document.getElementById('results-scroll').scrollBy({left: -300, behavior: 'smooth'})">
+                        <i data-feather="chevron-left"></i>
+                    </button>
+                    <button class="w-10 h-10 rounded-full glass-card flex items-center justify-center hover:bg-white/10 transition-colors" onclick="document.getElementById('results-scroll').scrollBy({left: 300, behavior: 'smooth'})">
+                        <i data-feather="chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Equity Curve Chart -->
+            <div data-aos="fade-up" class="w-full bg-black/40 border border-white/5 rounded-2xl p-6 mb-12 shadow-2xl">
+                <h3 class="text-white text-lg font-bold mb-4 flex items-center gap-2">
+                    <i data-feather="trending-up" class="w-5 h-5 text-emerald-400"></i>
+                    Growth History (Cumulative Pips)
+                </h3>
+                <div class="relative h-64 md:h-80 w-full">
+                    <canvas id="equityChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Horizontal Scroll Container (Live from API) -->
+            <div class="relative w-full overflow-hidden after:absolute after:right-0 after:top-0 after:bottom-0 after:w-16 after:bg-gradient-to-l after:from-[#050505] after:to-transparent after:pointer-events-none before:absolute before:left-0 before:top-0 before:bottom-0 before:w-16 before:bg-gradient-to-r before:from-[#050505] before:to-transparent before:pointer-events-none before:z-10 after:z-10">
+                <div id="results-scroll" class="flex overflow-x-auto hide-scrollbar gap-6 pb-8 snap-x-mandatory px-8 -mx-8 md:mx-0 md:px-16">
+                <!-- Loading placeholders -->
+                <div class="min-w-[280px] md:min-w-[320px] glass-card p-6 snap-start flex-shrink-0 animate-pulse">
+                    <div class="h-5 bg-white/10 rounded mb-4 w-2/3"></div>
+                    <div class="h-3 bg-white/5 rounded mb-2"></div><div class="h-3 bg-white/5 rounded mb-2"></div><div class="h-3 bg-white/5 rounded mb-2"></div>
+                </div>
+                <div class="min-w-[280px] md:min-w-[320px] glass-card p-6 snap-start flex-shrink-0 animate-pulse">
+                    <div class="h-5 bg-white/10 rounded mb-4 w-2/3"></div>
+                    <div class="h-3 bg-white/5 rounded mb-2"></div><div class="h-3 bg-white/5 rounded mb-2"></div><div class="h-3 bg-white/5 rounded mb-2"></div>
+                </div>
+                <div class="min-w-[280px] md:min-w-[320px] glass-card p-6 snap-start flex-shrink-0 animate-pulse">
+                    <div class="h-5 bg-white/10 rounded mb-4 w-2/3"></div>
+                    <div class="h-3 bg-white/5 rounded mb-2"></div><div class="h-3 bg-white/5 rounded mb-2"></div><div class="h-3 bg-white/5 rounded mb-2"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 9. FOOTER -->
+    <footer class="relative z-20 border-t border-white/5 pt-16 pb-32 px-6 bg-black">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div class="md:col-span-2">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-8 h-8 rounded-full bg-surface border border-white/10 flex items-center justify-center overflow-hidden">
+                            <img src="avatar.webp" alt="Logo" class="w-full h-full object-cover">
+                        </div>
+                        <span class="text-white font-bold text-lg">Pips Attendant</span>
+                    </div>
+                    <div class="max-w-sm mb-6 p-4 rounded-xl border border-gray-600/30 bg-gray-900/50 flex items-start gap-3">
+                        <i data-feather="alert-triangle" class="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5"></i>
+                        <p class="text-xs text-gray-400 leading-relaxed">
+                            <span class="font-bold uppercase tracking-wider text-gray-300">Risk Warning:</span> Trading foreign exchange on margin carries a high level of risk and may not be suitable for all investors. Past performance is not indicative of future results.
+                        </p>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-white font-bold mb-4 text-sm uppercase tracking-wider">Platform</h4>
+                    <ul class="space-y-3 text-sm text-gray-400">
+                        <li><a href="#services" class="hover:text-gold transition-colors">Signals</a></li>
+                        <li><a href="journal.html" class="hover:text-gold transition-colors">Trading Journal</a></li>
+                        <li><a href="propfirm.html" class="hover:text-gold transition-colors">Prop Firms</a></li>
+                        <li><a href="premium.html?v=5" class="hover:text-gold transition-colors">VIP Access</a></li>
+                        <li><a href="education.html" class="hover:text-gold transition-colors">Forex Education</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-white font-bold mb-4 text-sm uppercase tracking-wider">Legal</h4>
+                    <ul class="space-y-3 text-sm text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Terms of Service</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Risk Disclaimer</a></li>
+                        <li><a href="about.html" class="hover:text-white transition-colors text-sm">About Us</a></li>
+                        <li><a href="forex-signals.html" class="hover:text-white transition-colors text-sm">Forex Signals</a></li>
+                        <li><a href="copy-trading.html" class="hover:text-white transition-colors text-sm">Copy Trading</a></li>
+                        <li><a href="https://t.me/pipsattendant" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">Contact Us</a></li>
+                        <li><a href="mailto:Support@pipsattendant.com" class="hover:text-white transition-colors">Support@pipsattendant.com</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-xs text-gray-400">© 2026 Pips Attendant. All rights reserved.</p>
+                <div class="flex gap-4">
+                    <a href="https://instagram.com/pips_attendant" target="_blank" aria-label="Instagram" class="text-gray-500 hover:text-[#E1306C] transition-colors"><i data-feather="instagram" class="w-4 h-4"></i></a>
+                    <a href="https://t.me/pips_attendant" target="_blank" aria-label="Telegram" class="text-gray-500 hover:text-[#0088cc] transition-colors"><i data-feather="send" class="w-4 h-4"></i></a>
+                    <a href="https://youtube.com/@pips_attendant" target="_blank" aria-label="YouTube" class="text-gray-500 hover:text-[#FF0000] transition-colors"><i data-feather="youtube" class="w-4 h-4"></i></a>
+                    <a href="https://tiktok.com/@pips_attendant" target="_blank" aria-label="TikTok" class="text-gray-500 hover:text-[#00f2fe] transition-colors"><i data-feather="video" class="w-4 h-4"></i></a>
+                    <a href="https://twitter.com/pips_attendant" target="_blank" aria-label="X (Twitter)" class="text-gray-500 hover:text-[#1DA1F2] transition-colors"><i data-feather="twitter" class="w-4 h-4"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Floating Telegram Button (from old UI) -->
+    <a href="https://t.me/pipsattendant" target="_blank"
+        class="fixed bottom-6 right-6 w-14 h-14 rounded-full flex items-center justify-center text-white z-50 hover:scale-110 active:scale-95 transition-all duration-300"
+        style="background: linear-gradient(135deg, #0088cc, #0055aa); box-shadow: 0 0 20px rgba(0,136,204,0.4);"
+        aria-label="Contact on Telegram">
+        <i data-feather="send" class="w-6 h-6"></i>
+    </a>
+
+    <!-- Chat Widget & Logic Integration -->
+    <script src="app.js"></script>
+    <script src="chat-widget.js"></script>
+    <script>
+        // Initialize Feather Icons
+        feather.replace();
+
+        // Canvas Background Animation
+        (function() {
+            const canvas = document.getElementById('bgCanvas');
+            const ctx = canvas.getContext('2d');
+            let W, H, particles;
+
+            function resize() {
+                W = canvas.width = window.innerWidth;
+                H = canvas.height = window.innerHeight;
+            }
+
+            function createParticles() {
+                particles = [];
+                const count = Math.floor((W * H) / 18000);
+                for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: Math.random() * W,
+                    y: Math.random() * H,
+                    vy: -(Math.random() * 0.3 + 0.1),
+                    vx: (Math.random() - 0.5) * 0.15,
+                    r: Math.random() * 1.2 + 0.3,
+                    alpha: Math.random() * 0.5 + 0.2,
+                    color: Math.random() > 0.6 ? '#D4AF37' : Math.random() > 0.5 ? '#E5C158' : '#F4D03F'
+                });
+                }
+            }
+
+            function drawCandlestick(x, y, open, close, high, low, col) {
+                ctx.strokeStyle = col;
+                ctx.lineWidth = 0.8;
+                ctx.globalAlpha = 0.12;
+                // Wick
+                ctx.beginPath();
+                ctx.moveTo(x, y - high);
+                ctx.lineTo(x, y + low);
+                ctx.stroke();
+                // Body
+                ctx.fillStyle = col;
+                ctx.fillRect(x - 3, y - Math.max(open, close), 6, Math.abs(open - close) || 1);
+                ctx.globalAlpha = 1;
+            }
+
+            const candles = [];
+            function initCandles() {
+                candles.length = 0;
+                const cols = Math.floor(W / 60);
+                for (let i = 0; i < cols; i++) {
+                candles.push({
+                    x: i * 60 + 30,
+                    y: Math.random() * H * 0.6 + H * 0.2,
+                    open: Math.random() * 10 + 4,
+                    close: Math.random() * 10 + 4,
+                    high: Math.random() * 12 + 6,
+                    low: Math.random() * 12 + 6,
+                    color: Math.random() > 0.5 ? '#D4AF37' : '#E5C158',
+                    vy: (Math.random() - 0.5) * 0.15
+                });
+                }
+            }
+
+            function animate() {
+                if (!isVisible) return;
+                ctx.clearRect(0, 0, W, H);
+
+                // Draw floating candles
+                candles.forEach(c => {
+                c.y += c.vy;
+                if (c.y < 0) c.y = H;
+                if (c.y > H) c.y = 0;
+                drawCandlestick(c.x, c.y, c.open, c.close, c.high, c.low, c.color);
+                });
+
+                // Draw floating particles
+                particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                if (p.y < 0) { p.y = H; p.x = Math.random() * W; }
+                ctx.globalAlpha = p.alpha;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+                });
+
+                requestAnimationFrame(animate);
+            }
+
+            let isVisible = true;
+            document.addEventListener('visibilitychange', () => {
+                isVisible = !document.hidden;
+                if (isVisible) animate();
+            });
+
+            window.addEventListener('resize', () => { resize(); createParticles(); initCandles(); });
+            resize();
+            createParticles();
+            initCandles();
+            animate();
+        })();
+
+        // Navbar Scroll Effect
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 20) {
+                nav.classList.add('bg-black/50', 'backdrop-blur-xl', 'shadow-lg');
+                nav.classList.remove('border-white/5');
+            } else {
+                nav.classList.remove('bg-black/50', 'backdrop-blur-xl', 'shadow-lg');
+                nav.classList.add('border-white/5');
+            }
+        });
+
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileLinks = document.querySelectorAll('.mobile-link');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+
+        // ── Risk / Lot Size Calculator ───────────────────────────────
+        function openCalculatorModal(e) {
+            if (e) e.preventDefault();
+            const modal = document.getElementById('calculatorModal');
+            modal.classList.remove('hidden');
+            // small delay to allow display:block before fading in
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+            }, 10);
+            feather.replace();
+        }
+
+        function closeCalculatorModal() {
+            const modal = document.getElementById('calculatorModal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function runRiskCalc() {
+            try {
+                const balance  = parseFloat(document.getElementById('rc_balance').value);
+                const risk     = parseFloat(document.getElementById('rc_risk').value);
+                const sl       = parseFloat(document.getElementById('rc_sl').value);
+                const pipValue = parseFloat(document.getElementById('rc_pair').value);
+                const warnEl   = document.getElementById('rc_warning');
+                const warnTxt  = document.getElementById('rc_warning_text');
+
+                warnEl.style.display = 'none';
+
+                if (isNaN(balance) || isNaN(risk) || isNaN(sl) || balance <= 0 || risk <= 0 || sl <= 0) {
+                    warnTxt.textContent = 'Please enter valid numbers for all fields.';
+                    warnEl.style.display = 'flex';
+                    feather.replace();
+                    return;
+                }
+                if (risk > 5) {
+                    warnTxt.textContent = 'Warning: risking more than 5% per trade is extremely dangerous.';
+                    warnEl.style.display = 'flex';
+                    feather.replace();
+                }
+
+                const riskAmount = balance * (risk / 100);
+                const lotSize    = riskAmount / (sl * pipValue);
+
+                document.getElementById('rc_riskAmount').textContent = riskAmount.toFixed(2);
+                document.getElementById('rc_lots').textContent       = lotSize.toFixed(2);
+                document.getElementById('rc_disp_balance').textContent = `$${balance.toLocaleString()}`;
+                document.getElementById('rc_disp_risk').textContent    = `${risk}%`;
+                document.getElementById('rc_disp_sl').textContent      = `${sl} pips`;
+                document.getElementById('rc_disp_lots').textContent    = lotSize.toFixed(2);
+            } catch (err) {
+                alert("Calculator Error: " + err.message);
+                console.error(err);
+            }
+        }
+    </script>
+    <!-- Testimonials Auto-Scroll Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const carousel = document.getElementById('testimonials-carousel');
+            if (!carousel) return;
+            
+            let isHovered = false;
+            let scrollSpeed = 1; // Pixels per frame
+            
+            // Pause on hover
+            carousel.addEventListener('mouseenter', () => isHovered = true);
+            carousel.addEventListener('mouseleave', () => isHovered = false);
+            
+            function autoScroll() {
+                if (!isHovered) {
+                    carousel.scrollLeft += scrollSpeed;
+                    // Reset to beginning if at the end
+                    if (carousel.scrollLeft >= (carousel.scrollWidth - carousel.clientWidth - 1)) {
+                        carousel.scrollLeft = 0;
+                    }
+                }
+                requestAnimationFrame(autoScroll);
+            }
+            
+            // Wait a moment before starting to allow layout to settle
+            setTimeout(() => {
+                requestAnimationFrame(autoScroll);
+            }, 1000);
+        });
+    </script>
+    
+    <!-- VanillaTilt & AOS JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize AOS
+            try {
+                AOS.init({
+                    duration: 800,
+                    once: true,
+                    offset: 80,
+                    disable: false,
+                });
+            } catch (e) { console.warn('AOS init failed', e); }
+
+            // Initialize VanillaTilt on all glass-cards
+            try {
+                VanillaTilt.init(document.querySelectorAll(".glass-card"), {
+                    max: 5,
+                    speed: 400,
+                    glare: true,
+                    "max-glare": 0.2,
+                });
+            } catch (e) { console.warn('VanillaTilt init failed', e); }
+
+            // ── Live Signals Results Cards & Equity Curve ────────────────────────────────────────────
+            async function loadEquityCurve() {
+                try {
+                    const res = await fetch('/api/performance/all');
+                    const data = await res.json();
+                    if (data.ok && data.logs && data.logs.length > 0) {
+                        const sortedLogs = data.logs.sort((a, b) => new Date(a.date || a.createdAt) - new Date(b.date || b.createdAt));
+                        
+                        let cumulative = 0;
+                        const labels = ['Start'];
+                        const dataPoints = [0];
+
+                        sortedLogs.forEach(log => {
+                            const pips = Number(log.pips) || 0;
+                            if (log.result === 'Win') {
+                                cumulative += Math.abs(pips);
+                            } else if (log.result === 'Loss') {
+                                cumulative -= Math.abs(pips);
+                            }
+                            
+                            const dateLabel = log.date ? new Date(log.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+                            labels.push(dateLabel);
+                            dataPoints.push(cumulative);
+                        });
+
+                        const canvas = document.getElementById('equityChart');
+                        if (!canvas) return;
+                        const ctx = canvas.getContext('2d');
+                        
+                        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                        gradient.addColorStop(0, 'rgba(16, 185, 129, 0.4)'); // Emerald
+                        gradient.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'Net Pips',
+                                    data: dataPoints,
+                                    borderColor: '#10b981',
+                                    backgroundColor: gradient,
+                                    borderWidth: 3,
+                                    pointBackgroundColor: '#10b981',
+                                    pointBorderColor: '#000',
+                                    pointBorderWidth: 2,
+                                    pointRadius: 3,
+                                    pointHoverRadius: 6,
+                                    fill: true,
+                                    tension: 0.3
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: {
+                                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                        titleColor: '#fff',
+                                        bodyColor: '#10b981',
+                                        callbacks: {
+                                            label: function(context) {
+                                                const val = context.parsed.y;
+                                                return val >= 0 ? `+${val} pips` : `${val} pips`;
+                                            }
+                                        }
+                                    }
+                                },
+                                scales: {
+                                    x: { grid: { display: false }, ticks: { color: '#64748b', maxTicksLimit: 10 } },
+                                    y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b' } }
+                                },
+                                interaction: { intersect: false, mode: 'index' }
+                            }
+                        });
+                    }
+                } catch (err) {
+                    console.error('Failed to load equity curve:', err);
+                }
+            }
+
+            async function loadLiveResults() {
+                const container = document.getElementById('results-scroll');
+                if (!container) return;
+                try {
+                    const res = await fetch('/api/performance/all');
+                    if (!res.ok) throw new Error('API error');
+                    const data = await res.json();
+                    
+                    const logs = data.logs || [];
+                    const signals = logs.slice(0, 8);
+
+                    if (!signals.length) {
+                        throw new Error('No signals in database, falling back to dummy data');
+                    }
+
+                    container.innerHTML = signals.map(s => {
+                        const pair     = s.asset ? s.asset.toUpperCase() : 'Signal';
+                        const dir      = s.type ? s.type.toUpperCase() : '';
+                        const isWin    = s.result === 'Win' || s.result === 'TP Hit';
+                        const isLoss   = s.result === 'Loss' || s.result === 'SL Hit';
+                        const isBreak  = s.result === 'Breakeven';
+                        const isLive   = s.result === 'Running';
+
+                        const badgeClass = isWin  ? 'bg-green-500/10 text-green-400 border-green-500/20'
+                                         : isLoss ? 'bg-red-500/10 text-red-400 border-red-500/20'
+                                         : isBreak? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                                         : 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+                        const badgeIcon = isWin  ? 'arrow-up-right'
+                                        : isLoss ? 'x'
+                                        : isBreak? 'minus' : 'activity';
+                        const badgeText = isWin ? 'WIN' : isLoss ? 'LOSS' : isBreak ? 'B/E' : 'LIVE';
+                        const pipsClass = isWin ? 'text-gold' : isLoss ? 'text-red-400' : isBreak ? 'text-yellow-400' : 'text-blue-400';
+                        
+                        const pipsVal   = Math.abs(Number(s.pips) || 0);
+                        const pipsStr   = pipsVal ? `${isWin?'+':isLoss?'-':''}${pipsVal} Pips` : (isLive ? 'In Progress' : '—');
+                        const date      = s.date ? new Date(s.date).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'2-digit'}) : '';
+
+                        return `
+                        <div class="min-w-[280px] md:min-w-[320px] glass-card p-6 snap-start flex-shrink-0">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <h4 class="text-lg font-bold text-white font-heading">${pair}</h4>
+                                    <span class="text-xs text-gray-400 capitalize">${dir}</span>
+                                </div>
+                                <span class="text-xs font-bold px-2.5 py-1 rounded border flex items-center gap-1 ${badgeClass}">
+                                    <i data-feather="${badgeIcon}" class="w-3 h-3"></i> ${badgeText}
+                                </span>
+                            </div>
+                            <div class="space-y-2 text-sm text-gray-300 mb-4">
+                                <div class="flex justify-between border-b border-white/5 pb-2">
+                                    <span>${isWin?'Profit':isLoss?'Loss':isLive?'Status':'Result'}</span>
+                                    <span class="font-bold ${pipsClass}">${pipsStr}</span>
+                                </div>
+                            </div>
+                            <div class="text-xs text-gray-500 text-right mt-2">${date}</div>
+                        </div>`;
+                    }).join('');
+                    feather.replace();
+                } catch (e) {
+                    // Fallback static cards
+                    container.innerHTML = `
+                    <div class="min-w-[280px] md:min-w-[320px] glass-card p-6 snap-start flex-shrink-0">
+                        <div class="flex justify-between items-start mb-4">
+                            <div><h4 class="text-lg font-bold text-white font-heading">XAUUSD</h4><span class="text-xs text-gray-400">Gold · Buy</span></div>
+                            <span class="bg-green-500/10 text-green-400 text-xs font-bold px-2.5 py-1 rounded border border-green-500/20 flex items-center gap-1"><i data-feather="arrow-up-right" class="w-3 h-3"></i> WIN</span>
+                        </div>
+                        <div class="space-y-2 text-sm text-gray-300 mb-4">
+                            <div class="flex justify-between"><span>Entry</span> <span class="font-mono">2345.50</span></div>
+                            <div class="flex justify-between"><span>SL</span> <span class="font-mono text-red-400/80">2330.00</span></div>
+                            <div class="flex justify-between border-t border-white/5 pt-2"><span>Profit</span> <span class="font-bold text-gold">+145 Pips</span></div>
+                        </div>
+                    </div>
+                                        <div class="min-w-[280px] md:min-w-[320px] glass-card p-6 snap-start flex-shrink-0">
+                        <div class="flex justify-between items-start mb-4">
+                            <div><h4 class="text-lg font-bold text-white font-heading">EURUSD</h4><span class="text-xs text-gray-400">Fiber · Buy</span></div>
+                            <span class="bg-red-500/10 text-red-400 text-xs font-bold px-2.5 py-1 rounded border border-red-500/20 flex items-center gap-1"><i data-feather="x" class="w-3 h-3"></i> LOSS</span>
+                        </div>
+                        <div class="space-y-2 text-sm text-gray-300 mb-4">
+                            <div class="flex justify-between"><span>Entry</span> <span class="font-mono">1.0850</span></div>
+                            <div class="flex justify-between"><span>SL</span> <span class="font-mono text-red-400/80">1.0825</span></div>
+                            <div class="flex justify-between border-t border-white/5 pt-2"><span>Loss</span> <span class="font-bold text-red-400">-25 Pips</span></div>
+                        </div>
+                    </div>
+                    <div class="min-w-[280px] md:min-w-[320px] glass-card p-6 snap-start flex-shrink-0">
+                        <div class="flex justify-between items-start mb-4">
+                            <div><h4 class="text-lg font-bold text-white font-heading">GBPUSD</h4><span class="text-xs text-gray-400">Cable · Sell</span></div>
+                            <span class="bg-green-500/10 text-green-400 text-xs font-bold px-2.5 py-1 rounded border border-green-500/20 flex items-center gap-1"><i data-feather="arrow-up-right" class="w-3 h-3"></i> WIN</span>
+                        </div>
+                        <div class="space-y-2 text-sm text-gray-300 mb-4">
+                            <div class="flex justify-between"><span>Entry</span> <span class="font-mono">1.2780</span></div>
+                            <div class="flex justify-between"><span>SL</span> <span class="font-mono text-red-400/80">1.2810</span></div>
+                            <div class="flex justify-between border-t border-white/5 pt-2"><span>Profit</span> <span class="font-bold text-gold">+80 Pips</span></div>
+                        </div>
+                    </div>`;
+                    feather.replace();
+                }
+            }
+            loadLiveResults();
+            loadEquityCurve();
+
+            // ── Also fetch live stats from /api/performance/stats ─────────────
+            async function loadLiveStats() {
+                try {
+                    const res = await fetch('/api/performance/stats');
+                    if (!res.ok) throw new Error('no stats');
+                    const data = await res.json();
+                    
+                    if (data.winRate != null) {
+                        const el = document.getElementById('publicWinRate');
+                        if (el) {
+                            el.setAttribute('data-target', Math.round(data.winRate));
+                            animateCounter(el, Math.round(data.winRate));
+                        }
+                    }
+                    if (data.totalPips != null) {
+                        const el = document.getElementById('publicTotalPips');
+                        const pips = Math.abs(data.totalPips);
+                        const val = pips > 999 ? Math.round(pips / 1000) : pips;
+                        const suffix = pips > 999 ? 'k' : '';
+                        if (el) {
+                            el.setAttribute('data-target', val);
+                            el.setAttribute('data-suffix', suffix);
+                            animateCounter(el, val, suffix);
+                        }
+                    }
+                    // Do not update the "Years Experience" card with totalTrades!
+                } catch(e) {
+                    console.log('Error fetching stats', e);
+                }
+            }
+            // Expose a way to re-trigger if needed, but run it now.
+            loadLiveStats();
+
+            // ── Animated Number Counter ───────────────────────────────────
+            function animateCounter(el, target, suffix) {
+                let start = 0;
+                const duration = 1800;
+                const step = (timestamp) => {
+                    if (!start) start = timestamp;
+                    const progress = Math.min((timestamp - start) / duration, 1);
+                    const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+                    el.textContent = Math.round(eased * target) + (suffix || '');
+                    if (progress < 1) requestAnimationFrame(step);
+                    else el.textContent = target + (suffix || '');
+                };
+                requestAnimationFrame(step);
+            }
+
+            const statsObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) return;
+                    const el = entry.target;
+                    const target = parseInt(el.getAttribute('data-target') || el.textContent.replace(/\D/g, ''), 10);
+                    const defaultSuffix = el.textContent.includes('k') ? 'k' : '';
+                    const suffix = el.getAttribute('data-suffix') !== null ? el.getAttribute('data-suffix') : defaultSuffix;
+                    
+                    if (!isNaN(target)) animateCounter(el, target, suffix);
+                    statsObserver.unobserve(el);
+                });
+            }, { threshold: 0.5 });
+
+            ['publicWinRate', 'publicTotalPips', 'publicTotalTrades'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    // Store the original value as target
+                    el.setAttribute('data-target', el.textContent.replace(/\D/g,''));
+                    statsObserver.observe(el);
+                }
+            });
+        });
+
+
+        // Register Service Worker for PWA
+        let deferredInstallPrompt = null;
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                })
+                .catch(err => {
+                    console.error('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+
+        // Capture the install prompt and show the button
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredInstallPrompt = e;
+            const btn = document.getElementById('pwa-install-btn');
+            if (btn) btn.classList.replace('hidden', 'flex');
+        });
+
+        function triggerPwaInstall() {
+            if (!deferredInstallPrompt) return;
+            deferredInstallPrompt.prompt();
+            deferredInstallPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    const btn = document.getElementById('pwa-install-btn');
+                    if (btn) btn.classList.add('hidden');
+                }
+                deferredInstallPrompt = null;
+            });
+        }
+
+        // Hide the button once installed
+        window.addEventListener('appinstalled', () => {
+            const btn = document.getElementById('pwa-install-btn');
+            if (btn) btn.classList.add('hidden');
+            deferredInstallPrompt = null;
+        });
+    </script>
+    
+    <!-- STICKY MOBILE CTA -->
+    <div class="md:hidden fixed bottom-5 left-0 w-full px-8 z-[60] pointer-events-none flex justify-center">
+        <a href="premium.html?v=5" class="pointer-events-auto btn-gold py-2.5 px-5 text-sm rounded-full text-center font-bold text-primary shadow-[0_10px_40px_rgba(212,175,55,0.4)] border border-gold/50 flex justify-center items-center gap-2 whitespace-nowrap overflow-hidden">
+            🔐 Unlock VIP Access
+        </a>
+    </div>
+
+  <!-- Lead Capture Popup (Glassmorphism) -->
+  <div id="leadPopup" class="fixed inset-0 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-500">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeLeadPopup()"></div>
+    
+    <!-- Modal -->
+    <div class="relative w-full max-w-md transform scale-95 transition-transform duration-500" id="leadModalContent">
+      <div class="glass-card bg-[#0d0800]/80 rounded-3xl p-8 border border-amber-400/20 shadow-[0_0_40px_rgba(251,191,36,0.15)] relative overflow-hidden">
+        <!-- Decorative Glow -->
+        <div class="absolute top-0 right-0 w-48 h-48 bg-amber-500/10 rounded-full blur-[60px] pointer-events-none"></div>
+        <div class="absolute bottom-0 left-0 w-48 h-48 bg-yellow-500/10 rounded-full blur-[60px] pointer-events-none"></div>
+        
+        <!-- Close Button -->
+        <button onclick="closeLeadPopup()" class="absolute top-4 right-4 text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full p-2 transition cursor-pointer z-10">
+          <i data-feather="x" class="w-4 h-4"></i>
+        </button>
+        
+        <div class="relative z-10 text-center">
+          <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-amber-500/20">
+            <i data-feather="book-open" class="w-8 h-8 text-[#0d0800]"></i>
+          </div>
+          
+          <h2 class="text-2xl font-black text-white mb-2 tracking-tight">Free Risk Workbook</h2>
+          <p class="text-gray-400 text-sm mb-6 leading-relaxed">
+            Stop blowing accounts. Download the exact risk management framework our funded VIPs use to stay profitable.
+          </p>
+          
+          <form id="leadForm" onsubmit="submitLeadForm(event)" class="space-y-4">
+            <div>
+              <input type="text" id="leadName" placeholder="First Name" required
+                class="w-full px-4 py-3 bg-black/40 border border-white/10 rounded-xl text-white text-sm focus:border-amber-400/60 focus:outline-none focus:shadow-[0_0_10px_rgba(251,191,36,0.15)] transition" />
+            </div>
+            <div>
+              <input type="email" id="leadEmail" placeholder="Email Address" required
+                class="w-full px-4 py-3 bg-black/40 border border-white/10 rounded-xl text-white text-sm focus:border-amber-400/60 focus:outline-none focus:shadow-[0_0_10px_rgba(251,191,36,0.15)] transition" />
+            </div>
+            <button type="submit" id="leadSubmitBtn" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-yellow-400 text-dark-navy font-bold rounded-xl shadow-lg hover:shadow-amber-500/25 hover:brightness-110 transition flex justify-center items-center gap-2 cursor-pointer">
+              <span>Send Me The Workbook</span>
+              <i data-feather="arrow-right" class="w-4 h-4 group-hover/link:translate-x-1 transition-transform"></i>
+            </button>
+          </form>
+          
+          <div id="leadSuccess" class="hidden mt-4 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-medium">
+            Success! Check your email (and spam folder) for the download link.
+          </div>
+          
+          <p class="text-[10px] text-gray-500 mt-6">We respect your privacy. No spam, ever.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Lead Capture Logic
+    let popupShown = false;
+    
+    function showLeadPopup() {
+      if (popupShown || localStorage.getItem('pa_lead_captured') === 'true') return;
+      
+      const popup = document.getElementById('leadPopup');
+      const content = document.getElementById('leadModalContent');
+      
+      popup.classList.remove('opacity-0', 'pointer-events-none');
+      content.classList.remove('scale-95');
+      content.classList.add('scale-100');
+      
+      popupShown = true;
+      if (window.feather) feather.replace();
+    }
+    
+    function closeLeadPopup() {
+      const popup = document.getElementById('leadPopup');
+      const content = document.getElementById('leadModalContent');
+      
+      popup.classList.add('opacity-0', 'pointer-events-none');
+      content.classList.remove('scale-100');
+      content.classList.add('scale-95');
+      
+      // Don't show again in this session if they close it
+      sessionStorage.setItem('pa_popup_closed', 'true');
+    }
+    
+    async function submitLeadForm(e) {
+      e.preventDefault();
+      const btn = document.getElementById('leadSubmitBtn');
+      const name = document.getElementById('leadName').value;
+      const email = document.getElementById('leadEmail').value;
+      
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<span class="animate-pulse">Sending...</span>';
+      btn.disabled = true;
+      
+      try {
+        const res = await fetch('/api/public/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, source: 'homepage_popup' })
+        });
+        const data = await res.json();
+        
+        if (data.ok) {
+          document.getElementById('leadForm').classList.add('hidden');
+          document.getElementById('leadSuccess').classList.remove('hidden');
+          localStorage.setItem('pa_lead_captured', 'true');
+          setTimeout(() => { closeLeadPopup(); }, 4000);
+        } else {
+          alert(data.error || 'Something went wrong.');
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }
+      } catch (err) {
+        alert('Failed to connect to server.');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    }
+    
+    // Trigger on exit intent
+    document.addEventListener('mouseout', (e) => {
+      if (e.clientY < 50 && !sessionStorage.getItem('pa_popup_closed')) {
+        showLeadPopup();
+      }
+    });
+    
+    // Fallback: Trigger after 15 seconds
+    setTimeout(() => {
+      if (!sessionStorage.getItem('pa_popup_closed')) {
+        showLeadPopup();
+      }
+    }, 15000);
+  </script>
+    <!-- TradingView Economic Calendar Widget -->
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var calendarContainer = document.getElementById('tv-calendar-container');
+        if (!calendarContainer) return;
+
+        function loadTVCalendar() {
+            // Clear loading placeholder
+            calendarContainer.innerHTML = '';
+
+            // Create the widget wrapper div
+            var widgetDiv = document.createElement('div');
+            widgetDiv.className = 'tradingview-widget-container__widget';
+            widgetDiv.style.height = '600px';
+            widgetDiv.style.width = '100%';
+            calendarContainer.appendChild(widgetDiv);
+
+            // Create the widget loader script and inject config
+            var widgetScript = document.createElement('script');
+            widgetScript.type = 'text/javascript';
+            widgetScript.src = 'https://s3.tradingview.com/external-embedding/embed-widget-events.js';
+            widgetScript.async = true;
+            widgetScript.text = JSON.stringify({
+                "colorTheme": "dark",
+                "isTransparent": true,
+                "width": "100%",
+                "height": "600",
+                "locale": "en",
+                "importanceFilter": "0,1",
+                "currencyFilter": "USD,EUR,GBP,JPY,CNY,AUD,CAD,CHF,NZD",
+                "countryFilter": "us,eu,gb,jp,cn,au,ca,ch,nz"
+            });
+            calendarContainer.appendChild(widgetScript);
+        }
+
+        if ('IntersectionObserver' in window) {
+            var observer = new IntersectionObserver(function(entries) {
+                if (entries[0].isIntersecting) {
+                    loadTVCalendar();
+                    observer.disconnect();
+                }
+            }, { rootMargin: '300px' });
+            observer.observe(calendarContainer);
+        } else {
+            loadTVCalendar();
+        }
+    });
+    </script>
+
 
 </body>
 </html>
