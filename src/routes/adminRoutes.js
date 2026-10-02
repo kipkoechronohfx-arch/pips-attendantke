@@ -1354,7 +1354,7 @@ router.post('/config/toggle-brokers', validateAdminSession, async (req, res) => 
     }
     const conf = await db.getAppConfig();
     if (!conf.brokerVisibility) {
-      conf.brokerVisibility = { dupoin: true, justmarkets: true };
+      conf.brokerVisibility = { dupoin: true, justmarkets: true, puprime: true };
     }
     conf.brokerVisibility[broker] = isVisible;
     await db.saveAppConfig(conf);

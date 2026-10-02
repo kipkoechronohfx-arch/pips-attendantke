@@ -439,6 +439,19 @@
                 <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
               </label>
             </div>
+
+            <!-- PU Prime Toggle -->
+            <div class="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+              <div class="flex items-center gap-3">
+                <img src="puprime.webp" class="h-6 object-contain" alt="PU Prime" onerror="this.src='https://via.placeholder.com/150x50?text=PU+Prime'">
+                <span class="text-xs font-bold text-gray-300">PU Prime</span>
+                <span id="brokerVisibilityStatus-puprime" class="px-2 py-0.5 rounded text-[10px] font-black tracking-widest uppercase transition-colors duration-300 bg-gray-500/20 text-gray-400">...</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="toggleBroker-puprime" onchange="updateBrokerVisibility('puprime', this.checked)" class="sr-only peer">
+                <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+              </label>
+            </div>
           </div>
         </div>
 
@@ -7749,7 +7762,7 @@
         const res = await fetch('/api/config/public');
         const data = await res.json();
         if (data.ok && data.brokerVisibility) {
-          ['dupoin', 'justmarkets'].forEach(broker => {
+          ['dupoin', 'justmarkets', 'puprime'].forEach(broker => {
             const isVisible = data.brokerVisibility[broker] !== false; // Default true
             const toggle = document.getElementById('toggleBroker-' + broker);
             if (toggle) toggle.checked = isVisible;
