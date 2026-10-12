@@ -396,6 +396,7 @@ router.post('/broadcast/ib-blast', async (req, res) => {
       `👉 ${ibLink}\n\n` +
       `💡 _Trading with the right broker makes ALL the difference. This is the one we personally use and recommend._\n\n` +
       `— Pips Attendant Team 🎯`;
+  }
 
   const TG_BASE = `https://api.telegram.org/bot${token}`;
   const chatIds = Array.isArray(chatId) ? chatId : String(chatId).split(',').map(id => id.trim()).filter(Boolean);
