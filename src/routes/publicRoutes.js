@@ -382,9 +382,11 @@ router.post('/broadcast/ib-blast', async (req, res) => {
   }
 
   // Build the message — use a custom override or the default compelling template
-  const message = customMessage && customMessage.trim()
-    ? customMessage.trim()
-    : `🏦 *FUND YOUR TRADING ACCOUNT — OFFICIAL PARTNER BROKER* 🏦\n\n` +
+  let message;
+  if (customMessage && customMessage.trim()) {
+    message = customMessage.trim().replace(/\[IB link will be inserted from server\]/g, ibLink || '');
+  } else {
+    message = `🏦 *FUND YOUR TRADING ACCOUNT — OFFICIAL PARTNER BROKER* 🏦\n\n` +
       `Are you looking for a reliable, regulated broker to execute our signals with?\n\n` +
       `✅ *Tight spreads* — ideal for Gold & Forex signals\n` +
       `✅ *Fast execution* — no requotes, no slippage\n` +

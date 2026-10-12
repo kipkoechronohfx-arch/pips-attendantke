@@ -902,7 +902,7 @@
               <!-- Broker Selection -->
               <div class="glass-card rounded-xl p-4 border border-white/5">
                 <span class="block text-[10px] font-bold uppercase tracking-wider text-amber-300 mb-3">Select Broker</span>
-                <select id="ibBlastBroker" onchange="localStorage.setItem('pa_last_ib_broker', this.value); updateIBBlastPreview()" class="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-amber-400/50">
+                <select id="ibBlastBroker" onchange="localStorage.setItem('pa_last_ib_broker', this.value); onBrokerChanged(this.value); updateIBBlastPreview()" class="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-amber-400/50">
                   <option value="DEFAULT">Loading brokers...</option>
                 </select>
               </div>
@@ -3550,20 +3550,64 @@
       `💡 _Trading with the right broker makes ALL the difference. This is the one we personally use and recommend._\n\n` +
       `— Pips Attendant Team 🎯`;
 
+    // ── Broker-Specific Templates ──────────────────────────────────
+    const IB_BROKER_TEMPLATES = {
+      PUPRIME:
+        `🚨 *TRADERS, THIS ONE IS WORTH CHECKING OUT!* 🔥\n\n` +
+        `Want to get more out of your trading capital? 👀\n\n` +
+        `PU Prime is currently offering a 100% Deposit Bonus 💰\n\n` +
+        `🎁 *Here’s what you can get:*\n` +
+        `✅ 100% bonus on your first deposit — up to $1,000\n` +
+        `✅ 20% bonus on subsequent deposits — up to $9,000\n` +
+        `✅ A limited-time promotion for eligible clients\n\n` +
+        `📈 This could be an opportunity to explore PU Prime and its trading conditions.\n\n` +
+        `👉 *Ready to get started?*\n\n` +
+        `1️⃣ Open your PU Prime account through the link below.\n` +
+        `2️⃣ Activate the promotion in your Client Portal under “Promotions” before depositing.\n` +
+        `3️⃣ Check the full terms and conditions to understand how the bonus credits work.\n\n` +
+        `🔗 *Open your account here:* [IB link will be inserted from server]\n\n` +
+        `⚠️ _Bonus credits are subject to eligibility and terms & conditions. They are not necessarily withdrawable cash and do not eliminate trading risk. Trade responsibly._\n\n` +
+        `Let’s keep improving, stay disciplined, and make smarter moves together. 💪\n\n` +
+        `— Pips Attendant Team 🎯`,
+    };
+
+    /** Returns the template for the given broker ID, or the default if none is mapped. */
+    function getTemplateForBroker(brokerId) {
+      if (brokerId && IB_BROKER_TEMPLATES[brokerId.toUpperCase()]) {
+        return IB_BROKER_TEMPLATES[brokerId.toUpperCase()];
+      }
+      return IB_BLAST_DEFAULT_TEMPLATE;
+    }
+
     function resetIBBlastMessage() {
-      const el = document.getElementById('ibBlastMessage');
-      if (el) el.value = IB_BLAST_DEFAULT_TEMPLATE;
-      
       const brokerSel = document.getElementById('ibBlastBroker');
       if (brokerSel && brokerSel.options.length > 0) {
         brokerSel.selectedIndex = 0;
         localStorage.removeItem('pa_last_ib_broker');
       }
 
+      const el = document.getElementById('ibBlastMessage');
+      const brokerId = brokerSel ? brokerSel.value : 'DEFAULT';
+      if (el) el.value = getTemplateForBroker(brokerId);
+
       const defaultTarget = document.querySelector('input[name="ibBlastTarget"][value="general"]');
       if (defaultTarget) defaultTarget.checked = true;
 
       updateIBBlastPreview();
+    }
+
+    /** Auto-switch the message template when the broker dropdown changes */
+    function onBrokerChanged(brokerId) {
+      const el = document.getElementById('ibBlastMessage');
+      if (!el) return;
+      // Only auto-switch if the current text is a known template (don't overwrite custom edits)
+      const currentText = el.value;
+      const isTemplate = currentText === IB_BLAST_DEFAULT_TEMPLATE ||
+        Object.values(IB_BROKER_TEMPLATES).some(t => t === currentText) ||
+        !currentText.trim();
+      if (isTemplate) {
+        el.value = getTemplateForBroker(brokerId);
+      }
     }
 
     function updateIBBlastPreview() {
@@ -3656,9 +3700,9 @@
         if (ibBlastUploadedImageBase64) {
           payload.image = ibBlastUploadedImageBase64;
         }
-        // Only send customMessage if it differs meaningfully from the placeholder
-        if (customMsg && !customMsg.includes('[IB link will be inserted from server]')) {
-          payload.customMessage = customMsg;
+        // Send customMessage if provided (backend will automatically insert the broker's link into the placeholder)
+        if (customMsg && customMsg.trim()) {
+          payload.customMessage = customMsg.trim();
         }
 
         const res  = await fetch('/api/broadcast/ib-blast', {
