@@ -342,14 +342,15 @@ router.post('/engagement', async (req, res) => {
 // Scans environment variables for any starting with IB_LINK_ (and the default IB_LINK)
 // Returns a list to populate the admin panel dropdown dynamically.
 router.get('/broadcast/ib-brokers', (req, res) => {
-  const brokers = [{ id: 'DEFAULT', name: 'Default (IB_LINK)' }];
+  const defaultLink = process.env.IB_LINK || '';
+  const brokers = [{ id: 'DEFAULT', name: 'Default (IB_LINK)', url: defaultLink }];
   
   for (const key of Object.keys(process.env)) {
     if (key.startsWith('IB_LINK_') && key !== 'IB_LINK') {
       const brokerId = key.replace('IB_LINK_', '');
       // Format name nicely (e.g., "JUSTMARKETS" -> "Justmarkets")
       const brokerName = brokerId.charAt(0) + brokerId.slice(1).toLowerCase();
-      brokers.push({ id: brokerId, name: brokerName });
+      brokers.push({ id: brokerId, name: brokerName, url: process.env[key] || '' });
     }
   }
   

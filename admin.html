@@ -967,6 +967,28 @@
                 <span>🚀 Blast to Telegram</span>
               </button>
             </div>
+
+            <!-- 🌐 Cross-Platform Share: Instagram · Facebook · Twitter / X · TikTok · LinkedIn -->
+            <div class="mt-2 space-y-2">
+              <span class="block text-[10px] font-bold uppercase tracking-wider text-amber-300">Share to Social Channels</span>
+              <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                <button type="button" onclick="shareIBToInstagram()" title="Copy resolved caption & open Instagram" class="py-2.5 px-3 rounded-xl font-bold border border-pink-500/30 bg-pink-500/5 hover:bg-pink-500/15 hover:border-pink-500/50 active:scale-95 text-pink-400 hover:text-white transition duration-200 flex items-center justify-center gap-1.5 cursor-pointer text-xs">
+                  <span>📷</span><span>Instagram</span>
+                </button>
+                <button type="button" onclick="shareIBToFacebook()" title="Copy caption & open Facebook post dialog" class="py-2.5 px-3 rounded-xl font-bold border border-blue-600/30 bg-blue-600/5 hover:bg-blue-600/15 hover:border-blue-600/50 active:scale-95 text-blue-400 hover:text-white transition duration-200 flex items-center justify-center gap-1.5 cursor-pointer text-xs">
+                  <span>📘</span><span>Facebook</span>
+                </button>
+                <button type="button" onclick="shareIBToTwitter()" title="Share on X / Twitter" class="py-2.5 px-3 rounded-xl font-bold border border-sky-500/30 bg-sky-500/5 hover:bg-sky-500/15 hover:border-sky-500/50 active:scale-95 text-sky-400 hover:text-white transition duration-200 flex items-center justify-center gap-1.5 cursor-pointer text-xs">
+                  <span class="font-black text-sm">𝕏</span><span>Twitter</span>
+                </button>
+                <button type="button" onclick="shareIBToTikTok()" title="Copy caption & open TikTok" class="py-2.5 px-3 rounded-xl font-bold border border-slate-500/30 bg-slate-500/5 hover:bg-slate-500/15 hover:border-slate-500/50 active:scale-95 text-slate-400 hover:text-white transition duration-200 flex items-center justify-center gap-1.5 cursor-pointer text-xs">
+                  <span class="font-black text-sm">🎵</span><span>TikTok</span>
+                </button>
+                <button type="button" onclick="shareIBToLinkedIn()" title="Copy caption & open LinkedIn" class="py-2.5 px-3 rounded-xl font-bold border border-indigo-500/30 bg-indigo-500/5 hover:bg-indigo-500/15 hover:border-indigo-500/50 active:scale-95 text-indigo-400 hover:text-white transition duration-200 flex items-center justify-center gap-1.5 cursor-pointer text-xs">
+                  <span>💼</span><span>LinkedIn</span>
+                </button>
+              </div>
+            </div>
           </div>
 
           <!-- Right: live preview -->
@@ -3742,6 +3764,18 @@
       setTimeout(() => { toast.classList.add('translate-x-[120%]', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 4000);
     }
 
+    let ibBrokersList = [];
+
+    /** Gets the current IB blast message with the broker referral link properly resolved */
+    function getResolvedIBBlastText() {
+      const el = document.getElementById('ibBlastMessage');
+      const text = (el && el.value) ? el.value.trim() : '';
+      const brokerSel = document.getElementById('ibBlastBroker');
+      const selectedOption = brokerSel && brokerSel.options[brokerSel.selectedIndex];
+      const brokerUrl = (selectedOption && selectedOption.dataset.url) || '';
+      return text.replace(/\[IB link will be inserted from server\]/g, brokerUrl);
+    }
+
     async function initIBBlast() {
       const el = document.getElementById('ibBlastMessage');
       if (el && !el.value) { el.value = IB_BLAST_DEFAULT_TEMPLATE; updateIBBlastPreview(); }
@@ -3753,14 +3787,16 @@
         const select = document.getElementById('ibBlastBroker');
         
         if (data.ok && select) {
+          ibBrokersList = data.brokers || [];
           select.innerHTML = ''; // clear loading state
-          if (data.brokers.length === 0) {
-            select.innerHTML = '<option value="DEFAULT">Default (IB_LINK)</option>';
+          if (ibBrokersList.length === 0) {
+            select.innerHTML = '<option value="DEFAULT" data-url="">Default (IB_LINK)</option>';
           } else {
-            data.brokers.forEach(b => {
+            ibBrokersList.forEach(b => {
               const opt = document.createElement('option');
               opt.value = b.id;
               opt.textContent = b.name;
+              opt.dataset.url = b.url || '';
               select.appendChild(opt);
             });
           }
@@ -6333,6 +6369,31 @@
       setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateY(16px)'; }, 3600);
     }
 
+    // Robust copy-to-clipboard with fallback for iframe / older browser contexts
+    function copyTextToClipboard(text) {
+      if (navigator.clipboard && window.isSecureContext && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text);
+      }
+      return new Promise((resolve, reject) => {
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.left = '-9999px';
+          ta.style.top = '-9999px';
+          document.body.appendChild(ta);
+          ta.focus();
+          ta.select();
+          const successful = document.execCommand('copy');
+          document.body.removeChild(ta);
+          if (successful) resolve();
+          else reject(new Error('execCommand failed'));
+        } catch (err) {
+          reject(err);
+        }
+      });
+    }
+
     function shareToTwitter(text) {
       if (!text || !text.trim()) { showSocialToast('⚠️ No message to share.', '#fbbf24'); return; }
       const clean = stripMarkdown(text);
@@ -6342,48 +6403,54 @@
 
     function shareToFacebook(text) {
       if (!text || !text.trim()) { showSocialToast('⚠️ No message to share.', '#fbbf24'); return; }
+      const clean = stripMarkdown(text);
       const siteUrl = encodeURIComponent('https://pips-attendantke.onrender.com');
-      const quote   = encodeURIComponent(stripMarkdown(text).substring(0, 500));
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${siteUrl}&quote=${quote}`, '_blank');
+      // Copy caption to clipboard because Facebook sharer does not auto-fill captions
+      copyTextToClipboard(clean).then(() => {
+        showSocialToast('📘 Post copied to clipboard! Paste into your Facebook post.', '#1877f2');
+      }).catch(() => {
+        showSocialToast('📘 Opening Facebook...', '#1877f2');
+      }).finally(() => {
+        setTimeout(() => {
+          window.open(`https://www.facebook.com/sharer/sharer.php?u=${siteUrl}`, '_blank');
+        }, 500);
+      });
     }
 
     function shareToInstagram(text) {
       if (!text || !text.trim()) { showSocialToast('⚠️ No message to share.', '#fbbf24'); return; }
       const clean = stripMarkdown(text);
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(clean)
-          .then(() => {
-            showSocialToast('📷 Caption copied! Opening Instagram...', '#e1306c');
-            setTimeout(() => window.open('https://www.instagram.com', '_blank'), 700);
-          })
-          .catch(() => {
-            showSocialToast('📷 Open Instagram and paste your message manually.', '#e1306c');
-            window.open('https://www.instagram.com', '_blank');
-          });
-      } else {
-        showSocialToast('📷 Open Instagram and paste your message manually.', '#e1306c');
-        window.open('https://www.instagram.com', '_blank');
-      }
+      copyTextToClipboard(clean).then(() => {
+        showSocialToast('📷 Caption copied! Opening Instagram to paste...', '#e1306c');
+      }).catch(() => {
+        showSocialToast('📷 Opening Instagram...', '#e1306c');
+      }).finally(() => {
+        setTimeout(() => {
+          window.open('https://www.instagram.com', '_blank');
+        }, 600);
+      });
     }
 
     function shareToTikTok(text) {
       if (!text || !text.trim()) { showSocialToast('⚠️ No message to share.', '#fbbf24'); return; }
       const clean = stripMarkdown(text);
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(clean)
-          .then(() => {
-            showSocialToast('🎵 Caption copied! Opening TikTok...', '#1e293b');
-            setTimeout(() => window.open('https://www.tiktok.com', '_blank'), 700);
-          })
-          .catch(() => {
-            showSocialToast('🎵 Open TikTok and paste your message manually.', '#1e293b');
-            window.open('https://www.tiktok.com', '_blank');
-          });
-      } else {
-        showSocialToast('🎵 Open TikTok and paste your message manually.', '#1e293b');
-        window.open('https://www.tiktok.com', '_blank');
-      }
+      copyTextToClipboard(clean).then(() => {
+        showSocialToast('🎵 Caption copied! Opening TikTok...', '#1e293b');
+      }).catch(() => {
+        showSocialToast('🎵 Opening TikTok...', '#1e293b');
+      }).finally(() => {
+        setTimeout(() => {
+          window.open('https://www.tiktok.com', '_blank');
+        }, 600);
+      });
     }
+
+    // IB Blast share wrappers
+    function shareIBToTwitter()   { shareToTwitter(getResolvedIBBlastText()); }
+    function shareIBToFacebook()  { shareToFacebook(getResolvedIBBlastText()); }
+    function shareIBToInstagram() { shareToInstagram(getResolvedIBBlastText()); }
+    function shareIBToTikTok()    { shareToTikTok(getResolvedIBBlastText()); }
+    function shareIBToLinkedIn()  { shareToLinkedIn(getResolvedIBBlastText()); }
 
     function shareToLinkedIn(text) {
       if (!text || !text.trim()) { showSocialToast('⚠️ No message to share.', '#fbbf24'); return; }
