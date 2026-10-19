@@ -31,12 +31,12 @@ export const TickerMarquee: React.FC = () => {
   };
 
   return (
-    <div className="h-9 bg-[#050a15] border-b border-white/[0.05] flex items-center overflow-hidden select-none text-xs font-mono w-full max-w-full" style={{ contain: 'paint' }}>
+    <div className="h-9 bg-black/25 backdrop-blur-md border-b border-white/[0.06] flex items-center overflow-hidden select-none text-xs font-mono w-full max-w-full" style={{ contain: 'paint' }}>
       {/* Label Pin */}
-      <div className="shrink-0 flex items-center gap-1.5 px-4 h-full bg-gradient-to-r from-[#0a101f] to-[#050a15] border-r border-white/[0.07] z-10">
+      <div className="shrink-0 flex items-center gap-1.5 px-4 h-full bg-gradient-to-r from-black/40 to-transparent border-r border-white/[0.07] z-10">
         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_#10b981]" />
-        <Activity size={12} className="text-cyan-400" />
-        <span className="text-cyan-400 font-sans font-bold uppercase tracking-wider text-[10px]">Live</span>
+        <Activity size={12} className="text-amber-400" />
+        <span className="text-amber-400 font-sans font-bold uppercase tracking-wider text-[10px]">Live</span>
       </div>
 
       {/* Scrolling Track — duplicated for seamless loop */}

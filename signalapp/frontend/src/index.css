@@ -116,41 +116,44 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   transform: translateY(-50%);
   width: 3px;
   height: 60%;
-  background: linear-gradient(180deg, #22d3ee, #3b82f6);
+  background: linear-gradient(180deg, #f59e0b, #d4af37);
   border-radius: 0 4px 4px 0;
-  box-shadow: 0 0 8px rgba(34, 211, 238, 0.5);
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.6);
 }
 
-/* ─── Glassmorphism & Premium Surfaces ──────────────────── */
+/* ─── Glassmorphism & Transparent Pips Attendant Surfaces ── */
 .glass-panel {
-  background: rgba(13, 22, 40, 0.72);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(8, 14, 26, 0.42);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(212, 175, 55, 0.25);
 }
 
 .glass-surface {
-  background: linear-gradient(135deg, rgba(13, 22, 40, 0.75) 0%, rgba(9, 15, 28, 0.85) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: linear-gradient(135deg, rgba(12, 18, 32, 0.45) 0%, rgba(6, 10, 20, 0.55) 100%);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
   border: 1px solid rgba(255, 255, 255, 0.07);
+  border-top: 1px solid rgba(212, 175, 55, 0.22);
 }
 
 .glass-surface:hover {
-  border-color: rgba(255, 255, 255, 0.14);
+  border-color: rgba(212, 175, 55, 0.35);
 }
 
 .glass-card-premium {
-  background: linear-gradient(180deg, rgba(16, 26, 48, 0.7) 0%, rgba(9, 15, 28, 0.85) 100%);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: linear-gradient(180deg, rgba(12, 18, 32, 0.45) 0%, rgba(6, 10, 20, 0.58) 100%);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(212, 175, 55, 0.30);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
 }
 
 .glass-card-premium:hover {
-  border-color: rgba(255, 255, 255, 0.16);
-  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.7), inset 0 1px 0 0 rgba(255, 255, 255, 0.14);
+  border-color: rgba(212, 175, 55, 0.38);
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.65), 0 0 25px rgba(212, 175, 55, 0.1);
 }
 
 /* ─── Text Gradients ────────────────────────────────────── */
@@ -196,13 +199,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 
 /* ─── KPI Card Gradient Border (on hover) ───────────────── */
+/* ─── KPI Card Gradient Border (on hover) ───────────────── */
 .kpi-card {
   position: relative;
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.2s ease;
-  background: linear-gradient(180deg, rgba(14, 24, 44, 0.75) 0%, rgba(8, 14, 27, 0.85) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: linear-gradient(180deg, rgba(12, 18, 32, 0.45) 0%, rgba(6, 10, 20, 0.58) 100%);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(212, 175, 55, 0.28);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08), 0 8px 24px -6px rgba(0, 0, 0, 0.5);
 }
 .kpi-card::after {
@@ -211,7 +216,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(135deg, rgba(34, 211, 238, 0.3) 0%, transparent 60%);
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.4) 0%, transparent 60%);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -222,7 +227,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .kpi-card:hover::after { opacity: 1; }
 .kpi-card:hover { 
   transform: translateY(-3px); 
-  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.6), 0 0 25px -5px rgba(6, 182, 212, 0.15); 
+  border-color: rgba(212, 175, 55, 0.4);
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.6), 0 0 25px -5px rgba(212, 175, 55, 0.2); 
 }
 
 /* ─── Mobile Bottom Nav Indicator ───────────────────────── */

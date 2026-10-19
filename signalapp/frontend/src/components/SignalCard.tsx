@@ -212,7 +212,7 @@ export const SignalCard: React.FC<SignalCardProps> = ({ signal, showOutcomeContr
       <div className="flex items-start justify-between gap-2 mb-3">
         <div className="flex items-center gap-1.5 flex-wrap min-w-0">
           {/* Asset Type Micro-Tag */}
-          <span className="w-6 h-6 rounded-lg bg-white/[0.05] border border-white/10 flex items-center justify-center font-bold text-[10px] text-cyan-300 shrink-0">
+          <span className="w-6 h-6 rounded-lg bg-amber-500/10 border border-amber-500/25 flex items-center justify-center font-bold text-[10px] text-amber-300 shrink-0">
             {isGold ? 'AU' : isCrypto ? '₿' : 'FX'}
           </span>
           <span className="text-[16px] font-mono font-black text-slate-100 tracking-tight shrink-0">{signal.symbol}</span>
@@ -220,10 +220,10 @@ export const SignalCard: React.FC<SignalCardProps> = ({ signal, showOutcomeContr
             {isBuy ? <ArrowUpRight size={12} strokeWidth={2.5} /> : <ArrowDownRight size={12} strokeWidth={2.5} />}
             {signal.direction}
           </span>
-          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-[#070e1c] text-slate-300 border border-white/[0.08] shrink-0">{signal.timeframe}</span>
+          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-white/[0.06] text-slate-200 border border-white/[0.1] shrink-0">{signal.timeframe}</span>
         </div>
         <div className="flex items-center gap-1 shrink-0 mt-0.5">
-          <span className="hidden sm:block text-[10px] font-bold text-slate-400 bg-[#060913] px-2 py-0.5 rounded-full border border-white/[0.08]">
+          <span className="hidden sm:block text-[10px] font-bold text-slate-300 bg-white/[0.06] px-2 py-0.5 rounded-full border border-white/[0.1]">
             {signal.source === 'ADMIN' ? 'Senior Desk' : 'Quant AI'}
           </span>
           <span className={`inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full tracking-wider ${
@@ -316,11 +316,11 @@ export const SignalCard: React.FC<SignalCardProps> = ({ signal, showOutcomeContr
 
         {/* Institutional Confluences Checked */}
         <div className="flex items-center gap-1 flex-wrap pt-0.5">
-          <span className="text-[9px] text-cyan-400/80 font-bold uppercase tracking-widest shrink-0">Confluences:</span>
+          <span className="text-[9px] text-amber-400/90 font-bold uppercase tracking-widest shrink-0">Confluences:</span>
           {confluenceBadges.map((badge) => (
             <span
               key={badge.label}
-              className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/25 shrink-0 flex items-center gap-0.5"
+              className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/25 shrink-0 flex items-center gap-0.5"
             >
               <span className="text-[8px] text-emerald-400">✓</span> {badge.label}
             </span>
@@ -329,10 +329,10 @@ export const SignalCard: React.FC<SignalCardProps> = ({ signal, showOutcomeContr
       </div>
 
       {/* ── Order Ticket Price Grid ─────────────────────────── */}
-      <div className="grid grid-cols-2 2xl:grid-cols-4 gap-2.5 bg-[#040814]/90 border border-white/[0.07] rounded-xl p-3 mb-3 font-mono">
+      <div className="grid grid-cols-2 2xl:grid-cols-4 gap-2.5 bg-black/35 backdrop-blur-md border border-white/[0.08] rounded-xl p-3 mb-3 font-mono">
         <div className="min-w-0">
           <span className="text-[9px] text-slate-400 uppercase tracking-widest block font-sans font-bold mb-0.5 truncate">Entry Level</span>
-          <span className="text-sm font-black text-cyan-400 tabular-nums truncate block">{signal.entry_price}</span>
+          <span className="text-sm font-black text-amber-400 tabular-nums truncate block">{signal.entry_price}</span>
         </div>
         <div className="min-w-0">
           <div className="flex items-center justify-between mb-0.5 gap-1">
@@ -385,20 +385,20 @@ export const SignalCard: React.FC<SignalCardProps> = ({ signal, showOutcomeContr
       <div className="mb-3">
         <button
           onClick={() => setShowCalc(!showCalc)}
-          className="flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-cyan-400 transition-colors font-mono font-semibold"
+          className="flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-amber-400 transition-colors font-mono font-semibold"
         >
-          <Calculator size={12} className="text-cyan-400" />
+          <Calculator size={12} className="text-amber-400" />
           <span>Institutional Lot Sizer &amp; Risk ($)</span>
           {showCalc ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
         </button>
 
         {showCalc && (
-          <div className="mt-2.5 bg-[#030611] border border-white/[0.08] rounded-xl p-3.5 space-y-3 animate-in slide-in-from-top-1 duration-150">
+          <div className="mt-2.5 bg-black/45 backdrop-blur-md border border-white/[0.08] rounded-xl p-3.5 space-y-3 animate-in slide-in-from-top-1 duration-150">
             {/* Account Balance & Risk % Presets */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] text-slate-400 font-sans font-semibold">Account Balance</span>
-                <span className="text-[10px] font-mono font-bold text-cyan-400">${accountBalance.toLocaleString()}</span>
+                <span className="text-[10px] font-mono font-bold text-amber-400">${accountBalance.toLocaleString()}</span>
               </div>
               <div className="grid grid-cols-5 gap-1">
                 {[2000, 5000, 10000, 25000, 50000].map((b) => (
@@ -407,7 +407,7 @@ export const SignalCard: React.FC<SignalCardProps> = ({ signal, showOutcomeContr
                     onClick={() => setAccountBalance(b)}
                     className={`py-1 rounded text-[9px] font-mono font-bold transition-all ${
                       accountBalance === b
-                        ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
                         : 'bg-white/[0.03] text-slate-500 hover:text-slate-300'
                     }`}
                   >
@@ -442,9 +442,9 @@ export const SignalCard: React.FC<SignalCardProps> = ({ signal, showOutcomeContr
 
             {/* Computed Lot Sizing & Metrics */}
             <div className="grid grid-cols-3 gap-2 text-[10px] font-mono pt-1">
-              <div className="bg-[#081020] border border-cyan-500/30 rounded-lg p-2 text-center">
-                <div className="text-cyan-400/80 mb-0.5">Rec. Lots</div>
-                <div className="text-cyan-300 font-black text-xs">{recommendedLots} Lots</div>
+              <div className="bg-black/35 border border-amber-500/30 rounded-lg p-2 text-center">
+                <div className="text-amber-400/80 mb-0.5">Rec. Lots</div>
+                <div className="text-amber-300 font-black text-xs">{recommendedLots} Lots</div>
               </div>
               <div className="bg-rose-500/[0.08] border border-rose-500/20 rounded-lg p-2 text-center">
                 <div className="text-rose-400/70 mb-0.5">SL Risk ({pips}p)</div>
@@ -459,7 +459,7 @@ export const SignalCard: React.FC<SignalCardProps> = ({ signal, showOutcomeContr
             <div className="pt-1">
               <button
                 onClick={() => { setSelectedSymbol(signal.symbol); setActiveTab('risk'); }}
-                className="w-full py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-[10px] font-bold tracking-wide transition-all text-center flex items-center justify-center gap-1.5"
+                className="w-full py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-bold tracking-wide transition-all text-center flex items-center justify-center gap-1.5"
               >
                 <span>Open Full Institutional Risk Studio</span>
                 <span className="text-[11px]">→</span>
@@ -473,14 +473,14 @@ export const SignalCard: React.FC<SignalCardProps> = ({ signal, showOutcomeContr
       <div className="flex items-center gap-2 pt-2.5 border-t border-white/[0.06]">
         <button
           onClick={() => { setSelectedSymbol(signal.symbol); setActiveTab('charts'); notifService.hapticLight(); }}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold shadow-md shadow-cyan-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-400 text-slate-950 text-xs font-black shadow-md shadow-amber-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
         >
-          <LineChart size={13} />
+          <LineChart size={13} strokeWidth={2.5} />
           <span>Open Chart</span>
         </button>
         <button
           onClick={() => { setSelectedSymbol(signal.symbol); setShowCalc(true); notifService.hapticLight(); }}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#091122] hover:bg-[#101e3d] text-slate-300 hover:text-white border border-white/[0.08] hover:border-white/20 text-xs font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]"
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-slate-200 hover:text-white border border-white/[0.1] hover:border-amber-500/30 text-xs font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]"
         >
           <Calculator size={13} />
           <span>Lot Size</span>
@@ -488,7 +488,7 @@ export const SignalCard: React.FC<SignalCardProps> = ({ signal, showOutcomeContr
         <button
           onClick={handleCopy}
           title="Copy signal ticket to clipboard"
-          className="p-2.5 rounded-xl bg-[#091122] hover:bg-[#101e3d] text-slate-400 hover:text-cyan-400 border border-white/[0.08] hover:border-cyan-500/30 transition-all active:scale-95"
+          className="p-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-slate-400 hover:text-amber-300 border border-white/[0.08] hover:border-amber-500/30 transition-all active:scale-95"
         >
           <Copy size={14} />
         </button>

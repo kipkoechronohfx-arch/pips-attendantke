@@ -28,35 +28,46 @@ export const Navbar: React.FC = () => {
   const eatTime = useEATClock();
 
   return (
-    <header className="h-[68px] bg-[#050814]/90 backdrop-blur-2xl border-b border-white/[0.08] sticky top-0 z-50 flex items-center shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+    <header className="h-[68px] bg-black/35 backdrop-blur-2xl border-b border-white/[0.08] sticky top-0 z-50 flex items-center shadow-[0_4px_30px_rgba(0,0,0,0.4)]">
       <div className="max-w-[1680px] w-full mx-auto flex items-center justify-between gap-3 px-3 sm:px-5 lg:px-6">
-        {/* ── Brand ─────────────────────────────────────── */}
-        <div
-          onClick={() => setActiveTab('dashboard')}
-          className="flex items-center gap-3 cursor-pointer group shrink-0"
-        >
-          <div className="relative">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-emerald-500 rounded-xl blur-sm opacity-40 group-hover:opacity-80 transition duration-300" />
-            <img
-              src="/logo.jpg"
-              alt="Forex Signal Pro"
-              className="relative w-9 h-9 rounded-xl object-cover border border-white/20 shadow-md group-hover:scale-105 transition-transform duration-200"
-            />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-[16px] sm:text-[17px] font-black tracking-tight text-gradient-silver leading-none">
-                Forex Signal Pro
-              </h1>
-              <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-300 border border-cyan-500/30 tracking-widest uppercase">
-                Terminal
-              </span>
+        {/* ── Brand & Back to Home ─────────────────────── */}
+        <div className="flex items-center gap-3 shrink-0">
+          <a
+            href="/"
+            title="Return to Pips Attendant Home"
+            className="px-2.5 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.10] border border-white/10 hover:border-amber-400/40 text-slate-300 hover:text-white text-xs font-semibold transition-all flex items-center gap-1.5 shrink-0 shadow-sm"
+          >
+            <span>←</span>
+            <span className="hidden sm:inline">Pips Attendant</span>
+          </a>
+
+          <div
+            onClick={() => setActiveTab('dashboard')}
+            className="flex items-center gap-3 cursor-pointer group shrink-0"
+          >
+            <div className="relative">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-xl blur-sm opacity-40 group-hover:opacity-80 transition duration-300" />
+              <img
+                src="/logo.jpg"
+                alt="Forex Signal Pro"
+                className="relative w-9 h-9 rounded-xl object-cover border border-white/20 shadow-md group-hover:scale-105 transition-transform duration-200"
+              />
             </div>
-            <p className="text-[10px] text-slate-400 font-medium mt-0.5 tracking-wide flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse" />
-              <span className="hidden xl:inline">Institutional Quantitative Signals &amp; Market Intelligence</span>
-              <span className="hidden sm:inline xl:hidden">Live Interbank Desk</span>
-            </p>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-[16px] sm:text-[17px] font-black tracking-tight text-white leading-none">
+                  Forex Signal Pro
+                </h1>
+                <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-gradient-to-r from-amber-500/20 to-yellow-500/10 text-amber-300 border border-amber-500/35 tracking-widest uppercase">
+                  Terminal
+                </span>
+              </div>
+              <p className="text-[10px] text-slate-400 font-medium mt-0.5 tracking-wide flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse" />
+                <span className="hidden xl:inline">Institutional Quantitative Signals &amp; Market Intelligence</span>
+                <span className="hidden sm:inline xl:hidden">Live Interbank Desk</span>
+              </p>
+            </div>
           </div>
         </div>
 
@@ -85,10 +96,10 @@ export const Navbar: React.FC = () => {
           </div>
 
           {/* EAT Live Clock */}
-          <div className="hidden xl:flex items-center gap-1.5 bg-[#02050e] border border-white/[0.09] px-3 py-1.5 rounded-xl text-[11px] font-mono shadow-inner">
-            <Clock size={12} className="text-cyan-400" />
+          <div className="hidden xl:flex items-center gap-1.5 bg-black/40 border border-white/[0.09] px-3 py-1.5 rounded-xl text-[11px] font-mono shadow-inner">
+            <Clock size={12} className="text-amber-400" />
             <span className="text-slate-400 font-bold text-[10px]">EAT</span>
-            <span className="text-cyan-300 font-bold tabular-nums tracking-widest">{eatTime}</span>
+            <span className="text-amber-300 font-bold tabular-nums tracking-widest">{eatTime}</span>
           </div>
         </div>
 

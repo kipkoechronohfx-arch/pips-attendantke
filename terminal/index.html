@@ -17,8 +17,8 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
     
     <title>Forex Signal Pro — Live Trading Signals & Financial News</title>
-    <script type="module" crossorigin src="./assets/index-g_YAsZhc.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-CiBq4jgm.css">
+    <script type="module" crossorigin src="./assets/index-B_RmLPjr.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DthnqUMl.css">
     <script>
       if (window.self !== window.top) {
         document.documentElement.classList.add('in-iframe');
@@ -29,8 +29,6 @@
       html, body, #root { width: 100%; height: 100%; margin: 0; padding: 0; }
       /* Transparent body & root so Dubai bg shows through */
       body, #root { background-color: transparent !important; }
-      .in-iframe #backToHomeBtn { display: none !important; }
-      #backToHomeBtn:hover { transform: translateY(-1px); border-color: rgba(6,182,212,0.6); color: #fff; }
       /* Dubai skyline background */
       #dubai-bg {
         position: fixed; inset: 0; z-index: -2;
@@ -47,18 +45,15 @@
         pointer-events: none;
       }
       .bg-\[\#040711\] {
-        background-color: rgba(4, 7, 17, 0.75) !important;
+        background-color: rgba(4, 7, 17, 0.40) !important;
       }
       #root { position: relative; z-index: 1; }
     </style>
   </head>
-  <body class="text-slate-100 min-h-screen selection:bg-cyan-500/20 selection:text-cyan-300">
+  <body class="text-slate-100 min-h-screen selection:bg-amber-500/25 selection:text-amber-200">
     <!-- Dubai skyline background -->
     <div id="dubai-bg"></div>
     <div id="dubai-overlay"></div>
-    <a href="/" id="backToHomeBtn" class="fixed top-2.5 left-3.5 z-[9999] px-3 py-1.5 rounded-lg bg-black/80 border border-white/20 text-xs font-semibold text-gray-300 backdrop-blur shadow-xl transition flex items-center gap-1.5" style="text-decoration:none;">
-      <span>← Back to Pips Attendant</span>
-    </a>
     <div id="root"></div>
   </body>
 </html>

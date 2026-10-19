@@ -60,14 +60,14 @@ function NavSection({ items, activeTab, setActiveTab }: {
             onClick={() => setActiveTab(item.id)}
             className={`relative w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 ${
               isActive
-                ? 'nav-item-active bg-gradient-to-r from-cyan-500/[0.12] to-blue-500/[0.07] text-cyan-400 border border-cyan-500/25 font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
+                ? 'nav-item-active bg-gradient-to-r from-amber-500/[0.15] to-yellow-500/[0.08] text-amber-300 border border-amber-500/35 font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04] border border-transparent'
             }`}
           >
             <Icon
               size={17}
               className={`shrink-0 transition-colors duration-200 ${
-                isActive ? 'text-cyan-400' : 'text-slate-500 group-hover:text-slate-300'
+                isActive ? 'text-amber-400' : 'text-slate-500 group-hover:text-slate-300'
               }`}
             />
             <span className="whitespace-nowrap">{item.label}</span>
@@ -97,7 +97,7 @@ export const Sidebar: React.FC = () => {
     user?.role === 'ADMIN';
 
   return (
-    <aside className="w-[200px] xl:w-[220px] bg-[#070c1a] border-r border-white/[0.06] p-2.5 xl:p-3 flex flex-col justify-between shrink-0 hidden lg:flex">
+    <aside className="w-[200px] xl:w-[220px] bg-black/30 backdrop-blur-xl border-r border-white/[0.07] p-2.5 xl:p-3 flex flex-col justify-between shrink-0 hidden lg:flex">
       <div className="space-y-4">
         {/* Trading Terminal Section */}
         <div>

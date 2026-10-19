@@ -225,14 +225,14 @@ export const DashboardPage: React.FC = () => {
                 <span>Interactive Market Terminal</span>
               </h2>
               {/* Quick Symbol Switcher Pills */}
-              <div className="hidden sm:flex items-center gap-1 bg-[#090f1d] border border-white/[0.08] p-1 rounded-xl">
+              <div className="hidden sm:flex items-center gap-1 bg-black/30 border border-white/[0.08] p-1 rounded-xl">
                 {quoteList.slice(0, 5).map((q) => (
                   <button
                     key={q.symbol}
                     onClick={() => setSelectedSymbol(q.symbol)}
                     className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all ${
                       selectedSymbol === q.symbol
-                        ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-300 border border-cyan-500/30 shadow-sm'
+                        ? 'bg-gradient-to-r from-amber-500/25 to-yellow-500/15 text-amber-300 border border-amber-500/40 shadow-sm'
                         : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.03]'
                     }`}
                   >
@@ -244,9 +244,9 @@ export const DashboardPage: React.FC = () => {
 
             <button
               onClick={handleScanNow}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold shadow-lg shadow-cyan-500/20 transition-all hover:scale-105 active:scale-95"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-400 text-slate-950 text-xs font-black shadow-lg shadow-amber-500/20 transition-all hover:scale-105 active:scale-95"
             >
-              <Sparkles size={14} />
+              <Sparkles size={14} className="text-slate-950" />
               <span>Confluence Scan</span>
             </button>
           </div>
@@ -265,7 +265,7 @@ export const DashboardPage: React.FC = () => {
             </div>
             <button
               onClick={() => setActiveTab('signals')}
-              className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1 group"
+              className="text-xs text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1 group"
             >
               <span>View All ({signals.length})</span>
               <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />

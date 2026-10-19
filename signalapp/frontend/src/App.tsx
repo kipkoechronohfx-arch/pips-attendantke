@@ -268,7 +268,7 @@ export const App: React.FC = () => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="min-h-screen bg-[#040711]/75 text-slate-100 flex flex-col font-sans pb-16 lg:pb-0 relative selection:bg-cyan-500/20 selection:text-cyan-300" style={{overflowX:'clip'}}>
+    <div className="min-h-screen bg-black/35 text-slate-100 flex flex-col font-sans pb-16 lg:pb-0 relative selection:bg-amber-500/20 selection:text-amber-300" style={{overflowX:'clip'}}>
       {/* Dubai Skyline Background Layer */}
       <div 
         className="fixed inset-0 pointer-events-none -z-10"
@@ -277,13 +277,13 @@ export const App: React.FC = () => {
           backgroundSize: 'cover',
           backgroundPosition: 'center bottom',
           backgroundRepeat: 'no-repeat',
-          opacity: 0.52
+          opacity: 0.70
         }}
       />
       <div 
         className="fixed inset-0 pointer-events-none -z-10"
         style={{
-          background: 'linear-gradient(180deg, rgba(4,7,17,0.65) 0%, rgba(4,7,17,0.15) 35%, rgba(4,7,17,0.15) 70%, rgba(4,7,17,0.85) 100%)'
+          background: 'linear-gradient(180deg, rgba(4,7,17,0.48) 0%, rgba(4,7,17,0.10) 35%, rgba(4,7,17,0.10) 70%, rgba(4,7,17,0.72) 100%)'
         }}
       />
 
