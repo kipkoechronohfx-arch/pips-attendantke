@@ -24,12 +24,15 @@
       }
     </script>
     <style>
+      html { background-color: #060913; }
       html, body, #root { width: 100%; height: 100%; margin: 0; padding: 0; }
+      /* Transparent body & root so Dubai bg shows through */
+      body, #root { background-color: transparent !important; }
       .in-iframe #backToHomeBtn { display: none !important; }
       #backToHomeBtn:hover { transform: translateY(-1px); border-color: rgba(6,182,212,0.6); color: #fff; }
       /* Dubai skyline background */
       #dubai-bg {
-        position: fixed; inset: 0; z-index: 0;
+        position: fixed; inset: 0; z-index: -2;
         background-image: url('../dubai_bg.webp');
         background-size: cover;
         background-position: center bottom;
@@ -38,14 +41,14 @@
         pointer-events: none;
       }
       #dubai-overlay {
-        position: fixed; inset: 0; z-index: 0;
-        background: linear-gradient(180deg, rgba(6,9,19,0.72) 0%, rgba(6,9,19,0.12) 40%, rgba(6,9,19,0.12) 70%, rgba(6,9,19,0.90) 100%);
+        position: fixed; inset: 0; z-index: -1;
+        background: linear-gradient(180deg, rgba(6,9,19,0.70) 0%, rgba(6,9,19,0.10) 35%, rgba(6,9,19,0.10) 70%, rgba(6,9,19,0.88) 100%);
         pointer-events: none;
       }
       #root { position: relative; z-index: 1; }
     </style>
   </head>
-  <body class="bg-[#060913] text-slate-100 min-h-screen selection:bg-cyan-500/20 selection:text-cyan-300">
+  <body class="text-slate-100 min-h-screen selection:bg-cyan-500/20 selection:text-cyan-300">
     <!-- Dubai skyline background -->
     <div id="dubai-bg"></div>
     <div id="dubai-overlay"></div>
