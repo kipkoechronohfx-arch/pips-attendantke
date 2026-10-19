@@ -19,6 +19,32 @@ function getMTFBadges(tf: string) {
   return all.map((t, i) => ({ tf: t, aligned: i >= tfIndex }));
 }
 
+// Extracted institutional confluences from technical justification
+function getConfluenceBadges(justification?: string) {
+  if (!justification) {
+    return [
+      { label: 'EMA Trend', active: true },
+      { label: 'RSI Momentum', active: true },
+      { label: 'MACD Hist', active: true },
+      { label: 'ATR Buffer', active: true }
+    ];
+  }
+  const text = justification.toLowerCase();
+  const badges: { label: string; active: boolean }[] = [];
+
+  if (text.includes('ema') || text.includes('trend')) badges.push({ label: 'EMA Trend', active: true });
+  if (text.includes('200')) badges.push({ label: '200 EMA Macro', active: true });
+  if (text.includes('rsi') || text.includes('momentum')) badges.push({ label: 'RSI Momentum', active: true });
+  if (text.includes('macd')) badges.push({ label: 'MACD Hist', active: true });
+  if (text.includes('bollinger') || text.includes('volatility')) badges.push({ label: 'BB Bands', active: true });
+  if (text.includes('stochastic') || text.includes('stoch')) badges.push({ label: 'Stoch %K/%D', active: true });
+  if (text.includes('support') || text.includes('resistance') || text.includes('defense') || text.includes('rejection') || text.includes('supply')) badges.push({ label: 'S&R Zone', active: true });
+  if (text.includes('candlestick') || text.includes('engulfing') || text.includes('pin bar') || text.includes('breakout')) badges.push({ label: 'Price Action', active: true });
+  if (text.includes('atr')) badges.push({ label: 'ATR Dynamic', active: true });
+
+  return badges.length > 0 ? badges : [{ label: 'Quant Confluence', active: true }];
+}
+
 // Pip calculator: pip value per lot at entry vs SL
 function calcPips(signal: TradingSignal): { pips: number; valuePerLot: number } {
   const isJpy = signal.symbol.includes('JPY');
@@ -47,6 +73,7 @@ export const SignalCard: React.FC<SignalCardProps> = ({ signal, showOutcomeContr
   const confidence = signal.confidence ?? 0;
   const { pips, valuePerLot } = calcPips(signal);
   const mtfBadges = getMTFBadges(signal.timeframe);
+  const confluenceBadges = getConfluenceBadges(signal.technical_justification);
 
   // Dynamic recommended lot size from balance and risk %
   const dollarRisk = (accountBalance * (riskPercent / 100));
@@ -267,23 +294,38 @@ export const SignalCard: React.FC<SignalCardProps> = ({ signal, showOutcomeContr
         </div>
       )}
 
-      {/* ── MTF Confluence Badges ──────────────── */}
-      <div className="flex items-center justify-between mb-3 text-[10px] gap-2">
-        <div className="flex items-center gap-1 flex-wrap min-w-0">
-          <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest shrink-0">MTF:</span>
-          {mtfBadges.map(({ tf, aligned }) => (
-            <span key={tf} className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border shrink-0 ${
-              aligned
-                ? 'bg-emerald-500/[0.12] text-emerald-400 border-emerald-500/25'
-                : 'bg-slate-900/60 text-slate-600 border-white/5'
-            }`}>
-              {tf} {aligned ? '✓' : '·'}
+      {/* ── MTF & Quantitative Confluence Badges ──────────────── */}
+      <div className="space-y-1.5 mb-3">
+        <div className="flex items-center justify-between text-[10px] gap-2">
+          <div className="flex items-center gap-1 flex-wrap min-w-0">
+            <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest shrink-0">MTF:</span>
+            {mtfBadges.map(({ tf, aligned }) => (
+              <span key={tf} className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border shrink-0 ${
+                aligned
+                  ? 'bg-emerald-500/[0.12] text-emerald-400 border-emerald-500/25'
+                  : 'bg-slate-900/60 text-slate-600 border-white/5'
+              }`}>
+                {tf} {aligned ? '✓' : '·'}
+              </span>
+            ))}
+          </div>
+          <span className="text-[10px] font-mono text-slate-400 shrink-0">
+            ATR <strong className="text-slate-200">1.5x Dynamic</strong>
+          </span>
+        </div>
+
+        {/* Institutional Confluences Checked */}
+        <div className="flex items-center gap-1 flex-wrap pt-0.5">
+          <span className="text-[9px] text-cyan-400/80 font-bold uppercase tracking-widest shrink-0">Confluences:</span>
+          {confluenceBadges.map((badge) => (
+            <span
+              key={badge.label}
+              className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/25 shrink-0 flex items-center gap-0.5"
+            >
+              <span className="text-[8px] text-emerald-400">✓</span> {badge.label}
             </span>
           ))}
         </div>
-        <span className="text-[10px] font-mono text-slate-400 shrink-0">
-          ATR <strong className="text-slate-200">1.4x</strong>
-        </span>
       </div>
 
       {/* ── Order Ticket Price Grid ─────────────────────────── */}

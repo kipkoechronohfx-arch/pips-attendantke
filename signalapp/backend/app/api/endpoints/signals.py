@@ -67,7 +67,7 @@ async def trigger_auto_signal_scan(
         )
     _last_scan_timestamp = now
 
-    instruments = ["EUR/USD", "GBP/USD", "USD/JPY", "XAU/USD", "USD/CHF", "AUD/USD", "USD/CAD", "BTC/USD"]
+    instruments = ["EUR/USD", "GBP/USD", "USD/JPY", "XAU/USD", "XAG/USD", "GBP/JPY", "USD/CHF", "AUD/USD", "USD/CAD", "BTC/USD"]
     new_signals = []
 
     for sym in instruments:
