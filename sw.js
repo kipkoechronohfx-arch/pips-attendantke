@@ -68,8 +68,8 @@ self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET and API requests — always go to network
-  if (request.method !== 'GET' || url.pathname.startsWith('/api/') || url.pathname.startsWith('/socket.io/')) {
+  // Skip non-GET, API, socket, and terminal requests — always go to network
+  if (request.method !== 'GET' || url.pathname.startsWith('/api/') || url.pathname.startsWith('/socket.io/') || url.pathname.startsWith('/terminal') || url.pathname.startsWith('/assets/')) {
     return;
   }
 

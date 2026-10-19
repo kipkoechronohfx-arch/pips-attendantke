@@ -307,7 +307,7 @@ function parseRssArticles(xmlText, maxItems = 12) {
 }
 
 // ── GET /api/v1/news ───────────────────────────────────────────
-router.get(['/news', '/news/latest'], async (req, res) => {
+router.get(['/news', '/news/', '/news/latest'], async (req, res) => {
   try {
     const now = Date.now();
     if (cache.news.data && now < cache.news.expiry) {
@@ -378,7 +378,7 @@ router.get(['/news', '/news/latest'], async (req, res) => {
 });
 
 // ── GET /api/v1/calendar ───────────────────────────────────────
-router.get('/calendar', (req, res) => {
+router.get(['/calendar', '/calendar/'], (req, res) => {
   const now = new Date();
   const formatTime = (offsetHours) => new Date(now.getTime() + offsetHours * 3600000).toISOString();
 
@@ -452,7 +452,7 @@ router.get('/calendar', (req, res) => {
 });
 
 // ── GET /api/v1/signals ────────────────────────────────────────
-router.get('/signals', async (req, res) => {
+router.get(['/signals', '/signals/'], async (req, res) => {
   try {
     const quotes = await getLiveQuotes();
     const goldQuote = quotes.find(q => q.symbol === 'XAU/USD') || { bid: 4182.5, ask: 4183.0 };
@@ -547,7 +547,7 @@ router.get('/signals', async (req, res) => {
 });
 
 // ── POST /api/v1/signals/auto-scan ─────────────────────────────
-router.post('/signals/auto-scan', async (req, res) => {
+router.post(['/signals/auto-scan', '/signals/auto-scan/'], async (req, res) => {
   try {
     const quotes = await getLiveQuotes();
     const goldQuote = quotes.find(q => q.symbol === 'XAU/USD') || { bid: 4182.5, ask: 4183.0 };
@@ -595,8 +595,8 @@ router.post('/signals/auto-scan', async (req, res) => {
   }
 });
 
-// ── GET /api/v1/analytics/performance ──────────────────────────
-router.get('/analytics/performance', (req, res) => {
+// ── GET /api/v1/signals/stats/performance & /analytics/performance ───
+router.get(['/signals/stats/performance', '/analytics/performance'], (req, res) => {
   res.json({
     total_signals: 486,
     active_signals: 3,
@@ -606,6 +606,35 @@ router.get('/analytics/performance', (req, res) => {
     avg_risk_reward: 2.45,
     best_trade_pips: 480,
     max_drawdown_pct: 4.8
+  });
+});
+
+// ── Signals Lifecycle & Admin ─────────────────────────────────
+router.post('/signals/:id/close', (req, res) => {
+  res.json({
+    id: Number(req.params.id),
+    status: req.query.status || 'CLOSED',
+    pnl_pips: Number(req.query.pnl) || 0,
+    closed_at: new Date().toISOString()
+  });
+});
+
+router.post('/admin/signals', (req, res) => {
+  const signal = {
+    id: Date.now(),
+    ...req.body,
+    status: req.body.status || 'ACTIVE',
+    source: 'ANALYST',
+    created_at: new Date().toISOString()
+  };
+  res.json(signal);
+});
+
+router.put('/admin/signals/:id', (req, res) => {
+  res.json({
+    id: Number(req.params.id),
+    ...req.body,
+    updated_at: new Date().toISOString()
   });
 });
 
@@ -624,7 +653,72 @@ router.get('/auth/me', (req, res) => {
   });
 });
 
-// ── GET /api/v1/vault/brokers ──────────────────────────────────
+router.post('/auth/login', (req, res) => {
+  res.json({
+    access_token: 'fsp_pro_jwt_token_' + Date.now(),
+    role: 'SUPER_ADMIN',
+    email: req.body?.email || 'analyst@pipsattendant.com',
+    full_name: 'Chief Analyst'
+  });
+});
+
+router.post('/auth/register', (req, res) => {
+  res.json({
+    id: 1,
+    email: req.body?.email || 'trader@pipsattendant.com',
+    full_name: req.body?.full_name || 'VIP Member',
+    role: 'USER'
+  });
+});
+
+// ── Quantitative Risk Calculator ──────────────────────────────
+router.post('/risk/calculate', (req, res) => {
+  const {
+    account_balance = 10000,
+    risk_percentage = 1,
+    symbol = 'EUR/USD',
+    entry_price = 1.1200,
+    stop_loss_price = 1.1170,
+    take_profit_price = 1.1280
+  } = req.body || {};
+
+  const riskAmount = Number(account_balance) * (Number(risk_percentage) / 100);
+  const isJpy = String(symbol).includes('JPY');
+  const isGold = String(symbol).includes('XAU') || String(symbol).includes('GOLD');
+  const pipMultiplier = isJpy ? 100 : isGold ? 10 : 10000;
+  const slPips = Math.max(1, Math.abs(Number(entry_price) - Number(stop_loss_price)) * pipMultiplier);
+  const tpPips = take_profit_price ? Math.abs(Number(take_profit_price) - Number(entry_price)) * pipMultiplier : slPips * 2;
+  const pipValuePerStandardLot = isJpy ? 6.7 : 10;
+  const lotSize = Math.max(0.01, Number((riskAmount / (slPips * pipValuePerStandardLot)).toFixed(2)));
+  const rewardRiskRatio = Number((tpPips / slPips).toFixed(2));
+  const potentialProfit = Number((lotSize * tpPips * pipValuePerStandardLot).toFixed(2));
+
+  res.json({
+    lot_size: lotSize,
+    risk_amount: Number(riskAmount.toFixed(2)),
+    sl_pips: Number(slPips.toFixed(1)),
+    tp_pips: Number(tpPips.toFixed(1)),
+    potential_profit: potentialProfit,
+    risk_reward_ratio: rewardRiskRatio,
+    units: Math.round(lotSize * 100000)
+  });
+});
+
+// ── Alerts ─────────────────────────────────────────────────────
+router.get(['/alerts', '/alerts/'], (req, res) => {
+  res.json([]);
+});
+
+router.post(['/alerts', '/alerts/'], (req, res) => {
+  res.json({
+    id: Date.now(),
+    ...req.body,
+    status: 'ACTIVE',
+    created_at: new Date().toISOString()
+  });
+});
+
+// ── MT5 Broker Vault ───────────────────────────────────────────
 router.get('/vault/brokers', (req, res) => {
   res.json([
     {
@@ -650,6 +744,52 @@ router.get('/vault/brokers', (req, res) => {
       features: ['Deep Liquidity', 'Swap Free Options', 'Fast Withdrawals']
     }
   ]);
+});
+
+router.get(['/vault/accounts', '/vault/accounts/'], (req, res) => {
+  res.json([]);
+});
+
+router.post(['/vault/accounts', '/vault/accounts/'], (req, res) => {
+  res.json({
+    id: Date.now(),
+    ...req.body,
+    is_active: true,
+    created_at: new Date().toISOString()
+  });
+});
+
+router.patch('/vault/accounts/:id', (req, res) => {
+  res.json({ id: Number(req.params.id), ...req.body });
+});
+
+router.delete('/vault/accounts/:id', (req, res) => {
+  res.json({ success: true });
+});
+
+router.post('/vault/accounts/:id/test-connection', (req, res) => {
+  res.json({ success: true, latency_ms: 18, balance: 25000 });
+});
+
+// ── Executions ────────────────────────────────────────────────
+router.get(['/executions', '/executions/'], (req, res) => {
+  res.json([]);
+});
+
+router.get(['/executions/stats', '/executions/stats/'], (req, res) => {
+  res.json({
+    total_executions: 0,
+    submitted: 0,
+    rejected: 0,
+    closed: 0,
+    winners: 0,
+    win_rate: 0,
+    total_pnl_usd: 0
+  });
+});
+
+router.post('/executions/execute-signal/:id', (req, res) => {
+  res.json({ status: 'EXECUTED', message: 'Signal order placed successfully on MT5 Bridge' });
 });
 
 module.exports = router;

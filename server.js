@@ -205,7 +205,7 @@ app.use((req, res, next) => {
   }
 
   // Block any unknown root JS files, while allowing public JS and terminal bundles
-  if (p.endsWith('.js') && !allowedPublicJS.includes(p) && !p.startsWith('/terminal/')) {
+  if (p.endsWith('.js') && !allowedPublicJS.includes(p) && !p.startsWith('/terminal/') && !p.startsWith('/assets/')) {
     return res.status(403).send('Forbidden');
   }
 
@@ -260,7 +260,11 @@ app.get(['/admin.html', '/admin'], (req, res) => {
 });
 
 app.use('/terminal', express.static(path.join(__dirname, 'terminal'), staticOptions));
-app.get(['/terminal', '/terminal/*'], (req, res) => {
+app.use('/assets', express.static(path.join(__dirname, 'terminal', 'assets'), staticOptions));
+app.get('/terminal', (req, res) => {
+  res.redirect(301, '/terminal/');
+});
+app.get(['/terminal/', '/terminal/*'], (req, res) => {
   res.sendFile(path.join(__dirname, 'terminal', 'index.html'));
 });
 
