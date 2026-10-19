@@ -1,7 +1,7 @@
 services:
   # ─────────────────────────────────────────
   # React Frontend (Static Site — FREE)
-  # Backend is hosted on Railway.app
+  # Backend is hosted on Render (pipsattendant.com)
   # ─────────────────────────────────────────
   - type: web
     name: forex-signal-pro-frontend
@@ -14,4 +14,4 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_BASE_URL
-        sync: false   # Set this manually after Railway backend is deployed
+        value: https://www.pipsattendant.com

@@ -15,7 +15,7 @@ except ImportError:
     MT5_AVAILABLE = False
 
 # Configuration
-SERVER_URL = "https://forex-signal-pro-backend-production.up.railway.app"
+SERVER_URL = "https://www.pipsattendant.com"
 API_KEY = "fsp-secret-copier-key-998811"
 POLL_INTERVAL_SECONDS = 2
 RISK_PERCENT = 1.0  # Risk 1.0% of equity per trade

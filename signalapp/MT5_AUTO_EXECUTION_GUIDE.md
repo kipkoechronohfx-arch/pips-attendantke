@@ -23,7 +23,7 @@ Because the EA pulls signals from your cloud backend, you must permit MT5 to com
 3. Check the box: **Allow WebRequest for listed URL**.
 4. Click the green `+` (Add new URL) and enter your backend URL:
    ```
-   https://forex-signal-pro-backend-production.up.railway.app
+   https://www.pipsattendant.com
    ```
 5. Click **OK**.
 

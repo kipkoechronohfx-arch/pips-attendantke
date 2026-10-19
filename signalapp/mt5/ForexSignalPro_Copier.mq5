@@ -25,7 +25,7 @@ enum ENUM_LOT_MODE
 
 //--- Inputs
 input group "=== Cloud Backend Configuration ==="
-input string          InpServerUrl            = "https://forex-signal-pro-backend-production.up.railway.app"; // Backend Base URL
+input string          InpServerUrl            = "https://www.pipsattendant.com"; // Backend Base URL (Render)
 input string          InpApiKey               = "fsp-secret-copier-key-998811";                             // Copier API Key
 input int             InpPollIntervalSec      = 2;                                                           // Signal Check Interval (Seconds)
 
