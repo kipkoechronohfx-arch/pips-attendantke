@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # Python FastAPI Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: forex_signal_backend
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://fsp_user:fsp_secure_password_2026@db:5432/forex_signal_pro
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=forex-signal-pro-super-secure-jwt-secret-key-production-change-in-env-998811
+      - MARKET_DATA_PROVIDER=mock # Change to twelvedata or oanda with your API key
+      - TWELVE_DATA_API_KEY=${TWELVE_DATA_API_KEY:-}
+      - DEFAULT_TIMEZONE=Africa/Nairobi
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+
+  # PostgreSQL Database
+  db:
+    image: postgres:16-alpine
+    container_name: forex_signal_db
+    restart: always
+    environment:
+      POSTGRES_USER: fsp_user
+      POSTGRES_PASSWORD: fsp_secure_password_2026
+      POSTGRES_DB: forex_signal_pro
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Redis Cache & Message Broker
+  redis:
+    image: redis:7-alpine
+    container_name: forex_signal_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # Web Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: forex_signal_frontend
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  redis_data:

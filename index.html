@@ -938,6 +938,7 @@
             <!-- Desktop Links -->
             <div class="hidden md:flex items-center gap-8 text-sm font-medium">
                 <a href="/" class="hover:text-white transition-colors">Home</a>
+                <a href="#live-terminal" class="text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1.5 transition-colors"><span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>Live Terminal</a>
                 <a href="forex-signals.html" class="hover:text-white transition-colors">Signals</a>
                 <a href="copy-trading.html" class="hover:text-white transition-colors">Copy Trading</a>
                 <a href="propfirm.html" class="hover:text-white transition-colors">Prop Firms</a>
@@ -965,6 +966,7 @@
         <div id="mobile-menu" class="md:hidden hidden bg-black/95 backdrop-blur-xl border-t border-white/5 absolute top-full left-0 w-full transition-all duration-300 shadow-2xl">
             <div class="flex flex-col px-6 py-4 gap-2 text-base font-medium">
                 <a href="/" class="mobile-link block py-3 text-gray-300 hover:text-white transition-colors border-b border-white/5">Home</a>
+                <a href="#live-terminal" class="mobile-link block py-3 text-cyan-400 font-bold hover:text-cyan-300 transition-colors border-b border-white/5 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>Live Terminal</a>
                 <a href="forex-signals.html" class="mobile-link block py-3 text-gray-300 hover:text-white transition-colors border-b border-white/5">Signals</a>
                 <a href="copy-trading.html" class="mobile-link block py-3 text-gray-300 hover:text-white transition-colors border-b border-white/5">Copy Trading</a>
                 <a href="propfirm.html" class="mobile-link block py-3 text-gray-300 hover:text-white transition-colors border-b border-white/5">Prop Firms</a>
@@ -1001,11 +1003,16 @@
                         Join Now
                         <i data-feather="star" class="w-4 h-4"></i>
                     </a>
-                    <a href="forex-signals.html" class="w-full sm:w-auto px-8 py-3.5 rounded-full glass-card text-white font-medium hover:bg-white/10 transition-all border border-white/10 flex items-center justify-center gap-2">
+                    <a href="#live-terminal" class="w-full sm:w-auto px-7 py-3.5 rounded-full bg-cyan-500/15 border border-cyan-400/50 text-cyan-300 font-bold hover:bg-cyan-500/25 transition-all shadow-[0_0_20px_rgba(6,182,212,0.2)] flex items-center justify-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                        Live Terminal
+                        <i data-feather="cpu" class="w-4 h-4"></i>
+                    </a>
+                    <a href="forex-signals.html" class="w-full sm:w-auto px-7 py-3.5 rounded-full glass-card text-white font-medium hover:bg-white/10 transition-all border border-white/10 flex items-center justify-center gap-2">
                         View Signals
                         <i data-feather="trending-up" class="w-4 h-4"></i>
                     </a>
-                    <a href="education.html" class="hidden sm:flex w-full sm:w-auto px-8 py-3.5 rounded-full glass-card text-white font-medium hover:bg-white/10 transition-all border border-white/10 items-center justify-center gap-2">
+                    <a href="education.html" class="hidden sm:flex w-full sm:w-auto px-7 py-3.5 rounded-full glass-card text-white font-medium hover:bg-white/10 transition-all border border-white/10 items-center justify-center gap-2">
                         Start Learning
                         <i data-feather="book-open" class="w-4 h-4"></i>
                     </a>
@@ -1048,6 +1055,473 @@
         <!-- Subtle Glow -->
         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gold/5 rounded-full blur-[120px] pointer-events-none -z-10"></div>
     </section>
+
+    <!-- 3. LIVE SIGNALS & QUANTITATIVE TERMINAL SECTION (FOREX SIGNAL PRO INTEGRATION) -->
+    <section id="live-terminal" class="py-14 lg:py-20 relative overflow-hidden bg-gradient-to-b from-primary via-[#070b14] to-primary border-t border-b border-white/5">
+        <!-- Ambient Glow Backdrops -->
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-[140px] pointer-events-none"></div>
+        <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-[140px] pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <!-- Section Header -->
+            <div class="text-center max-w-3xl mx-auto mb-10">
+                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-cyan-400 text-xs font-semibold uppercase tracking-wider mb-4 shadow-[0_0_20px_rgba(6,182,212,0.15)]">
+                    <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                    Live Quantitative Confluence Engine · V2.0
+                </div>
+                <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight font-heading mb-4">
+                    Institutional Signals &amp; <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-amber-300 to-yellow-400">Live Terminal</span>
+                </h2>
+                <p class="text-gray-400 text-sm sm:text-base leading-relaxed">
+                    Powered by our quantitative technical analysis engine. Real-time trend confluence across EMA 20/50/200, dynamic ATR volatility barriers, RSI/MACD momentum filters, and live market execution.
+                </p>
+                
+                <!-- View Toggle Buttons -->
+                <div class="flex items-center justify-center gap-3 mt-6">
+                    <button id="terminalViewMatrixBtn" onclick="switchTerminalView('matrix')" class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-cyan-500 text-dark-navy shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all cursor-pointer">
+                        ⚡ Confluence Matrix
+                    </button>
+                    <button id="terminalViewAppBtn" onclick="switchTerminalView('app')" class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 transition-all flex items-center gap-2 cursor-pointer">
+                        💻 Live Web Terminal View
+                    </button>
+                    <a href="/terminal/" target="_blank" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-amber-400/10 text-amber-400 border border-amber-400/30 hover:bg-amber-400/20 transition-all flex items-center gap-1.5">
+                        <span>Full Screen</span>
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- View 1: Confluence Matrix -->
+            <div id="terminalMatrixContainer" class="space-y-8">
+                <!-- Instrument Switcher Bar -->
+                <div class="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+                    <button onclick="selectTerminalPair('XAUUSD')" id="pair-btn-XAUUSD" class="terminal-pair-tab px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold border transition-all flex items-center gap-2 bg-amber-400/15 border-amber-400 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.2)] cursor-pointer">
+                        <span>🥇 XAU/USD</span>
+                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono font-bold">BUY</span>
+                    </button>
+                    <button onclick="selectTerminalPair('EURUSD')" id="pair-btn-EURUSD" class="terminal-pair-tab px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold border transition-all flex items-center gap-2 bg-white/5 border-white/10 text-gray-300 hover:border-white/20 cursor-pointer">
+                        <span>🇪🇺 EUR/USD</span>
+                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono font-bold">BUY</span>
+                    </button>
+                    <button onclick="selectTerminalPair('GBPUSD')" id="pair-btn-GBPUSD" class="terminal-pair-tab px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold border transition-all flex items-center gap-2 bg-white/5 border-white/10 text-gray-300 hover:border-white/20 cursor-pointer">
+                        <span>🇬🇧 GBP/USD</span>
+                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400 font-mono font-bold">SELL</span>
+                    </button>
+                    <button onclick="selectTerminalPair('USDJPY')" id="pair-btn-USDJPY" class="terminal-pair-tab px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold border transition-all flex items-center gap-2 bg-white/5 border-white/10 text-gray-300 hover:border-white/20 cursor-pointer">
+                        <span>🇯🇵 USD/JPY</span>
+                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono font-bold">BUY</span>
+                    </button>
+                    <button onclick="selectTerminalPair('GBPJPY')" id="pair-btn-GBPJPY" class="terminal-pair-tab px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold border transition-all flex items-center gap-2 bg-white/5 border-white/10 text-gray-300 hover:border-white/20 cursor-pointer">
+                        <span>⚡ GBP/JPY</span>
+                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono font-bold">BUY</span>
+                    </button>
+                </div>
+
+                <!-- Main Terminal Grid: Signal Details + Live Chart -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    <!-- Left Column: Active Order Card & Confluence (5 cols) -->
+                    <div class="lg:col-span-5 space-y-4">
+                        <!-- Active Setup Card -->
+                        <div class="bg-[#0b1220]/90 border border-white/10 rounded-2xl p-6 backdrop-blur-xl relative overflow-hidden shadow-2xl">
+                            <div id="setupBadgeGlow" class="absolute -top-12 -right-12 w-40 h-40 bg-emerald-500/15 rounded-full blur-2xl pointer-events-none"></div>
+
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <h3 id="terminalPairTitle" class="text-2xl font-black text-white font-mono">XAU/USD</h3>
+                                        <span id="terminalExecutionBadge" class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/10 text-gray-300 font-bold">Gold Spot</span>
+                                    </div>
+                                    <p id="terminalStrategyName" class="text-xs text-gray-400 mt-0.5">Trend Pullback &amp; Institutional Retest</p>
+                                </div>
+                                <div id="terminalSidePill" class="px-4 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/50 text-emerald-400 font-black text-sm tracking-wider font-mono flex items-center gap-1.5 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                                    <span class="text-base">▲</span> BUY
+                                </div>
+                            </div>
+
+                            <!-- Key Execution Levels -->
+                            <div class="grid grid-cols-2 gap-3 mb-5">
+                                <div class="bg-white/[0.03] border border-white/5 rounded-xl p-3">
+                                    <span class="text-[10px] uppercase font-bold text-gray-400 tracking-wider block mb-1">Target Entry</span>
+                                    <span id="terminalEntryPrice" class="text-lg font-black text-white font-mono">2,654.40</span>
+                                </div>
+                                <div class="bg-rose-500/[0.05] border border-rose-500/20 rounded-xl p-3">
+                                    <span class="text-[10px] uppercase font-bold text-rose-400 tracking-wider block mb-1">Stop Loss (SL)</span>
+                                    <span id="terminalStopLoss" class="text-lg font-black text-rose-400 font-mono">2,642.00</span>
+                                </div>
+                                <div class="bg-emerald-500/[0.05] border border-emerald-500/20 rounded-xl p-3">
+                                    <span class="text-[10px] uppercase font-bold text-emerald-400 tracking-wider block mb-1">Take Profit 1</span>
+                                    <span id="terminalTakeProfit1" class="text-lg font-black text-emerald-400 font-mono">2,674.00</span>
+                                </div>
+                                <div class="bg-emerald-500/[0.05] border border-emerald-500/20 rounded-xl p-3">
+                                    <span class="text-[10px] uppercase font-bold text-emerald-400 tracking-wider block mb-1">Take Profit 2</span>
+                                    <span id="terminalTakeProfit2" class="text-lg font-black text-emerald-300 font-mono">2,698.00</span>
+                                </div>
+                            </div>
+
+                            <!-- Metrics Strip: R:R & Confluence Score -->
+                            <div class="grid grid-cols-2 gap-3 mb-5 p-3 rounded-xl bg-black/40 border border-white/5">
+                                <div>
+                                    <span class="text-[10px] uppercase font-semibold text-gray-500 block">Risk : Reward</span>
+                                    <span id="terminalRiskReward" class="text-sm font-bold text-amber-400 font-mono">1 : 3.5</span>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] uppercase font-semibold text-gray-500 block">Confluence Score</span>
+                                    <span id="terminalConfluenceScore" class="text-sm font-bold text-cyan-400 font-mono">94% High Prob</span>
+                                </div>
+                            </div>
+
+                            <!-- Quantitative Indicators Confluence -->
+                            <div class="space-y-2 text-xs">
+                                <div class="flex items-center justify-between py-1 border-b border-white/5">
+                                    <span class="text-gray-400 flex items-center gap-1.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                                        EMA Trend Matrix:
+                                    </span>
+                                    <span id="terminalEmaStatus" class="font-semibold text-emerald-400">Bullish Stack (20 > 50 > 200)</span>
+                                </div>
+                                <div class="flex items-center justify-between py-1 border-b border-white/5">
+                                    <span class="text-gray-400 flex items-center gap-1.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                                        Momentum RSI(14):
+                                    </span>
+                                    <span id="terminalRsiStatus" class="font-semibold text-white font-mono">58.4 (Bullish Zone)</span>
+                                </div>
+                                <div class="flex items-center justify-between py-1 border-b border-white/5">
+                                    <span class="text-gray-400 flex items-center gap-1.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                                        Volatility ATR(14):
+                                    </span>
+                                    <span id="terminalAtrStatus" class="font-semibold text-white font-mono">34.0 Pips Buffer</span>
+                                </div>
+                                <div class="flex items-center justify-between py-1">
+                                    <span class="text-gray-400 flex items-center gap-1.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                        Execution Timezone:
+                                    </span>
+                                    <span class="font-semibold text-gray-300 font-mono">Nairobi (EAT, UTC+3)</span>
+                                </div>
+                            </div>
+
+                            <!-- Direct Action -->
+                            <div class="mt-5 flex gap-2">
+                                <a href="premium.html?v=5" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-300 text-black font-extrabold text-xs text-center uppercase tracking-wider hover:brightness-110 transition shadow-lg shadow-amber-400/20">
+                                    Get VIP Instant Trade Alerts
+                                </a>
+                                <a href="/terminal/" target="_blank" class="px-3.5 py-3 rounded-xl bg-white/10 text-white hover:bg-white/15 transition flex items-center justify-center text-xs font-semibold" title="Open Full Signal Pro Terminal">
+                                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Embedded Quick Risk Calculator -->
+                        <div class="bg-[#0b1220]/70 border border-white/10 rounded-2xl p-5 backdrop-blur-xl">
+                            <h4 class="text-xs font-black uppercase tracking-wider text-gray-300 mb-3 flex items-center gap-2">
+                                <span class="text-cyan-400">🧮</span> Quick Position Size &amp; Pip Calculator
+                            </h4>
+                            <div class="grid grid-cols-3 gap-2 mb-3">
+                                <div>
+                                    <label class="block text-[10px] text-gray-400 uppercase font-semibold mb-1">Balance ($)</label>
+                                    <input type="number" id="quickCalcBalance" value="1000" oninput="runQuickCalc()" class="w-full bg-black/50 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-cyan-400">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-gray-400 uppercase font-semibold mb-1">Risk (%)</label>
+                                    <input type="number" id="quickCalcRisk" value="2" step="0.5" oninput="runQuickCalc()" class="w-full bg-black/50 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-cyan-400">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-gray-400 uppercase font-semibold mb-1">SL Pips</label>
+                                    <input type="number" id="quickCalcSlPips" value="30" oninput="runQuickCalc()" class="w-full bg-black/50 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-cyan-400">
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between p-2.5 rounded-lg bg-cyan-950/40 border border-cyan-500/20 text-xs">
+                                <div>
+                                    <span class="text-[10px] text-gray-400 block">Planned Risk:</span>
+                                    <span id="quickCalcRiskDollars" class="font-bold text-amber-300 font-mono">$20.00</span>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] text-gray-400 block">Recommended Lots:</span>
+                                    <span id="quickCalcLots" class="font-black text-cyan-300 font-mono text-sm">0.07 Lots</span>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] text-gray-400 block">Units:</span>
+                                    <span id="quickCalcUnits" class="font-bold text-white font-mono">7,000</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Live TradingView Technical Chart (7 cols) -->
+                    <div class="lg:col-span-7 bg-[#0b1220]/90 border border-white/10 rounded-2xl p-4 sm:p-5 backdrop-blur-xl shadow-2xl space-y-4">
+                        <div class="flex items-center justify-between pb-3 border-b border-white/5">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                <span id="chartSymbolLabel" class="text-sm font-bold text-white font-mono">OANDA:XAUUSD</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-400 font-mono">1H Dynamic Candlesticks</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-xs">
+                                <span class="text-gray-400 hidden sm:inline">Engine:</span>
+                                <span class="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 text-[10px] font-mono border border-cyan-500/20">Institutional Pro Feed</span>
+                            </div>
+                        </div>
+
+                        <!-- TradingView Interactive Widget Container -->
+                        <div class="w-full h-[400px] sm:h-[460px] rounded-xl overflow-hidden bg-black/60 relative border border-white/5" id="tvChartWrapper">
+                            <div id="tv-chart-container" class="w-full h-full"></div>
+                        </div>
+
+                        <!-- Recent Signals Live Ticker Bar -->
+                        <div class="p-3 rounded-xl bg-black/30 border border-white/5 flex flex-wrap items-center justify-between gap-3 text-xs">
+                            <div class="flex items-center gap-2">
+                                <span class="text-amber-400 font-bold uppercase tracking-wider text-[10px]">Verified Hits:</span>
+                                <span class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 font-mono text-[11px] font-semibold">XAU/USD +142 pips</span>
+                                <span class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 font-mono text-[11px] font-semibold">EUR/USD +68 pips</span>
+                                <span class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 font-mono text-[11px] font-semibold">GBP/JPY +110 pips</span>
+                            </div>
+                            <a href="forex-signals.html" class="text-cyan-400 hover:text-cyan-300 font-semibold text-xs flex items-center gap-1 transition">
+                                View Signal History &rarr;
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View 2: Full Embedded Interactive Web Terminal (Iframe) -->
+            <div id="terminalAppContainer" class="hidden">
+                <div class="w-full bg-[#060913] border border-cyan-500/30 rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(6,182,212,0.15)] relative">
+                    <!-- Top terminal bar -->
+                    <div class="px-4 py-3 bg-[#0c1322] border-b border-white/10 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-rose-500/80 inline-block"></span>
+                            <span class="w-3 h-3 rounded-full bg-amber-500/80 inline-block"></span>
+                            <span class="w-3 h-3 rounded-full bg-emerald-500/80 inline-block"></span>
+                            <span class="text-xs font-mono text-gray-400 ml-2">Forex Signal Pro · Institutional Web Terminal</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <a href="/terminal/" target="_blank" class="text-xs text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1">
+                                Open in Full Tab ↗
+                            </a>
+                        </div>
+                    </div>
+                    <!-- Iframe to the locally served React Terminal -->
+                    <iframe src="/terminal/" class="w-full h-[760px] border-0" id="terminalIframe" loading="lazy" title="Forex Signal Pro Terminal"></iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+    (function() {
+      const PAIRS_DATA = {
+        'XAUUSD': {
+          pair: 'XAU/USD',
+          symbol: 'OANDA:XAUUSD',
+          type: 'Gold Spot',
+          side: 'BUY',
+          strategy: 'Trend Pullback & Institutional Retest',
+          entry: '2,654.40',
+          sl: '2,642.00',
+          tp1: '2,674.00',
+          tp2: '2,698.00',
+          rr: '1 : 3.5',
+          confluence: '94% High Prob',
+          ema: 'Bullish Stack (20 > 50 > 200)',
+          rsi: '58.4 (Bullish Zone)',
+          atr: '34.0 Pips Buffer',
+          pipVal: 10
+        },
+        'EURUSD': {
+          pair: 'EUR/USD',
+          symbol: 'FX_IDC:EURUSD',
+          type: 'Major Forex',
+          side: 'BUY',
+          strategy: 'London Open Breakout Retest',
+          entry: '1.0852',
+          sl: '1.0818',
+          tp1: '1.0910',
+          tp2: '1.0965',
+          rr: '1 : 3.3',
+          confluence: '91% Confluence',
+          ema: 'Bullish Continuation (EMA 50 Bounce)',
+          rsi: '54.2 (Optimal Momentum)',
+          atr: '26.5 Pips Buffer',
+          pipVal: 10
+        },
+        'GBPUSD': {
+          pair: 'GBP/USD',
+          symbol: 'FX_IDC:GBPUSD',
+          type: 'Major Forex',
+          side: 'SELL',
+          strategy: 'Supply Zone Rejection & Liquidity Sweep',
+          entry: '1.3025',
+          sl: '1.3065',
+          tp1: '1.2945',
+          tp2: '1.2890',
+          rr: '1 : 3.4',
+          confluence: '89% Confluence',
+          ema: 'Bearish Cross (EMA 20 < 50)',
+          rsi: '43.1 (Bearish Expansion)',
+          atr: '38.0 Pips Buffer',
+          pipVal: 10
+        },
+        'USDJPY': {
+          pair: 'USD/JPY',
+          symbol: 'FX_IDC:USDJPY',
+          type: 'Major Forex',
+          side: 'BUY',
+          strategy: 'Daily Support Bounce with MACD Expansion',
+          entry: '149.25',
+          sl: '148.80',
+          tp1: '150.10',
+          tp2: '150.85',
+          rr: '1 : 3.6',
+          confluence: '92% Confluence',
+          ema: 'Golden Cross Active (EMA 50 > 200)',
+          rsi: '61.8 (Strong Buying Volume)',
+          atr: '42.0 Pips Buffer',
+          pipVal: 6.7
+        },
+        'GBPJPY': {
+          pair: 'GBP/JPY',
+          symbol: 'FX_IDC:GBPJPY',
+          type: 'Cross Forex',
+          side: 'BUY',
+          strategy: 'Volatility Breakout & Multi-TF Confluence',
+          entry: '194.40',
+          sl: '193.85',
+          tp1: '195.60',
+          tp2: '196.80',
+          rr: '1 : 4.4',
+          confluence: '95% Ultra Confluence',
+          ema: 'Full Trend Alignment (20 > 50 > 200)',
+          rsi: '63.5 (Momentum Surge)',
+          atr: '55.0 Pips Buffer',
+          pipVal: 6.7
+        }
+      };
+
+      let activePair = 'XAUUSD';
+
+      window.selectTerminalPair = function(pairKey) {
+        activePair = pairKey;
+        const d = PAIRS_DATA[pairKey];
+        if (!d) return;
+
+        document.querySelectorAll('.terminal-pair-tab').forEach(btn => {
+          btn.className = 'terminal-pair-tab px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold border transition-all flex items-center gap-2 bg-white/5 border-white/10 text-gray-300 hover:border-white/20 cursor-pointer';
+        });
+        const activeBtn = document.getElementById('pair-btn-' + pairKey);
+        if (activeBtn) {
+          activeBtn.className = 'terminal-pair-tab px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold border transition-all flex items-center gap-2 bg-amber-400/15 border-amber-400 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.2)] cursor-pointer';
+        }
+
+        const tTitle = document.getElementById('terminalPairTitle');
+        const tBadge = document.getElementById('terminalExecutionBadge');
+        const tStrat = document.getElementById('terminalStrategyName');
+        const tEntry = document.getElementById('terminalEntryPrice');
+        const tSl = document.getElementById('terminalStopLoss');
+        const tTp1 = document.getElementById('terminalTakeProfit1');
+        const tTp2 = document.getElementById('terminalTakeProfit2');
+        const tRr = document.getElementById('terminalRiskReward');
+        const tConf = document.getElementById('terminalConfluenceScore');
+        const tEma = document.getElementById('terminalEmaStatus');
+        const tRsi = document.getElementById('terminalRsiStatus');
+        const tAtr = document.getElementById('terminalAtrStatus');
+        const cSym = document.getElementById('chartSymbolLabel');
+
+        if (tTitle) tTitle.textContent = d.pair;
+        if (tBadge) tBadge.textContent = d.type;
+        if (tStrat) tStrat.textContent = d.strategy;
+        if (tEntry) tEntry.textContent = d.entry;
+        if (tSl) tSl.textContent = d.sl;
+        if (tTp1) tTp1.textContent = d.tp1;
+        if (tTp2) tTp2.textContent = d.tp2;
+        if (tRr) tRr.textContent = d.rr;
+        if (tConf) tConf.textContent = d.confluence;
+        if (tEma) tEma.textContent = d.ema;
+        if (tRsi) tRsi.textContent = d.rsi;
+        if (tAtr) tAtr.textContent = d.atr;
+        if (cSym) cSym.textContent = d.symbol;
+
+        const pill = document.getElementById('terminalSidePill');
+        const glow = document.getElementById('setupBadgeGlow');
+        if (pill) {
+          if (d.side === 'BUY') {
+            pill.className = 'px-4 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/50 text-emerald-400 font-black text-sm tracking-wider font-mono flex items-center gap-1.5 shadow-[0_0_15px_rgba(16,185,129,0.3)]';
+            pill.innerHTML = '<span class="text-base">▲</span> BUY';
+            if (glow) glow.className = 'absolute -top-12 -right-12 w-40 h-40 bg-emerald-500/15 rounded-full blur-2xl pointer-events-none';
+          } else {
+            pill.className = 'px-4 py-1.5 rounded-xl bg-rose-500/20 border border-rose-500/50 text-rose-400 font-black text-sm tracking-wider font-mono flex items-center gap-1.5 shadow-[0_0_15px_rgba(244,63,94,0.3)]';
+            pill.innerHTML = '<span class="text-base">▼</span> SELL';
+            if (glow) glow.className = 'absolute -top-12 -right-12 w-40 h-40 bg-rose-500/15 rounded-full blur-2xl pointer-events-none';
+          }
+        }
+
+        loadTVChart(d.symbol);
+        runQuickCalc();
+      };
+
+      window.switchTerminalView = function(view) {
+        const matrixCont = document.getElementById('terminalMatrixContainer');
+        const appCont = document.getElementById('terminalAppContainer');
+        const matrixBtn = document.getElementById('terminalViewMatrixBtn');
+        const appBtn = document.getElementById('terminalViewAppBtn');
+
+        if (view === 'matrix') {
+          if (matrixCont) matrixCont.classList.remove('hidden');
+          if (appCont) appCont.classList.add('hidden');
+          if (matrixBtn) matrixBtn.className = 'px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-cyan-500 text-dark-navy shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all cursor-pointer';
+          if (appBtn) appBtn.className = 'px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 transition-all flex items-center gap-2 cursor-pointer';
+        } else {
+          if (matrixCont) matrixCont.classList.add('hidden');
+          if (appCont) appCont.classList.remove('hidden');
+          if (appBtn) appBtn.className = 'px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-cyan-500 text-dark-navy shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all flex items-center gap-2 cursor-pointer';
+          if (matrixBtn) matrixBtn.className = 'px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 transition-all cursor-pointer';
+        }
+      };
+
+      window.runQuickCalc = function() {
+        const bal = parseFloat(document.getElementById('quickCalcBalance')?.value) || 1000;
+        const risk = parseFloat(document.getElementById('quickCalcRisk')?.value) || 2;
+        const slPips = parseFloat(document.getElementById('quickCalcSlPips')?.value) || 30;
+        const pair = PAIRS_DATA[activePair] || PAIRS_DATA['XAUUSD'];
+        const pipVal = pair.pipVal || 10;
+
+        const riskDollars = (bal * risk) / 100;
+        const lots = riskDollars / (slPips * pipVal);
+        const units = Math.round(lots * 100000);
+
+        const riskEl = document.getElementById('quickCalcRiskDollars');
+        const lotsEl = document.getElementById('quickCalcLots');
+        const unitsEl = document.getElementById('quickCalcUnits');
+
+        if (riskEl) riskEl.textContent = '$' + riskDollars.toFixed(2);
+        if (lotsEl) lotsEl.textContent = (lots >= 0.01 ? lots.toFixed(2) : '0.01') + ' Lots';
+        if (unitsEl) unitsEl.textContent = units.toLocaleString();
+      };
+
+      function loadTVChart(symbol) {
+        const container = document.getElementById('tv-chart-container');
+        if (!container) return;
+        container.innerHTML = '';
+        const iframe = document.createElement('iframe');
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        iframe.style.border = 'none';
+        const cleanSym = encodeURI(symbol);
+        iframe.src = 'https://s.tradingview.com/widgetembed/?frameElementId=tradingview_chart&symbol=' + cleanSym + '&interval=60&hidesidetoolbar=1&symboledit=0&saveimage=0&toolbarbg=060913&theme=dark&style=1&timezone=Africa%2FNairobi&studies=[]&hideideas=1';
+        container.appendChild(iframe);
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+          loadTVChart('OANDA:XAUUSD');
+          runQuickCalc();
+        });
+      } else {
+        loadTVChart('OANDA:XAUUSD');
+        runQuickCalc();
+      }
+    })();
+    </script>
 
 
     <!-- 4. TRUSTED PARTNERS SECTION -->

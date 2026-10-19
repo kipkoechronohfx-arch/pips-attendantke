@@ -107,8 +107,8 @@ app.use(helmet({
       ],
       imgSrc: ["'self'", "data:", "blob:", "https:", "https://*.tradingview.com", "https://*.myfxbook.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      connectSrc: ["'self'", "https://api.telegram.org", "wss:", "ws:", "https://unpkg.com", "https://cdn.jsdelivr.net", "https://*.tradingview.com", "https://*.tradingview-widget.com", "https://pips-attendantke.onrender.com", "https://www.pipsattendant.com", "https://www.google-analytics.com", "https://analytics.google.com", "https://stats.g.doubleclick.net"],
-      frameSrc: ["'self'", "https://www.tradingview.com", "https://s3.tradingview.com", "https://s.tradingview.com", "https://*.tradingview.com", "https://www.tradingview-widget.com", "https://*.tradingview-widget.com", "https://*.myfxbook.com", "https://www.youtube.com", "https://youtube.com", "https://www.google.com"],
+      connectSrc: ["'self'", "https://api.telegram.org", "wss:", "ws:", "https://unpkg.com", "https://cdn.jsdelivr.net", "https://*.tradingview.com", "https://*.tradingview-widget.com", "https://pips-attendantke.onrender.com", "https://www.pipsattendant.com", "https://forex-signal-pro-frontend.onrender.com", "https://*.onrender.com", "https://*.railway.app", "https://www.google-analytics.com", "https://analytics.google.com", "https://stats.g.doubleclick.net"],
+      frameSrc: ["'self'", "https://forex-signal-pro-frontend.onrender.com", "https://*.onrender.com", "https://www.tradingview.com", "https://s3.tradingview.com", "https://s.tradingview.com", "https://*.tradingview.com", "https://www.tradingview-widget.com", "https://*.tradingview-widget.com", "https://*.myfxbook.com", "https://www.youtube.com", "https://youtube.com", "https://www.google.com"],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
       // Helmet 7+ sets script-src-attr: 'none' by default, which blocks ALL inline onclick/onsubmit handlers.
@@ -194,7 +194,7 @@ app.use((req, res, next) => {
   const p = req.path.toLowerCase();
   
   // Block sensitive directories
-  if (p.startsWith('/src/') || p.startsWith('/data/') || p.startsWith('/logs/') || p.startsWith('/tests/') || p.startsWith('/node_modules/')) {
+  if (p.startsWith('/src/') || p.startsWith('/data/') || p.startsWith('/logs/') || p.startsWith('/tests/') || p.startsWith('/node_modules/') || p.startsWith('/signalapp/backend/') || p.startsWith('/signalapp/frontend/src/')) {
     return res.status(403).send('Forbidden');
   }
   
@@ -203,8 +203,8 @@ app.use((req, res, next) => {
     return res.status(403).send('Forbidden');
   }
 
-  // Block any unknown root JS files
-  if (p.endsWith('.js') && !allowedPublicJS.includes(p)) {
+  // Block any unknown root JS files, while allowing public JS and terminal bundles
+  if (p.endsWith('.js') && !allowedPublicJS.includes(p) && !p.startsWith('/terminal/')) {
     return res.status(403).send('Forbidden');
   }
 
@@ -256,6 +256,11 @@ app.get(['/admin.html', '/admin'], (req, res) => {
       '</body></html>'
     );
   }, 800);
+});
+
+app.use('/terminal', express.static(path.join(__dirname, 'terminal'), staticOptions));
+app.get(['/terminal', '/terminal/*'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'terminal', 'index.html'));
 });
 
 app.use(express.static(path.join(__dirname), staticOptions));

@@ -1,0 +1,18 @@
+{
+  "short_name": "SignalPro",
+  "name": "Forex Signal Pro — Live Signals & News",
+  "icons": [
+    {
+      "src": "/logo.jpg",
+      "type": "image/jpeg",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#060913",
+  "theme_color": "#060913",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/"
+}

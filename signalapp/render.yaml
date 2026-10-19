@@ -1,0 +1,17 @@
+services:
+  # ─────────────────────────────────────────
+  # React Frontend (Static Site — FREE)
+  # Backend is hosted on Railway.app
+  # ─────────────────────────────────────────
+  - type: web
+    name: forex-signal-pro-frontend
+    runtime: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_BASE_URL
+        sync: false   # Set this manually after Railway backend is deployed

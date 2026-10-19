@@ -1,0 +1,27 @@
+services:
+  # ──────────────────────────────────────────────────────────
+  # 1. Pips Attendant Main Web & Express Server
+  # ──────────────────────────────────────────────────────────
+  - type: web
+    name: pips-attendantke
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+
+  # ──────────────────────────────────────────────────────────
+  # 2. Forex Signal Pro Frontend Terminal (Static Site)
+  # ──────────────────────────────────────────────────────────
+  - type: web
+    name: forex-signal-pro-frontend
+    runtime: static
+    staticPublishPath: ./terminal
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
