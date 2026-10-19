@@ -11,7 +11,7 @@ const SHORTCUT_LIST = [
   { key: 'R', desc: 'Position Sizing & Risk Calculator' },
   { key: 'H', desc: 'Signal Audit History & CSV' },
   { key: 'W', desc: 'Watchlist & Price Alerts' },
-  { key: 'A', desc: 'Administrator Signal Publisher' },
+  { key: 'A', desc: 'Admin Broadcast Desk' },
   { key: 'P', desc: 'Account Profile & Preferences' },
   { key: '?', desc: 'Toggle This Shortcuts Guide' },
   { key: 'Esc', desc: 'Dismiss Active Modal / Overlay' },

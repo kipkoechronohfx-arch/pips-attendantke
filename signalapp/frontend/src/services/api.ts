@@ -120,7 +120,7 @@ export const api = {
     return res.json();
   },
 
-  // Admin Studio
+  // Admin Broadcast
   async publishAdminSignal(signalData: Partial<TradingSignal>): Promise<TradingSignal> {
     const res = await fetch(`${API_BASE}/admin/signals`, {
       method: 'POST',

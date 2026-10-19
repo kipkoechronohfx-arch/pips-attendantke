@@ -66,6 +66,21 @@ export const App: React.FC = () => {
     document.documentElement.classList.toggle('light-mode', !darkMode);
   }, [darkMode]);
 
+  // ── Deep linking via URL hash (e.g. #admin, #broadcast) ──────
+  useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash.replace('#', '').toLowerCase();
+      if (hash === 'broadcast' || hash === 'admin' || hash === 'admin-broadcast') {
+        setActiveTab('admin');
+      } else if (['dashboard', 'signals', 'charts', 'news', 'calendar', 'risk', 'history', 'watchlist', 'profile', 'privacy', 'broker-vault'].includes(hash)) {
+        setActiveTab(hash as any);
+      }
+    };
+    handleHash();
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, [setActiveTab]);
+
   // ── Request notifications on first load ──────────────────────
   useEffect(() => {
     if (!notificationsGranted && 'Notification' in window && Notification.permission === 'default') {

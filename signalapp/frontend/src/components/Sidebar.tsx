@@ -36,7 +36,7 @@ const tradingItems: NavItem[] = [
 
 const mgmtItems: NavItem[] = [
   { id: 'watchlist', label: 'Watchlist & Alerts', icon: Bell },
-  { id: 'admin',     label: 'Admin Studio',        icon: ShieldCheck },
+  { id: 'admin',     label: 'Admin Broadcast',    icon: ShieldCheck },
   { id: 'profile',   label: 'Account & Settings',  icon: UserCircle },
   { id: 'privacy',   label: 'Legal & Privacy',     icon: FileText },
 ];

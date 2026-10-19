@@ -147,10 +147,10 @@ export const AdminPage: React.FC = () => {
         <div>
           <h2 className="text-2xl font-black tracking-tight text-slate-100 flex items-center gap-2">
             <ShieldCheck size={24} className="text-cyan-400" />
-            <span>Admin Signal Publishing Studio</span>
+            <span>Admin Broadcast</span>
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Publish verified institutional trading recommendations to live subscriber feeds with real-time OANDA pricing
+            Broadcast verified institutional trading recommendations to live subscriber feeds with real-time OANDA pricing
           </p>
         </div>
 
