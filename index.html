@@ -1076,22 +1076,9 @@
                     Powered by our quantitative technical analysis engine. Real-time trend confluence across EMA 20/50/200, dynamic ATR volatility barriers, RSI/MACD momentum filters, and live market execution.
                 </p>
                 
-                <!-- View Toggle Buttons -->
-                <div class="flex items-center justify-center gap-3 mt-6">
-                    <button id="terminalViewMatrixBtn" onclick="switchTerminalView('matrix')" class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-cyan-500 text-dark-navy shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all cursor-pointer">
-                        ⚡ Confluence Matrix
-                    </button>
-                    <button id="terminalViewAppBtn" onclick="switchTerminalView('app')" class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 transition-all flex items-center gap-2 cursor-pointer">
-                        💻 Live Web Terminal View
-                    </button>
-                    <button id="terminalFullscreenBtn" onclick="toggleTerminalFullscreen()" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-amber-400/10 text-amber-400 border border-amber-400/30 hover:bg-amber-400/20 transition-all flex items-center gap-1.5 cursor-pointer">
-                        <span id="fsBtnText">Full Screen</span>
-                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-                    </button>
-                </div>
             </div>
 
-            <!-- View 1: Confluence Matrix -->
+            <!-- Single Terminal View: Confluence Matrix -->
             <div id="terminalMatrixContainer" class="space-y-8">
                 <!-- Instrument Switcher Bar -->
                 <div class="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto pb-2 scrollbar-none">
@@ -1203,13 +1190,10 @@
                             </div>
 
                             <!-- Direct Action -->
-                            <div class="mt-5 flex gap-2">
-                                <a href="premium.html?v=5" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-300 text-black font-extrabold text-xs text-center uppercase tracking-wider hover:brightness-110 transition shadow-lg shadow-amber-400/20">
+                            <div class="mt-5">
+                                <a href="premium.html?v=5" class="block w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-300 text-black font-extrabold text-xs text-center uppercase tracking-wider hover:brightness-110 transition shadow-lg shadow-amber-400/20">
                                     Get VIP Instant Trade Alerts
                                 </a>
-                                <button type="button" onclick="toggleTerminalFullscreen()" class="px-3.5 py-3 rounded-xl bg-white/10 text-white hover:bg-white/15 transition flex items-center justify-center text-xs font-semibold cursor-pointer" title="Full Screen Terminal">
-                                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-                                </button>
                             </div>
                         </div>
 
@@ -1284,28 +1268,6 @@
                 </div>
             </div>
 
-            <!-- View 2: Full Embedded Interactive Web Terminal (Iframe) -->
-            <div id="terminalAppContainer" class="hidden">
-                <div class="w-full bg-[#060913] border border-cyan-500/30 rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(6,182,212,0.15)] relative">
-                    <!-- Top terminal bar -->
-                    <div class="px-4 py-3 bg-[#0c1322] border-b border-white/10 flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <span class="w-3 h-3 rounded-full bg-rose-500/80 inline-block"></span>
-                            <span class="w-3 h-3 rounded-full bg-amber-500/80 inline-block"></span>
-                            <span class="w-3 h-3 rounded-full bg-emerald-500/80 inline-block"></span>
-                            <span class="text-xs font-mono text-gray-400 ml-2">Forex Signal Pro · Institutional Web Terminal</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <button type="button" onclick="toggleTerminalFullscreen()" id="barFsBtn" class="text-xs text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:border-cyan-400/40 cursor-pointer transition">
-                                <span id="barFsBtnText">Full Screen</span>
-                                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-                            </button>
-                        </div>
-                    </div>
-                    <!-- Iframe to the locally served React Terminal -->
-                    <iframe src="/terminal/" class="w-full h-[760px] border-0" id="terminalIframe" loading="lazy" title="Forex Signal Pro Terminal"></iframe>
-                </div>
-            </div>
         </div>
     </section>
 
@@ -1460,97 +1422,6 @@
         runQuickCalc();
       };
 
-      window.switchTerminalView = function(view) {
-        const matrixCont = document.getElementById('terminalMatrixContainer');
-        const appCont = document.getElementById('terminalAppContainer');
-        const matrixBtn = document.getElementById('terminalViewMatrixBtn');
-        const appBtn = document.getElementById('terminalViewAppBtn');
-
-        if (view === 'matrix') {
-          if (matrixCont) matrixCont.classList.remove('hidden');
-          if (appCont) appCont.classList.add('hidden');
-          if (matrixBtn) matrixBtn.className = 'px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-cyan-500 text-dark-navy shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all cursor-pointer';
-          if (appBtn) appBtn.className = 'px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 transition-all flex items-center gap-2 cursor-pointer';
-        } else {
-          if (matrixCont) matrixCont.classList.add('hidden');
-          if (appCont) appCont.classList.remove('hidden');
-          if (appBtn) appBtn.className = 'px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-cyan-500 text-dark-navy shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all flex items-center gap-2 cursor-pointer';
-          if (matrixBtn) matrixBtn.className = 'px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 transition-all cursor-pointer';
-        }
-      };
-
-      window.toggleTerminalFullscreen = function() {
-        const appContainer = document.getElementById('terminalAppContainer');
-        const iframe = document.getElementById('terminalIframe');
-        const fsBtnText = document.getElementById('fsBtnText');
-        const barFsBtnText = document.getElementById('barFsBtnText');
-        
-        switchTerminalView('app');
-        
-        const isFs = appContainer.classList.contains('terminal-fullscreen-active');
-        
-        if (!isFs) {
-          appContainer.classList.add('terminal-fullscreen-active');
-          appContainer.style.position = 'fixed';
-          appContainer.style.inset = '0';
-          appContainer.style.zIndex = '99999';
-          appContainer.style.width = '100vw';
-          appContainer.style.height = '100vh';
-          appContainer.style.borderRadius = '0';
-          appContainer.style.margin = '0';
-          appContainer.style.padding = '0';
-          document.body.style.overflow = 'hidden';
-          if (iframe) iframe.style.height = 'calc(100vh - 48px)';
-          if (fsBtnText) fsBtnText.textContent = 'Exit Full Screen';
-          if (barFsBtnText) barFsBtnText.textContent = 'Exit Full Screen [✕]';
-          
-          if (appContainer.requestFullscreen) {
-            appContainer.requestFullscreen().catch(() => {});
-          } else if (appContainer.webkitRequestFullscreen) {
-            appContainer.webkitRequestFullscreen();
-          }
-        } else {
-          exitTerminalFullscreen();
-        }
-      };
-
-      window.exitTerminalFullscreen = function() {
-        const appContainer = document.getElementById('terminalAppContainer');
-        const iframe = document.getElementById('terminalIframe');
-        const fsBtnText = document.getElementById('fsBtnText');
-        const barFsBtnText = document.getElementById('barFsBtnText');
-        
-        if (appContainer) {
-          appContainer.classList.remove('terminal-fullscreen-active');
-          appContainer.style.position = '';
-          appContainer.style.inset = '';
-          appContainer.style.zIndex = '';
-          appContainer.style.width = '';
-          appContainer.style.height = '';
-          appContainer.style.borderRadius = '';
-          appContainer.style.margin = '';
-          appContainer.style.padding = '';
-        }
-        document.body.style.overflow = '';
-        if (iframe) iframe.style.height = '760px';
-        if (fsBtnText) fsBtnText.textContent = 'Full Screen';
-        if (barFsBtnText) barFsBtnText.textContent = 'Full Screen';
-
-        if (document.fullscreenElement) {
-          document.exitFullscreen().catch(() => {});
-        }
-      };
-
-      document.addEventListener('fullscreenchange', () => {
-        if (!document.fullscreenElement) {
-          exitTerminalFullscreen();
-        }
-      });
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-          exitTerminalFullscreen();
-        }
-      });
 
       window.runQuickCalc = function() {
         const bal = parseFloat(document.getElementById('quickCalcBalance')?.value) || 1000;
