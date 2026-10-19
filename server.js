@@ -23,6 +23,7 @@ const chatRoutes   = require('./src/routes/chatRoutes');
 const partnerRoutes = require('./src/routes/partnerRoutes');
 const propfirmRoutes = require('./src/routes/propfirmRoutes');
 const botRoutes = require('./src/routes/botRoutes');
+const terminalApiRoutes = require('./src/routes/terminalApiRoutes');
 const { suspiciousActivityMonitor } = require('./src/middleware/activityMonitor');
 
 // ── Environment Validation ─────────────────────────────────────
@@ -306,6 +307,7 @@ app.use('/api/journal', journalRoutes);
 app.use('/api/partner', partnerRoutes);
 app.use('/api/propfirm', propfirmRoutes);
 app.use('/api', chatRoutes);
+app.use('/api/v1', terminalApiRoutes);
 
 // ── Health Check Endpoint ──────────────────────────────────────
 // Used by Render, UptimeRobot, or any monitoring service
