@@ -9,6 +9,7 @@
     <meta name="description" content="Forex Signal Pro — Institutional Forex & Commodities Trading Signals, Live Financial News, and Quantitative Risk Management." />
     
     <link rel="icon" type="image/jpeg" href="./logo.jpg" />
+    <link rel="preload" as="image" href="../dubai_bg.webp" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -26,9 +27,28 @@
       html, body, #root { width: 100%; height: 100%; margin: 0; padding: 0; }
       .in-iframe #backToHomeBtn { display: none !important; }
       #backToHomeBtn:hover { transform: translateY(-1px); border-color: rgba(6,182,212,0.6); color: #fff; }
+      /* Dubai skyline background */
+      #dubai-bg {
+        position: fixed; inset: 0; z-index: 0;
+        background-image: url('../dubai_bg.webp');
+        background-size: cover;
+        background-position: center bottom;
+        background-repeat: no-repeat;
+        opacity: 0.55;
+        pointer-events: none;
+      }
+      #dubai-overlay {
+        position: fixed; inset: 0; z-index: 0;
+        background: linear-gradient(180deg, rgba(6,9,19,0.72) 0%, rgba(6,9,19,0.12) 40%, rgba(6,9,19,0.12) 70%, rgba(6,9,19,0.90) 100%);
+        pointer-events: none;
+      }
+      #root { position: relative; z-index: 1; }
     </style>
   </head>
   <body class="bg-[#060913] text-slate-100 min-h-screen selection:bg-cyan-500/20 selection:text-cyan-300">
+    <!-- Dubai skyline background -->
+    <div id="dubai-bg"></div>
+    <div id="dubai-overlay"></div>
     <a href="/" id="backToHomeBtn" class="fixed top-2.5 left-3.5 z-[9999] px-3 py-1.5 rounded-lg bg-black/80 border border-white/20 text-xs font-semibold text-gray-300 backdrop-blur shadow-xl transition flex items-center gap-1.5" style="text-decoration:none;">
       <span>← Back to Pips Attendant</span>
     </a>
