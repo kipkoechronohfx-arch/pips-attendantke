@@ -3,7 +3,7 @@ import { useAppStore, AppTab } from '../store/useAppStore';
 
 const TABS: AppTab[] = [
   'dashboard', 'signals', 'charts', 'news', 'calendar',
-  'risk', 'history', 'watchlist', 'admin', 'profile',
+  'risk', 'history', 'watchlist', 'profile',
 ];
 
 /**

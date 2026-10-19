@@ -36,9 +36,12 @@ const tradingItems: NavItem[] = [
 
 const mgmtItems: NavItem[] = [
   { id: 'watchlist', label: 'Watchlist & Alerts', icon: Bell },
-  { id: 'admin',     label: 'Admin Broadcast',    icon: ShieldCheck },
   { id: 'profile',   label: 'Account & Settings',  icon: UserCircle },
   { id: 'privacy',   label: 'Legal & Privacy',     icon: FileText },
+];
+
+const adminItems: NavItem[] = [
+  { id: 'admin',     label: 'Admin Broadcast',    icon: ShieldCheck },
 ];
 
 function NavSection({ items, activeTab, setActiveTab }: {
@@ -81,7 +84,17 @@ function NavSection({ items, activeTab, setActiveTab }: {
 }
 
 export const Sidebar: React.FC = () => {
-  const { activeTab, setActiveTab } = useAppStore();
+  const { user, activeTab, setActiveTab } = useAppStore();
+
+  const isAdmin =
+    (typeof window !== 'undefined' && (
+      window.location.search.includes('mode=admin') ||
+      window.location.search.includes('admin=true') ||
+      Boolean(localStorage.getItem('pa_admin_key')) ||
+      Boolean(localStorage.getItem('fsp_admin_token'))
+    )) ||
+    user?.role === 'SUPER_ADMIN' ||
+    user?.role === 'ADMIN';
 
   return (
     <aside className="w-[200px] xl:w-[220px] bg-[#070c1a] border-r border-white/[0.06] p-2.5 xl:p-3 flex flex-col justify-between shrink-0 hidden lg:flex">
@@ -101,6 +114,16 @@ export const Sidebar: React.FC = () => {
           </span>
           <NavSection items={mgmtItems} activeTab={activeTab} setActiveTab={setActiveTab} />
         </div>
+
+        {/* Administration Section (Private Admin Only) */}
+        {isAdmin && (
+          <div>
+            <span className="text-[9px] font-black tracking-[0.15em] text-cyan-400 uppercase px-2.5 py-1 block">
+              Administration
+            </span>
+            <NavSection items={adminItems} activeTab={activeTab} setActiveTab={setActiveTab} />
+          </div>
+        )}
       </div>
 
       {/* Risk Warning & Legal Disclosures Card */}

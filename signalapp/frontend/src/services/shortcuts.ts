@@ -10,7 +10,6 @@ const KEY_MAP: Record<string, AppTab> = {
   r: 'risk',
   h: 'history',
   w: 'watchlist',
-  a: 'admin',
   p: 'profile',
 };
 

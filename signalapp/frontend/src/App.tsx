@@ -70,8 +70,20 @@ export const App: React.FC = () => {
   useEffect(() => {
     const handleHash = () => {
       const hash = window.location.hash.replace('#', '').toLowerCase();
+      const isAdmin =
+        typeof window !== 'undefined' && (
+          window.location.search.includes('mode=admin') ||
+          window.location.search.includes('admin=true') ||
+          Boolean(localStorage.getItem('pa_admin_key')) ||
+          Boolean(localStorage.getItem('fsp_admin_token'))
+        );
+
       if (hash === 'broadcast' || hash === 'admin' || hash === 'admin-broadcast') {
-        setActiveTab('admin');
+        if (isAdmin) {
+          setActiveTab('admin');
+        } else {
+          setActiveTab('dashboard');
+        }
       } else if (['dashboard', 'signals', 'charts', 'news', 'calendar', 'risk', 'history', 'watchlist', 'profile', 'privacy', 'broker-vault'].includes(hash)) {
         setActiveTab(hash as any);
       }
