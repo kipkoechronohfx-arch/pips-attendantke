@@ -1084,10 +1084,10 @@
                     <button id="terminalViewAppBtn" onclick="switchTerminalView('app')" class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 transition-all flex items-center gap-2 cursor-pointer">
                         💻 Live Web Terminal View
                     </button>
-                    <a href="/terminal/" target="_blank" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-amber-400/10 text-amber-400 border border-amber-400/30 hover:bg-amber-400/20 transition-all flex items-center gap-1.5">
-                        <span>Full Screen</span>
-                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                    </a>
+                    <button id="terminalFullscreenBtn" onclick="toggleTerminalFullscreen()" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-amber-400/10 text-amber-400 border border-amber-400/30 hover:bg-amber-400/20 transition-all flex items-center gap-1.5 cursor-pointer">
+                        <span id="fsBtnText">Full Screen</span>
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+                    </button>
                 </div>
             </div>
 
@@ -1207,9 +1207,9 @@
                                 <a href="premium.html?v=5" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-300 text-black font-extrabold text-xs text-center uppercase tracking-wider hover:brightness-110 transition shadow-lg shadow-amber-400/20">
                                     Get VIP Instant Trade Alerts
                                 </a>
-                                <a href="/terminal/" target="_blank" class="px-3.5 py-3 rounded-xl bg-white/10 text-white hover:bg-white/15 transition flex items-center justify-center text-xs font-semibold" title="Open Full Signal Pro Terminal">
-                                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
-                                </a>
+                                <button type="button" onclick="toggleTerminalFullscreen()" class="px-3.5 py-3 rounded-xl bg-white/10 text-white hover:bg-white/15 transition flex items-center justify-center text-xs font-semibold cursor-pointer" title="Full Screen Terminal">
+                                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+                                </button>
                             </div>
                         </div>
 
@@ -1296,9 +1296,10 @@
                             <span class="text-xs font-mono text-gray-400 ml-2">Forex Signal Pro · Institutional Web Terminal</span>
                         </div>
                         <div class="flex items-center gap-3">
-                            <a href="/terminal/" target="_blank" class="text-xs text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1">
-                                Open in Full Tab ↗
-                            </a>
+                            <button type="button" onclick="toggleTerminalFullscreen()" id="barFsBtn" class="text-xs text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:border-cyan-400/40 cursor-pointer transition">
+                                <span id="barFsBtnText">Full Screen</span>
+                                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+                            </button>
                         </div>
                     </div>
                     <!-- Iframe to the locally served React Terminal -->
@@ -1477,6 +1478,79 @@
           if (matrixBtn) matrixBtn.className = 'px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 transition-all cursor-pointer';
         }
       };
+
+      window.toggleTerminalFullscreen = function() {
+        const appContainer = document.getElementById('terminalAppContainer');
+        const iframe = document.getElementById('terminalIframe');
+        const fsBtnText = document.getElementById('fsBtnText');
+        const barFsBtnText = document.getElementById('barFsBtnText');
+        
+        switchTerminalView('app');
+        
+        const isFs = appContainer.classList.contains('terminal-fullscreen-active');
+        
+        if (!isFs) {
+          appContainer.classList.add('terminal-fullscreen-active');
+          appContainer.style.position = 'fixed';
+          appContainer.style.inset = '0';
+          appContainer.style.zIndex = '99999';
+          appContainer.style.width = '100vw';
+          appContainer.style.height = '100vh';
+          appContainer.style.borderRadius = '0';
+          appContainer.style.margin = '0';
+          appContainer.style.padding = '0';
+          document.body.style.overflow = 'hidden';
+          if (iframe) iframe.style.height = 'calc(100vh - 48px)';
+          if (fsBtnText) fsBtnText.textContent = 'Exit Full Screen';
+          if (barFsBtnText) barFsBtnText.textContent = 'Exit Full Screen [✕]';
+          
+          if (appContainer.requestFullscreen) {
+            appContainer.requestFullscreen().catch(() => {});
+          } else if (appContainer.webkitRequestFullscreen) {
+            appContainer.webkitRequestFullscreen();
+          }
+        } else {
+          exitTerminalFullscreen();
+        }
+      };
+
+      window.exitTerminalFullscreen = function() {
+        const appContainer = document.getElementById('terminalAppContainer');
+        const iframe = document.getElementById('terminalIframe');
+        const fsBtnText = document.getElementById('fsBtnText');
+        const barFsBtnText = document.getElementById('barFsBtnText');
+        
+        if (appContainer) {
+          appContainer.classList.remove('terminal-fullscreen-active');
+          appContainer.style.position = '';
+          appContainer.style.inset = '';
+          appContainer.style.zIndex = '';
+          appContainer.style.width = '';
+          appContainer.style.height = '';
+          appContainer.style.borderRadius = '';
+          appContainer.style.margin = '';
+          appContainer.style.padding = '';
+        }
+        document.body.style.overflow = '';
+        if (iframe) iframe.style.height = '760px';
+        if (fsBtnText) fsBtnText.textContent = 'Full Screen';
+        if (barFsBtnText) barFsBtnText.textContent = 'Full Screen';
+
+        if (document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {});
+        }
+      };
+
+      document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement) {
+          exitTerminalFullscreen();
+        }
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          exitTerminalFullscreen();
+        }
+      });
 
       window.runQuickCalc = function() {
         const bal = parseFloat(document.getElementById('quickCalcBalance')?.value) || 1000;
