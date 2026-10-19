@@ -17,8 +17,21 @@
     <title>Forex Signal Pro — Live Trading Signals & Financial News</title>
     <script type="module" crossorigin src="./assets/index-Red1gUoM.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-BGEFp1ob.css">
+    <script>
+      if (window.self !== window.top) {
+        document.documentElement.classList.add('in-iframe');
+      }
+    </script>
+    <style>
+      html, body, #root { width: 100%; height: 100%; margin: 0; padding: 0; }
+      .in-iframe #backToHomeBtn { display: none !important; }
+      #backToHomeBtn:hover { transform: translateY(-1px); border-color: rgba(6,182,212,0.6); color: #fff; }
+    </style>
   </head>
   <body class="bg-[#060913] text-slate-100 min-h-screen selection:bg-cyan-500/20 selection:text-cyan-300">
+    <a href="/" id="backToHomeBtn" class="fixed top-2.5 left-3.5 z-[9999] px-3 py-1.5 rounded-lg bg-black/80 border border-white/20 text-xs font-semibold text-gray-300 backdrop-blur shadow-xl transition flex items-center gap-1.5" style="text-decoration:none;">
+      <span>← Back to Pips Attendant</span>
+    </a>
     <div id="root"></div>
   </body>
 </html>
