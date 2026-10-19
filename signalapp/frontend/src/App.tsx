@@ -268,7 +268,25 @@ export const App: React.FC = () => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="min-h-screen bg-[#040711] text-slate-100 flex flex-col font-sans pb-16 lg:pb-0 relative selection:bg-cyan-500/20 selection:text-cyan-300" style={{overflowX:'clip'}}>
+    <div className="min-h-screen bg-[#040711]/75 text-slate-100 flex flex-col font-sans pb-16 lg:pb-0 relative selection:bg-cyan-500/20 selection:text-cyan-300" style={{overflowX:'clip'}}>
+      {/* Dubai Skyline Background Layer */}
+      <div 
+        className="fixed inset-0 pointer-events-none -z-10"
+        style={{
+          backgroundImage: "url('/dubai_bg.webp'), url('./dubai_bg.webp'), url('../dubai_bg.webp'), url('/dubai_bg.png'), url('./dubai_bg.png')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center bottom',
+          backgroundRepeat: 'no-repeat',
+          opacity: 0.52
+        }}
+      />
+      <div 
+        className="fixed inset-0 pointer-events-none -z-10"
+        style={{
+          background: 'linear-gradient(180deg, rgba(4,7,17,0.65) 0%, rgba(4,7,17,0.15) 35%, rgba(4,7,17,0.15) 70%, rgba(4,7,17,0.85) 100%)'
+        }}
+      />
+
       {/* Ambient Lighting Mesh (Ultra-premium background depth) */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div className="absolute -top-32 left-[15%] w-[600px] h-[600px] bg-cyan-500/[0.06] rounded-full blur-[140px]" />
