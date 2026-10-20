@@ -49,18 +49,15 @@ export const Navbar: React.FC = () => {
               <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-xl blur-sm opacity-40 group-hover:opacity-80 transition duration-300" />
               <img
                 src="/logo.jpg"
-                alt="Forex Signal Pro"
+                alt="Signal Center"
                 className="relative w-9 h-9 rounded-xl object-cover border border-white/20 shadow-md group-hover:scale-105 transition-transform duration-200"
               />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-[16px] sm:text-[17px] font-black tracking-tight text-white leading-none">
-                  Forex Signal Pro
+                  Signal Center
                 </h1>
-                <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-gradient-to-r from-amber-500/20 to-yellow-500/10 text-amber-300 border border-amber-500/35 tracking-widest uppercase">
-                  Terminal
-                </span>
               </div>
               <p className="text-[10px] text-slate-400 font-medium mt-0.5 tracking-wide flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse" />
