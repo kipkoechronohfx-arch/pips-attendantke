@@ -299,4 +299,49 @@ export const api = {
     }
     return res.json();
   },
+
+  // ─── Session-Aware Scanner ──────────────────────────────────────
+
+  async getSessionState(): Promise<import('../types').SessionState> {
+    const res = await fetch(`${API_BASE}/scanner/session`);
+    if (!res.ok) throw new Error('Failed to load session state');
+    return res.json();
+  },
+
+  async getSymbolAnalysis(symbol: string, timeframe: string = 'H1'): Promise<import('../types').FullAnalysis> {
+    const res = await fetch(`${API_BASE}/scanner/analysis/${encodeURIComponent(symbol)}?timeframe=${timeframe}`);
+    if (!res.ok) throw new Error(`Failed to load analysis for ${symbol}`);
+    return res.json();
+  },
+
+  async getEntryAllowed(): Promise<{ allowed: boolean; reason: string | null }> {
+    const res = await fetch(`${API_BASE}/scanner/entry-allowed`);
+    if (!res.ok) return { allowed: true, reason: null };
+    return res.json();
+  },
+
+  async getStrategyProfiles(): Promise<import('../types').StrategyProfile[]> {
+    const res = await fetch(`${API_BASE}/scanner/strategy-profiles`);
+    if (!res.ok) return [];
+    return res.json();
+  },
+
+  async getFeedHealth(): Promise<import('../types').FeedHealth> {
+    const res = await fetch(`${API_BASE}/scanner/feed-health`);
+    if (!res.ok) throw new Error('Failed to load feed health');
+    return res.json();
+  },
+
+  async getValidationReport(): Promise<import('../types').ValidationReport> {
+    const res = await fetch(`${API_BASE}/scanner/performance/validation`);
+    if (!res.ok) throw new Error('Failed to load validation report');
+    return res.json();
+  },
+
+  async getSymbolRegime(symbol: string): Promise<any> {
+    const res = await fetch(`${API_BASE}/scanner/regime/${encodeURIComponent(symbol)}`);
+    if (!res.ok) return null;
+    return res.json();
+  },
 };
+
