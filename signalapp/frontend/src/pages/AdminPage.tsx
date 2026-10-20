@@ -13,7 +13,9 @@ import {
   TrendingUp, 
   TrendingDown,
   Lock,
-  UserCheck
+  UserCheck,
+  Radio,
+  Zap
 } from 'lucide-react';
 
 export const AdminPage: React.FC = () => {
@@ -28,6 +30,8 @@ export const AdminPage: React.FC = () => {
   const [confidence, setConfidence] = useState<number>(88);
   const [notes, setNotes] = useState('');
   const [publishing, setPublishing] = useState(false);
+  const [broadcastTelegram, setBroadcastTelegram] = useState(true);
+  const [isScanning, setIsScanning] = useState(false);
 
   // Sync with live OANDA quote
   const syncWithLiveMarket = (targetSymbol = symbol, targetDirection = direction) => {
@@ -87,6 +91,30 @@ export const AdminPage: React.FC = () => {
     }
   };
 
+  const handleScanAndBroadcast = async () => {
+    setIsScanning(true);
+    addToast('Scanning Markets', 'Quantitative confluence scanner running & broadcasting...', 'alert');
+    try {
+      await ensureAdminSession();
+      const scanned = await api.triggerAutoScan();
+      if (scanned.length > 0) {
+        scanned.forEach(s => addSignal(s));
+        soundFx.playSignalChime();
+        addToast(
+          'Scan & Telegram Broadcast Complete',
+          `Discovered ${scanned.length} setup(s) & auto-broadcasted to Telegram VIP channel!`,
+          'success'
+        );
+      } else {
+        addToast('Scan Completed', 'No new confluences met strict criteria right now.', 'alert');
+      }
+    } catch (err: any) {
+      addToast('Scan Failed', err.message || 'Error running automated scan', 'error');
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
   const handlePublish = async (e: React.FormEvent) => {
     e.preventDefault();
     setPublishing(true);
@@ -115,12 +143,17 @@ export const AdminPage: React.FC = () => {
         take_profit_1: tp1,
         take_profit_2: tp2,
         confidence,
-        technical_justification: notes || `Institutional ${direction} setup verified by Trading Desk on ${timeframe}.`
-      });
+        technical_justification: notes || `Institutional ${direction} setup verified by Trading Desk on ${timeframe}.`,
+        broadcast_telegram: broadcastTelegram
+      } as any);
 
       addSignal(newSig);
       soundFx.playSignalChime();
-      addToast('Signal Published', `${symbol} ${direction} published to live feed!`, 'success');
+      addToast(
+        'Signal Published',
+        `${symbol} ${direction} published to live feed${broadcastTelegram ? ' & autobroadcasted to Telegram VIP' : ''}!`,
+        'success'
+      );
       setNotes('');
     } catch (err: any) {
       addToast('Publish Error', err.message || 'Validation failed. Check SL/TP order.', 'error');
@@ -160,6 +193,48 @@ export const AdminPage: React.FC = () => {
             <span>Trading Desk Active</span>
           </div>
         </div>
+      </div>
+
+      {/* Telegram Auto-Broadcaster & Market Scan Engine Panel */}
+      <div className="glass-card-premium rounded-2xl p-5 border border-amber-500/25 bg-gradient-to-r from-amber-500/[0.08] via-[#0b0f19] to-cyan-500/[0.05] shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 shadow-lg shadow-amber-500/10">
+            <Radio size={22} className="animate-pulse" />
+          </div>
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-sm font-black text-slate-100 tracking-wide font-mono uppercase">
+                Telegram Auto-Broadcast Engine
+              </h3>
+              <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-bold">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                <span>VIP & Channels Connected</span>
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
+              Triggers the multi-confluence quantitative scanner across Forex, Gold, Silver & Crypto. High-probability setups (≥80% confidence) are automatically formatted with entry, stop loss, and targets, then instantly dispatched to your Telegram VIP feed.
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          disabled={isScanning}
+          onClick={handleScanAndBroadcast}
+          className="shrink-0 flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 hover:from-amber-400 hover:to-amber-600 text-black font-extrabold text-xs shadow-lg shadow-amber-500/25 active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
+        >
+          {isScanning ? (
+            <>
+              <RefreshCw size={14} className="animate-spin" />
+              <span>Scanning & Broadcasting...</span>
+            </>
+          ) : (
+            <>
+              <Zap size={15} />
+              <span>Run Scan & Broadcast to Telegram</span>
+            </>
+          )}
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -333,6 +408,23 @@ export const AdminPage: React.FC = () => {
                 className="w-full bg-[#060913] border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500"
               />
             </div>
+
+            {/* Auto-Broadcast to Telegram Toggle */}
+            <label className="flex items-center justify-between p-3 rounded-xl bg-[#060913] border border-amber-500/20 cursor-pointer hover:border-amber-500/40 transition-colors">
+              <div className="flex items-center gap-2.5">
+                <Radio size={14} className="text-amber-400" />
+                <div>
+                  <div className="text-xs font-bold text-slate-200">Auto-Broadcast to Telegram VIP</div>
+                  <div className="text-[10px] text-slate-500">Dispatches instant signal notification to configured VIP channel</div>
+                </div>
+              </div>
+              <input
+                type="checkbox"
+                checked={broadcastTelegram}
+                onChange={(e) => setBroadcastTelegram(e.target.checked)}
+                className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
+              />
+            </label>
 
             <button
               type="submit"

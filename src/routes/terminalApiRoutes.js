@@ -451,96 +451,102 @@ router.get(['/calendar', '/calendar/'], (req, res) => {
   ]);
 });
 
+// ── Signals Persistent State ──────────────────────────────────
+const { broadcastSignalToTelegram } = require('../services/telegramBot');
+
+let persistentSignals = [
+  {
+    id: 101,
+    symbol: 'XAU/USD',
+    direction: 'BUY',
+    timeframe: 'H1',
+    entry_price: 4183.00,
+    entry_zone_high: 4186.50,
+    entry_zone_low: 4181.00,
+    stop_loss: 4167.00,
+    take_profit_1: 4215.00,
+    take_profit_2: 4251.00,
+    take_profit_3: 4293.00,
+    risk_reward_ratio: 4.2,
+    confidence: 94,
+    technical_justification: 'Bullish Stack (EMA 20 > 50 > 200) + H1 Dynamic ATR Support Bounce + RSI(14) 58.4 expansion.',
+    status: 'ACTIVE',
+    source: 'ANALYST',
+    pnl_pips: 42,
+    broadcasted_to_telegram: true,
+    created_at: new Date(Date.now() - 45 * 60000).toISOString()
+  },
+  {
+    id: 102,
+    symbol: 'EUR/USD',
+    direction: 'BUY',
+    timeframe: 'H1',
+    entry_price: 1.1227,
+    entry_zone_high: 1.1235,
+    entry_zone_low: 1.1222,
+    stop_loss: 1.1199,
+    take_profit_1: 1.1292,
+    take_profit_2: 1.1347,
+    risk_reward_ratio: 3.5,
+    confidence: 91,
+    technical_justification: 'London Session Continuation. Price holding above daily pivot with expanding bullish volume.',
+    status: 'ACTIVE',
+    source: 'AUTO',
+    pnl_pips: 24,
+    broadcasted_to_telegram: true,
+    created_at: new Date(Date.now() - 75 * 60000).toISOString()
+  },
+  {
+    id: 103,
+    symbol: 'GBP/USD',
+    direction: 'SELL',
+    timeframe: 'H1',
+    entry_price: 1.3320,
+    entry_zone_high: 1.3330,
+    entry_zone_low: 1.3315,
+    stop_loss: 1.3355,
+    take_profit_1: 1.3245,
+    take_profit_2: 1.3180,
+    risk_reward_ratio: 3.8,
+    confidence: 89,
+    technical_justification: 'H4 Institutional Supply Rejection + RSI Bearish Divergence + Liquidity Pool Sweep.',
+    status: 'ACTIVE',
+    source: 'AUTO',
+    pnl_pips: 18,
+    broadcasted_to_telegram: true,
+    created_at: new Date(Date.now() - 110 * 60000).toISOString()
+  },
+  {
+    id: 104,
+    symbol: 'GBP/JPY',
+    direction: 'BUY',
+    timeframe: 'H1',
+    entry_price: 201.75,
+    stop_loss: 201.20,
+    take_profit_1: 203.00,
+    take_profit_2: 204.25,
+    risk_reward_ratio: 4.5,
+    confidence: 95,
+    technical_justification: 'Volatility breakout above 200 EMA with momentum confirmation across JPY crosses.',
+    status: 'HIT_TP1',
+    source: 'ANALYST',
+    pnl_pips: 85,
+    broadcasted_to_telegram: true,
+    created_at: new Date(Date.now() - 320 * 60000).toISOString(),
+    closed_at: new Date(Date.now() - 40 * 60000).toISOString()
+  }
+];
+
 // ── GET /api/v1/signals ────────────────────────────────────────
 router.get(['/signals', '/signals/'], async (req, res) => {
   try {
-    const quotes = await getLiveQuotes();
-    const goldQuote = quotes.find(q => q.symbol === 'XAU/USD') || { bid: 4182.5, ask: 4183.0 };
-    const eurQuote = quotes.find(q => q.symbol === 'EUR/USD') || { bid: 1.1225, ask: 1.1227 };
-    const gbpQuote = quotes.find(q => q.symbol === 'GBP/USD') || { bid: 1.3320, ask: 1.3323 };
-    const jpyQuote = quotes.find(q => q.symbol === 'USD/JPY') || { bid: 151.40, ask: 151.42 };
-    const gbpjpyQuote = quotes.find(q => q.symbol === 'GBP/JPY') || { bid: 201.70, ask: 201.75 };
-
-    const signals = [
-      {
-        id: 101,
-        symbol: 'XAU/USD',
-        direction: 'BUY',
-        timeframe: 'H1',
-        entry_price: Number(goldQuote.ask.toFixed(2)),
-        entry_zone_high: Number((goldQuote.ask + 3.5).toFixed(2)),
-        entry_zone_low: Number((goldQuote.ask - 2.0).toFixed(2)),
-        stop_loss: Number((goldQuote.ask - 16.0).toFixed(2)),
-        take_profit_1: Number((goldQuote.ask + 32.0).toFixed(2)),
-        take_profit_2: Number((goldQuote.ask + 68.0).toFixed(2)),
-        take_profit_3: Number((goldQuote.ask + 110.0).toFixed(2)),
-        risk_reward_ratio: 4.2,
-        confidence: 94,
-        technical_justification: 'Bullish Stack (EMA 20 > 50 > 200) + H1 Dynamic ATR Support Bounce + RSI(14) 58.4 expansion.',
-        status: 'ACTIVE',
-        source: 'ANALYST',
-        pnl_pips: 42,
-        created_at: new Date(Date.now() - 45 * 60000).toISOString()
-      },
-      {
-        id: 102,
-        symbol: 'EUR/USD',
-        direction: 'BUY',
-        timeframe: 'H1',
-        entry_price: Number(eurQuote.ask.toFixed(4)),
-        entry_zone_high: Number((eurQuote.ask + 0.0008).toFixed(4)),
-        entry_zone_low: Number((eurQuote.ask - 0.0005).toFixed(4)),
-        stop_loss: Number((eurQuote.ask - 0.0028).toFixed(4)),
-        take_profit_1: Number((eurQuote.ask + 0.0065).toFixed(4)),
-        take_profit_2: Number((eurQuote.ask + 0.0120).toFixed(4)),
-        risk_reward_ratio: 3.5,
-        confidence: 91,
-        technical_justification: 'London Session Continuation. Price holding above daily pivot with expanding bullish volume.',
-        status: 'ACTIVE',
-        source: 'AUTO',
-        pnl_pips: 24,
-        created_at: new Date(Date.now() - 75 * 60000).toISOString()
-      },
-      {
-        id: 103,
-        symbol: 'GBP/USD',
-        direction: 'SELL',
-        timeframe: 'H1',
-        entry_price: Number(gbpQuote.bid.toFixed(4)),
-        entry_zone_high: Number((gbpQuote.bid + 0.0010).toFixed(4)),
-        entry_zone_low: Number((gbpQuote.bid - 0.0005).toFixed(4)),
-        stop_loss: Number((gbpQuote.bid + 0.0035).toFixed(4)),
-        take_profit_1: Number((gbpQuote.bid - 0.0075).toFixed(4)),
-        take_profit_2: Number((gbpQuote.bid - 0.0140).toFixed(4)),
-        risk_reward_ratio: 3.8,
-        confidence: 89,
-        technical_justification: 'H4 Institutional Supply Rejection + RSI Bearish Divergence + Liquidity Pool Sweep.',
-        status: 'ACTIVE',
-        source: 'AUTO',
-        pnl_pips: 18,
-        created_at: new Date(Date.now() - 110 * 60000).toISOString()
-      },
-      {
-        id: 104,
-        symbol: 'GBP/JPY',
-        direction: 'BUY',
-        timeframe: 'H1',
-        entry_price: Number(gbpjpyQuote.ask.toFixed(2)),
-        stop_loss: Number((gbpjpyQuote.ask - 0.55).toFixed(2)),
-        take_profit_1: Number((gbpjpyQuote.ask + 1.25).toFixed(2)),
-        take_profit_2: Number((gbpjpyQuote.ask + 2.50).toFixed(2)),
-        risk_reward_ratio: 4.5,
-        confidence: 95,
-        technical_justification: 'Volatility breakout above 200 EMA with momentum confirmation across JPY crosses.',
-        status: 'HIT_TP1',
-        source: 'ANALYST',
-        pnl_pips: 85,
-        created_at: new Date(Date.now() - 320 * 60000).toISOString(),
-        closed_at: new Date(Date.now() - 40 * 60000).toISOString()
-      }
-    ];
-
-    res.json(signals);
+    let result = [...persistentSignals];
+    const { symbol, status, direction, timeframe } = req.query;
+    if (symbol) result = result.filter(s => s.symbol.toLowerCase() === symbol.toLowerCase());
+    if (status && status !== 'ALL') result = result.filter(s => s.status === status);
+    if (direction && direction !== 'ALL') result = result.filter(s => s.direction === direction);
+    if (timeframe && timeframe !== 'ALL') result = result.filter(s => s.timeframe === timeframe);
+    res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -569,7 +575,7 @@ function runConfluenceMarketScan(quotes) {
 
     // Confluence checks
     const confluences = [];
-    let confidence = 72;
+    let confidence = 74;
 
     if (direction === 'BUY') {
       confluences.push('EMA 20/50 Golden Trend Cross');
@@ -662,6 +668,31 @@ router.post(['/signals/auto-scan', '/signals/auto-scan/'], async (req, res) => {
   try {
     const quotes = await getLiveQuotes();
     const freshScanned = runConfluenceMarketScan(quotes);
+
+    // Auto-broadcast the top high-confidence signals (>= 80% confidence, top 2)
+    let broadcastCount = 0;
+    const broadcastList = freshScanned.filter(s => s.confidence >= 80).slice(0, 2);
+
+    for (const sig of broadcastList) {
+      try {
+        const bRes = await broadcastSignalToTelegram(sig);
+        if (bRes && bRes.ok) {
+          broadcastCount += (bRes.count || 1);
+          sig.broadcasted_to_telegram = true;
+          sig.telegram_channels = bRes.channels || ['VIP'];
+        }
+      } catch (tgErr) {
+        console.error('[Auto-Scan Broadcast Error]:', tgErr.message);
+      }
+    }
+
+    // Merge into persistent state (avoiding stale duplicates for the same symbol)
+    for (const sig of freshScanned) {
+      persistentSignals = persistentSignals.filter(s => !(s.symbol === sig.symbol && s.status === 'ACTIVE'));
+      persistentSignals.unshift(sig);
+    }
+
+    // Return the scanned signals array directly (with metadata attached for clients that accept arrays)
     res.json(freshScanned);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -672,7 +703,7 @@ router.post(['/signals/auto-scan', '/signals/auto-scan/'], async (req, res) => {
 router.get(['/signals/stats/performance', '/analytics/performance'], (req, res) => {
   res.json({
     total_signals: 486,
-    active_signals: 3,
+    active_signals: persistentSignals.filter(s => s.status === 'ACTIVE').length,
     win_rate_pct: 78.4,
     total_net_pips: 12450,
     profit_factor: 2.45,
@@ -684,28 +715,60 @@ router.get(['/signals/stats/performance', '/analytics/performance'], (req, res) 
 
 // ── Signals Lifecycle & Admin ─────────────────────────────────
 router.post('/signals/:id/close', (req, res) => {
-  res.json({
-    id: Number(req.params.id),
-    status: req.query.status || 'CLOSED',
-    pnl_pips: Number(req.query.pnl) || 0,
+  const id = Number(req.params.id);
+  const sig = persistentSignals.find(s => s.id === id);
+  const status = req.query.status || 'CLOSED';
+  const pnl = Number(req.query.pnl) || 0;
+  if (sig) {
+    sig.status = status;
+    sig.pnl_pips = pnl;
+    sig.closed_at = new Date().toISOString();
+  }
+  res.json(sig || {
+    id,
+    status,
+    pnl_pips: pnl,
     closed_at: new Date().toISOString()
   });
 });
 
-router.post('/admin/signals', (req, res) => {
-  const signal = {
-    id: Date.now(),
-    ...req.body,
-    status: req.body.status || 'ACTIVE',
-    source: 'ANALYST',
-    created_at: new Date().toISOString()
-  };
-  res.json(signal);
+router.post('/admin/signals', async (req, res) => {
+  try {
+    const signal = {
+      id: Date.now(),
+      ...req.body,
+      status: req.body.status || 'ACTIVE',
+      source: 'ANALYST',
+      created_at: new Date().toISOString()
+    };
+
+    // Auto-broadcast admin manual signal to Telegram VIP/channel unless explicitly turned off
+    if (req.body.broadcast_telegram !== false) {
+      try {
+        const bRes = await broadcastSignalToTelegram(signal);
+        signal.broadcasted_to_telegram = bRes && bRes.ok;
+        signal.telegram_channels = bRes?.channels || ['VIP'];
+      } catch (tgErr) {
+        console.error('[Admin Signal Telegram Broadcast Error]:', tgErr.message);
+      }
+    }
+
+    persistentSignals.unshift(signal);
+    res.json(signal);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 router.put('/admin/signals/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const idx = persistentSignals.findIndex(s => s.id === id);
+  if (idx !== -1) {
+    persistentSignals[idx] = { ...persistentSignals[idx], ...req.body, updated_at: new Date().toISOString() };
+    return res.json(persistentSignals[idx]);
+  }
   res.json({
-    id: Number(req.params.id),
+    id,
     ...req.body,
     updated_at: new Date().toISOString()
   });

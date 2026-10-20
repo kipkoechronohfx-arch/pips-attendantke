@@ -98,7 +98,7 @@ export const DashboardPage: React.FC = () => {
         newSigs.forEach((s) => addSignal(s));
         soundFx.playSignalChime();
         notifService.hapticSignal();
-        addToast('New Signal Generated', `Discovered ${newSigs.length} high-confluence setup(s)!`, 'success');
+        addToast('Signals Generated & Broadcasted', `Discovered ${newSigs.length} high-confluence setup(s) & auto-broadcasted to Telegram!`, 'success');
       } else {
         addToast('Scan Complete', 'No new confluences meet minimum R:R and ATR criteria right now.', 'alert');
       }

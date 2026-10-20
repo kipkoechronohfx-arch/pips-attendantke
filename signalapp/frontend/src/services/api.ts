@@ -100,7 +100,8 @@ export const api = {
       headers: getAuthHeaders()
     });
     if (!res.ok) throw new Error('Auto-scan failed');
-    return res.json();
+    const data = await res.json();
+    return Array.isArray(data) ? data : (data.signals || []);
   },
 
   async getPerformanceStats(): Promise<SignalPerformanceStats> {

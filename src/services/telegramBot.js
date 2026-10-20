@@ -4,12 +4,101 @@ const { getPerformanceLogs, getUserById, saveUser } = require('./db');
 
 async function sendTelegramMessage(chatId, text, opts = {}) {
   const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-  if (!TOKEN) return;
-  await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'Markdown', disable_web_page_preview: true, ...opts })
-  });
+  if (!TOKEN || TOKEN.includes('your_telegram_bot_token')) {
+    logger.warn('[Telegram Bot] TELEGRAM_BOT_TOKEN not configured or is placeholder.');
+    return { ok: false, error: 'Token not set' };
+  }
+  if (!chatId || String(chatId).includes('your_vip_group_chat_id')) {
+    logger.warn('[Telegram Bot] Chat ID not configured or is placeholder.');
+    return { ok: false, error: 'Chat ID not set' };
+  }
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'Markdown', disable_web_page_preview: true, ...opts })
+    });
+    const data = await res.json();
+    if (!data.ok) {
+      logger.warn(`[Telegram Bot] API returned error: ${data.description}`);
+    }
+    return data;
+  } catch (err) {
+    logger.error(`[Telegram Bot] Fetch error: ${err.message}`);
+    return { ok: false, error: err.message };
+  }
+}
+
+function formatSignalTelegramHtml(signal) {
+  const isBuy = String(signal.direction).toUpperCase() === 'BUY';
+  const dirEmoji = isBuy ? '🟢' : '🔴';
+  const actionText = isBuy ? 'BUY' : 'SELL';
+  const subText = isBuy ? 'LONG' : 'SHORT';
+  
+  const tf = signal.timeframe || 'H1';
+  const entry = signal.entry_price || signal.price;
+  const sl = signal.stop_loss;
+  const tp1 = signal.take_profit_1;
+  const tp2 = signal.take_profit_2;
+  const tp3 = signal.take_profit_3;
+  const rr = signal.risk_reward_ratio || '2.5';
+  const conf = signal.confidence || 90;
+  const justification = signal.technical_justification || signal.notes;
+  const source = signal.source === 'AUTO' ? '⚡ AI Confluence Engine' : '👨‍💼 Trading Desk Verified';
+
+  let msg = `🚨 <b>PIPS ATTENDANT — NEW SIGNAL ALERT</b> 🚨\n\n`;
+  msg += `📊 <b>Pair:</b> <code>${signal.symbol}</code> (${tf})\n`;
+  msg += `🎯 <b>Action:</b> ${dirEmoji} <b>${actionText} (${subText})</b>\n`;
+  msg += `💵 <b>Entry Zone:</b> <code>${entry}</code>\n`;
+  msg += `🛑 <b>Stop Loss:</b> <code>${sl}</code>\n`;
+  msg += `🎯 <b>Take Profit 1:</b> <code>${tp1}</code>\n`;
+  if (tp2) msg += `🎯 <b>Take Profit 2:</b> <code>${tp2}</code>\n`;
+  if (tp3) msg += `🎯 <b>Take Profit 3:</b> <code>${tp3}</code>\n`;
+  msg += `⚖️ <b>Risk / Reward:</b> <code>1:${rr}</code>\n`;
+  msg += `🔥 <b>Confidence:</b> <code>${conf}%</code>\n`;
+  msg += `📡 <b>Source:</b> ${source}\n\n`;
+
+  if (justification) {
+    const cleanJustification = String(justification).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    msg += `🧠 <b>Confluence Analysis:</b>\n<i>${cleanJustification}</i>\n\n`;
+  }
+
+  msg += `━━━━━━━━━━━━━━━━━━━━━\n`;
+  msg += `⚠️ <b>Risk Management:</b> Risk max 1-2% per position. Always set SL.\n`;
+  const terminalUrl = process.env.APP_URL ? `${process.env.APP_URL}/terminal/` : 'https://www.pipsattendant.com/terminal/';
+  msg += `⚡ <a href="${terminalUrl}">Open Live Signal Center</a>`;
+
+  return msg;
+}
+
+async function broadcastSignalToTelegram(signal) {
+  const VIP_CHAT_ID = process.env.TELEGRAM_VIP_CHAT_ID;
+  const GENERAL_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+  const html = formatSignalTelegramHtml(signal);
+
+  const targetChats = [];
+  if (VIP_CHAT_ID && !VIP_CHAT_ID.includes('your_')) targetChats.push(VIP_CHAT_ID);
+  if (GENERAL_CHAT_ID && !GENERAL_CHAT_ID.includes('your_') && !targetChats.includes(GENERAL_CHAT_ID)) {
+    targetChats.push(GENERAL_CHAT_ID);
+  }
+
+  if (targetChats.length === 0) {
+    logger.warn('[Telegram Broadcast] No target Telegram Chat IDs configured (TELEGRAM_VIP_CHAT_ID / TELEGRAM_CHAT_ID).');
+    return { ok: false, message: 'No chat IDs configured', count: 0, channels: [] };
+  }
+
+  let sentCount = 0;
+  const sentChannels = [];
+  for (const chatId of targetChats) {
+    const res = await sendTelegramMessage(chatId, html, { parse_mode: 'HTML' });
+    if (res && res.ok) {
+      sentCount++;
+      sentChannels.push(chatId === VIP_CHAT_ID ? 'VIP' : 'General');
+    }
+  }
+
+  logger.info(`[Telegram Broadcast] Broadcasted ${signal.symbol} ${signal.direction} to ${sentCount}/${targetChats.length} Telegram chats.`);
+  return { ok: sentCount > 0, count: sentCount, total: targetChats.length, channels: sentChannels };
 }
 
 async function handleTelegramUpdate(update) {
@@ -127,6 +216,8 @@ async function kickUserFromTelegram(telegramId) {
 
 module.exports = {
   sendTelegramMessage,
+  broadcastSignalToTelegram,
+  formatSignalTelegramHtml,
   handleTelegramUpdate,
   registerTelegramWebhook,
   kickUserFromTelegram

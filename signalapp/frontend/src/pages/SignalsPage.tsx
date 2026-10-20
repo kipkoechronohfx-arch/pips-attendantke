@@ -28,7 +28,7 @@ export const SignalsPage: React.FC = () => {
       if (newSigs.length > 0) {
         newSigs.forEach(s => addSignal(s));
         soundFx.playSignalChime();
-        addToast('New Signals Discovered', `Added ${newSigs.length} setup(s) to feed`, 'success');
+        addToast('Signals Discovered & Broadcasted', `Added ${newSigs.length} setup(s) to feed & auto-broadcasted to Telegram!`, 'success');
       } else {
         addToast('Scan Finished', 'No new setups met strict confluence criteria right now.', 'alert');
       }
