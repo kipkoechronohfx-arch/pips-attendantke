@@ -146,8 +146,11 @@ export const api = {
   },
 
   // News & Calendar
-  async getNews(category: string = 'ALL'): Promise<NewsArticle[]> {
-    const res = await fetch(`${API_BASE}/news/?category=${category}`);
+  async getNews(category: string = 'ALL', refresh: boolean = false): Promise<NewsArticle[]> {
+    const params = new URLSearchParams();
+    if (category && category !== 'ALL') params.append('currency', category);
+    if (refresh) params.append('refresh', 'true');
+    const res = await fetch(`${API_BASE}/news/?${params.toString()}`);
     if (!res.ok) throw new Error('Failed to load news');
     return res.json();
   },

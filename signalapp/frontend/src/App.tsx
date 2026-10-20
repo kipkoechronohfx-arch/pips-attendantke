@@ -105,13 +105,20 @@ export const App: React.FC = () => {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Initial Data Fetch ────────────────────────────────────────
+  // ── Initial Data Fetch & Periodic News Refresh ───────────────
   useEffect(() => {
     api.getQuotes().then(setQuotes).catch(() => {});
     api.getSignals().then(setSignals).catch(() => {});
     api.getNews().then(setNews).catch(() => {});
     api.getCalendar().then(setCalendar).catch(() => {});
     api.getMarketHealth().then(setProviderHealth).catch(() => {});
+
+    // Keep news wire up to date every 60 seconds
+    const newsTimer = setInterval(() => {
+      api.getNews().then(setNews).catch(() => {});
+    }, 60000);
+
+    return () => clearInterval(newsTimer);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Price Alert Checker (runs on every quote update) ────────
