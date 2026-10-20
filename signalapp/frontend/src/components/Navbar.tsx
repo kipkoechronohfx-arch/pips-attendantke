@@ -119,14 +119,14 @@ export const Navbar: React.FC = () => {
           {/* User / Auth Button */}
           <button
             onClick={() => setActiveTab('profile')}
-            className="flex items-center gap-2 bg-[#090f1d] hover:bg-[#101b33] border border-white/[0.09] hover:border-cyan-500/30 text-slate-200 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-200 shadow-sm shrink-0"
+            className="flex items-center gap-2 bg-[#090f1d] hover:bg-[#101b33] border border-white/[0.09] hover:border-amber-400/40 text-slate-200 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-200 shadow-sm shrink-0"
           >
-            <UserIcon size={14} className="text-cyan-400 shrink-0" />
-            <span className="max-w-[110px] truncate">
-              {user ? (user.full_name || user.email) : 'Chief Analyst'}
+            <UserIcon size={14} className="text-amber-400 shrink-0" />
+            <span className="max-w-[120px] truncate">
+              {user ? (user.full_name || user.email) : 'Account'}
             </span>
-            {user?.role && (
-              <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-400 border border-cyan-500/25 tracking-wider uppercase shrink-0">
+            {user?.role && user.role !== 'USER' && (
+              <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/25 tracking-wider uppercase shrink-0">
                 {user.role}
               </span>
             )}

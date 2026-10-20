@@ -68,12 +68,12 @@ export const AdminPage: React.FC = () => {
     if (token && user?.role === 'SUPER_ADMIN') return true;
 
     try {
-      const authRes = await api.login({ email: 'admin@forexsignalpro.com', password: 'AdminPass123!' });
+      const authRes = await api.login({ email: 'admin@pipsattendant.com', password: 'AdminPass123!' });
       localStorage.setItem('fsp_token', authRes.access_token);
       setUser({
         id: 1,
         email: authRes.email,
-        full_name: authRes.full_name || 'Chief Market Analyst',
+        full_name: authRes.full_name || 'Desk Administrator',
         role: authRes.role as any,
         timezone: 'Africa/Nairobi',
         account_currency: 'USD',
@@ -115,7 +115,7 @@ export const AdminPage: React.FC = () => {
         take_profit_1: tp1,
         take_profit_2: tp2,
         confidence,
-        technical_justification: notes || `Institutional ${direction} setup verified by Chief Market Analyst on ${timeframe}.`
+        technical_justification: notes || `Institutional ${direction} setup verified by Trading Desk on ${timeframe}.`
       });
 
       addSignal(newSig);
@@ -157,7 +157,7 @@ export const AdminPage: React.FC = () => {
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-mono font-bold">
             <UserCheck size={14} />
-            <span>Chief Analyst Desk Active</span>
+            <span>Trading Desk Active</span>
           </div>
         </div>
       </div>

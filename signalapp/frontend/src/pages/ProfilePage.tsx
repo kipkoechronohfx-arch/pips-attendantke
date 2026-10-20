@@ -6,9 +6,9 @@ import { UserCircle, Lock, Mail, Globe, Shield, LogOut, CheckCircle } from 'luci
 export const ProfilePage: React.FC = () => {
   const { user, setUser, addToast } = useAppStore();
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('admin@forexsignalpro.com');
-  const [password, setPassword] = useState('AdminPass123!');
-  const [fullName, setFullName] = useState('Senior Trader');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [timezone, setTimezone] = useState('Africa/Nairobi');
   const [loading, setLoading] = useState(false);
 
@@ -21,7 +21,7 @@ export const ProfilePage: React.FC = () => {
         setUser({
           id: 1,
           email: res.email,
-          full_name: res.full_name || 'Senior Trader',
+          full_name: res.full_name || 'Member',
           role: res.role as any,
           timezone: 'Africa/Nairobi',
           account_currency: 'USD',
@@ -137,9 +137,10 @@ export const ProfilePage: React.FC = () => {
               <input
                 type="text"
                 required
+                placeholder="e.g. John Doe"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full bg-[#060913] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-cyan-500"
+                className="w-full bg-[#060913] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-amber-400"
               />
             </div>
           )}
@@ -149,9 +150,10 @@ export const ProfilePage: React.FC = () => {
             <input
               type="email"
               required
+              placeholder="trader@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-[#060913] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-cyan-500"
+              className="w-full bg-[#060913] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-amber-400"
             />
           </div>
 
@@ -160,9 +162,10 @@ export const ProfilePage: React.FC = () => {
             <input
               type="password"
               required
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-[#060913] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-cyan-500"
+              className="w-full bg-[#060913] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-amber-400"
             />
           </div>
 
@@ -172,7 +175,7 @@ export const ProfilePage: React.FC = () => {
               <select
                 value={timezone}
                 onChange={(e) => setTimezone(e.target.value)}
-                className="w-full bg-[#060913] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-cyan-500"
+                className="w-full bg-[#060913] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-amber-400"
               >
                 <option value="Africa/Nairobi">Africa/Nairobi (EAT, UTC+3)</option>
                 <option value="UTC">UTC (Universal)</option>
@@ -185,9 +188,9 @@ export const ProfilePage: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs shadow-lg shadow-cyan-500/25 transition-all mt-2"
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 transition-all mt-2 cursor-pointer"
           >
-            {loading ? 'Processing...' : isLogin ? 'Sign In to Terminal' : 'Register Account'}
+            {loading ? 'Processing...' : isLogin ? 'Sign In to Terminal' : 'Create Trader Account'}
           </button>
         </form>
       </div>

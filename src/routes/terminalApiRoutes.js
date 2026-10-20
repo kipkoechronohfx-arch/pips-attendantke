@@ -713,11 +713,29 @@ router.put('/admin/signals/:id', (req, res) => {
 
 // ── GET /api/v1/auth/me ────────────────────────────────────────
 router.get('/auth/me', (req, res) => {
-  res.json({
-    id: 1,
-    email: 'chief.analyst@pipsattendant.com',
-    full_name: 'Chief Analyst',
-    role: 'SUPER_ADMIN',
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  const token = authHeader.replace('Bearer ', '').trim();
+  if (token === process.env.ADMIN_KEY || token.includes('admin')) {
+    return res.json({
+      id: 1,
+      email: 'desk@pipsattendant.com',
+      full_name: 'Lead Desk',
+      role: 'ADMIN',
+      timezone: 'Africa/Nairobi',
+      account_currency: 'USD',
+      is_active: true,
+      is_verified: true,
+      created_at: new Date().toISOString()
+    });
+  }
+  return res.json({
+    id: 2,
+    email: 'member@pipsattendant.com',
+    full_name: 'VIP Member',
+    role: 'USER',
     timezone: 'Africa/Nairobi',
     account_currency: 'USD',
     is_active: true,
@@ -727,11 +745,13 @@ router.get('/auth/me', (req, res) => {
 });
 
 router.post('/auth/login', (req, res) => {
+  const email = (req.body?.email || '').toLowerCase();
+  const isAdmin = email.includes('admin');
   res.json({
-    access_token: 'fsp_pro_jwt_token_' + Date.now(),
-    role: 'SUPER_ADMIN',
-    email: req.body?.email || 'analyst@pipsattendant.com',
-    full_name: 'Chief Analyst'
+    access_token: 'pa_terminal_jwt_' + Date.now(),
+    role: isAdmin ? 'ADMIN' : 'USER',
+    email: email || 'member@pipsattendant.com',
+    full_name: req.body?.full_name || (isAdmin ? 'Desk Administrator' : 'VIP Member')
   });
 });
 

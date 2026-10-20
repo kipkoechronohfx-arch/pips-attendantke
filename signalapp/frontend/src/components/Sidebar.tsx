@@ -86,15 +86,16 @@ function NavSection({ items, activeTab, setActiveTab }: {
 export const Sidebar: React.FC = () => {
   const { user, activeTab, setActiveTab } = useAppStore();
 
+  // Hide Administration completely on main site / iframe; only expose when explicitly in admin mode
+  const isEmbedded =
+    typeof window !== 'undefined' &&
+    (window.self !== window.top || document.documentElement.classList.contains('in-iframe'));
+
   const isAdmin =
-    (typeof window !== 'undefined' && (
-      window.location.search.includes('mode=admin') ||
-      window.location.search.includes('admin=true') ||
-      Boolean(localStorage.getItem('pa_admin_key')) ||
-      Boolean(localStorage.getItem('fsp_admin_token'))
-    )) ||
-    user?.role === 'SUPER_ADMIN' ||
-    user?.role === 'ADMIN';
+    !isEmbedded &&
+    typeof window !== 'undefined' &&
+    (window.location.search.includes('mode=admin') || window.location.search.includes('admin=true')) &&
+    (user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN' || Boolean(localStorage.getItem('pa_admin_key')));
 
   return (
     <aside className="w-[200px] xl:w-[220px] bg-black/30 backdrop-blur-xl border-r border-white/[0.07] p-2.5 xl:p-3 flex flex-col justify-between shrink-0 hidden lg:flex">
@@ -115,10 +116,10 @@ export const Sidebar: React.FC = () => {
           <NavSection items={mgmtItems} activeTab={activeTab} setActiveTab={setActiveTab} />
         </div>
 
-        {/* Administration Section (Private Admin Only) */}
+        {/* Administration Section (Private Admin Only — Never on main site) */}
         {isAdmin && (
           <div>
-            <span className="text-[9px] font-black tracking-[0.15em] text-cyan-400 uppercase px-2.5 py-1 block">
+            <span className="text-[9px] font-black tracking-[0.15em] text-amber-400 uppercase px-2.5 py-1 block">
               Administration
             </span>
             <NavSection items={adminItems} activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -129,14 +130,14 @@ export const Sidebar: React.FC = () => {
       {/* Risk Warning & Legal Disclosures Card */}
       <button
         onClick={() => setActiveTab('privacy')}
-        className="mt-4 text-left bg-gradient-to-br from-[#0d1929] to-[#07101e] hover:from-[#112238] hover:to-[#091526] border border-white/[0.07] hover:border-cyan-500/30 transition-all rounded-xl p-3 text-xs group"
+        className="mt-4 text-left bg-gradient-to-br from-[#0d1929] to-[#07101e] hover:from-[#112238] hover:to-[#091526] border border-white/[0.07] hover:border-amber-400/30 transition-all rounded-xl p-3 text-xs group"
       >
         <div className="flex items-center justify-between text-amber-400 font-bold mb-1">
           <div className="flex items-center gap-1.5">
             <ShieldCheck size={13} />
             <span className="text-[11px]">Risk & Privacy Policy</span>
           </div>
-          <span className="text-[9px] text-cyan-400 group-hover:underline font-mono">View →</span>
+          <span className="text-[9px] text-amber-400 group-hover:underline font-mono">View →</span>
         </div>
         <p className="text-slate-500 group-hover:text-slate-400 text-[10px] leading-relaxed transition-colors">
           CFD &amp; Forex trading carries risk. View our Google Play verified Privacy Policy &amp; Disclosures.
