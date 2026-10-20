@@ -49,9 +49,9 @@ export const TickerMarquee: React.FC = () => {
               <button
                 key={`${item.symbol}-${idx}`}
                 onClick={() => handleClick(item.symbol)}
-                className="inline-flex items-center gap-2 cursor-pointer shrink-0 group hover:text-cyan-300 transition-colors px-1"
+                className="inline-flex items-center gap-2 cursor-pointer shrink-0 group hover:text-amber-300 transition-colors px-1"
               >
-                <span className="font-bold text-slate-200 group-hover:text-cyan-300 transition-colors text-[11px]">
+                <span className="font-bold text-slate-200 group-hover:text-amber-300 transition-colors text-[11px]">
                   {item.symbol}
                 </span>
                 <span className="font-semibold text-slate-100 tabular-nums">

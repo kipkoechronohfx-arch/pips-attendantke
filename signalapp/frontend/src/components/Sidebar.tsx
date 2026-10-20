@@ -58,12 +58,15 @@ function NavSection({ items, activeTab, setActiveTab }: {
           <button
             key={item.id}
             onClick={() => setActiveTab(item.id)}
-            className={`relative w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 ${
+            className={`relative w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 cursor-pointer overflow-hidden ${
               isActive
-                ? 'nav-item-active bg-gradient-to-r from-amber-500/[0.15] to-yellow-500/[0.08] text-amber-300 border border-amber-500/35 font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04] border border-transparent'
+                ? 'nav-item-active bg-gradient-to-r from-amber-500/[0.18] to-yellow-500/[0.08] text-amber-300 border border-amber-500/35 font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
+                : 'text-slate-400 hover:text-slate-100 hover:bg-white/[0.05] border border-transparent'
             }`}
           >
+            {isActive && (
+              <span className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-gradient-to-b from-amber-400 to-yellow-500 shadow-[0_0_8px_rgba(245,158,11,0.7)]" />
+            )}
             <Icon
               size={17}
               className={`shrink-0 transition-colors duration-200 ${
@@ -72,7 +75,7 @@ function NavSection({ items, activeTab, setActiveTab }: {
             />
             <span className="whitespace-nowrap">{item.label}</span>
             {item.badge && (
-              <span className="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-500/[0.12] text-emerald-400 border border-emerald-500/25 animate-pulse tracking-wider shrink-0">
+              <span className="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-500/[0.15] text-emerald-400 border border-emerald-500/30 animate-pulse tracking-wider shrink-0 font-mono">
                 {item.badge}
               </span>
             )}

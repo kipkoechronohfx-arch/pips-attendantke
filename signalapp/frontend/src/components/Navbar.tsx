@@ -47,14 +47,17 @@ export const Navbar: React.FC = () => {
           >
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-[16px] sm:text-[17px] font-black tracking-tight text-white leading-none">
+                <h1 className="text-[16px] sm:text-[18px] font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-amber-200 leading-none">
                   Signal Center
                 </h1>
+                <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 tracking-wider uppercase flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Live Desk
+                </span>
               </div>
               <p className="text-[10px] text-slate-400 font-medium mt-0.5 tracking-wide flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse" />
-                <span className="hidden xl:inline">Institutional Quantitative Signals &amp; Market Intelligence</span>
-                <span className="hidden sm:inline xl:hidden">Live Interbank Desk</span>
+                <span className="hidden xl:inline">Institutional Quantitative Confluence &amp; Market Intelligence</span>
+                <span className="hidden sm:inline xl:hidden">Live Interbank Execution</span>
               </p>
             </div>
           </div>
@@ -98,9 +101,9 @@ export const Navbar: React.FC = () => {
           <button
             onClick={toggleSound}
             title={soundEnabled ? 'Mute Alert Audio' : 'Unmute Alert Audio'}
-            className={`p-2 rounded-xl border transition-all duration-200 ${
+            className={`p-2 rounded-xl border transition-all duration-200 cursor-pointer ${
               soundEnabled
-                ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.18)] hover:bg-cyan-500/15'
+                ? 'bg-amber-500/10 border-amber-500/35 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.18)] hover:bg-amber-500/20'
                 : 'bg-[#090f1d] border-white/[0.08] text-slate-400 hover:text-slate-200 hover:border-white/20'
             }`}
           >
@@ -111,7 +114,7 @@ export const Navbar: React.FC = () => {
           <button
             onClick={() => setShortcutsOpen(true)}
             title="Keyboard Shortcuts (?)"
-            className="hidden sm:flex p-2 rounded-xl border bg-[#090f1d] border-white/[0.08] text-slate-400 hover:text-cyan-400 hover:border-cyan-500/30 transition-all duration-200"
+            className="hidden sm:flex p-2 rounded-xl border bg-[#090f1d] border-white/[0.08] text-slate-400 hover:text-amber-300 hover:border-amber-400/35 hover:bg-amber-400/[0.05] transition-all duration-200 cursor-pointer"
           >
             <Keyboard size={15} />
           </button>
