@@ -45,14 +45,6 @@ export const Navbar: React.FC = () => {
             onClick={() => setActiveTab('dashboard')}
             className="flex items-center gap-3 cursor-pointer group shrink-0"
           >
-            <div className="relative">
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-xl blur-sm opacity-40 group-hover:opacity-80 transition duration-300" />
-              <img
-                src="/logo.jpg"
-                alt="Signal Center"
-                className="relative w-9 h-9 rounded-xl object-cover border border-white/20 shadow-md group-hover:scale-105 transition-transform duration-200"
-              />
-            </div>
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-[16px] sm:text-[17px] font-black tracking-tight text-white leading-none">
