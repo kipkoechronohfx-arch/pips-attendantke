@@ -6,6 +6,7 @@ services:
     name: pips-attendantke
     runtime: node
     plan: free
+    autoDeploy: true
     buildCommand: npm install && npm run build
     startCommand: node server.js
     envVars:
@@ -20,6 +21,7 @@ services:
   - type: web
     name: forex-signal-pro-frontend
     runtime: static
+    autoDeploy: true
     staticPublishPath: ./terminal
     routes:
       - type: rewrite
