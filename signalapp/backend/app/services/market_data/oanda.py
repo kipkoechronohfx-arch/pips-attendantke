@@ -119,7 +119,7 @@ class OandaDataProvider(MarketDataProvider):
             return []
 
         now = time.time()
-        if self._cached_quotes and (now - self._last_quotes_fetch < 1.5):
+        if self._cached_quotes and (now - self._last_quotes_fetch < 0.75):
             return list(self._cached_quotes.values())
 
         # Refresh real 24h stats in background (non-blocking)
@@ -144,59 +144,59 @@ class OandaDataProvider(MarketDataProvider):
                     if not sym:
                         continue
 
-                        bids = item.get("bids", [])
-                        asks = item.get("asks", [])
-                        if not bids or not asks:
-                            continue
+                    bids = item.get("bids", [])
+                    asks = item.get("asks", [])
+                    if not bids or not asks:
+                        continue
 
-                        bid = float(bids[0]["price"])
-                        ask = float(asks[0]["price"])
-                        is_jpy = "JPY" in sym
-                        is_gold = "XAU" in sym
-                        is_silver = "XAG" in sym
-                        is_crypto = "BTC" in sym
+                    bid = float(bids[0]["price"])
+                    ask = float(asks[0]["price"])
+                    is_jpy = "JPY" in sym
+                    is_gold = "XAU" in sym
+                    is_silver = "XAG" in sym
+                    is_crypto = "BTC" in sym
 
-                        digits = 3 if (is_jpy or is_silver) else 2 if (is_gold or is_crypto) else 5
-                        mid = round((bid + ask) / 2.0, digits)
+                    digits = 3 if (is_jpy or is_silver) else 2 if (is_gold or is_crypto) else 5
+                    mid = round((bid + ask) / 2.0, digits)
 
-                        pip_mult = 100.0 if (is_jpy or is_silver) else 10.0 if is_gold else 1.0 if is_crypto else 10000.0
-                        spread = round((ask - bid) * pip_mult, 1)
+                    pip_mult = 100.0 if (is_jpy or is_silver) else 10.0 if is_gold else 1.0 if is_crypto else 10000.0
+                    spread = round((ask - bid) * pip_mult, 1)
 
-                        # Real 24h stats from D1 candle cache
-                        h24 = self._h24_cache.get(sym)
-                        if h24:
-                            high_24h, low_24h, daily_open = h24
-                            change = round(mid - daily_open, digits)
-                            change_pct = round((change / daily_open) * 100, 2) if daily_open else 0.0
-                        else:
-                            # Fallback: intraday delta vs previous quote
-                            prev = self._cached_quotes.get(sym)
-                            high_24h = round(mid * 1.004, digits)
-                            low_24h = round(mid * 0.996, digits)
-                            change = round(mid - prev.mid, digits) if prev else 0.0
-                            change_pct = round((change / mid) * 100, 2) if prev else 0.0
+                    # Real 24h stats from D1 candle cache
+                    h24 = self._h24_cache.get(sym)
+                    if h24:
+                        high_24h, low_24h, daily_open = h24
+                        change = round(mid - daily_open, digits)
+                        change_pct = round((change / daily_open) * 100, 2) if daily_open else 0.0
+                    else:
+                        # Fallback: intraday delta vs previous quote
+                        prev = self._cached_quotes.get(sym)
+                        high_24h = round(mid * 1.004, digits)
+                        low_24h = round(mid * 0.996, digits)
+                        change = round(mid - prev.mid, digits) if prev else 0.0
+                        change_pct = round((change / mid) * 100, 2) if prev else 0.0
 
-                        q = Quote(
-                            symbol=sym,
-                            bid=bid,
-                            ask=ask,
-                            spread=max(0.5, spread),
-                            mid=mid,
-                            change_24h=change,
-                            change_24h_pct=change_pct,
-                            high_24h=high_24h,
-                            low_24h=low_24h,
-                            timestamp_utc=datetime.now(timezone.utc),
-                            provider=self.provider_name,
-                            is_live=True,
-                            data_freshness_seconds=0.1
-                        )
-                        new_quotes.append(q)
-                        self._cached_quotes[sym] = q
+                    q = Quote(
+                        symbol=sym,
+                        bid=bid,
+                        ask=ask,
+                        spread=max(0.5, spread),
+                        mid=mid,
+                        change_24h=change,
+                        change_24h_pct=change_pct,
+                        high_24h=high_24h,
+                        low_24h=low_24h,
+                        timestamp_utc=datetime.now(timezone.utc),
+                        provider=self.provider_name,
+                        is_live=True,
+                        data_freshness_seconds=0.1
+                    )
+                    new_quotes.append(q)
+                    self._cached_quotes[sym] = q
 
-                    if new_quotes:
-                        self._last_quotes_fetch = now
-                        return new_quotes
+                if new_quotes:
+                    self._last_quotes_fetch = now
+                    return new_quotes
         except Exception:
             pass
 

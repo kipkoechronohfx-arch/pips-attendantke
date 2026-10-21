@@ -30,17 +30,28 @@ async def get_historical_candles(
 @router.get("/tick/{symbol:path}", response_model=Optional[Candle])
 async def get_live_tick(
     symbol: str,
-    timeframe: str = Query("M5", description="Timeframe for last candle: M5, M15, H1, etc.")
+    timeframe: str = Query("H1", description="Timeframe for last candle: M5, M15, H1, etc.")
 ):
     """
     Returns only the **current (last) candle** with a live close price injected from the
-    real-time bid/ask mid. Use this endpoint on a tight poll interval (e.g. every 1-2s)
-    to animate charts without re-fetching all 100+ candles.
+    real-time bid/ask mid. Refreshed dynamically every second.
     """
+    quote = await market_data_manager.get_quote(symbol)
     candles = await market_data_manager.get_candles(symbol, timeframe, 2)
     if not candles:
         raise HTTPException(status_code=404, detail=f"No candle data for {symbol} · {timeframe}")
-    return candles[-1]
+    last = candles[-1]
+    if quote:
+        price = quote.mid
+        return Candle(
+            time=last.time,
+            open=last.open,
+            high=max(last.high, price),
+            low=min(last.low, price),
+            close=price,
+            volume=getattr(last, "volume", 0.0)
+        )
+    return last
 
 @router.get("/status", response_model=Dict[str, Any])
 async def get_market_status():

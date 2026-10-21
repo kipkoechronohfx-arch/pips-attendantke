@@ -186,7 +186,7 @@ async function getLiveQuotes() {
 
         if (oandaQuotes.length > 0) {
           cache.quotes.data = oandaQuotes;
-          cache.quotes.expiry = now + 2000; // cache for 2s
+          cache.quotes.expiry = now + 1000; // 1s cache for real-time updates
           return oandaQuotes;
         }
       }
@@ -435,12 +435,15 @@ router.get('/market/tick/:symbol(*)', async (req, res) => {
         const data = await resp.json();
         const lastC = data.candles && data.candles[data.candles.length - 1];
         if (lastC) {
+          const qList = cache.quotes?.data || [];
+          const liveQ = qList.find(q => q.symbol === cleanSym || q.symbol === rawSym);
+          const currentPrice = liveQ ? liveQ.mid : parseFloat(lastC.mid.c);
           return res.json({
             time: Math.floor(new Date(lastC.time).getTime() / 1000),
             open: parseFloat(lastC.mid.o),
-            high: parseFloat(lastC.mid.h),
-            low: parseFloat(lastC.mid.l),
-            close: parseFloat(lastC.mid.c),
+            high: Math.max(parseFloat(lastC.mid.h), currentPrice),
+            low: Math.min(parseFloat(lastC.mid.l), currentPrice),
+            close: currentPrice,
             volume: parseFloat(lastC.volume || 0)
           });
         }

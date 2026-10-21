@@ -264,10 +264,10 @@ export const App: React.FC = () => {
 
     connectWs();
 
-    // Polling fallback every 2.5s
+    // Polling fallback every 1.0s to ensure continuous 1-second updates
     fallbackInterval = setInterval(() => {
       api.getQuotes().then(setQuotes).catch(() => {});
-    }, 2500);
+    }, 1000);
 
     return () => {
       isUnmounted = true;

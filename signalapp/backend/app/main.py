@@ -65,7 +65,7 @@ async def market_data_broadcaster():
         except Exception:
             pass
         cycle += 1
-        await asyncio.sleep(2.0)
+        await asyncio.sleep(1.0)
 
 def init_seed_data():
     """Initializes default admin and seed trading signals if database is newly initialized"""

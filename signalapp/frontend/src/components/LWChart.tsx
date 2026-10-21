@@ -14,6 +14,7 @@ import {
 import { api } from '../services/api';
 import { TradingSignal } from '../types';
 import { Wifi, WifiOff } from 'lucide-react';
+import { useAppStore } from '../store/useAppStore';
 
 interface Props {
   symbol: string;
@@ -35,6 +36,7 @@ export const LWChart: React.FC<Props> = ({
   const candleSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
   const volSeriesRef = useRef<ISeriesApi<'Histogram'> | null>(null);
   const priceLinesRef = useRef<any[]>([]);
+  const lastCandleRef = useRef<CandlestickData | null>(null);
   const lastCandleTimeRef = useRef<number | null>(null);
   const [tf, setTf] = React.useState(initialTf);
   const [loading, setLoading] = React.useState(true);
@@ -42,6 +44,9 @@ export const LWChart: React.FC<Props> = ({
   const [isLive, setIsLive] = React.useState<boolean | null>(null);
   const [providerName, setProviderName] = React.useState('');
   const [lastTickAt, setLastTickAt] = React.useState<number | null>(null);
+
+  // Subscribe to live quote for this symbol from the global store
+  const liveQuote = useAppStore((s) => s.quotes[symbol]);
 
   // ── Sync timeframe prop if changed by parent ─────
   useEffect(() => {
@@ -177,6 +182,10 @@ export const LWChart: React.FC<Props> = ({
       volSeriesRef.current.setData(vol);
       chartRef.current?.timeScale().fitContent();
 
+      if (ohlc.length > 0) {
+        lastCandleRef.current = { ...ohlc[ohlc.length - 1] };
+      }
+
       // Clear previous price lines
       clearPriceLines();
 
@@ -193,9 +202,32 @@ export const LWChart: React.FC<Props> = ({
 
   useEffect(() => { loadCandles(); }, [loadCandles]);
 
-  // ── Live Tick Polling (2s) ─────────────────────────
-  // Uses series.update() on the last candle — much faster than setData().
-  // Only runs when a chart is mounted and candles are loaded.
+  // ── Reactive Store Quote Subscription (Instant sub-second tick reflection) ──
+  // Updates candle body, wicks, and right-scale price line whenever live interbank quotes arrive
+  useEffect(() => {
+    if (!liveQuote || !candleSeriesRef.current || !lastCandleRef.current) return;
+    const currentPrice = liveQuote.mid;
+    if (typeof currentPrice !== 'number' || isNaN(currentPrice) || currentPrice <= 0) return;
+
+    const prev = lastCandleRef.current;
+    const updatedCandle: CandlestickData = {
+      time: prev.time,
+      open: prev.open,
+      high: Math.max(prev.high, currentPrice),
+      low: Math.min(prev.low, currentPrice),
+      close: currentPrice,
+    };
+    lastCandleRef.current = updatedCandle;
+    try {
+      candleSeriesRef.current.update(updatedCandle);
+      setLastTickAt(Date.now());
+    } catch {
+      // ignore
+    }
+  }, [liveQuote]);
+
+  // ── Live Tick Polling (1s cadence) ────────────────
+  // Uses series.update() on the active candle and handles new candle creation
   useEffect(() => {
     if (loading || error) return;
 
@@ -205,13 +237,15 @@ export const LWChart: React.FC<Props> = ({
         const tick = await api.getLiveTick(symbol, tf);
         if (!tick) return;
         const t = tick.time as Time;
-        candleSeriesRef.current.update({
+        const candleData: CandlestickData = {
           time: t,
           open: tick.open,
           high: tick.high,
           low: tick.low,
           close: tick.close,
-        });
+        };
+        candleSeriesRef.current.update(candleData);
+        lastCandleRef.current = candleData;
         volSeriesRef.current.update({
           time: t,
           value: tick.volume,
@@ -222,7 +256,7 @@ export const LWChart: React.FC<Props> = ({
       } catch { /* silent — polling continues */ }
     };
 
-    const tickInterval = setInterval(applyTick, 2000);
+    const tickInterval = setInterval(applyTick, 1000);
     return () => clearInterval(tickInterval);
   }, [symbol, tf, loading, error]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -324,8 +358,18 @@ export const LWChart: React.FC<Props> = ({
               {isLive ? 'OANDA LIVE' : 'SIMULATED'}
             </span>
           )}
+          {/* Real-time live price ticker pill */}
+          {liveQuote && (
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-mono font-bold text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/25">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+              </span>
+              {liveQuote.mid}
+            </span>
+          )}
           {lastTickAt && isLive && (
-            <span className="text-[9px] text-slate-600 font-mono">
+            <span className="text-[9px] text-slate-500 font-mono">
               tick {new Date(lastTickAt).toLocaleTimeString()}
             </span>
           )}
