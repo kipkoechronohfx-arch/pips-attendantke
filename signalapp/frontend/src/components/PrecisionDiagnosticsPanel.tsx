@@ -305,9 +305,7 @@ export const PrecisionDiagnosticsPanel: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/v1/scanner/diagnostics?timeframe=${timeframeFilter}`);
-      if (!res.ok) throw new Error('Failed to load diagnostics');
-      const json = await res.json();
+      const json = await api.getDiagnostics(timeframeFilter);
       setData(Array.isArray(json) ? json : []);
       setLastRefreshed(new Date());
     } catch (e: any) {

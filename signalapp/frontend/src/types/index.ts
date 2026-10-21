@@ -394,3 +394,69 @@ export interface FullAnalysis {
   };
   generated_at: string;
 }
+
+export interface GateResults {
+  data_fresh?: boolean;
+  session_strategy?: boolean;
+  setup_valid?: boolean;
+  trigger_candle?: boolean;
+  entry_in_zone?: boolean;
+  stop_loss_valid?: boolean;
+  target_space?: boolean;
+  rr_after_costs?: boolean;
+  spread_volatility?: boolean;
+  news_conditions?: boolean;
+  no_duplicate?: boolean;
+}
+
+export interface EntryZone {
+  lower: number;
+  upper: number;
+  preferred: number;
+  current_bid: number;
+  current_ask: number;
+  max_deviation_pips: number;
+  current_deviation_pips: number;
+  is_within_zone: boolean;
+  executable_side: string;
+}
+
+export interface RiskData {
+  stop_loss: number;
+  stop_distance_pips: number;
+  take_profit_1: number;
+  take_profit_2: number;
+  take_profit_3: number;
+  target_distance_pips: number;
+  rr_ratio: number;
+  rr_after_costs: number;
+  opposing_liquidity_level: number | null;
+  distance_to_opposing_pips: number | null;
+}
+
+export interface DiagnosticEntry {
+  symbol: string;
+  lifecycle_state: string;
+  signal_valid: boolean;
+  direction: string | null;
+  timeframe: string;
+  strategy_profile: string | null;
+  market_regime: string;
+  context_score: number;
+  setup_score: number;
+  confidence: number;
+  setup_type: string | null;
+  has_trigger_candle: boolean;
+  entry_zone: EntryZone | null;
+  risk: RiskData | null;
+  spread_pips: number;
+  data_freshness_seconds: number;
+  setup_age_seconds: number | null;
+  expiry_time: string | null;
+  gate_results: GateResults;
+  rejection_codes: string[];
+  rejection_messages: string[];
+  technical_justification: string;
+  scanned_at: string;
+}
+

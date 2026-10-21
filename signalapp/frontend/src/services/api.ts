@@ -343,5 +343,11 @@ export const api = {
     if (!res.ok) return null;
     return res.json();
   },
+
+  async getDiagnostics(timeframe: string = 'H1'): Promise<import('../types').DiagnosticEntry[]> {
+    const res = await fetch(`${API_BASE}/scanner/diagnostics?timeframe=${encodeURIComponent(timeframe)}`);
+    if (!res.ok) return [];
+    return res.json();
+  },
 };
 

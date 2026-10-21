@@ -1,138 +1,217 @@
 import React, { useState, useEffect } from 'react';
 import { useAppStore } from '../store/useAppStore';
-import { Volume2, VolumeX, User as UserIcon, Clock, Keyboard } from 'lucide-react';
+import { api } from '../services/api';
+import { SessionState } from '../types';
+import {
+  Volume2,
+  VolumeX,
+  User as UserIcon,
+  Clock,
+  Keyboard,
+  Sun,
+  Moon,
+  Bell,
+  Cpu,
+  Layers,
+  Sparkles,
+  ArrowRight,
+  ShieldCheck,
+  CheckCircle2,
+} from 'lucide-react';
 
-function useEATClock() {
-  const [time, setTime] = useState('');
+function useClock() {
+  const [timeUtc, setTimeUtc] = useState('');
+  const [timeLocal, setTimeLocal] = useState('');
+
   useEffect(() => {
     const tick = () => {
       const now = new Date();
-      const eat = new Intl.DateTimeFormat('en-KE', {
-        timeZone: 'Africa/Nairobi',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
-      }).format(now);
-      setTime(eat);
+      setTimeUtc(
+        now.toLocaleTimeString('en-GB', {
+          timeZone: 'UTC',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+        })
+      );
+      setTimeLocal(
+        now.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+        })
+      );
     };
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, []);
-  return time;
+
+  return { timeUtc, timeLocal };
 }
 
 export const Navbar: React.FC = () => {
-  const { providerHealth, soundEnabled, toggleSound, user, setActiveTab, setShortcutsOpen } = useAppStore();
-  const eatTime = useEATClock();
+  const {
+    providerHealth,
+    soundEnabled,
+    toggleSound,
+    darkMode,
+    toggleDarkMode,
+    user,
+    setActiveTab,
+    setShortcutsOpen,
+    quotes,
+  } = useAppStore();
+
+  const { timeUtc, timeLocal } = useClock();
+  const [sessionState, setSessionState] = useState<SessionState | null>(null);
+  const [lastQuoteTime, setLastQuoteTime] = useState<number>(Date.now());
+  const [secondsAgo, setSecondsAgo] = useState(0);
+
+  // Fetch session state
+  useEffect(() => {
+    api.getSessionState().then(setSessionState).catch(() => {});
+    const interval = setInterval(() => {
+      api.getSessionState().then(setSessionState).catch(() => {});
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Track quote update time
+  useEffect(() => {
+    setLastQuoteTime(Date.now());
+  }, [quotes]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSecondsAgo(Math.max(0, Math.floor((Date.now() - lastQuoteTime) / 1000)));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [lastQuoteTime]);
+
+  const activeSessionName = sessionState?.primary_session?.name || 'LONDON / NY OVERLAP';
+  const nextSession = sessionState?.next_session;
 
   return (
-    <header className="h-[68px] bg-black/35 backdrop-blur-2xl border-b border-white/[0.08] sticky top-0 z-50 flex items-center shadow-[0_4px_30px_rgba(0,0,0,0.4)]">
-      <div className="max-w-[1680px] w-full mx-auto flex items-center justify-between gap-3 px-3 sm:px-5 lg:px-6">
-        {/* ── Brand & Back to Home ─────────────────────── */}
+    <header className="h-[64px] bg-[#070b16]/90 backdrop-blur-2xl border-b border-white/[0.08] sticky top-0 z-40 flex items-center shadow-[0_4px_30px_rgba(0,0,0,0.4)]">
+      <div className="max-w-[1720px] w-full mx-auto flex items-center justify-between gap-3 px-3 sm:px-5 lg:px-6">
+        {/* ── Brand & Navigation ── */}
         <div className="flex items-center gap-3 shrink-0">
           <a
             href="/"
-            title="Return to Pips Attendant Home"
-            className="px-2.5 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.10] border border-white/10 hover:border-amber-400/40 text-slate-300 hover:text-white text-xs font-semibold transition-all flex items-center gap-1.5 shrink-0 shadow-sm"
+            title="Return to Landing Page"
+            className="px-2.5 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-300 hover:text-white text-xs font-mono font-semibold transition-all flex items-center gap-1.5 shrink-0"
           >
             <span>←</span>
-            <span className="hidden sm:inline">Pips Attendant</span>
+            <span className="hidden sm:inline">Landing</span>
           </a>
 
           <div
             onClick={() => setActiveTab('dashboard')}
-            className="flex items-center gap-3 cursor-pointer group shrink-0"
+            className="flex items-center gap-2.5 cursor-pointer group shrink-0"
           >
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-mono font-black text-sm shadow-md shadow-cyan-500/20">
+              PA
+            </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-[16px] sm:text-[18px] font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-amber-200 leading-none">
-                  Signal Center
-                </h1>
-                <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 tracking-wider uppercase flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  Live Desk
+                <span className="text-sm sm:text-base font-black tracking-tight text-white font-mono leading-none">
+                  PIPS ATTENDANT
+                </span>
+                <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400 uppercase tracking-widest hidden sm:inline">
+                  TERMINAL
                 </span>
               </div>
-              <p className="text-[10px] text-slate-400 font-medium mt-0.5 tracking-wide flex items-center gap-1.5">
-                <span className="hidden xl:inline">Institutional Quantitative Confluence &amp; Market Intelligence</span>
-                <span className="hidden sm:inline xl:hidden">Live Interbank Execution</span>
+              <p className="text-[10px] text-slate-400 font-mono mt-0.5">
+                Institutional Confluence Scanner
               </p>
             </div>
           </div>
         </div>
 
-        {/* ── Center Status ─────────────────────────────── */}
-        <div className="hidden xl:flex items-center gap-2.5 shrink-0">
-          {/* Live / Simulated badge */}
-          <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] sm:text-[11px] font-mono font-bold tracking-wider uppercase border transition-all ${
-            providerHealth?.is_live
-              ? 'bg-emerald-500/[0.08] border-emerald-500/30 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)]'
-              : 'bg-amber-500/[0.08] border-amber-500/25 text-amber-400'
-          }`}>
+        {/* ── Center Session & Clock Status ── */}
+        <div className="hidden lg:flex items-center gap-3 shrink-0 font-mono text-xs">
+          {/* Active Session Pill */}
+          <div className="flex items-center gap-2 bg-[#0a1122] border border-white/10 px-3 py-1.5 rounded-xl shadow-inner">
             <span className="relative flex h-2 w-2">
-              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                providerHealth?.is_live ? 'bg-emerald-400' : 'bg-amber-400'
-              }`} />
-              <span className={`relative inline-flex rounded-full h-2 w-2 ${
-                providerHealth?.is_live ? 'bg-emerald-500' : 'bg-amber-500'
-              }`} />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
             </span>
-            <span>{providerHealth?.is_live ? 'OANDA LIVE INTERBANK' : 'SIMULATED ENGINE'}</span>
-            {providerHealth?.latency_ms ? (
-              <span className="text-[9px] text-slate-400 font-mono border-l border-white/10 pl-2">
-                {providerHealth.latency_ms}ms
+            <span className="text-slate-400 text-[10px] uppercase font-bold">Session:</span>
+            <span className="text-emerald-400 font-bold uppercase">{activeSessionName}</span>
+            {nextSession && nextSession.countdown_label && (
+              <span className="text-slate-500 text-[10px] border-l border-white/10 pl-2">
+                {nextSession.name} in {Math.round(nextSession.minutes_to_open / 60)}h
               </span>
-            ) : null}
+            )}
           </div>
 
-          {/* EAT Live Clock */}
-          <div className="hidden xl:flex items-center gap-1.5 bg-black/40 border border-white/[0.09] px-3 py-1.5 rounded-xl text-[11px] font-mono shadow-inner">
-            <Clock size={12} className="text-amber-400" />
-            <span className="text-slate-400 font-bold text-[10px]">EAT</span>
-            <span className="text-amber-300 font-bold tabular-nums tracking-widest">{eatTime}</span>
+          {/* Dual Clock (Local & UTC) */}
+          <div className="flex items-center gap-2 bg-[#0a1122] border border-white/10 px-3 py-1.5 rounded-xl shadow-inner text-slate-300">
+            <Clock size={12} className="text-cyan-400" />
+            <span className="text-[10px] text-slate-400">UTC</span>
+            <span className="text-white font-bold tabular-nums">{timeUtc}</span>
+            <span className="text-slate-600">·</span>
+            <span className="text-[10px] text-slate-400">LOC</span>
+            <span className="text-cyan-300 font-bold tabular-nums">{timeLocal}</span>
+          </div>
+
+          {/* Connection Status & Last Update */}
+          <div className="flex items-center gap-2 bg-[#0a1122] border border-white/10 px-3 py-1.5 rounded-xl shadow-inner text-[11px]">
+            <span className={`w-1.5 h-1.5 rounded-full ${providerHealth?.is_live ? 'bg-emerald-400' : 'bg-cyan-400'}`} />
+            <span className="text-slate-300 font-bold">
+              {providerHealth?.is_live ? 'LIVE FEED' : 'SIMULATED'}
+            </span>
+            <span className="text-slate-500 border-l border-white/10 pl-2 text-[10px]">
+              {secondsAgo < 5 ? 'Just now' : `${secondsAgo}s ago`}
+            </span>
           </div>
         </div>
 
-        {/* ── Right Controls ────────────────────────────── */}
+        {/* ── Right Controls ── */}
         <div className="flex items-center gap-2 shrink-0">
-          {/* Sound Toggle */}
+          {/* Sound Mute/Unmute */}
           <button
             onClick={toggleSound}
             title={soundEnabled ? 'Mute Alert Audio' : 'Unmute Alert Audio'}
-            className={`p-2 rounded-xl border transition-all duration-200 cursor-pointer ${
+            className={`p-2 rounded-xl border transition-all ${
               soundEnabled
-                ? 'bg-amber-500/10 border-amber-500/35 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.18)] hover:bg-amber-500/20'
-                : 'bg-[#090f1d] border-white/[0.08] text-slate-400 hover:text-slate-200 hover:border-white/20'
+                ? 'bg-cyan-500/15 border-cyan-500/35 text-cyan-300'
+                : 'bg-[#0a1122] border-white/10 text-slate-400 hover:text-white'
             }`}
           >
             {soundEnabled ? <Volume2 size={15} /> : <VolumeX size={15} />}
           </button>
 
-          {/* Keyboard Shortcuts Cheat Sheet */}
+          {/* Dark / Light Mode Toggle */}
+          <button
+            onClick={toggleDarkMode}
+            title={darkMode ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+            className="p-2 rounded-xl border bg-[#0a1122] border-white/10 text-slate-400 hover:text-cyan-300 hover:border-cyan-400/40 transition-all"
+          >
+            {darkMode ? <Sun size={15} /> : <Moon size={15} />}
+          </button>
+
+          {/* Keyboard Shortcuts (?) */}
           <button
             onClick={() => setShortcutsOpen(true)}
             title="Keyboard Shortcuts (?)"
-            className="hidden sm:flex p-2 rounded-xl border bg-[#090f1d] border-white/[0.08] text-slate-400 hover:text-amber-300 hover:border-amber-400/35 hover:bg-amber-400/[0.05] transition-all duration-200 cursor-pointer"
+            className="hidden sm:flex p-2 rounded-xl border bg-[#0a1122] border-white/10 text-slate-400 hover:text-cyan-300 hover:border-cyan-400/40 transition-all"
           >
             <Keyboard size={15} />
           </button>
 
-          {/* User / Auth Button */}
+          {/* User Account Button */}
           <button
             onClick={() => setActiveTab('profile')}
-            className="flex items-center gap-2 bg-[#090f1d] hover:bg-[#101b33] border border-white/[0.09] hover:border-amber-400/40 text-slate-200 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-200 shadow-sm shrink-0"
+            className="flex items-center gap-2 bg-[#0a1122] hover:bg-[#101b33] border border-white/10 hover:border-cyan-400/40 text-slate-200 px-3 py-1.5 rounded-xl text-xs font-mono font-semibold transition-all shadow-sm"
           >
-            <UserIcon size={14} className="text-amber-400 shrink-0" />
-            <span className="max-w-[120px] truncate">
+            <UserIcon size={14} className="text-cyan-400 shrink-0" />
+            <span className="max-w-[100px] truncate hidden sm:inline">
               {user ? (user.full_name || user.email) : 'Account'}
             </span>
-            {user?.role && user.role !== 'USER' && (
-              <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/25 tracking-wider uppercase shrink-0">
-                {user.role}
-              </span>
-            )}
           </button>
         </div>
       </div>

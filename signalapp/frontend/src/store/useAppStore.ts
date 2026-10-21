@@ -5,17 +5,19 @@ import { soundFx } from '../services/audio';
 
 export type AppTab =
   | 'dashboard'
+  | 'scanner'
   | 'signals'
   | 'charts'
+  | 'history'
+  | 'performance'
+  | 'risk'
   | 'news'
   | 'calendar'
-  | 'risk'
-  | 'history'
   | 'watchlist'
-  | 'admin'
+  | 'broker-vault'
   | 'profile'
   | 'privacy'
-  | 'broker-vault';
+  | 'admin';
 
 export interface ToastItem {
   id: string;
@@ -90,6 +92,22 @@ interface AppState {
   // ── Shortcuts Modal ───────────────────────────
   shortcutsOpen: boolean;
   setShortcutsOpen: (open: boolean) => void;
+
+  // ── Terminal UI State & Favorites ──────────────
+  favorites: string[];
+  toggleFavorite: (symbol: string) => void;
+
+  selectedAnalysisSymbol: string | null;
+  setSelectedAnalysisSymbol: (sym: string | null) => void;
+
+  sidebarCollapsed: boolean;
+  toggleSidebar: () => void;
+
+  userTimezone: string;
+  setUserTimezone: (tz: string) => void;
+
+  activeSession: string | null;
+  setActiveSession: (session: string | null) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -100,6 +118,29 @@ export const useAppStore = create<AppState>()(
 
       selectedSymbol: 'EUR/USD',
       setSelectedSymbol: (symbol) => set({ selectedSymbol: symbol }),
+
+      favorites: ['EUR/USD', 'GBP/USD', 'XAU/USD', 'USD/JPY'],
+      toggleFavorite: (symbol) =>
+        set((state) => {
+          const exists = state.favorites.includes(symbol);
+          return {
+            favorites: exists
+              ? state.favorites.filter((s) => s !== symbol)
+              : [...state.favorites, symbol],
+          };
+        }),
+
+      selectedAnalysisSymbol: null,
+      setSelectedAnalysisSymbol: (selectedAnalysisSymbol) => set({ selectedAnalysisSymbol }),
+
+      sidebarCollapsed: false,
+      toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
+
+      userTimezone: typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone || 'Africa/Nairobi' : 'Africa/Nairobi',
+      setUserTimezone: (userTimezone) => set({ userTimezone }),
+
+      activeSession: null,
+      setActiveSession: (activeSession) => set({ activeSession }),
 
       // ── Quotes ─────────────────────────────────
       quotes: {},
@@ -222,6 +263,9 @@ export const useAppStore = create<AppState>()(
         selectedSymbol: s.selectedSymbol,
         authToken: s.authToken,
         notificationsGranted: s.notificationsGranted,
+        favorites: s.favorites,
+        sidebarCollapsed: s.sidebarCollapsed,
+        userTimezone: s.userTimezone,
       }),
     }
   )

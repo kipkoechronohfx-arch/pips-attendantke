@@ -13,11 +13,14 @@ import { Sidebar } from './components/Sidebar';
 import { ToastContainer } from './components/ToastContainer';
 import { PWAInstallBanner } from './components/PWAInstallBanner';
 import { ShortcutsModal } from './components/ShortcutsModal';
+import { DetailedAnalysisDrawer } from './components/DetailedAnalysisDrawer';
 
 // Pages
 import { DashboardPage } from './pages/DashboardPage';
+import { ScannerPage } from './pages/ScannerPage';
 import { SignalsPage } from './pages/SignalsPage';
 import { ChartsPage } from './pages/ChartsPage';
+import { PerformancePage } from './pages/PerformancePage';
 import { NewsPage } from './pages/NewsPage';
 import { CalendarPage } from './pages/CalendarPage';
 import { RiskPage } from './pages/RiskPage';
@@ -29,7 +32,7 @@ import { PrivacyPage } from './pages/PrivacyPage';
 import { BrokerVaultPage } from './pages/BrokerVaultPage';
 
 // Mobile nav icons
-import { LayoutDashboard, Zap, LineChart, Calculator, User } from 'lucide-react';
+import { LayoutDashboard, Cpu, Zap, LineChart, User } from 'lucide-react';
 
 // ── Page transition wrapper ──────────────────────────────────
 const PageWrapper: React.FC<{ children: React.ReactNode; tabKey: string }> = ({ children, tabKey }) => (
@@ -84,7 +87,7 @@ export const App: React.FC = () => {
         } else {
           setActiveTab('dashboard');
         }
-      } else if (['dashboard', 'signals', 'charts', 'news', 'calendar', 'risk', 'history', 'watchlist', 'profile', 'privacy', 'broker-vault'].includes(hash)) {
+      } else if (['dashboard', 'scanner', 'signals', 'charts', 'history', 'performance', 'news', 'calendar', 'risk', 'watchlist', 'profile', 'privacy', 'broker-vault'].includes(hash)) {
         setActiveTab(hash as any);
       }
     };
@@ -308,28 +311,30 @@ export const App: React.FC = () => {
         <div className="flex-1 flex w-full max-w-[1680px] mx-auto min-w-0">
         <Sidebar />
         <main className="flex-1 min-w-0 p-3 sm:p-5 lg:p-6 pb-24">
-          {activeTab === 'dashboard' && <PageWrapper tabKey="dashboard"><DashboardPage /></PageWrapper>}
-          {activeTab === 'signals'   && <PageWrapper tabKey="signals"><SignalsPage /></PageWrapper>}
-          {activeTab === 'charts'    && <PageWrapper tabKey="charts"><ChartsPage /></PageWrapper>}
-          {activeTab === 'news'      && <PageWrapper tabKey="news"><NewsPage /></PageWrapper>}
-          {activeTab === 'calendar'  && <PageWrapper tabKey="calendar"><CalendarPage /></PageWrapper>}
-          {activeTab === 'risk'      && <PageWrapper tabKey="risk"><RiskPage /></PageWrapper>}
-          {activeTab === 'history'   && <PageWrapper tabKey="history"><HistoryPage /></PageWrapper>}
-          {activeTab === 'watchlist' && <PageWrapper tabKey="watchlist"><WatchlistPage /></PageWrapper>}
-          {activeTab === 'admin'     && <PageWrapper tabKey="admin"><AdminPage /></PageWrapper>}
-          {activeTab === 'profile'   && <PageWrapper tabKey="profile"><ProfilePage /></PageWrapper>}
-          {activeTab === 'privacy'      && <PageWrapper tabKey="privacy"><PrivacyPage /></PageWrapper>}
-          {activeTab === 'broker-vault' && <PageWrapper tabKey="broker-vault"><BrokerVaultPage /></PageWrapper>}
+          {activeTab === 'dashboard'   && <PageWrapper tabKey="dashboard"><DashboardPage /></PageWrapper>}
+          {activeTab === 'scanner'     && <PageWrapper tabKey="scanner"><ScannerPage /></PageWrapper>}
+          {activeTab === 'signals'     && <PageWrapper tabKey="signals"><SignalsPage /></PageWrapper>}
+          {activeTab === 'charts'      && <PageWrapper tabKey="charts"><ChartsPage /></PageWrapper>}
+          {activeTab === 'history'     && <PageWrapper tabKey="history"><HistoryPage /></PageWrapper>}
+          {activeTab === 'performance' && <PageWrapper tabKey="performance"><PerformancePage /></PageWrapper>}
+          {activeTab === 'risk'        && <PageWrapper tabKey="risk"><RiskPage /></PageWrapper>}
+          {activeTab === 'news'        && <PageWrapper tabKey="news"><NewsPage /></PageWrapper>}
+          {activeTab === 'calendar'    && <PageWrapper tabKey="calendar"><CalendarPage /></PageWrapper>}
+          {activeTab === 'watchlist'   && <PageWrapper tabKey="watchlist"><WatchlistPage /></PageWrapper>}
+          {activeTab === 'admin'       && <PageWrapper tabKey="admin"><AdminPage /></PageWrapper>}
+          {activeTab === 'profile'     && <PageWrapper tabKey="profile"><ProfilePage /></PageWrapper>}
+          {activeTab === 'privacy'     && <PageWrapper tabKey="privacy"><PrivacyPage /></PageWrapper>}
+          {activeTab === 'broker-vault'&& <PageWrapper tabKey="broker-vault"><BrokerVaultPage /></PageWrapper>}
         </main>
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-16 safe-bottom bg-[#070c1a]/98 backdrop-blur-xl border-t border-white/[0.07] z-50 flex items-center justify-around px-1">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-16 safe-bottom bg-[#070c1a]/98 backdrop-blur-xl border-t border-white/[0.07] z-50 flex items-center justify-around px-1 font-mono">
         {([
           { id: 'dashboard', label: 'Overview', Icon: LayoutDashboard },
-          { id: 'signals',   label: 'Signals',  Icon: Zap },
+          { id: 'scanner',   label: 'Scanner',  Icon: Cpu },
           { id: 'charts',    label: 'Charts',   Icon: LineChart },
-          { id: 'risk',      label: 'Risk',     Icon: Calculator },
+          { id: 'signals',   label: 'Signals',  Icon: Zap },
           { id: 'profile',   label: 'Account',  Icon: User },
         ] as const).map(({ id, label, Icon }) => {
           const isActive = activeTab === id;
@@ -340,11 +345,11 @@ export const App: React.FC = () => {
                 setActiveTab(id);
                 if ('vibrate' in navigator) navigator.vibrate(15);
               }}
-              className={`relative flex flex-col items-center gap-0.5 py-1.5 px-4 rounded-xl text-[9px] font-bold tracking-wider uppercase transition-all duration-150 ${
+              className={`relative flex flex-col items-center gap-0.5 py-1.5 px-3 rounded-xl text-[9px] font-bold tracking-wider uppercase transition-all duration-150 ${
                 isActive ? 'text-cyan-400 mobile-nav-active' : 'text-slate-500 hover:text-slate-300'
               }`}
             >
-              <Icon size={19} strokeWidth={isActive ? 2.2 : 1.8} />
+              <Icon size={18} strokeWidth={isActive ? 2.2 : 1.8} />
               <span>{label}</span>
             </button>
           );
@@ -352,6 +357,7 @@ export const App: React.FC = () => {
       </nav>
 
       {/* Overlays & Modals */}
+      <DetailedAnalysisDrawer />
       <ToastContainer />
       <PWAInstallBanner />
       <ShortcutsModal />
