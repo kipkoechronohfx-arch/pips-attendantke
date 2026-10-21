@@ -47,6 +47,15 @@ class OandaDataProvider(MarketDataProvider):
         # 24h High/Low cache (refreshed every 60s from D1 candle)
         self._h24_cache: Dict[str, tuple[float, float, float]] = {}  # symbol -> (high, low, open)
         self._h24_fetch_ts: float = 0.0
+        self._client: Optional[httpx.AsyncClient] = None
+
+    def _get_client(self) -> httpx.AsyncClient:
+        if self._client is None or self._client.is_closed:
+            self._client = httpx.AsyncClient(
+                timeout=httpx.Timeout(10.0, connect=5.0),
+                limits=httpx.Limits(max_keepalive_connections=25, max_connections=50)
+            )
+        return self._client
 
     @property
     def provider_name(self) -> str:
@@ -113,9 +122,9 @@ class OandaDataProvider(MarketDataProvider):
         if self._cached_quotes and (now - self._last_quotes_fetch < 1.5):
             return list(self._cached_quotes.values())
 
-        # Refresh real 24h stats in background (non-blocking cache)
+        # Refresh real 24h stats in background (non-blocking)
         try:
-            await self._refresh_24h_stats()
+            asyncio.create_task(self._refresh_24h_stats())
         except Exception:
             pass
 
@@ -123,17 +132,17 @@ class OandaDataProvider(MarketDataProvider):
         url = f"{self.base_url}/accounts/{self.account_id}/pricing?instruments={instruments}"
 
         try:
-            async with httpx.AsyncClient(timeout=5.0) as client:
-                res = await client.get(url, headers=self._headers())
-                if res.status_code == 200:
-                    data = res.json()
-                    prices = data.get("prices", [])
-                    new_quotes = []
-                    for item in prices:
-                        inst = item.get("instrument")
-                        sym = REV_SYMBOL_MAP.get(inst)
-                        if not sym:
-                            continue
+            client = self._get_client()
+            res = await client.get(url, headers=self._headers())
+            if res.status_code == 200:
+                data = res.json()
+                prices = data.get("prices", [])
+                new_quotes = []
+                for item in prices:
+                    inst = item.get("instrument")
+                    sym = REV_SYMBOL_MAP.get(inst)
+                    if not sym:
+                        continue
 
                         bids = item.get("bids", [])
                         asks = item.get("asks", [])
@@ -231,37 +240,37 @@ class OandaDataProvider(MarketDataProvider):
 
         candles = []
         try:
-            async with httpx.AsyncClient(timeout=6.0) as client:
-                res = await client.get(
-                    url,
-                    headers=self._headers(),
-                    params={
-                        "granularity": granularity,
-                        "count": count,
-                        "price": "M"
-                    }
-                )
-                if res.status_code == 200:
-                    data = res.json()
-                    for c in data.get("candles", []):
-                        iso_str = c["time"]
-                        dt = datetime.fromisoformat(iso_str.replace("Z", "+00:00"))
-                        t = int(dt.timestamp())
-                        mid = c["mid"]
-                        candles.append(Candle(
-                            time=t,
-                            open=float(mid["o"]),
-                            high=float(mid["h"]),
-                            low=float(mid["l"]),
-                            close=float(mid["c"]),
-                            volume=float(c.get("volume", 0.0))
-                        ))
-                    if candles:
-                        old_cached = self._candle_cache.get(cache_key)
-                        if not old_cached or len(candles) >= len(old_cached[1]):
-                            self._candle_cache[cache_key] = (now, candles)
-                else:
-                    logger.warning(f"[OANDA] get_candles {url} returned {res.status_code}: {res.text[:200]}")
+            client = self._get_client()
+            res = await client.get(
+                url,
+                headers=self._headers(),
+                params={
+                    "granularity": granularity,
+                    "count": count,
+                    "price": "M"
+                }
+            )
+            if res.status_code == 200:
+                data = res.json()
+                for c in data.get("candles", []):
+                    iso_str = c["time"]
+                    dt = datetime.fromisoformat(iso_str.replace("Z", "+00:00"))
+                    t = int(dt.timestamp())
+                    mid = c["mid"]
+                    candles.append(Candle(
+                        time=t,
+                        open=float(mid["o"]),
+                        high=float(mid["h"]),
+                        low=float(mid["l"]),
+                        close=float(mid["c"]),
+                        volume=float(c.get("volume", 0.0))
+                    ))
+                if candles:
+                    old_cached = self._candle_cache.get(cache_key)
+                    if not old_cached or len(candles) >= len(old_cached[1]):
+                        self._candle_cache[cache_key] = (now, candles)
+            else:
+                logger.warning(f"[OANDA] get_candles {url} returned {res.status_code}: {res.text[:200]}")
         except Exception as e:
             logger.error(f"[OANDA] get_candles error for {symbol}: {e}")
 

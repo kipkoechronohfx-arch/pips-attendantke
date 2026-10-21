@@ -12,6 +12,7 @@ Endpoints:
   GET  /scanner/diagnostics         — precision diagnostics panel for all instruments
 """
 
+import asyncio
 from fastapi import APIRouter, Query
 from typing import List, Optional
 from datetime import datetime, timezone, timedelta
@@ -459,7 +460,7 @@ async def get_symbol_regime(symbol: str):
 @router.get("/diagnostics")
 async def get_precision_diagnostics(timeframe: str = Query("H1")):
     """
-    Runs the full precision pipeline for all tracked instruments and returns
+    Runs the full precision pipeline for all tracked instruments concurrently and returns
     the diagnostics panel data for the frontend.
     Each entry shows lifecycle state, scores, gate pass/fail, entry zone, etc.
     """
@@ -467,75 +468,84 @@ async def get_precision_diagnostics(timeframe: str = Query("H1")):
         "EUR/USD", "GBP/USD", "USD/JPY", "XAU/USD",
         "GBP/JPY", "USD/CHF", "AUD/USD", "USD/CAD", "BTC/USD",
     ]
-    results = []
-    for sym in instruments:
-        quote   = await market_data_manager.get_quote(sym)
-        candles = await market_data_manager.get_candles(sym, timeframe=timeframe, count=100)
-        if not quote or not candles or len(candles) < 20:
-            results.append({
+
+    async def scan_single(sym: str) -> dict:
+        try:
+            quote, candles = await asyncio.gather(
+                market_data_manager.get_quote(sym),
+                market_data_manager.get_candles(sym, timeframe=timeframe, count=100)
+            )
+            if not quote or not candles or len(candles) < 20:
+                return {
+                    "symbol": sym,
+                    "lifecycle_state": "NO_TRADE",
+                    "reason": "Insufficient market data",
+                }
+
+            result = run_precision_pipeline(sym, timeframe, candles, quote)
+
+            entry_zone = None
+            if result.entry_zone:
+                ez = result.entry_zone
+                entry_zone = {
+                    "lower": ez.lower,
+                    "upper": ez.upper,
+                    "preferred": ez.preferred,
+                    "current_bid": ez.current_bid,
+                    "current_ask": ez.current_ask,
+                    "max_deviation_pips": ez.max_deviation_pips,
+                    "current_deviation_pips": ez.current_deviation_pips,
+                    "is_within_zone": ez.is_within_zone,
+                    "executable_side": ez.executable_side,
+                }
+
+            risk = None
+            if result.risk_levels:
+                rl = result.risk_levels
+                risk = {
+                    "stop_loss": rl.stop_loss,
+                    "stop_distance_pips": rl.stop_distance_pips,
+                    "take_profit_1": rl.take_profit_1,
+                    "take_profit_2": rl.take_profit_2,
+                    "take_profit_3": rl.take_profit_3,
+                    "target_distance_pips": rl.target_distance_pips,
+                    "rr_ratio": rl.rr_ratio,
+                    "rr_after_costs": rl.rr_after_costs,
+                    "opposing_liquidity_level": rl.opposing_liquidity_level,
+                    "distance_to_opposing_pips": rl.distance_to_opposing_pips,
+                }
+
+            return {
+                "symbol": sym,
+                "lifecycle_state": result.lifecycle_state,
+                "signal_valid": result.signal_valid,
+                "direction": result.direction,
+                "timeframe": timeframe,
+                "strategy_profile": result.strategy_profile,
+                "market_regime": result.market_regime,
+                "context_score": result.context_score,
+                "setup_score": result.setup_score,
+                "confidence": result.confidence,
+                "setup_type": result.setup_type,
+                "has_trigger_candle": result.has_trigger_candle,
+                "entry_zone": entry_zone,
+                "risk": risk,
+                "spread_pips": result.spread_pips,
+                "data_freshness_seconds": result.data_freshness_seconds,
+                "setup_age_seconds": result.setup_age_seconds,
+                "expiry_time": result.expiry_time.isoformat() if result.expiry_time else None,
+                "gate_results": result.gate_results,
+                "rejection_codes": result.rejection_codes,
+                "rejection_messages": result.rejection_messages,
+                "technical_justification": result.technical_justification,
+                "scanned_at": datetime.now(timezone.utc).isoformat(),
+            }
+        except Exception as e:
+            return {
                 "symbol": sym,
                 "lifecycle_state": "NO_TRADE",
-                "reason": "Insufficient market data",
-            })
-            continue
-
-        result = run_precision_pipeline(sym, timeframe, candles, quote)
-
-        entry_zone = None
-        if result.entry_zone:
-            ez = result.entry_zone
-            entry_zone = {
-                "lower": ez.lower,
-                "upper": ez.upper,
-                "preferred": ez.preferred,
-                "current_bid": ez.current_bid,
-                "current_ask": ez.current_ask,
-                "max_deviation_pips": ez.max_deviation_pips,
-                "current_deviation_pips": ez.current_deviation_pips,
-                "is_within_zone": ez.is_within_zone,
-                "executable_side": ez.executable_side,
+                "reason": f"Scan error: {str(e)}",
             }
 
-        risk = None
-        if result.risk_levels:
-            rl = result.risk_levels
-            risk = {
-                "stop_loss": rl.stop_loss,
-                "stop_distance_pips": rl.stop_distance_pips,
-                "take_profit_1": rl.take_profit_1,
-                "take_profit_2": rl.take_profit_2,
-                "take_profit_3": rl.take_profit_3,
-                "target_distance_pips": rl.target_distance_pips,
-                "rr_ratio": rl.rr_ratio,
-                "rr_after_costs": rl.rr_after_costs,
-                "opposing_liquidity_level": rl.opposing_liquidity_level,
-                "distance_to_opposing_pips": rl.distance_to_opposing_pips,
-            }
-
-        results.append({
-            "symbol": sym,
-            "lifecycle_state": result.lifecycle_state,
-            "signal_valid": result.signal_valid,
-            "direction": result.direction,
-            "timeframe": timeframe,
-            "strategy_profile": result.strategy_profile,
-            "market_regime": result.market_regime,
-            "context_score": result.context_score,
-            "setup_score": result.setup_score,
-            "confidence": result.confidence,
-            "setup_type": result.setup_type,
-            "has_trigger_candle": result.has_trigger_candle,
-            "entry_zone": entry_zone,
-            "risk": risk,
-            "spread_pips": result.spread_pips,
-            "data_freshness_seconds": result.data_freshness_seconds,
-            "setup_age_seconds": result.setup_age_seconds,
-            "expiry_time": result.expiry_time.isoformat() if result.expiry_time else None,
-            "gate_results": result.gate_results,
-            "rejection_codes": result.rejection_codes,
-            "rejection_messages": result.rejection_messages,
-            "technical_justification": result.technical_justification,
-            "scanned_at": datetime.now(timezone.utc).isoformat(),
-        })
-
-    return results
+    results = await asyncio.gather(*[scan_single(s) for s in instruments])
+    return list(results)
