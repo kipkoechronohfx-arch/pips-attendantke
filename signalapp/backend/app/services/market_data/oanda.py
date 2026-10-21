@@ -1,8 +1,11 @@
 import asyncio
 import httpx
+import logging
 import time
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone
+
+logger = logging.getLogger("market_data.oanda")
 from app.services.market_data.base import MarketDataProvider
 from app.schemas.market import Quote, Candle, ProviderHealth
 
@@ -210,9 +213,9 @@ class OandaDataProvider(MarketDataProvider):
 
         if cache_key in self._candle_cache:
             ts, cached = self._candle_cache[cache_key]
-            if now - ts < cache_ttl:
+            if (now - ts < cache_ttl) and len(cached) >= count:
                 # Inject live tick into the last (current) open candle
-                return self._inject_live_tick(symbol, cached)
+                return self._inject_live_tick(symbol, cached[-count:])
 
         oanda_sym = SYMBOL_MAP.get(symbol, symbol.replace("/", "_"))
         tf_map = {
@@ -235,8 +238,7 @@ class OandaDataProvider(MarketDataProvider):
                     params={
                         "granularity": granularity,
                         "count": count,
-                        "price": "M",
-                        "includeFirst": "true"
+                        "price": "M"
                     }
                 )
                 if res.status_code == 200:
@@ -255,9 +257,13 @@ class OandaDataProvider(MarketDataProvider):
                             volume=float(c.get("volume", 0.0))
                         ))
                     if candles:
-                        self._candle_cache[cache_key] = (now, candles)
-        except Exception:
-            pass
+                        old_cached = self._candle_cache.get(cache_key)
+                        if not old_cached or len(candles) >= len(old_cached[1]):
+                            self._candle_cache[cache_key] = (now, candles)
+                else:
+                    logger.warning(f"[OANDA] get_candles {url} returned {res.status_code}: {res.text[:200]}")
+        except Exception as e:
+            logger.error(f"[OANDA] get_candles error for {symbol}: {e}")
 
         return self._inject_live_tick(symbol, candles) if candles else candles
 
@@ -266,7 +272,8 @@ class OandaDataProvider(MarketDataProvider):
         so the chart body animates tick-by-tick without waiting for a full poll cycle."""
         if not candles:
             return candles
-        live_quote = self._cached_quotes.get(symbol)
+        norm_sym = symbol.replace("_", "/")
+        live_quote = self._cached_quotes.get(symbol) or self._cached_quotes.get(norm_sym)
         if not live_quote:
             return candles
 
