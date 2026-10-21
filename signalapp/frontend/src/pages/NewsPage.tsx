@@ -1,177 +1,302 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { api } from '../services/api';
-import { ExternalLink, TrendingUp, TrendingDown, MinusCircle, Newspaper, RefreshCw } from 'lucide-react';
+import { NewsArticle } from '../types';
+import {
+  ExternalLink,
+  TrendingUp,
+  TrendingDown,
+  MinusCircle,
+  Newspaper,
+  RefreshCw,
+  Search,
+  Clock,
+  Sparkles,
+  Filter,
+  CheckCircle2,
+  Globe,
+} from 'lucide-react';
 
 export const NewsPage: React.FC = () => {
   const { news, setNews } = useAppStore();
   const [currencyFilter, setCurrencyFilter] = useState('ALL');
+  const [sentimentFilter, setSentimentFilter] = useState('ALL');
+  const [search, setSearch] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
+  const [nowSec, setNowSec] = useState<number>(Date.now());
+
+  // Update relative time counter every 10 seconds
+  useEffect(() => {
+    const timer = setInterval(() => setNowSec(Date.now()), 10000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
       const fresh = await api.getNews('ALL', true);
-      setNews(fresh);
+      if (Array.isArray(fresh) && fresh.length > 0) {
+        setNews(fresh);
+      }
       setLastRefreshed(new Date());
     } catch {
-      // fail silently
+      // Keep existing cache on error
     } finally {
       setIsRefreshing(false);
     }
   }, [setNews]);
 
-  const filtered = news.filter((item) => {
-    if (currencyFilter === 'ALL') return true;
-    return item.affected_currencies.includes(currencyFilter);
-  });
+  // Initial fetch if empty
+  useEffect(() => {
+    if (!news || news.length === 0) {
+      handleRefresh();
+    }
+  }, []);
 
-  const refreshAgo = Math.floor((Date.now() - lastRefreshed.getTime()) / 1000);
+  const filtered = useMemo(() => {
+    return news.filter((item) => {
+      // Currency match
+      if (currencyFilter !== 'ALL') {
+        const currencies = item.affected_currencies.split(',').map((c) => c.trim().toUpperCase());
+        if (currencyFilter === 'METALS') {
+          if (!currencies.includes('XAU') && !currencies.includes('XAG')) return false;
+        } else if (!currencies.includes(currencyFilter)) {
+          return false;
+        }
+      }
+
+      // Sentiment match
+      if (sentimentFilter !== 'ALL' && item.sentiment !== sentimentFilter) {
+        return false;
+      }
+
+      // Search match
+      if (search.trim()) {
+        const q = search.toLowerCase();
+        const inTitle = item.title.toLowerCase().includes(q);
+        const inSummary = item.summary ? item.summary.toLowerCase().includes(q) : false;
+        if (!inTitle && !inSummary) return false;
+      }
+
+      return true;
+    });
+  }, [news, currencyFilter, sentimentFilter, search]);
+
+  const refreshAgo = Math.floor((nowSec - lastRefreshed.getTime()) / 1000);
   const refreshLabel = refreshAgo < 60 ? `${refreshAgo}s ago` : `${Math.floor(refreshAgo / 60)}m ago`;
 
+  const formatElapsed = (dateStr: string) => {
+    try {
+      const dt = new Date(dateStr);
+      const diffSec = Math.max(0, Math.floor((nowSec - dt.getTime()) / 1000));
+      if (diffSec < 60) return `${diffSec}s ago`;
+      const diffMins = Math.floor(diffSec / 60);
+      if (diffMins < 60) return `${diffMins}m ago`;
+      const diffHours = Math.floor(diffMins / 60);
+      if (diffHours < 24) return `${diffHours}h ago`;
+      return `${Math.floor(diffHours / 24)}d ago`;
+    } catch {
+      return 'Recent';
+    }
+  };
+
   return (
-    <div className="space-y-6 page-enter">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-black tracking-tight text-slate-100 flex items-center gap-2.5">
-            <Newspaper size={24} className="text-cyan-400" />
-            <span>Forex &amp; Financial Intelligence Wire</span>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 uppercase tracking-wider">
-              LIVE
-            </span>
-          </h2>
-          <p className="text-xs text-slate-400 mt-1">
-            Algorithmic sentiment scoring and currency impact classification on macroeconomic breaking news
-          </p>
+    <div className="space-y-6 page-enter font-sans">
+      {/* ── Page Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#0a101f] border border-white/[0.08] rounded-2xl p-4 sm:p-5 shadow-xl">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400">
+              <Newspaper size={18} />
+            </div>
+            <div>
+              <h1 className="text-xl font-black font-mono tracking-tight text-white flex items-center gap-2">
+                Forex &amp; Macro Intelligence Wire
+                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold font-mono bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 uppercase tracking-widest flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Live Feed
+                </span>
+              </h1>
+              <p className="text-xs text-slate-400 font-mono mt-0.5">
+                Real-Time Breaking Macroeconomic News · Algorithmic Sentiment Scoring &amp; Currency Exposure Tagging
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Refresh Button */}
+        {/* Refresh & Last Updated Pill */}
+        <div className="flex items-center gap-2">
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
-            title="Refresh news feed"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/25 transition-all disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/35 text-cyan-300 text-xs font-mono font-bold transition-all disabled:opacity-50"
           >
-            <RefreshCw size={12} className={isRefreshing ? 'animate-spin' : ''} />
-            <span>{isRefreshing ? 'Refreshing…' : `Refresh · ${refreshLabel}`}</span>
+            <RefreshCw size={13} className={isRefreshing ? 'animate-spin' : ''} />
+            <span>{isRefreshing ? 'Fetching Live Wire…' : `Refresh (${refreshLabel})`}</span>
           </button>
+        </div>
+      </div>
 
-          {/* Currency Filter Tabs */}
-          <div className="flex gap-1.5 bg-[#050914] p-1.5 rounded-2xl border border-white/[0.08] font-mono text-xs font-bold">
-            {['ALL', 'USD', 'EUR', 'GBP', 'JPY', 'XAU'].map((c) => (
+      {/* ── Filters & Search Toolbar ── */}
+      <div className="bg-[#0a101f] border border-white/[0.08] rounded-2xl p-4 space-y-3 font-mono shadow-lg">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          {/* Search bar */}
+          <div className="relative min-w-[200px] max-w-sm flex-1">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Filter headlines (e.g. Fed, CPI, Lagarde)..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-black/40 border border-white/10 text-xs font-mono text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+            />
+          </div>
+
+          {/* Sentiment Filter Tabs */}
+          <div className="flex rounded-xl bg-black/40 border border-white/10 p-0.5 text-xs">
+            {(['ALL', 'BULLISH', 'BEARISH', 'NEUTRAL'] as const).map((sent) => (
               <button
-                key={c}
-                onClick={() => setCurrencyFilter(c)}
-                className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
-                  currencyFilter === c
-                    ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md'
-                    : 'text-slate-400 hover:text-slate-200'
+                key={sent}
+                onClick={() => setSentimentFilter(sent)}
+                className={`px-3 py-1 rounded-lg font-bold transition-all ${
+                  sentimentFilter === sent
+                    ? sent === 'BULLISH'
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/35 shadow-sm'
+                      : sent === 'BEARISH'
+                      ? 'bg-rose-500/20 text-rose-300 border border-rose-500/35 shadow-sm'
+                      : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/35 shadow-sm'
+                    : 'text-slate-400 hover:text-white'
                 }`}
               >
-                {c}
+                {sent}
               </button>
             ))}
           </div>
         </div>
+
+        {/* Currency Filter Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-1 border-t border-white/[0.05] no-scrollbar text-xs">
+          <span className="text-[10px] text-slate-500 uppercase font-bold mr-1 shrink-0">
+            Currencies:
+          </span>
+          {['ALL', 'USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'XAU'].map((curr) => (
+            <button
+              key={curr}
+              onClick={() => setCurrencyFilter(curr)}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all shrink-0 ${
+                currencyFilter === curr
+                  ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-sm'
+                  : 'bg-black/30 text-slate-400 hover:text-slate-200 border border-white/5'
+              }`}
+            >
+              {curr}
+            </button>
+          ))}
+          <div className="ml-auto text-[11px] text-slate-400 shrink-0">
+            Showing <strong className="text-white">{filtered.length}</strong> of {news.length}
+          </div>
+        </div>
       </div>
 
-      {/* Article count + last refresh */}
-      <div className="flex items-center gap-2 text-[11px] text-slate-500 font-mono">
-        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-        <span>{filtered.length} article{filtered.length !== 1 ? 's' : ''} in feed</span>
-        {news.length > 0 && (
-          <span className="text-slate-600">· Updated {refreshLabel}</span>
-        )}
-      </div>
-
-      {/* News Grid */}
+      {/* ── News Articles Grid ── */}
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-slate-500 space-y-3">
-          <Newspaper size={36} className="opacity-20" />
-          <p className="text-sm font-mono">No articles for <strong className="text-slate-400">{currencyFilter}</strong> right now.</p>
-          <button onClick={handleRefresh} className="text-xs text-cyan-500 hover:text-cyan-300 font-mono underline">
-            Refresh feed
+        <div className="flex flex-col items-center justify-center py-20 text-slate-500 space-y-3 bg-[#0a101f] border border-white/[0.08] rounded-2xl font-mono text-xs">
+          <Newspaper size={36} className="opacity-30 text-cyan-400" />
+          <p className="text-slate-300 font-bold">No articles match your active filter.</p>
+          <button
+            onClick={() => {
+              setSearch('');
+              setCurrencyFilter('ALL');
+              setSentimentFilter('ALL');
+            }}
+            className="px-3 py-1.5 rounded-xl bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/25 transition-all"
+          >
+            Reset Filters
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filtered.map((item) => {
-            const isBull = item.sentiment === 'BULLISH';
-            const isBear = item.sentiment === 'BEARISH';
-            const pubMs = new Date(item.published_at).getTime();
-            const diffMin = Math.floor((Date.now() - pubMs) / 60000);
-            const timeAgo =
-              diffMin < 1
-                ? 'just now'
-                : diffMin < 60
-                ? `${diffMin}m ago`
-                : diffMin < 1440
-                ? `${Math.floor(diffMin / 60)}h ago`
-                : `${Math.floor(diffMin / 1440)}d ago`;
+            const isBullish = item.sentiment === 'BULLISH';
+            const isBearish = item.sentiment === 'BEARISH';
+            const currencies = item.affected_currencies.split(',').map((c) => c.trim());
 
             return (
-              <div
+              <article
                 key={item.id}
-                className="glass-card-premium rounded-2xl p-5 flex flex-col justify-between transition-all group card-hover relative overflow-hidden"
+                className="p-4 sm:p-5 bg-[#0a101f] hover:bg-[#0e162a] border border-white/[0.08] hover:border-cyan-400/40 rounded-2xl transition-all shadow-lg flex flex-col justify-between space-y-3 group"
               >
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="w-2 h-2 rounded-full bg-cyan-400 dot-glow shrink-0" />
-                      <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider font-mono truncate">
+                <div className="space-y-2.5">
+                  {/* Top Meta Line */}
+                  <div className="flex items-center justify-between text-xs font-mono">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-slate-400 font-bold uppercase flex items-center gap-1">
+                        <Globe size={11} className="text-cyan-400" />
                         {item.source}
                       </span>
-                      <span className="text-[10px] text-slate-600 font-mono shrink-0">{timeAgo}</span>
+                      <span className="text-slate-600">·</span>
+                      <span className="text-[10px] text-slate-500 flex items-center gap-1">
+                        <Clock size={10} />
+                        {formatElapsed(item.published_at)}
+                      </span>
                     </div>
+
+                    {/* Sentiment Badge */}
                     <span
-                      className={`inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border shrink-0 ${
-                        isBull
-                          ? 'bg-emerald-500/[0.12] text-emerald-400 border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.15)]'
-                          : isBear
-                          ? 'bg-rose-500/[0.12] text-rose-400 border-rose-500/30 shadow-[0_0_10px_rgba(244,63,94,0.15)]'
-                          : 'bg-slate-800 text-slate-400 border-white/5'
+                      className={`px-2 py-0.5 rounded text-[9px] font-bold font-mono border flex items-center gap-1 ${
+                        isBullish
+                          ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                          : isBearish
+                          ? 'bg-rose-500/15 text-rose-400 border-rose-500/30'
+                          : 'bg-slate-700/30 text-slate-300 border-white/10'
                       }`}
                     >
-                      {isBull && <TrendingUp size={11} strokeWidth={2.5} />}
-                      {isBear && <TrendingDown size={11} strokeWidth={2.5} />}
-                      {!isBull && !isBear && <MinusCircle size={11} />}
+                      {isBullish && <TrendingUp size={10} />}
+                      {isBearish && <TrendingDown size={10} />}
                       {item.sentiment}
                     </span>
                   </div>
 
-                  <h3 className="text-base font-bold text-slate-100 group-hover:text-cyan-300 transition-colors leading-snug mb-2.5">
-                    {item.title}
+                  {/* Headline */}
+                  <h3 className="text-sm font-bold text-slate-100 group-hover:text-cyan-300 transition-colors leading-snug">
+                    <a href={item.url} target="_blank" rel="noopener noreferrer">
+                      {item.title}
+                    </a>
                   </h3>
-                  <p className="text-xs text-slate-400 leading-relaxed line-clamp-3">{item.summary}</p>
+
+                  {/* Summary */}
+                  {item.summary && (
+                    <p className="text-xs text-slate-400 leading-relaxed font-sans line-clamp-3">
+                      {item.summary}
+                    </p>
+                  )}
                 </div>
 
-                <div className="flex items-center justify-between pt-4 mt-4 border-t border-white/[0.06] text-xs">
-                  <div className="flex items-center gap-2 font-mono">
-                    <span className="text-slate-500 text-[11px]">Currencies:</span>
-                    <div className="flex gap-1 flex-wrap">
-                      {item.affected_currencies.split(',').map((curr) => (
-                        <span
-                          key={curr.trim()}
-                          className="font-bold text-slate-200 bg-[#060913] px-2 py-0.5 rounded text-[10px] border border-white/10"
-                        >
-                          {curr.trim()}
-                        </span>
-                      ))}
-                    </div>
+                {/* Footer: Currency Tags & External Link */}
+                <div className="pt-3 border-t border-white/[0.05] flex items-center justify-between font-mono text-xs">
+                  <div className="flex items-center gap-1 flex-wrap">
+                    {currencies.map((curr) => (
+                      <span
+                        key={curr}
+                        className="px-1.5 py-0.5 rounded bg-black/40 text-slate-300 border border-white/10 text-[10px] font-bold"
+                      >
+                        {curr}
+                      </span>
+                    ))}
                   </div>
+
                   <a
                     href={item.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-cyan-400 hover:text-cyan-300 font-semibold group-hover:underline text-xs shrink-0 ml-2"
+                    className="flex items-center gap-1 text-[11px] text-cyan-400 hover:text-cyan-300 font-bold group-hover:translate-x-0.5 transition-transform"
                   >
                     <span>Read Wire</span>
-                    <ExternalLink size={12} />
+                    <ExternalLink size={11} />
                   </a>
                 </div>
-              </div>
+              </article>
             );
           })}
         </div>

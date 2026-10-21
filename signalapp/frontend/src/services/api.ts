@@ -155,8 +155,12 @@ export const api = {
     return res.json();
   },
 
-  async getCalendar(timezone: string = 'Africa/Nairobi'): Promise<EconomicEvent[]> {
-    const res = await fetch(`${API_BASE}/calendar/?timezone=${encodeURIComponent(timezone)}`);
+  async getCalendar(timezone: string = 'Africa/Nairobi', currency?: string, impact?: string): Promise<EconomicEvent[]> {
+    const params = new URLSearchParams();
+    params.set('timezone', timezone);
+    if (currency && currency !== 'ALL') params.set('currency', currency);
+    if (impact && impact !== 'ALL') params.set('impact', impact);
+    const res = await fetch(`${API_BASE}/calendar/?${params.toString()}`);
     if (!res.ok) throw new Error('Failed to load economic calendar');
     return res.json();
   },

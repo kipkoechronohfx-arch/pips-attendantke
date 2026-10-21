@@ -19,8 +19,11 @@ alerts_router = APIRouter()
 
 # News Endpoints
 @news_router.get("/", response_model=List[NewsArticleResponse])
-def get_news(category: str = Query("ALL", description="Currency or market category (e.g. ALL, USD, EUR, XAU)")):
-    return news_service.get_latest_news(category=category)
+def get_news(
+    category: str = Query("ALL", description="Currency or market category (e.g. ALL, USD, EUR, XAU)"),
+    refresh: bool = Query(False, description="Force re-fetch from live RSS feeds")
+):
+    return news_service.get_latest_news(category=category, force_refresh=refresh)
 
 # Calendar Endpoints
 @calendar_router.get("/", response_model=List[EconomicEventResponse])

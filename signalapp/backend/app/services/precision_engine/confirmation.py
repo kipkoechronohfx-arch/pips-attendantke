@@ -347,10 +347,26 @@ def confirm_entry(
 
     # ─────────────────────────────────────────────────────────────────────────
     # Gate 10: News / market-condition restrictions
-    # (simplified: flag if we're within 5 minutes of a known high-impact window
-    #  — in production this would check the calendar service)
+    # Validates that no Tier-1 high-impact macroeconomic event is scheduled
+    # within the configured news blackout window (e.g. +/- 30 mins).
     # ─────────────────────────────────────────────────────────────────────────
-    news_ok = True  # calendar integration handled separately; placeholder passes
+    try:
+        from app.services.calendar_service.calendar import calendar_service
+        ref_time = quote.timestamp_utc if quote and quote.timestamp_utc else datetime.now(timezone.utc)
+        blackout_active, blackout_ev = calendar_service.check_blackout(
+            symbol=context.symbol,
+            blackout_minutes=getattr(spec, "news_blackout_minutes", 30),
+            ref_now=ref_time
+        )
+        news_ok = not blackout_active
+        if not news_ok and blackout_ev:
+            rejection_codes.append("NEWS_BLACKOUT_ACTIVE")
+            rejection_messages.append(
+                f"High-impact news ({blackout_ev.get('event_name')}) scheduled within "
+                f"{getattr(spec, 'news_blackout_minutes', 30)} min blackout window for {context.symbol}."
+            )
+    except Exception:
+        news_ok = True
     gate_results["news_conditions"] = news_ok
 
     # ─────────────────────────────────────────────────────────────────────────

@@ -27,6 +27,8 @@ class EconomicEventResponse(BaseModel):
     forecast: Optional[str] = None
     actual: Optional[str] = None
     status: str
+    surprise_sentiment: Optional[str] = None
+    minutes_until: Optional[int] = None
 
     class Config:
         from_attributes = True

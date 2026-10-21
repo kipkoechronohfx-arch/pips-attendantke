@@ -130,6 +130,8 @@ export interface EconomicEvent {
   forecast?: string;
   actual?: string;
   status: string;
+  surprise_sentiment?: 'BULLISH' | 'BEARISH' | 'IN_LINE' | 'PENDING';
+  minutes_until?: number;
 }
 
 export interface User {
