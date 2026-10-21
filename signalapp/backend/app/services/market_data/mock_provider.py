@@ -20,6 +20,27 @@ DEFAULT_INSTRUMENTS: Dict[str, Dict[str, Any]] = {
     "BTC/USD": {"base": 67450.0, "spread_pips": 8.0, "pip": 1.0, "digits": 1, "contract_size": 1, "category": "CRYPTO", "quote": "USD"},
 }
 
+
+def normalize_instrument_symbol(symbol: str) -> str:
+    """Normalize any symbol format (EURUSD, EUR_USD, eurusd) to canonical EUR/USD."""
+    if not symbol:
+        return "EUR/USD"
+    s = symbol.upper().strip().replace(" ", "")
+    if "/" in s:
+        return s
+    if "_" in s:
+        return s.replace("_", "/")
+    if len(s) == 6:
+        return f"{s[:3]}/{s[3:]}"
+    if s.startswith("XAU") and len(s) == 6:
+        return "XAU/USD"
+    if s.startswith("XAG") and len(s) == 6:
+        return "XAG/USD"
+    if s.startswith("BTC") and len(s) == 6:
+        return "BTC/USD"
+    return s
+
+
 class MockMarketDataProvider(MarketDataProvider):
     """
     Development Mock Provider with Brownian random-walk micro-volatility.
@@ -57,17 +78,18 @@ class MockMarketDataProvider(MarketDataProvider):
 
     async def get_quote(self, symbol: str) -> Optional[Quote]:
         self._tick_prices()
-        cfg = DEFAULT_INSTRUMENTS.get(symbol)
+        canonical_sym = normalize_instrument_symbol(symbol)
+        cfg = DEFAULT_INSTRUMENTS.get(canonical_sym)
         if not cfg:
             return None
 
-        mid = self._current_prices[symbol]
+        mid = self._current_prices.get(canonical_sym, cfg["base"])
         spread_amt = cfg["spread_pips"] * cfg["pip"]
         bid = round(mid - (spread_amt / 2.0), cfg["digits"])
         ask = round(mid + (spread_amt / 2.0), cfg["digits"])
-        open_p = self._open_prices[symbol]
+        open_p = self._open_prices.get(canonical_sym, cfg["base"])
         change_24h = round(mid - open_p, cfg["digits"])
-        pct = round((change_24h / open_p) * 100, 2)
+        pct = round((change_24h / open_p) * 100, 2) if open_p > 0 else 0.0
 
         return Quote(
             symbol=symbol,
@@ -86,24 +108,30 @@ class MockMarketDataProvider(MarketDataProvider):
         )
 
     async def get_candles(self, symbol: str, timeframe: str = "H1", limit: int = 100) -> List[Candle]:
-        cfg = DEFAULT_INSTRUMENTS.get(symbol, {"base": 1.0850, "pip": 0.0001, "digits": 5})
+        self._tick_prices()
+        canonical_sym = normalize_instrument_symbol(symbol)
+        cfg = DEFAULT_INSTRUMENTS.get(canonical_sym, {"base": 1.0850, "pip": 0.0001, "digits": 5})
         pip = cfg["pip"]
         digits = cfg["digits"]
 
         interval_map = {"M5": 300, "M15": 900, "M30": 1800, "H1": 3600, "H4": 14400, "D1": 86400}
-        interval_secs = interval_map.get(timeframe, 3600)
+        interval_secs = interval_map.get(str(timeframe).upper(), 3600)
         now = int(time.time())
 
-        candles = []
-        price = self._current_prices.get(symbol, cfg["base"])
+        current_live_price = self._current_prices.get(canonical_sym, cfg["base"])
+        current_bar_time = (now // interval_secs) * interval_secs
+
+        # Walk backward from current price to ensure latest candle matches current quote
+        raw_candles = []
+        p = current_live_price
         for i in range(limit):
-            t = now - ((limit - 1 - i) * interval_secs)
-            c_open = price
-            change = random.gauss(0, 14 * pip)
-            c_close = c_open + change
-            c_high = max(c_open, c_close) + abs(random.gauss(0, 7 * pip))
-            c_low = min(c_open, c_close) - abs(random.gauss(0, 7 * pip))
-            candles.append(Candle(
+            t = current_bar_time - (i * interval_secs)
+            c_close = p
+            change = random.gauss(0, 10 * pip)
+            c_open = c_close - change
+            c_high = max(c_open, c_close) + abs(random.gauss(0, 6 * pip))
+            c_low = min(c_open, c_close) - abs(random.gauss(0, 6 * pip))
+            raw_candles.append(Candle(
                 time=t,
                 open=round(c_open, digits),
                 high=round(c_high, digits),
@@ -111,9 +139,9 @@ class MockMarketDataProvider(MarketDataProvider):
                 close=round(c_close, digits),
                 volume=round(random.uniform(500, 5000), 2)
             ))
-            price = c_close
+            p = c_open
 
-        return candles
+        return list(reversed(raw_candles))
 
     async def get_instruments(self) -> List[Dict[str, Any]]:
         return [

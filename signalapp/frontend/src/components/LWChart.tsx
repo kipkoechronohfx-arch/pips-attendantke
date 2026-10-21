@@ -33,9 +33,17 @@ export const LWChart: React.FC<Props> = ({
   const chartRef = useRef<IChartApi | null>(null);
   const candleSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
   const volSeriesRef = useRef<ISeriesApi<'Histogram'> | null>(null);
+  const priceLinesRef = useRef<any[]>([]);
   const [tf, setTf] = React.useState(initialTf);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState('');
+
+  // ── Sync timeframe prop if changed by parent ─────
+  useEffect(() => {
+    if (initialTf && initialTf !== tf) {
+      setTf(initialTf);
+    }
+  }, [initialTf]);
 
   // ── Initialize Chart ────────────────────────────
   useEffect(() => {
@@ -72,6 +80,7 @@ export const LWChart: React.FC<Props> = ({
       height,
     });
 
+    const digits = symbol.includes('JPY') ? 3 : symbol.includes('XAU') ? 2 : symbol.includes('BTC') ? 1 : 5;
     const candleSeries = chart.addSeries(CandlestickSeries, {
       upColor: '#10b981',
       downColor: '#f43f5e',
@@ -79,6 +88,11 @@ export const LWChart: React.FC<Props> = ({
       borderDownColor: '#f43f5e',
       wickUpColor: '#10b981',
       wickDownColor: '#f43f5e',
+      priceFormat: {
+        type: 'price',
+        precision: digits,
+        minMove: 1 / Math.pow(10, digits),
+      },
     });
 
     const volSeries = chart.addSeries(HistogramSeries, {
@@ -104,6 +118,7 @@ export const LWChart: React.FC<Props> = ({
       chartRef.current = null;
       candleSeriesRef.current = null;
       volSeriesRef.current = null;
+      priceLinesRef.current = [];
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -112,16 +127,43 @@ export const LWChart: React.FC<Props> = ({
     if (!candleSeriesRef.current || !volSeriesRef.current) return;
     setLoading(true);
     setError('');
+
+    // Update price scale precision if symbol changed
+    const digits = symbol.includes('JPY') ? 3 : symbol.includes('XAU') ? 2 : symbol.includes('BTC') ? 1 : 5;
+    candleSeriesRef.current.applyOptions({
+      priceFormat: {
+        type: 'price',
+        precision: digits,
+        minMove: 1 / Math.pow(10, digits),
+      },
+    });
+
     try {
       const candles = await api.getCandles(symbol, tf, 120);
-      const ohlc: CandlestickData[] = candles.map((c) => ({
+      if (!candles || candles.length === 0) {
+        setError(`No candle data available for ${symbol} · ${tf}`);
+        return;
+      }
+
+      // Deduplicate and ensure strict ascending order by time
+      const sortedCandles = [...candles].sort((a, b) => a.time - b.time);
+      const uniqueCandles: typeof candles = [];
+      const seenTimes = new Set<number>();
+      for (const c of sortedCandles) {
+        if (!seenTimes.has(c.time)) {
+          seenTimes.add(c.time);
+          uniqueCandles.push(c);
+        }
+      }
+
+      const ohlc: CandlestickData[] = uniqueCandles.map((c) => ({
         time: c.time as Time,
         open: c.open,
         high: c.high,
         low: c.low,
         close: c.close,
       }));
-      const vol = candles.map((c) => ({
+      const vol = uniqueCandles.map((c) => ({
         time: c.time as Time,
         value: c.volume,
         color: c.close >= c.open ? 'rgba(16,185,129,0.25)' : 'rgba(244,63,94,0.25)',
@@ -130,12 +172,15 @@ export const LWChart: React.FC<Props> = ({
       volSeriesRef.current.setData(vol);
       chartRef.current?.timeScale().fitContent();
 
+      // Clear previous price lines
+      clearPriceLines();
+
       // Draw signal levels if active
       if (activeSignal) {
         drawSignalLines(activeSignal);
       }
     } catch {
-      setError('Failed to load candles');
+      setError(`Failed to load candles for ${symbol}`);
     } finally {
       setLoading(false);
     }
@@ -143,10 +188,25 @@ export const LWChart: React.FC<Props> = ({
 
   useEffect(() => { loadCandles(); }, [loadCandles]);
 
+  // ── Clean Signal Price Lines ────────────────────
+  function clearPriceLines() {
+    if (!candleSeriesRef.current) return;
+    for (const line of priceLinesRef.current) {
+      try {
+        candleSeriesRef.current.removePriceLine(line);
+      } catch {
+        // ignore if already removed
+      }
+    }
+    priceLinesRef.current = [];
+  }
+
   // ── Signal Price Lines ──────────────────────────
   function drawSignalLines(sig: TradingSignal) {
     if (!candleSeriesRef.current) return;
-    candleSeriesRef.current.createPriceLine({
+    clearPriceLines();
+
+    const p1 = candleSeriesRef.current.createPriceLine({
       price: sig.entry_price,
       color: '#06b6d4',
       lineWidth: 1,
@@ -154,7 +214,9 @@ export const LWChart: React.FC<Props> = ({
       axisLabelVisible: true,
       title: 'Entry',
     });
-    candleSeriesRef.current.createPriceLine({
+    priceLinesRef.current.push(p1);
+
+    const p2 = candleSeriesRef.current.createPriceLine({
       price: sig.stop_loss,
       color: '#f43f5e',
       lineWidth: 1,
@@ -162,7 +224,9 @@ export const LWChart: React.FC<Props> = ({
       axisLabelVisible: true,
       title: 'SL',
     });
-    candleSeriesRef.current.createPriceLine({
+    priceLinesRef.current.push(p2);
+
+    const p3 = candleSeriesRef.current.createPriceLine({
       price: sig.take_profit_1,
       color: '#10b981',
       lineWidth: 1,
@@ -170,8 +234,10 @@ export const LWChart: React.FC<Props> = ({
       axisLabelVisible: true,
       title: 'TP1',
     });
+    priceLinesRef.current.push(p3);
+
     if (sig.take_profit_2) {
-      candleSeriesRef.current.createPriceLine({
+      const p4 = candleSeriesRef.current.createPriceLine({
         price: sig.take_profit_2,
         color: '#34d399',
         lineWidth: 1,
@@ -179,6 +245,7 @@ export const LWChart: React.FC<Props> = ({
         axisLabelVisible: true,
         title: 'TP2',
       });
+      priceLinesRef.current.push(p4);
     }
   }
 
