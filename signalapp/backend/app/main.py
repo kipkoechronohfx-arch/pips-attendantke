@@ -27,18 +27,44 @@ from app.api.endpoints.scanner import router as scanner_router
 streaming_task = None
 
 async def market_data_broadcaster():
-    """Simulates background streaming worker pushing live quotes to connected Web & Android clients"""
+    """Background streaming worker: pushes live quotes AND last-candle ticks to WebSocket clients."""
+    from app.services.market_data.oanda import OandaDataProvider
+    TICK_SYMBOLS = ["XAU/USD", "EUR/USD", "GBP/USD", "USD/JPY", "GBP/JPY"]
+    cycle = 0
     while True:
         try:
             if ws_manager.active_connections:
+                # Always push quotes
                 quotes = await market_data_manager.get_all_quotes()
-                payload = {
+                await ws_manager.broadcast_json({
                     "type": "QUOTES_UPDATE",
                     "data": [q.model_dump(mode="json") for q in quotes]
-                }
-                await ws_manager.broadcast_json(payload)
-        except Exception as e:
+                })
+
+                # Every 3rd cycle (~6s) push candle ticks for key symbols
+                if cycle % 3 == 0:
+                    provider = market_data_manager.current_provider
+                    if isinstance(provider, OandaDataProvider) and provider.is_live_feed:
+                        ticks = []
+                        for sym in TICK_SYMBOLS:
+                            candles = await market_data_manager.get_candles(sym, "M5", 2)
+                            if candles:
+                                last = candles[-1]
+                                ticks.append({
+                                    "symbol": sym,
+                                    "timeframe": "M5",
+                                    "time": last.time,
+                                    "open": last.open,
+                                    "high": last.high,
+                                    "low": last.low,
+                                    "close": last.close,
+                                    "volume": last.volume
+                                })
+                        if ticks:
+                            await ws_manager.broadcast_json({"type": "CANDLE_TICK", "data": ticks})
+        except Exception:
             pass
+        cycle += 1
         await asyncio.sleep(2.0)
 
 def init_seed_data():

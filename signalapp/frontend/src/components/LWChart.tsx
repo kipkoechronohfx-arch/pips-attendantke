@@ -13,6 +13,7 @@ import {
 } from 'lightweight-charts';
 import { api } from '../services/api';
 import { TradingSignal } from '../types';
+import { Wifi, WifiOff } from 'lucide-react';
 
 interface Props {
   symbol: string;
@@ -34,9 +35,13 @@ export const LWChart: React.FC<Props> = ({
   const candleSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
   const volSeriesRef = useRef<ISeriesApi<'Histogram'> | null>(null);
   const priceLinesRef = useRef<any[]>([]);
+  const lastCandleTimeRef = useRef<number | null>(null);
   const [tf, setTf] = React.useState(initialTf);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState('');
+  const [isLive, setIsLive] = React.useState<boolean | null>(null);
+  const [providerName, setProviderName] = React.useState('');
+  const [lastTickAt, setLastTickAt] = React.useState<number | null>(null);
 
   // ── Sync timeframe prop if changed by parent ─────
   useEffect(() => {
@@ -188,6 +193,50 @@ export const LWChart: React.FC<Props> = ({
 
   useEffect(() => { loadCandles(); }, [loadCandles]);
 
+  // ── Live Tick Polling (2s) ─────────────────────────
+  // Uses series.update() on the last candle — much faster than setData().
+  // Only runs when a chart is mounted and candles are loaded.
+  useEffect(() => {
+    if (loading || error) return;
+
+    const applyTick = async () => {
+      if (!candleSeriesRef.current || !volSeriesRef.current) return;
+      try {
+        const tick = await api.getLiveTick(symbol, tf);
+        if (!tick) return;
+        const t = tick.time as Time;
+        candleSeriesRef.current.update({
+          time: t,
+          open: tick.open,
+          high: tick.high,
+          low: tick.low,
+          close: tick.close,
+        });
+        volSeriesRef.current.update({
+          time: t,
+          value: tick.volume,
+          color: tick.close >= tick.open ? 'rgba(16,185,129,0.25)' : 'rgba(244,63,94,0.25)',
+        });
+        lastCandleTimeRef.current = tick.time;
+        setLastTickAt(Date.now());
+      } catch { /* silent — polling continues */ }
+    };
+
+    const tickInterval = setInterval(applyTick, 2000);
+    return () => clearInterval(tickInterval);
+  }, [symbol, tf, loading, error]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Provider Status Badge ──────────────────────────
+  useEffect(() => {
+    api.getMarketStatus().then((s) => {
+      setIsLive(s.is_live);
+      setProviderName(s.provider);
+    }).catch(() => {
+      setIsLive(false);
+      setProviderName('Mock Data');
+    });
+  }, []);
+
   // ── Clean Signal Price Lines ────────────────────
   function clearPriceLines() {
     if (!candleSeriesRef.current) return;
@@ -253,7 +302,7 @@ export const LWChart: React.FC<Props> = ({
     <div className="glass-card-premium rounded-2xl overflow-hidden w-full min-w-0">
       {/* Toolbar */}
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/[0.06]">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm font-mono font-black text-slate-100">{symbol}</span>
           {activeSignal && (
             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
@@ -262,6 +311,22 @@ export const LWChart: React.FC<Props> = ({
                 : 'bg-rose-500/10 text-rose-400 border-rose-500/25'
             }`}>
               {activeSignal.direction} Signal Active
+            </span>
+          )}
+          {/* Live / Mock provider badge */}
+          {isLive !== null && (
+            <span className={`inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded border ${
+              isLive
+                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+            }`}>
+              {isLive ? <Wifi size={8} /> : <WifiOff size={8} />}
+              {isLive ? 'OANDA LIVE' : 'SIMULATED'}
+            </span>
+          )}
+          {lastTickAt && isLive && (
+            <span className="text-[9px] text-slate-600 font-mono">
+              tick {new Date(lastTickAt).toLocaleTimeString()}
             </span>
           )}
         </div>

@@ -75,6 +75,20 @@ export const api = {
     return res.json();
   },
 
+  /** Returns only the last candle with a live close price (OANDA mid injected).
+   *  Poll every 1-2s for chart animation without re-fetching 100 candles. */
+  async getLiveTick(symbol: string, timeframe: string = 'M5'): Promise<Candle | null> {
+    const res = await fetch(`${API_BASE}/market/tick/${encodeURIComponent(symbol)}?timeframe=${timeframe}`);
+    if (!res.ok) return null;
+    return res.json();
+  },
+
+  async getMarketStatus(): Promise<{ provider: string; status: string; is_live: boolean; latency_ms: number; provider_class: string }> {
+    const res = await fetch(`${API_BASE}/market/status`);
+    if (!res.ok) throw new Error('Failed to load market status');
+    return res.json();
+  },
+
   async getMarketHealth(): Promise<{ provider_name: string; status: string; is_live: boolean; latency_ms: number }> {
     const res = await fetch(`${API_BASE}/market/health`);
     if (!res.ok) throw new Error('Failed to load provider health');

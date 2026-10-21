@@ -19,7 +19,11 @@ class MarketDataManager:
 
     def _select_provider(self) -> MarketDataProvider:
         mode = settings.MARKET_DATA_PROVIDER.lower()
-        if mode == "oanda" and settings.OANDA_API_TOKEN and settings.OANDA_ACCOUNT_ID:
+        # Reject obvious placeholder credential strings
+        _PLACEHOLDERS = {"", "YOUR_OANDA_API_TOKEN_HERE", "YOUR_OANDA_ACCOUNT_ID_HERE", "replace-me"}
+        oanda_token_valid = settings.OANDA_API_TOKEN not in _PLACEHOLDERS
+        oanda_acct_valid  = settings.OANDA_ACCOUNT_ID not in _PLACEHOLDERS
+        if mode == "oanda" and oanda_token_valid and oanda_acct_valid:
             return self._oanda
         if mode == "twelvedata" and settings.TWELVE_DATA_API_KEY:
             return self._twelve
