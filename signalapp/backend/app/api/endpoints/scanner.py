@@ -19,6 +19,7 @@ from datetime import datetime, timezone, timedelta
 from app.services.precision_engine.config import STRATEGY_PROFILES, get_spec
 from app.services.precision_engine.pipeline import run_precision_pipeline
 from app.services.market_data.manager import market_data_manager
+from app.services.qml_engine import run_qml_decision_pipeline
 
 router = APIRouter()
 
@@ -226,8 +227,54 @@ async def get_symbol_analysis(symbol: str, timeframe: str = Query("H1")):
                 "asian_low": levels.asian_low,
             },
         },
+        "qml": run_qml_decision_pipeline(
+            symbol=symbol,
+            timeframe=timeframe,
+            candles=[{"open": c.open, "high": c.high, "low": c.low, "close": c.close, "volume": getattr(c, "volume", 0), "time": getattr(c, "time", "")} for c in closed],
+            proposed_direction="BUY" if ema_bias == "BULLISH" else "SELL",
+            current_price=quote.ask if ema_bias == "BULLISH" else quote.bid,
+            spread_pips=round((quote.ask - quote.bid) / (0.01 if "JPY" in symbol else 0.0001), 1),
+            pip_size=0.01 if "JPY" in symbol else 0.0001
+        ).__dict__,
         "generated_at": datetime.now(timezone.utc).isoformat(),
     }
+
+
+@router.get("/qml/{symbol}")
+async def get_symbol_qml(symbol: str, timeframe: str = Query("M15"), direction: str = Query("BUY")):
+    """
+    Dedicated QML endpoint: Runs all 7 Quantitative Market Logic models across timeframes.
+    Returns composite score, calibrated win probability, model breakdown, and veto reasons.
+    """
+    quote = await market_data_manager.get_quote(symbol)
+    m15_candles = await market_data_manager.get_candles(symbol, timeframe="M15", count=100)
+    h1_candles = await market_data_manager.get_candles(symbol, timeframe="H1", count=100)
+    h4_candles = await market_data_manager.get_candles(symbol, timeframe="H4", count=60)
+    m5_candles = await market_data_manager.get_candles(symbol, timeframe="M5", count=60)
+
+    pip_size = 0.01 if "JPY" in symbol.upper() else 0.0001
+    current_price = quote.ask if quote and direction.upper() in ("BUY", "LONG") else (quote.bid if quote else 1.0850)
+    spread_pips = round((quote.ask - quote.bid) / pip_size, 1) if quote else 1.2
+
+    def _to_dicts(c_list):
+        if not c_list:
+            return []
+        return [{"open": c.open, "high": c.high, "low": c.low, "close": c.close, "volume": getattr(c, "volume", 0), "time": getattr(c, "time", "")} for c in c_list]
+
+    qml_synthesis = run_qml_decision_pipeline(
+        symbol=symbol,
+        timeframe=timeframe,
+        candles=_to_dicts(m15_candles),
+        h4_candles=_to_dicts(h4_candles),
+        h1_candles=_to_dicts(h1_candles),
+        m5_candles=_to_dicts(m5_candles),
+        proposed_direction=direction,
+        current_price=current_price,
+        spread_pips=spread_pips,
+        pip_size=pip_size
+    )
+
+    return qml_synthesis.__dict__
 
 
 # ──────────────────────────────────────────────────────────────────────────────

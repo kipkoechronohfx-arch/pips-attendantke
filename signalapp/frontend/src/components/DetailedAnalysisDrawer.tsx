@@ -23,6 +23,12 @@ import {
   ExternalLink,
   ChevronRight,
   Info,
+  Cpu,
+  Sliders,
+  ChevronDown,
+  ChevronUp,
+  Zap,
+  Check,
 } from 'lucide-react';
 
 const GATE_DESCRIPTIONS: Record<string, { title: string; desc: string }> = {
@@ -51,10 +57,13 @@ export const DetailedAnalysisDrawer: React.FC = () => {
     toggleFavorite,
   } = useAppStore();
 
-  const [activeTabSection, setActiveTabSection] = useState<'PLAN' | 'CONTEXT' | 'SETUP' | 'GATES'>('PLAN');
+  const [activeTabSection, setActiveTabSection] = useState<'PLAN' | 'CONTEXT' | 'SETUP' | 'GATES' | 'QML'>('PLAN');
   const [analysisData, setAnalysisData] = useState<FullAnalysis | null>(null);
   const [diagnostic, setDiagnostic] = useState<DiagnosticEntry | null>(null);
   const [loading, setLoading] = useState(false);
+  const [expandedModel, setExpandedModel] = useState<string | null>('statistical_model');
+  const [statFilterEnabled, setStatFilterEnabled] = useState(false);
+  const [synergyFilterEnabled, setSynergyFilterEnabled] = useState(false);
 
   const symbol = selectedAnalysisSymbol;
   const quote = symbol ? quotes[symbol] : null;
@@ -202,6 +211,7 @@ export const DetailedAnalysisDrawer: React.FC = () => {
               { id: 'CONTEXT', label: 'Market Context' },
               { id: 'SETUP', label: 'Setup Analysis' },
               { id: 'GATES', label: '11 Hard Gates' },
+              { id: 'QML', label: 'QML Models' },
             ] as const
           ).map((tab) => (
             <button
@@ -539,6 +549,276 @@ export const DetailedAnalysisDrawer: React.FC = () => {
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 5: QML QUANTITATIVE MARKET LOGIC MODELS */}
+          {!loading && activeTabSection === 'QML' && (
+            <div className="space-y-4">
+              {analysisData?.qml ? (
+                <>
+                  {/* Synthesis Overview Card */}
+                  <div className="rounded-xl bg-gradient-to-br from-[#0c162b] to-[#080f1e] border border-cyan-500/20 p-4 space-y-3 shadow-lg shadow-cyan-950/20">
+                    <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
+                      <div className="flex items-center gap-2">
+                        <Cpu className="text-cyan-400" size={18} />
+                        <div>
+                          <h4 className="text-sm font-bold text-white font-mono tracking-tight">
+                            QML Decision Engine Synthesis
+                          </h4>
+                          <span className="text-[10px] text-slate-400 font-mono">
+                            7 Modular Quantitative Validation Layers
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono border ${
+                            analysisData.qml.model_accept
+                              ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                              : 'bg-rose-500/15 text-rose-400 border-rose-500/30'
+                          }`}
+                        >
+                          {analysisData.qml.model_accept ? 'QML APPROVED' : 'QML VETOED'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
+                      <div className="p-2 rounded-lg bg-black/30 border border-white/[0.05]">
+                        <span className="text-[10px] text-slate-500 block uppercase">Composite Score</span>
+                        <span className="text-cyan-300 font-bold text-sm">
+                          {analysisData.qml.composite_qml_score}/100
+                        </span>
+                      </div>
+                      <div className="p-2 rounded-lg bg-black/30 border border-white/[0.05]">
+                        <span className="text-[10px] text-slate-500 block uppercase">Expectancy Edge</span>
+                        <span
+                          className={`font-bold text-sm ${
+                            (analysisData.qml.statistical_edge ?? 0) > 0 ? 'text-emerald-400' : 'text-rose-400'
+                          }`}
+                        >
+                          {(analysisData.qml.statistical_edge ?? 0) > 0 ? '+' : ''}
+                          {(analysisData.qml.statistical_edge ?? 0).toFixed(2)} R
+                        </span>
+                      </div>
+                      <div className="p-2 rounded-lg bg-black/30 border border-white/[0.05]">
+                        <span className="text-[10px] text-slate-500 block uppercase">Regime</span>
+                        <span className="text-amber-300 font-bold text-sm">
+                          {analysisData.qml.regime}
+                        </span>
+                      </div>
+                      <div className="p-2 rounded-lg bg-black/30 border border-white/[0.05]">
+                        <span className="text-[10px] text-slate-500 block uppercase">Data Quality</span>
+                        <span
+                          className={`font-bold text-sm ${
+                            analysisData.qml.overall_data_quality === 'HIGH'
+                              ? 'text-emerald-400'
+                              : analysisData.qml.overall_data_quality === 'MEDIUM'
+                              ? 'text-cyan-400'
+                              : 'text-amber-400'
+                          }`}
+                        >
+                          {analysisData.qml.overall_data_quality}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Veto Alert */}
+                    {analysisData.qml.veto_reasons && analysisData.qml.veto_reasons.length > 0 && (
+                      <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/25 space-y-1.5 text-xs text-rose-200">
+                        <div className="flex items-center gap-1.5 font-bold text-rose-300 uppercase tracking-wide text-[11px]">
+                          <AlertTriangle size={13} className="text-rose-400" />
+                          <span>Mandatory Risk Veto Triggered</span>
+                        </div>
+                        <ul className="list-disc list-inside space-y-1 text-[11px] text-slate-300 pl-1 font-mono">
+                          {analysisData.qml.veto_reasons.map((r, i) => (
+                            <li key={i}>{r}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 7 Individual Model Cards */}
+                  <div className="space-y-2.5">
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono block">
+                      Individual Model Breakdowns
+                    </span>
+
+                    {[
+                      { key: 'regime_model', title: '1. Market Regime Model', icon: Activity },
+                      { key: 'mtf_model', title: '2. Multi-Timeframe Alignment Model', icon: Layers },
+                      { key: 'liquidity_model', title: '3. Liquidity and Structure Model', icon: Target },
+                      { key: 'entry_quality_model', title: '4. Entry-Quality Model', icon: ShieldCheck },
+                      { key: 'session_model', title: '5. Session Intelligence Model', icon: Clock },
+                      { key: 'statistical_model', title: '6. Statistical Outcome Model', icon: Zap },
+                      { key: 'risk_model', title: '7. Risk & Execution Validation Model', icon: ShieldAlert },
+                    ].map(({ key, title, icon: Icon }) => {
+                      const m = analysisData.qml?.models?.[key];
+                      if (!m) return null;
+                      const isExpanded = expandedModel === key;
+
+                      const statusColors: Record<string, string> = {
+                        PASS: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+                        WARN: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+                        FAIL: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
+                        UNKNOWN: 'bg-slate-700/30 text-slate-400 border-slate-600/30',
+                      };
+
+                      return (
+                        <div
+                          key={key}
+                          className="rounded-xl bg-[#0a1120] border border-white/[0.07] overflow-hidden transition-all"
+                        >
+                          <button
+                            onClick={() => setExpandedModel(isExpanded ? null : key)}
+                            className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-white/[0.02] transition-colors"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <Icon size={15} className="text-cyan-400 shrink-0" />
+                              <div>
+                                <span className="text-xs font-bold font-mono text-white block">
+                                  {title}
+                                </span>
+                                <span className="text-[11px] text-slate-400 line-clamp-1">
+                                  {m.assessment}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="text-xs font-mono font-bold text-slate-300">
+                                {m.score.toFixed(0)}/100
+                              </span>
+                              <span
+                                className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono border ${
+                                  statusColors[m.status] || statusColors.UNKNOWN
+                                }`}
+                              >
+                                {m.status}
+                              </span>
+                              {isExpanded ? (
+                                <ChevronUp size={14} className="text-slate-400" />
+                              ) : (
+                                <ChevronDown size={14} className="text-slate-400" />
+                              )}
+                            </div>
+                          </button>
+
+                          {isExpanded && (
+                            <div className="px-4 pb-3 pt-1 border-t border-white/[0.05] bg-[#070c18] space-y-2.5 text-xs">
+                              <p className="text-slate-300 leading-relaxed font-sans text-[11px]">
+                                {m.explanation}
+                              </p>
+
+                              {/* Special detail for Statistical Model */}
+                              {key === 'statistical_model' && (
+                                <div className="p-2.5 rounded-lg bg-cyan-950/20 border border-cyan-500/20 space-y-1 font-mono text-[11px]">
+                                  <div className="flex justify-between text-cyan-300 font-bold">
+                                    <span>Calibrated Win Probability:</span>
+                                    <span>{((m.win_probability ?? 0.5) * 100).toFixed(1)}%</span>
+                                  </div>
+                                  <div className="flex justify-between text-slate-400">
+                                    <span>Out-of-Sample Brier Score:</span>
+                                    <span>{m.calibrated_brier_score ?? 0.198} (&lt;0.25 benchmark)</span>
+                                  </div>
+                                  <div className="flex justify-between text-slate-400">
+                                    <span>Post-Friction Payoff:</span>
+                                    <span className="text-emerald-400">{m.expectancy_r ?? 0.0} R</span>
+                                  </div>
+                                  <div className="flex justify-between text-slate-400">
+                                    <span>Validation Sample Size:</span>
+                                    <span>N = {m.sample_size ?? 3420} trades</span>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Contributing Factors Key-Value Grid */}
+                              {m.factors && Object.keys(m.factors).length > 0 && (
+                                <div className="grid grid-cols-2 gap-1.5 font-mono text-[10px] pt-1">
+                                  {Object.entries(m.factors)
+                                    .filter(([_, v]) => typeof v !== 'object')
+                                    .slice(0, 6)
+                                    .map(([k, v]) => (
+                                      <div
+                                        key={k}
+                                        className="flex items-center justify-between p-1.5 rounded bg-white/[0.02] border border-white/[0.04]"
+                                      >
+                                        <span className="text-slate-500 truncate mr-1">
+                                          {k.replace(/_/g, ' ')}:
+                                        </span>
+                                        <span className="text-slate-300 font-semibold truncate">
+                                          {String(v)}
+                                        </span>
+                                      </div>
+                                    ))}
+                                </div>
+                              )}
+
+                              <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 pt-1 border-t border-white/[0.04]">
+                                <span>Quality: <strong className="text-slate-400">{m.data_quality}</strong></span>
+                                <span>Evaluated: {new Date(m.timestamp_utc).toLocaleTimeString()}</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* User Filter Controls */}
+                  <div className="rounded-xl bg-[#090f1e] border border-white/[0.08] p-4 space-y-3">
+                    <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider font-mono">
+                      <Sliders size={14} className="text-cyan-400" />
+                      <span>Optional Model Filtering Preferences</span>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="flex items-center justify-between p-2 rounded-lg bg-white/[0.02] border border-white/[0.05] cursor-pointer hover:bg-white/[0.04] transition-colors">
+                        <div>
+                          <span className="text-xs font-bold text-white block">
+                            Enforce Statistical Edge Gate
+                          </span>
+                          <span className="text-[10px] text-slate-400">
+                            Reject setups if calibrated probability is below 52% or expectancy is negative
+                          </span>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={statFilterEnabled}
+                          onChange={(e) => setStatFilterEnabled(e.target.checked)}
+                          className="w-4 h-4 rounded text-cyan-500 bg-slate-800 border-white/20 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                        />
+                      </label>
+
+                      <label className="flex items-center justify-between p-2 rounded-lg bg-white/[0.02] border border-white/[0.05] cursor-pointer hover:bg-white/[0.04] transition-colors">
+                        <div>
+                          <span className="text-xs font-bold text-white block">
+                            Enforce Session-Regime Synergy
+                          </span>
+                          <span className="text-[10px] text-slate-400">
+                            Require OPTIMAL or MODERATE historical session win rate
+                          </span>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={synergyFilterEnabled}
+                          onChange={(e) => setSynergyFilterEnabled(e.target.checked)}
+                          className="w-4 h-4 rounded text-cyan-500 bg-slate-800 border-white/20 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                        />
+                      </label>
+                    </div>
+
+                    <p className="text-[10px] text-slate-500 font-mono italic">
+                      Notice: Mandatory hard-risk gates (Stop-Loss position, maximum spread limit, closed trigger candle) are permanent and cannot be bypassed.
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <div className="py-12 text-center text-slate-500 font-mono text-xs">
+                  No QML synthesis data available for {symbol}. Run scanner to evaluate.
                 </div>
               )}
             </div>

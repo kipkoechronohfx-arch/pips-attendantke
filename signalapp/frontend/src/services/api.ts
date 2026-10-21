@@ -318,6 +318,12 @@ export const api = {
     return res.json();
   },
 
+  async getSymbolQML(symbol: string, timeframe: string = 'M15', direction: string = 'BUY'): Promise<import('../types').QMLSynthesis> {
+    const res = await fetch(`${API_BASE}/scanner/qml/${encodeURIComponent(symbol)}?timeframe=${timeframe}&direction=${direction}`);
+    if (!res.ok) throw new Error(`Failed to load QML synthesis for ${symbol}`);
+    return res.json();
+  },
+
   async getEntryAllowed(): Promise<{ allowed: boolean; reason: string | null }> {
     const res = await fetch(`${API_BASE}/scanner/entry-allowed`);
     if (!res.ok) return { allowed: true, reason: null };

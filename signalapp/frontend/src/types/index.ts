@@ -394,7 +394,44 @@ export interface FullAnalysis {
       asian_low: number | null;
     };
   };
+  qml?: QMLSynthesis;
   generated_at: string;
+}
+
+export interface QMLModelDetail {
+  name: string;
+  status: 'PASS' | 'WARN' | 'FAIL' | 'UNKNOWN';
+  score: number;
+  confidence: number;
+  data_quality: 'HIGH' | 'MEDIUM' | 'DEGRADED' | 'INSUFFICIENT';
+  assessment: string;
+  factors: Record<string, any>;
+  explanation: string;
+  timestamp_utc: string;
+  [key: string]: any;
+}
+
+export interface QMLSynthesis {
+  symbol: string;
+  timeframe: string;
+  composite_qml_score: number;
+  statistical_edge?: number | null;
+  regime: string;
+  alignment: string;
+  overall_data_quality: string;
+  models: {
+    regime_model?: QMLModelDetail;
+    mtf_model?: QMLModelDetail;
+    liquidity_model?: QMLModelDetail;
+    entry_quality_model?: QMLModelDetail;
+    session_model?: QMLModelDetail;
+    statistical_model?: QMLModelDetail;
+    risk_model?: QMLModelDetail;
+    [key: string]: any;
+  };
+  model_accept: boolean;
+  veto_reasons: string[];
+  evaluated_at: string;
 }
 
 export interface GateResults {
