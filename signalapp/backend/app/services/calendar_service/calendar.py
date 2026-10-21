@@ -1,7 +1,169 @@
+import re
+import time
+import logging
+import urllib.request
+import json as _json
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional, Tuple, Dict, Any
 from zoneinfo import ZoneInfo
 from app.schemas.news import EconomicEventResponse
+
+logger = logging.getLogger(__name__)
+
+# ── Live Forex Factory Calendar Feed ─────────────────────────────────────────
+# Public JSON endpoint — no API key required, updates every minute
+_FF_URL = "https://nfs.faireconomy.media/ff_calendar_thisweek.json"
+
+_live_cache: List[dict] = []
+_live_cache_ts: float = 0.0
+_CACHE_TTL_SECS: float = 300.0  # 5-minute cache
+
+# Maps Forex Factory impact strings → our schema
+_FF_IMPACT_MAP = {"High": "HIGH", "Medium": "MEDIUM", "Low": "LOW", "Holiday": "LOW"}
+
+# Currency symbols that indicate relevance
+_MAJOR_CURRENCIES = {"USD", "EUR", "GBP", "JPY", "AUD", "CAD", "CHF", "NZD"}
+
+
+def _fetch_ff_events() -> List[dict]:
+    """Fetch the live Forex Factory weekly JSON feed.
+    Returns raw list of dicts or empty list on failure."""
+    try:
+        req = urllib.request.Request(
+            _FF_URL,
+            headers={
+                "User-Agent": "Mozilla/5.0 (compatible; ForexCalendarBot/1.0)",
+                "Accept": "application/json",
+            },
+        )
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            raw = resp.read().decode("utf-8")
+            return _json.loads(raw)
+    except Exception as e:
+        logger.warning(f"[Calendar] FF feed fetch failed: {e}")
+        return []
+
+
+def _parse_ff_event(item: dict, ev_id: int, ref_now: datetime) -> Optional[dict]:
+    """Parse a single Forex Factory JSON event into our internal schema dict."""
+    try:
+        # In Forex Factory JSON, 'country' holds the currency code (e.g. 'USD', 'GBP', 'EUR')
+        currency = (item.get("country") or item.get("currency") or "").upper().strip()
+        if currency not in _MAJOR_CURRENCIES and currency != "XAU":
+            return None
+
+        impact_raw = item.get("impact", "")
+        impact = _FF_IMPACT_MAP.get(impact_raw, "LOW")
+        # Filter out low impact and holidays to keep calendar relevant and clean
+        if impact == "LOW":
+            return None
+
+        date_str = item.get("date", "")  # ISO 8601 string, e.g. "2026-10-21T08:30:00-04:00"
+        if not date_str:
+            return None
+
+        try:
+            sch_utc = datetime.fromisoformat(date_str).astimezone(timezone.utc)
+        except Exception:
+            return None
+
+        is_past = ref_now >= sch_utc
+
+        # Actual / forecast / previous values
+        actual_raw = item.get("actual")
+        actual_val = actual_raw.strip() if isinstance(actual_raw, str) and actual_raw.strip() else None
+        forecast = (item.get("forecast") or "").strip() or None
+        previous = (item.get("previous") or "").strip() or None
+        event_name = item.get("title", "Unknown Event")
+        country = currency
+
+        # Mark actual None if event is in future even if FF has stale/placeholder data
+        if not is_past:
+            actual_val = None
+
+        # Compute surprise sentiment
+        surprise = "PENDING"
+        if is_past and actual_val and forecast and forecast not in ("", "—"):
+            try:
+                act_num = float(re.sub(r"[^\d.-]", "", actual_val))
+                fc_num = float(re.sub(r"[^\d.-]", "", forecast))
+                # For unemployment/deficit/cpi/ppi — lower is better heuristic
+                lower_is_better = any(kw in event_name.lower() for kw in [
+                    "unemployment", "deficit", "inflation", "cpi", "ppi"
+                ])
+                higher_is_better = not lower_is_better
+                if act_num == fc_num:
+                    surprise = "IN_LINE"
+                elif (act_num > fc_num and higher_is_better) or (act_num < fc_num and not higher_is_better):
+                    surprise = "BULLISH"
+                else:
+                    surprise = "BEARISH"
+            except Exception:
+                surprise = "IN_LINE"
+
+        diff_mins = int((sch_utc - ref_now).total_seconds() / 60)
+        status = "RELEASED" if is_past else "SCHEDULED"
+
+        return {
+            "id": ev_id,
+            "event_name": event_name,
+            "country": country,
+            "currency": currency,
+            "scheduled_time_utc": sch_utc,
+            "impact": impact,
+            "previous": previous,
+            "forecast": forecast,
+            "actual": actual_val,
+            "status": status,
+            "surprise_sentiment": surprise,
+            "minutes_until": diff_mins,
+        }
+    except Exception as e:
+        logger.debug(f"[Calendar] Failed to parse FF event: {e}")
+        return None
+
+
+
+def get_live_ff_calendar(ref_now: Optional[datetime] = None) -> List[dict]:
+    """Return live events from Forex Factory with 5-minute caching.
+    Falls back to empty list if unavailable."""
+    global _live_cache, _live_cache_ts
+
+    now_ts = time.monotonic()
+    if _live_cache and (now_ts - _live_cache_ts) < _CACHE_TTL_SECS:
+        # Re-compute dynamic fields (status, minutes_until) from cached events
+        now = ref_now or datetime.now(timezone.utc)
+        refreshed = []
+        for ev in _live_cache:
+            ev = dict(ev)
+            sch = ev["scheduled_time_utc"]
+            is_past = now >= sch
+            ev["status"] = "RELEASED" if is_past else "SCHEDULED"
+            ev["minutes_until"] = int((sch - now).total_seconds() / 60)
+            if not is_past:
+                ev["actual"] = None
+            refreshed.append(ev)
+        return refreshed
+
+    now = ref_now or datetime.now(timezone.utc)
+    raw = _fetch_ff_events()
+    if not raw:
+        return []
+
+    parsed = []
+    for i, item in enumerate(raw):
+        ev = _parse_ff_event(item, ev_id=1000 + i, ref_now=now)
+        if ev:
+            parsed.append(ev)
+
+    if parsed:
+        _live_cache = parsed
+        _live_cache_ts = now_ts
+        logger.info(f"[Calendar] Loaded {len(parsed)} live events from Forex Factory")
+
+    return parsed
+
+
 
 def _get_current_week_dates(ref_now: datetime) -> Dict[str, datetime.date]:
     """Calculate date for Monday through Friday of the current week."""
@@ -387,8 +549,6 @@ def get_weekly_macro_calendar(ref_now: Optional[datetime] = None) -> List[dict]:
     return events
 
 
-import re
-
 class EconomicCalendarService:
     def get_events(
         self,
@@ -397,14 +557,23 @@ class EconomicCalendarService:
         impact_filter: Optional[str] = None,
     ) -> List[EconomicEventResponse]:
         """
-        Return accurately formatted economic events converted into target timezone.
+        Return live economic calendar events from Forex Factory (real-time),
+        falling back to the static internal catalog if the external feed is unavailable.
+        Events are converted into the requested timezone and sorted chronologically.
         """
         try:
             tz = ZoneInfo(user_timezone)
         except Exception:
             tz = ZoneInfo("Africa/Nairobi")
 
-        raw_events = get_weekly_macro_calendar()
+        # 1️⃣ Try live Forex Factory feed first
+        raw_events = get_live_ff_calendar()
+
+        # 2️⃣ Fallback to static catalog if live feed returned nothing
+        if not raw_events:
+            logger.info("[Calendar] Using static fallback catalog (FF feed unavailable)")
+            raw_events = get_weekly_macro_calendar()
+
         results: List[EconomicEventResponse] = []
 
         for ev in raw_events:
@@ -422,8 +591,9 @@ class EconomicCalendarService:
                 continue
 
             # Accurate local time formatting
-            local_dt = ev["scheduled_time_utc"].astimezone(tz)
-            local_time_str = local_dt.strftime("%Y-%m-%d %H:%M %Z")
+            sch_utc = ev["scheduled_time_utc"]
+            local_dt = sch_utc.astimezone(tz)
+            local_time_str = local_dt.strftime("%a %b %d, %H:%M %Z")  # e.g. "Tue Oct 21, 15:30 EAT"
 
             data = dict(ev)
             data["scheduled_time_local"] = local_time_str
@@ -457,7 +627,9 @@ class EconomicCalendarService:
         if not relevant_currencies:
             relevant_currencies = {"USD", "EUR"}
 
-        events = get_weekly_macro_calendar(now)
+        events = get_live_ff_calendar(now)
+        if not events:
+            events = get_weekly_macro_calendar(now)
         for ev in events:
             if ev["impact"] != "HIGH":
                 continue

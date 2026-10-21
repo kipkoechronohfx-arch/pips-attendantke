@@ -29,10 +29,18 @@ export const CalendarPage: React.FC = () => {
   const { userTimezone, setUserTimezone } = useAppStore();
   const [events, setEvents] = useState<EconomicEvent[]>([]);
   const [loading, setLoading] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [currentTime, setCurrentTime] = useState(Date.now());
   const [dayFilter, setDayFilter] = useState<'ALL' | 'TODAY' | 'TOMORROW' | 'WEEK'>('WEEK');
   const [impactFilter, setImpactFilter] = useState('ALL');
   const [currencyFilter, setCurrencyFilter] = useState('ALL');
   const [selectedTz, setSelectedTz] = useState(userTimezone || 'Africa/Nairobi');
+
+  // Real-time 1-second ticking clock for live countdowns
+  useEffect(() => {
+    const clockTimer = setInterval(() => setCurrentTime(Date.now()), 1000);
+    return () => clearInterval(clockTimer);
+  }, []);
 
   const loadCalendar = useCallback(async () => {
     setLoading(true);
@@ -40,6 +48,7 @@ export const CalendarPage: React.FC = () => {
       const data = await api.getCalendar(selectedTz, currencyFilter, impactFilter);
       if (Array.isArray(data)) {
         setEvents(data);
+        setLastUpdated(new Date());
       }
     } catch {
       // fallback
@@ -61,24 +70,43 @@ export const CalendarPage: React.FC = () => {
 
   // Find if any high impact event is within 30 minutes
   const activeBlackoutEvent = useMemo(() => {
-    const now = Date.now();
     return events.find((ev) => {
       if (ev.impact !== 'HIGH') return false;
       try {
         const evTime = new Date(ev.scheduled_time_utc).getTime();
-        const diffMins = Math.abs(evTime - now) / 60000;
+        const diffMins = Math.abs(evTime - currentTime) / 60000;
         return diffMins <= 30;
       } catch {
         return false;
       }
     });
-  }, [events]);
+  }, [events, currentTime]);
+
+  // Formats precise live countdown down to the second
+  const getCountdownText = useCallback((scheduledUtc: string) => {
+    try {
+      const diffMs = new Date(scheduledUtc).getTime() - currentTime;
+      if (diffMs <= 0) return null;
+      const totalSecs = Math.floor(diffMs / 1000);
+      const days = Math.floor(totalSecs / 86400);
+      const hours = Math.floor((totalSecs % 86400) / 3600);
+      const mins = Math.floor((totalSecs % 3600) / 60);
+      const secs = totalSecs % 60;
+
+      if (days > 0) return `In ${days}d ${hours}h`;
+      if (hours > 0) return `In ${hours}h ${mins}m`;
+      if (mins > 0) return `In ${mins}m ${secs < 10 ? '0' : ''}${secs}s`;
+      return `In ${secs}s`;
+    } catch {
+      return null;
+    }
+  }, [currentTime]);
 
   // Filtered by horizon
   const filteredEvents = useMemo(() => {
-    const now = new Date();
+    const now = new Date(currentTime);
     const todayStr = now.toISOString().split('T')[0];
-    const tomorrow = new Date(now.getTime() + 86400000);
+    const tomorrow = new Date(currentTime + 86400000);
     const tomorrowStr = tomorrow.toISOString().split('T')[0];
 
     return events.filter((ev) => {
@@ -90,7 +118,7 @@ export const CalendarPage: React.FC = () => {
       }
       return true;
     });
-  }, [events, dayFilter]);
+  }, [events, dayFilter, currentTime]);
 
   return (
     <div className="space-y-6 page-enter font-sans">
@@ -102,14 +130,23 @@ export const CalendarPage: React.FC = () => {
               <CalendarDays size={18} />
             </div>
             <div>
-              <h1 className="text-xl font-black font-mono tracking-tight text-white flex items-center gap-2">
+              <h1 className="text-xl font-black font-mono tracking-tight text-white flex flex-wrap items-center gap-2">
                 Macroeconomic Calendar Desk
                 <span className="px-2 py-0.5 rounded-full text-[9px] font-bold font-mono bg-cyan-500/10 text-cyan-400 border border-cyan-500/25 uppercase">
                   Institutional
                 </span>
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-bold font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/25">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  LIVE · Forex Factory
+                </span>
               </h1>
-              <p className="text-xs text-slate-400 font-mono mt-0.5">
-                Central Bank Rate Announcements, Inflation Metrics, Labor Prints &amp; Algorithmic Blackout Gate Integration
+              <p className="text-xs text-slate-400 font-mono mt-0.5 flex flex-wrap items-center gap-2">
+                <span>Central Bank Rate Announcements, Inflation Metrics, Labor Prints &amp; Blackout Gate</span>
+                {lastUpdated && (
+                  <span className="text-[10px] text-emerald-400/80 font-mono hidden md:inline">
+                    • Synced {lastUpdated.toLocaleTimeString()}
+                  </span>
+                )}
               </p>
             </div>
           </div>
@@ -252,29 +289,55 @@ export const CalendarPage: React.FC = () => {
               ) : (
                 filteredEvents.map((ev) => {
                   const isHigh = ev.impact === 'HIGH';
+                  const evTime = new Date(ev.scheduled_time_utc).getTime();
+                  const diffMs = evTime - currentTime;
+                  const isPast = ev.status === 'RELEASED' || diffMs <= 0;
                   const isReleased = ev.status === 'RELEASED';
                   const isBullish = ev.surprise_sentiment === 'BULLISH';
                   const isBearish = ev.surprise_sentiment === 'BEARISH';
-                  const isUpcoming = !isReleased && ev.minutes_until != null && ev.minutes_until > 0 && ev.minutes_until <= 60;
+                  const countdown = getCountdownText(ev.scheduled_time_utc);
+                  const isImminent = !isPast && diffMs > 0 && diffMs <= 900000; // 15 mins
+                  const isUpcoming = !isPast && diffMs > 0 && diffMs <= 3600000; // 60 mins
 
                   return (
                     <tr
                       key={ev.id}
-                      className="hover:bg-white/[0.03] transition-colors group"
+                      className={`transition-colors group ${
+                        isImminent
+                          ? 'bg-amber-500/[0.06] hover:bg-amber-500/[0.1] border-l-2 border-l-amber-400'
+                          : 'hover:bg-white/[0.03]'
+                      }`}
                     >
                       {/* Scheduled Time */}
                       <td className="py-3 px-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
-                          <Clock size={12} className={isUpcoming ? 'text-amber-400 animate-pulse' : 'text-cyan-400'} />
+                          <Clock
+                            size={12}
+                            className={
+                              isImminent
+                                ? 'text-amber-300 animate-spin'
+                                : isUpcoming
+                                ? 'text-amber-400 animate-pulse'
+                                : 'text-cyan-400'
+                            }
+                          />
                           <div>
                             <span className="font-bold text-slate-200 block">
                               {ev.scheduled_time_local || 'Scheduled'}
                             </span>
-                            {isUpcoming && (
-                              <span className="text-[10px] text-amber-400 font-bold block">
-                                In {ev.minutes_until} mins
+                            {countdown ? (
+                              <span
+                                className={`text-[10px] font-bold block ${
+                                  isImminent ? 'text-amber-300 animate-pulse' : 'text-amber-400'
+                                }`}
+                              >
+                                {countdown}
                               </span>
-                            )}
+                            ) : isPast ? (
+                              <span className="text-[10px] text-slate-500 font-semibold block">
+                                Released
+                              </span>
+                            ) : null}
                           </div>
                         </div>
                       </td>
@@ -321,7 +384,7 @@ export const CalendarPage: React.FC = () => {
 
                       {/* Actual Outcome */}
                       <td className="py-3 px-4 text-right whitespace-nowrap">
-                        {isReleased && ev.actual ? (
+                        {(isPast || isReleased) && ev.actual ? (
                           <div className="inline-flex items-center gap-1.5 font-bold">
                             <span
                               className={`text-sm ${
@@ -345,6 +408,10 @@ export const CalendarPage: React.FC = () => {
                               </span>
                             )}
                           </div>
+                        ) : isPast ? (
+                          <span className="text-[11px] text-amber-400/80 italic">
+                            Awaiting Print
+                          </span>
                         ) : (
                           <span className="text-[11px] text-slate-500 italic">
                             Pending
