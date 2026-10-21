@@ -36,8 +36,9 @@ async def get_live_tick(
     Returns only the **current (last) candle** with a live close price injected from the
     real-time bid/ask mid. Refreshed dynamically every second.
     """
-    quote = await market_data_manager.get_quote(symbol)
-    candles = await market_data_manager.get_candles(symbol, timeframe, 2)
+    norm_sym = symbol.replace("_", "/")
+    quote = await market_data_manager.get_quote(norm_sym)
+    candles = await market_data_manager.get_candles(norm_sym, timeframe, 2)
     if not candles:
         raise HTTPException(status_code=404, detail=f"No candle data for {symbol} · {timeframe}")
     last = candles[-1]

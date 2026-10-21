@@ -73,9 +73,9 @@ class OandaDataProvider(MarketDataProvider):
         }
 
     async def _refresh_24h_stats(self) -> None:
-        """Fetch daily candle for each symbol to get real 24h high, low, open concurrently."""
+        """Fetch daily candle for each symbol to get real 24h high, low, open (throttled)."""
         now = time.time()
-        if now - self._h24_fetch_ts < 60.0:
+        if now - self._h24_fetch_ts < 300.0:  # refresh at most once every 5 minutes
             return
         self._h24_fetch_ts = now
 
@@ -101,13 +101,21 @@ class OandaDataProvider(MarketDataProvider):
                 pass
 
         try:
-            async with httpx.AsyncClient(timeout=6.0) as client:
-                await asyncio.gather(*[_fetch_one(client, sym, oanda_sym) for sym, oanda_sym in SYMBOL_MAP.items()])
+            sem = asyncio.Semaphore(2)
+            async def _throttled_fetch(client: httpx.AsyncClient, sym: str, oanda_sym: str):
+                async with sem:
+                    await _fetch_one(client, sym, oanda_sym)
+
+            async with httpx.AsyncClient(timeout=4.0) as client:
+                await asyncio.gather(*[_throttled_fetch(client, sym, oanda_sym) for sym, oanda_sym in SYMBOL_MAP.items()])
         except Exception:
             pass
 
     async def get_quote(self, symbol: str) -> Optional[Quote]:
         norm_sym = symbol.replace("_", "/")
+        # Fast path: in-memory cache hit
+        if norm_sym in self._cached_quotes:
+            return self._cached_quotes[norm_sym]
         quotes = await self.get_all_quotes()
         for q in quotes:
             if q.symbol == norm_sym or q.symbol == symbol:
@@ -206,11 +214,12 @@ class OandaDataProvider(MarketDataProvider):
         if not self._is_live:
             return []
 
-        cache_key = f"{symbol}_{timeframe}"
+        norm_sym = symbol.replace("_", "/")
+        tf_upper = str(timeframe).upper().strip()
+        cache_key = f"{norm_sym}_{tf_upper}"
         now = time.time()
 
         # Determine cache TTL based on timeframe (shorter for faster TFs)
-        tf_upper = str(timeframe).upper().strip()
         cache_ttl = {
             "M5": 10.0, "5M": 10.0,
             "M15": 15.0, "15M": 15.0,
@@ -224,9 +233,9 @@ class OandaDataProvider(MarketDataProvider):
             ts, cached = self._candle_cache[cache_key]
             if (now - ts < cache_ttl) and len(cached) >= count:
                 # Inject live tick into the last (current) open candle
-                return self._inject_live_tick(symbol, cached[-count:])
+                return self._inject_live_tick(norm_sym, cached[-count:])
 
-        oanda_sym = SYMBOL_MAP.get(symbol, symbol.replace("/", "_"))
+        oanda_sym = SYMBOL_MAP.get(norm_sym, norm_sym.replace("/", "_"))
         tf_map = {
             "M5": "M5", "5M": "M5",
             "M15": "M15", "15M": "M15",

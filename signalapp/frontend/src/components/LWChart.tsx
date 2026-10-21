@@ -45,8 +45,10 @@ export const LWChart: React.FC<Props> = ({
   const [providerName, setProviderName] = React.useState('');
   const [lastTickAt, setLastTickAt] = React.useState<number | null>(null);
 
-  // Subscribe to live quote for this symbol from the global store
-  const liveQuote = useAppStore((s) => s.quotes[symbol]);
+  // Subscribe to live quote for this symbol from the global store (supports both slash and underscore)
+  const liveQuote = useAppStore(
+    (s) => s.quotes[symbol] || s.quotes[symbol.replace('/', '_')] || s.quotes[symbol.replace('_', '/')]
+  );
 
   // ── Sync timeframe prop if changed by parent ─────
   useEffect(() => {
@@ -200,7 +202,23 @@ export const LWChart: React.FC<Props> = ({
     }
   }, [symbol, tf, activeSignal]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => { loadCandles(); }, [loadCandles]);
+  useEffect(() => {
+    loadCandles();
+    // Auto-refresh completed bars every 20s so historical structure settles accurately
+    const candleRefreshTimer = setInterval(loadCandles, 20000);
+    return () => clearInterval(candleRefreshTimer);
+  }, [loadCandles]);
+
+  // Timeframe duration in seconds for dynamic bar boundary roll-overs
+  const TF_SECONDS: Record<string, number> = {
+    M1: 60,
+    M5: 300,
+    M15: 900,
+    M30: 1800,
+    H1: 3600,
+    H4: 14400,
+    D1: 86400,
+  };
 
   // ── Reactive Store Quote Subscription (Instant sub-second tick reflection) ──
   // Updates candle body, wicks, and right-scale price line whenever live interbank quotes arrive
@@ -209,24 +227,52 @@ export const LWChart: React.FC<Props> = ({
     const currentPrice = liveQuote.mid;
     if (typeof currentPrice !== 'number' || isNaN(currentPrice) || currentPrice <= 0) return;
 
+    const barPeriod = TF_SECONDS[tf] || 3600;
+    const currentBarTime = Math.floor(Date.now() / 1000 / barPeriod) * barPeriod;
     const prev = lastCandleRef.current;
-    const updatedCandle: CandlestickData = {
-      time: prev.time,
-      open: prev.open,
-      high: Math.max(prev.high, currentPrice),
-      low: Math.min(prev.low, currentPrice),
-      close: currentPrice,
-    };
-    lastCandleRef.current = updatedCandle;
-    try {
-      candleSeriesRef.current.update(updatedCandle);
-      setLastTickAt(Date.now());
-    } catch {
-      // ignore
-    }
-  }, [liveQuote]);
+    const lastBarTime = typeof prev.time === 'number' ? prev.time : Number(prev.time);
 
-  // ── Live Tick Polling (1s cadence) ────────────────
+    if (currentBarTime > lastBarTime) {
+      // New candle period has started! Append the new candle
+      const newCandle: CandlestickData = {
+        time: currentBarTime as Time,
+        open: currentPrice,
+        high: currentPrice,
+        low: currentPrice,
+        close: currentPrice,
+      };
+      lastCandleRef.current = newCandle;
+      try {
+        candleSeriesRef.current.update(newCandle);
+        volSeriesRef.current?.update({
+          time: currentBarTime as Time,
+          value: 10,
+          color: 'rgba(16,185,129,0.25)',
+        });
+        setLastTickAt(Date.now());
+      } catch {
+        // ignore
+      }
+    } else {
+      // Update the active candle's high, low, close with live price
+      const updatedCandle: CandlestickData = {
+        time: prev.time,
+        open: prev.open,
+        high: Math.max(prev.high, currentPrice),
+        low: Math.min(prev.low, currentPrice),
+        close: currentPrice,
+      };
+      lastCandleRef.current = updatedCandle;
+      try {
+        candleSeriesRef.current.update(updatedCandle);
+        setLastTickAt(Date.now());
+      } catch {
+        // ignore
+      }
+    }
+  }, [liveQuote, tf]);
+
+  // ── Live Tick Polling (2.5s cadence as backend backup) ────────────────
   // Uses series.update() on the active candle and handles new candle creation
   useEffect(() => {
     if (loading || error) return;
@@ -256,7 +302,7 @@ export const LWChart: React.FC<Props> = ({
       } catch { /* silent — polling continues */ }
     };
 
-    const tickInterval = setInterval(applyTick, 1000);
+    const tickInterval = setInterval(applyTick, 2500);
     return () => clearInterval(tickInterval);
   }, [symbol, tf, loading, error]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -368,8 +414,8 @@ export const LWChart: React.FC<Props> = ({
               {liveQuote.mid}
             </span>
           )}
-          {lastTickAt && isLive && (
-            <span className="text-[9px] text-slate-500 font-mono">
+          {lastTickAt && (
+            <span className="text-[9px] text-slate-500 font-mono hidden sm:inline">
               tick {new Date(lastTickAt).toLocaleTimeString()}
             </span>
           )}
