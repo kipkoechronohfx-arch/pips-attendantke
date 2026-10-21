@@ -107,6 +107,28 @@
     .section-body a { color: #d4af37; text-decoration: underline; text-decoration-color: rgba(212,175,55,0.3); }
     .callout { background: rgba(212,175,55,0.06); border: 1px solid rgba(212,175,55,0.2); border-left: 3px solid #d4af37; border-radius: 12px; padding: 1.25rem 1.5rem; margin: 2rem 0; }
     .callout p { margin: 0; color: #c9b46a; }
+    /* Service card hover arrow */
+    .service-card .arrow-icon { opacity: 0; transform: translateX(-6px); transition: opacity 0.2s, transform 0.2s; }
+    .service-card:hover .arrow-icon { opacity: 1; transform: translateX(0); }
+    .service-card { transition: border-color 0.2s, box-shadow 0.2s; }
+    .service-card:hover { box-shadow: 0 0 0 1px rgba(212,175,55,0.15), 0 8px 32px rgba(212,175,55,0.06); }
+    /* Mobile nav */
+    #mobile-menu { display: none; }
+    #mobile-menu.open { display: flex; }
+    /* Stat counter */
+    .stat-num { font-variant-numeric: tabular-nums; }
+    /* Testimonial */
+    .testi-card { background: rgba(0,0,0,0.55); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; padding: 1.5rem; transition: border-color 0.2s; }
+    .testi-card:hover { border-color: rgba(212,175,55,0.2); }
+    .testi-stars { color: #d4af37; letter-spacing: 2px; font-size: 0.85rem; margin-bottom: 0.75rem; }
+    .testi-text { color: #cbd5e1; font-size: 0.875rem; line-height: 1.7; margin-bottom: 1rem; }
+    .testi-author { display: flex; align-items: center; gap: 0.75rem; }
+    .testi-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg,#d4af37,#8b6914); display: flex; align-items: center; justify-content: center; font-weight: 800; color: #000; font-size: 0.8rem; flex-shrink: 0; }
+    .testi-name { color: #fff; font-weight: 700; font-size: 0.8rem; }
+    .testi-role { color: #64748b; font-size: 0.7rem; }
+    /* Hero glow pulse */
+    @keyframes glow-pulse { 0%,100% { opacity:0.12; transform: scale(1); } 50% { opacity:0.22; transform: scale(1.08); } }
+    .hero-glow { animation: glow-pulse 5s ease-in-out infinite; }
   </style>
 </head>
 <body class="bg-primary text-gray-300 font-sans antialiased selection:bg-gold/30 selection:text-white">
@@ -131,15 +153,36 @@
           <a href="/about.html" class="text-gold font-semibold">About</a>
           <a href="/blog.html" class="hover:text-white transition-colors">Blog</a>
         </div>
-        <a href="/premium.html" class="btn-gold text-sm px-5 py-2 font-bold rounded-xl">Join VIP</a>
+        <div class="flex items-center gap-3">
+          <a href="/premium.html" class="btn-gold text-sm px-5 py-2 font-bold rounded-xl">Join VIP</a>
+          <!-- Hamburger -->
+          <button id="hamburger-btn" aria-label="Open menu" class="md:hidden flex flex-col gap-1.5 p-1.5 rounded-lg hover:bg-white/10 transition-colors" onclick="document.getElementById('mobile-menu').classList.toggle('open')">
+            <span class="block w-5 h-0.5 bg-white rounded"></span>
+            <span class="block w-5 h-0.5 bg-white rounded"></span>
+            <span class="block w-5 h-0.5 bg-white rounded"></span>
+          </button>
+        </div>
       </div>
+    </div>
+    <!-- Mobile Menu Dropdown -->
+    <div id="mobile-menu" class="flex-col gap-1 px-4 pb-4 bg-black/95 border-t border-white/5 text-sm font-medium">
+      <a href="/" class="block py-2 text-gray-300 hover:text-white transition-colors border-b border-white/5">Home</a>
+      <a href="/forex-signals.html" class="block py-2 text-gray-300 hover:text-white transition-colors border-b border-white/5">Signals</a>
+      <a href="/copy-trading.html" class="block py-2 text-gray-300 hover:text-white transition-colors border-b border-white/5">Copy Trading</a>
+      <a href="/propfirm.html" class="block py-2 text-gray-300 hover:text-white transition-colors border-b border-white/5">Prop Firms</a>
+      <a href="/education.html" class="block py-2 text-gray-300 hover:text-white transition-colors border-b border-white/5">Education</a>
+      <a href="/about.html" class="block py-2 text-gold font-semibold border-b border-white/5">About</a>
+      <a href="/blog.html" class="block py-2 text-gray-300 hover:text-white transition-colors border-b border-white/5">Blog</a>
+      <a href="/premium.html" class="block mt-3 btn-gold text-center text-sm px-5 py-2.5 font-bold rounded-xl">🚀 Join VIP</a>
     </div>
   </nav>
 
   <!-- HERO -->
   <section class="pt-28 pb-16 px-4 border-b border-white/5 relative overflow-hidden">
     <div class="absolute inset-0 bg-gradient-to-br from-black via-[#050508] to-black"></div>
-    <div class="absolute top-1/3 right-1/4 w-96 h-96 bg-gold/4 rounded-full blur-3xl"></div>
+    <!-- Boosted hero glows -->
+    <div class="hero-glow absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-gold/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-0 left-1/4 w-80 h-80 bg-amber-900/20 rounded-full blur-3xl pointer-events-none"></div>
     <div class="relative z-10 max-w-4xl mx-auto text-center">
       <div data-aos="fade-down" class="inline-flex items-center gap-2 bg-gold/10 border border-gold/20 rounded-full px-4 py-1.5 text-gold text-sm font-semibold mb-6">
         🏢 Forex Trading Company · Est. 2021
@@ -150,6 +193,13 @@
       <p data-aos="fade-up" data-aos-delay="100" id="entity-statement" class="speakable text-lg md:text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
         <strong class="text-white">Pips Attendant is a professional Forex trading company</strong> — not a medical, nursing, or patient attendant service. We provide premium Forex signals, copy trading, Forex education, prop firm coaching, and trading analytics to traders worldwide.
       </p>
+      <!-- Quick trust pills -->
+      <div data-aos="fade-up" data-aos-delay="200" class="flex flex-wrap justify-center gap-3 mt-8">
+        <span class="flex items-center gap-1.5 bg-black/50 border border-white/10 rounded-full px-4 py-1.5 text-xs text-gray-300">✅ Est. 2021</span>
+        <span class="flex items-center gap-1.5 bg-black/50 border border-white/10 rounded-full px-4 py-1.5 text-xs text-gray-300">🌍 50+ Countries</span>
+        <span class="flex items-center gap-1.5 bg-black/50 border border-white/10 rounded-full px-4 py-1.5 text-xs text-gray-300">👥 5,000+ Members</span>
+        <span class="flex items-center gap-1.5 bg-black/50 border border-white/10 rounded-full px-4 py-1.5 text-xs text-gray-300">⭐ 4.9 Rated</span>
+      </div>
     </div>
   </section>
 
@@ -205,17 +255,23 @@
       <p>Pips Attendant provides a complete Forex trading ecosystem covering every stage of the trader's journey:</p>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
-        <a href="/forex-signals.html" class="bg-black/60 backdrop-blur-md border border-white/5 rounded-2xl p-5 hover:border-gold/30 transition-all group">
-          <div class="flex items-center gap-3 mb-2">
-            <i data-feather="send" class="w-5 h-5 text-gold"></i>
-            <h3 class="text-white font-bold text-sm m-0">Premium Forex Signals</h3>
+        <a href="/forex-signals.html" class="service-card bg-black/60 backdrop-blur-md border border-white/5 rounded-2xl p-5 hover:border-gold/30 transition-all group">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-3">
+              <i data-feather="send" class="w-5 h-5 text-gold"></i>
+              <h3 class="text-white font-bold text-sm m-0">Premium Forex Signals</h3>
+            </div>
+            <i data-feather="arrow-right" class="arrow-icon w-4 h-4 text-gold"></i>
           </div>
           <p class="text-gray-500 text-xs leading-relaxed m-0">Daily high-probability trade alerts on XAUUSD, EURUSD, GBPUSD and more — with full entry, stop loss, and take profit levels delivered via Telegram.</p>
         </a>
-        <a href="/copy-trading.html" class="bg-black/60 backdrop-blur-md border border-white/5 rounded-2xl p-5 hover:border-gold/30 transition-all group">
-          <div class="flex items-center gap-3 mb-2">
-            <i data-feather="copy" class="w-5 h-5 text-gold"></i>
-            <h3 class="text-white font-bold text-sm m-0">Copy Trading</h3>
+        <a href="/copy-trading.html" class="service-card bg-black/60 backdrop-blur-md border border-white/5 rounded-2xl p-5 hover:border-gold/30 transition-all group">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-3">
+              <i data-feather="copy" class="w-5 h-5 text-gold"></i>
+              <h3 class="text-white font-bold text-sm m-0">Copy Trading</h3>
+            </div>
+            <i data-feather="arrow-right" class="arrow-icon w-4 h-4 text-gold"></i>
           </div>
           <p class="text-gray-500 text-xs leading-relaxed m-0">Automatically mirror our professional trades on your MT4 or MT5 account. Earn passive income from Forex with zero screen time required.</p>
         </a>
@@ -233,17 +289,23 @@
           </div>
           <p class="text-gray-500 text-xs leading-relaxed m-0">Expert coaching and account management for FTMO, FundedNext, and other prop firm challenges — with strict drawdown control.</p>
         </a>
-        <a href="/calculator.html" class="bg-black/60 backdrop-blur-md border border-white/5 rounded-2xl p-5 hover:border-gold/30 transition-all group">
-          <div class="flex items-center gap-3 mb-2">
-            <i data-feather="activity" class="w-5 h-5 text-gold"></i>
-            <h3 class="text-white font-bold text-sm m-0">Trading Account Analytics</h3>
+        <a href="/calculator.html" class="service-card bg-black/60 backdrop-blur-md border border-white/5 rounded-2xl p-5 hover:border-gold/30 transition-all group">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-3">
+              <i data-feather="activity" class="w-5 h-5 text-gold"></i>
+              <h3 class="text-white font-bold text-sm m-0">Trading Account Analytics</h3>
+            </div>
+            <i data-feather="arrow-right" class="arrow-icon w-4 h-4 text-gold"></i>
           </div>
           <p class="text-gray-500 text-xs leading-relaxed m-0">Risk calculators, trade journal tools, and performance tracking to help you identify strengths and weaknesses in your trading.</p>
         </a>
-        <a href="/daily-market-analysis-gold.html" class="bg-black/60 backdrop-blur-md border border-white/5 rounded-2xl p-5 hover:border-gold/30 transition-all group">
-          <div class="flex items-center gap-3 mb-2">
-            <i data-feather="bar-chart-2" class="w-5 h-5 text-gold"></i>
-            <h3 class="text-white font-bold text-sm m-0">Daily Market Analysis</h3>
+        <a href="/daily-market-analysis-gold.html" class="service-card bg-black/60 backdrop-blur-md border border-white/5 rounded-2xl p-5 hover:border-gold/30 transition-all group">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-3">
+              <i data-feather="bar-chart-2" class="w-5 h-5 text-gold"></i>
+              <h3 class="text-white font-bold text-sm m-0">Daily Market Analysis</h3>
+            </div>
+            <i data-feather="arrow-right" class="arrow-icon w-4 h-4 text-gold"></i>
           </div>
           <p class="text-gray-500 text-xs leading-relaxed m-0">Pre-session market briefings covering XAUUSD, major currency pairs, key news events, and institutional bias for the trading day.</p>
         </a>
@@ -263,18 +325,18 @@
       <!-- EEAT — WHY TRUST US -->
       <h2>Why Traders Trust Pips Attendant</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
-        <div class="bg-black/60 backdrop-blur-md border border-white/5 rounded-2xl p-5">
-          <div class="text-gold font-black text-2xl font-heading mb-2">3+</div>
+        <div class="bg-black/60 backdrop-blur-md border border-white/5 rounded-2xl p-5" data-aos="fade-up">
+          <div class="text-gold font-black text-2xl font-heading mb-2 stat-num" data-target="3" data-suffix="+">0+</div>
           <div class="text-white font-semibold text-sm mb-1">Years of Verified Track Record</div>
           <p class="text-gray-500 text-xs m-0">Our signal history and results have been shared transparently with our community since 2021, with monthly performance summaries posted publicly.</p>
         </div>
-        <div class="bg-black/60 backdrop-blur-md border border-white/5 rounded-2xl p-5">
-          <div class="text-gold font-black text-2xl font-heading mb-2">5,000+</div>
+        <div class="bg-black/60 backdrop-blur-md border border-white/5 rounded-2xl p-5" data-aos="fade-up" data-aos-delay="80">
+          <div class="text-gold font-black text-2xl font-heading mb-2 stat-num" data-target="5000" data-suffix="+">0+</div>
           <div class="text-white font-semibold text-sm mb-1">Active Members Worldwide</div>
           <p class="text-gray-500 text-xs m-0">Traders from Kenya, Nigeria, the UK, USA, UAE, India, and 50+ other countries trust our signals and education daily.</p>
         </div>
-        <div class="bg-black/60 backdrop-blur-md border border-white/5 rounded-2xl p-5">
-          <div class="text-gold font-black text-2xl font-heading mb-2">4.9★</div>
+        <div class="bg-black/60 backdrop-blur-md border border-white/5 rounded-2xl p-5" data-aos="fade-up" data-aos-delay="160">
+          <div class="text-gold font-black text-2xl font-heading mb-2 stat-num" data-target="4.9" data-suffix="★" data-decimal="1">0★</div>
           <div class="text-white font-semibold text-sm mb-1">Average Member Rating</div>
           <p class="text-gray-500 text-xs m-0">Across 300+ verified member reviews, our VIP service consistently earns top marks for signal quality, support, and education.</p>
         </div>
@@ -309,6 +371,49 @@
     </div>
   </article>
 
+  <!-- TESTIMONIALS -->
+  <section class="py-16 px-4 border-t border-white/5" data-aos="fade-up">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-2xl md:text-3xl font-black text-white font-heading text-center mb-2">What Our <span class="hero-gradient-text">Members Say</span></h2>
+      <p class="text-gray-500 text-sm text-center mb-10">Real feedback from traders in our community</p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div class="testi-card">
+          <div class="testi-stars">★★★★★</div>
+          <p class="testi-text">"The signals are incredibly precise. I've been profitable consistently for 4 months since joining — something I struggled with for 2 years on my own."</p>
+          <div class="testi-author">
+            <div class="testi-avatar">JM</div>
+            <div>
+              <div class="testi-name">James M.</div>
+              <div class="testi-role">VIP Member · Nigeria</div>
+            </div>
+          </div>
+        </div>
+        <div class="testi-card">
+          <div class="testi-stars">★★★★★</div>
+          <p class="testi-text">"Passed my FTMO challenge in 18 days following their prop firm coaching. The drawdown management strategy alone was worth every penny."</p>
+          <div class="testi-author">
+            <div class="testi-avatar">AK</div>
+            <div>
+              <div class="testi-name">Aisha K.</div>
+              <div class="testi-role">Prop Firm Member · Kenya</div>
+            </div>
+          </div>
+        </div>
+        <div class="testi-card">
+          <div class="testi-stars">★★★★★</div>
+          <p class="testi-text">"Copy trading with Pips Attendant has been my most passive and consistent income stream. Fully automated, no stress, great results."</p>
+          <div class="testi-author">
+            <div class="testi-avatar">SR</div>
+            <div>
+              <div class="testi-name">Samuel R.</div>
+              <div class="testi-role">Copy Trading Member · UK</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- CTA -->
   <section class="py-16 px-4 bg-gradient-to-br from-[#1a1200] via-black to-black border-t border-gold/10">
     <div class="max-w-4xl mx-auto text-center">
@@ -342,6 +447,27 @@
 
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
   <script>AOS.init({ duration: 700, once: true, easing: 'ease-out-cubic' });</script>
+  <script>
+    // ── Animated stat counters ──────────────────────────────────────────────
+    function animateCounter(el) {
+      const target = parseFloat(el.dataset.target);
+      const suffix = el.dataset.suffix || '';
+      const decimals = el.dataset.decimal ? parseInt(el.dataset.decimal) : 0;
+      const duration = 1600;
+      const steps = 60;
+      const step = target / steps;
+      let current = 0;
+      const timer = setInterval(() => {
+        current = Math.min(current + step, target);
+        el.textContent = (decimals ? current.toFixed(decimals) : Math.floor(current).toLocaleString()) + suffix;
+        if (current >= target) clearInterval(timer);
+      }, duration / steps);
+    }
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { animateCounter(e.target); io.unobserve(e.target); } });
+    }, { threshold: 0.5 });
+    document.querySelectorAll('.stat-num[data-target]').forEach(el => io.observe(el));
+  </script>
   <script>feather.replace();</script>
   <script src="chat-widget.js"></script>
 </body>
