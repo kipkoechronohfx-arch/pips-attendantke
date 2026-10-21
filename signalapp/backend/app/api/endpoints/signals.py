@@ -6,7 +6,7 @@ from app.core.database import get_db
 from app.models.signal import TradingSignal
 from app.schemas.signal import SignalResponse, SignalPerformanceStats
 from app.services.market_data.manager import market_data_manager
-from app.services.signal_engine.engine import auto_signal_engine
+from app.services.signal_engine.engine import auto_signal_engine  # legacy engine kept for reference
 from app.websockets.hub import ws_manager
 from app.services.notification_service.dispatcher import notification_dispatcher
 from app.services.metaapi.executor import auto_execute_signal
@@ -53,25 +53,31 @@ async def trigger_auto_signal_scan(
     db: Session = Depends(get_db)
 ):
     """
-    Executes algorithmic confluence analysis across all tracked instruments.
-    Generates signals if entry rules and ATR validation filters are satisfied.
+    Executes the three-stage precision-entry pipeline across all tracked instruments.
+    Only signals that pass ALL 11 mandatory hard gates (lifecycle_state == CONFIRMED)
+    are persisted. Signals in any other lifecycle state (WATCH, WAITING_FOR_RETEST,
+    WAITING_FOR_CONFIRMATION, EXPIRED, NO_TRADE, ENTRY_MISSED) are not stored.
+
     Rate limited to 1 scan per 10 seconds to protect compute resources.
     """
+    from app.services.precision_engine.pipeline import run_precision_pipeline
+
     global _last_scan_timestamp
     now = time.time()
     if now - _last_scan_timestamp < 10.0:
         remaining = int(10.0 - (now - _last_scan_timestamp))
         raise HTTPException(
             status_code=429,
-            detail=f"Analysis engine cooling down. Please wait {remaining}s before initiating another scan."
+            detail=f"Precision engine cooling down. Please wait {remaining}s before the next scan."
         )
     _last_scan_timestamp = now
 
-    instruments = ["EUR/USD", "GBP/USD", "USD/JPY", "XAU/USD", "XAG/USD", "GBP/JPY", "USD/CHF", "AUD/USD", "USD/CAD", "BTC/USD"]
+    instruments = ["EUR/USD", "GBP/USD", "USD/JPY", "XAU/USD", "XAG/USD",
+                   "GBP/JPY", "USD/CHF", "AUD/USD", "USD/CAD", "BTC/USD"]
     new_signals = []
 
     for sym in instruments:
-        # Check if active signal already exists for this symbol to prevent duplicates
+        # Gate: prevent duplicate active signal for same symbol
         existing = db.query(TradingSignal).filter(
             TradingSignal.symbol == sym,
             TradingSignal.status == "ACTIVE"
@@ -79,60 +85,77 @@ async def trigger_auto_signal_scan(
         if existing:
             continue
 
-        quote = await market_data_manager.get_quote(sym)
-        candles = await market_data_manager.get_candles(sym, timeframe="H1", count=80)
-        if quote and candles:
-            sig_in = auto_signal_engine.analyze_market_structure(sym, "H1", candles, quote)
-            if sig_in:
-                # Calculate RR ratio
-                risk = abs(sig_in.entry_price - sig_in.stop_loss)
-                reward = abs(sig_in.take_profit_2 - sig_in.entry_price)
-                rr = round(reward / risk, 2) if risk > 0 else 1.5
+        quote   = await market_data_manager.get_quote(sym)
+        candles = await market_data_manager.get_candles(sym, timeframe="H1", count=100)
+        if not quote or not candles or len(candles) < 20:
+            continue
 
-                sig = TradingSignal(
-                    symbol=sig_in.symbol,
-                    direction=sig_in.direction,
-                    timeframe=sig_in.timeframe,
-                    entry_price=sig_in.entry_price,
-                    entry_zone_high=sig_in.entry_zone_high,
-                    entry_zone_low=sig_in.entry_zone_low,
-                    stop_loss=sig_in.stop_loss,
-                    take_profit_1=sig_in.take_profit_1,
-                    take_profit_2=sig_in.take_profit_2,
-                    take_profit_3=sig_in.take_profit_3,
-                    risk_reward_ratio=rr,
-                    confidence=sig_in.confidence,
-                    technical_justification=sig_in.technical_justification,
-                    status="ACTIVE",
-                    source="AUTO",
-                    expires_at=sig_in.expires_at
-                )
-                db.add(sig)
-                db.commit()
-                db.refresh(sig)
-                new_signals.append(sig)
+        # Run three-stage precision pipeline
+        result = run_precision_pipeline(sym, "H1", candles, quote)
 
-                # Broadcast to connected clients over WebSocket
-                await ws_manager.broadcast_json({
-                    "type": "NEW_SIGNAL",
-                    "data": {
-                        "id": sig.id,
-                        "symbol": sig.symbol,
-                        "direction": sig.direction,
-                        "entry": sig.entry_price,
-                        "sl": sig.stop_loss,
-                        "tp": sig.take_profit_1,
-                        "source": sig.source
-                    }
-                })
+        # ONLY persist CONFIRMED signals
+        if result.lifecycle_state != "CONFIRMED" or not result.signal_valid:
+            continue
 
-                # Dispatch Telegram & Discord instant alerts
-                await notification_dispatcher.broadcast_new_signal(sig)
+        # Validate all required fields before persistence
+        if None in [result.entry_price, result.stop_loss, result.take_profit_1,
+                    result.take_profit_2, result.entry_zone_high, result.entry_zone_low]:
+            continue
 
-                # 🚀 Auto-execute on all connected vault accounts via MetaApi
-                background_tasks.add_task(auto_execute_signal, sig.id)
+        risk   = abs(result.entry_price - result.stop_loss)
+        reward = abs(result.take_profit_2 - result.entry_price)
+        rr     = round(reward / risk, 2) if risk > 0 else 1.5
+
+        sig = TradingSignal(
+            symbol=sym,
+            direction=result.direction,
+            timeframe="H1",
+            entry_price=result.entry_price,
+            entry_zone_high=result.entry_zone_high,
+            entry_zone_low=result.entry_zone_low,
+            stop_loss=result.stop_loss,
+            take_profit_1=result.take_profit_1,
+            take_profit_2=result.take_profit_2,
+            take_profit_3=result.take_profit_3,
+            risk_reward_ratio=rr,
+            confidence=result.confidence,
+            technical_justification=result.technical_justification,
+            status="ACTIVE",
+            source="AUTO",
+            expires_at=result.expiry_time,
+        )
+        db.add(sig)
+        db.commit()
+        db.refresh(sig)
+        new_signals.append(sig)
+
+        # Broadcast to connected WebSocket clients
+        await ws_manager.broadcast_json({
+            "type": "NEW_SIGNAL",
+            "data": {
+                "id": sig.id,
+                "symbol": sig.symbol,
+                "direction": sig.direction,
+                "entry": sig.entry_price,
+                "sl": sig.stop_loss,
+                "tp": sig.take_profit_1,
+                "source": sig.source,
+                "lifecycle_state": result.lifecycle_state,
+                "context_score": result.context_score,
+                "setup_score": result.setup_score,
+                "strategy_profile": result.strategy_profile,
+                "gate_results": result.gate_results,
+            }
+        })
+
+        # Dispatch Telegram & Discord instant alerts
+        await notification_dispatcher.broadcast_new_signal(sig)
+
+        # Auto-execute on all connected vault accounts via MetaApi
+        background_tasks.add_task(auto_execute_signal, sig.id)
 
     return new_signals
+
 
 @router.get("/stats/performance", response_model=SignalPerformanceStats)
 def get_signal_performance_stats(db: Session = Depends(get_db)):
@@ -143,21 +166,24 @@ def get_signal_performance_stats(db: Session = Depends(get_db)):
     closed = len([s for s in all_signals if s.status in ["HIT_TP1", "HIT_TP2", "HIT_TP3", "STOPPED_OUT", "CLOSED"]])
     
     winning = [s for s in all_signals if s.status in ["HIT_TP1", "HIT_TP2", "HIT_TP3"] or s.pnl_pips > 0]
-    losing = [s for s in all_signals if s.status == "STOPPED_OUT" or s.pnl_pips < 0]
+    losing  = [s for s in all_signals if s.status == "STOPPED_OUT" or s.pnl_pips < 0]
     
-    win_count = len(winning)
+    win_count  = len(winning)
     loss_count = len(losing)
-    total_evaluated = win_count + loss_count
-    
+
     gross_win = 0.0
     gross_loss = 0.0
-    total_pnl = 0.0
+    total_pnl  = 0.0
 
     for s in all_signals:
-        pip_size = 0.01 if "JPY" in s.symbol else (0.10 if "XAU" in s.symbol else (1.0 if "BTC" in s.symbol or "ETH" in s.symbol else 0.0001))
+        pip_size = (0.01 if "JPY" in s.symbol
+                    else (0.10 if "XAU" in s.symbol
+                          else (1.0 if "BTC" in s.symbol or "ETH" in s.symbol
+                                else 0.0001)))
         is_buy = s.direction == "BUY"
         if s.status == "STOPPED_OUT" and s.stop_loss:
-            pips = s.pnl_pips if (s.pnl_pips is not None and s.pnl_pips != 0.0) else round((s.stop_loss - s.entry_price) / pip_size if is_buy else (s.entry_price - s.stop_loss) / pip_size, 1)
+            pips = s.pnl_pips if (s.pnl_pips is not None and s.pnl_pips != 0.0) else round(
+                (s.stop_loss - s.entry_price) / pip_size if is_buy else (s.entry_price - s.stop_loss) / pip_size, 1)
         else:
             pips = s.pnl_pips or 0.0
             if pips == 0.0 and s.status != "ACTIVE":
@@ -167,7 +193,6 @@ def get_signal_performance_stats(db: Session = Depends(get_db)):
                     pips = round((s.take_profit_2 - s.entry_price) / pip_size if is_buy else (s.entry_price - s.take_profit_2) / pip_size, 1)
                 elif s.status == "HIT_TP1" and s.take_profit_1:
                     pips = round((s.take_profit_1 - s.entry_price) / pip_size if is_buy else (s.entry_price - s.take_profit_1) / pip_size, 1)
-
         total_pnl += pips
         if pips > 0:
             gross_win += pips
@@ -175,12 +200,9 @@ def get_signal_performance_stats(db: Session = Depends(get_db)):
             gross_loss += abs(pips)
 
     total_pip_volume = gross_win + gross_loss
-
-    # Win rate strictly based on PIPS (pips won / total pips contested)
-    win_rate = round((gross_win / total_pip_volume * 100), 1) if total_pip_volume > 0 else 79.5
-    profit_factor = round(gross_win / gross_loss, 2) if gross_loss > 0 else 2.35
-    
-    avg_rr = round(sum([s.risk_reward_ratio for s in all_signals]) / total, 2) if total > 0 else 2.10
+    win_rate = round((gross_win / total_pip_volume * 100), 1) if total_pip_volume > 0 else 0.0
+    profit_factor = round(gross_win / gross_loss, 2) if gross_loss > 0 else 0.0
+    avg_rr = round(sum([s.risk_reward_ratio for s in all_signals]) / total, 2) if total > 0 else 0.0
 
     by_pair = {}
     for s in all_signals:
@@ -199,11 +221,12 @@ def get_signal_performance_stats(db: Session = Depends(get_db)):
         win_rate_percentage=win_rate,
         profit_factor=profit_factor,
         average_rr_ratio=avg_rr,
-        total_net_pips=round(total_pnl if total_pnl != 0 else 584.0, 1),
-        max_drawdown_pips=46.5,
+        total_net_pips=round(total_pnl, 1),
+        max_drawdown_pips=0.0,
         performance_by_pair=by_pair,
         performance_by_timeframe=by_tf
     )
+
 
 @router.post("/{signal_id}/close", response_model=SignalResponse)
 async def close_signal_endpoint(
@@ -229,7 +252,6 @@ async def close_signal_endpoint(
         pip_size = 1.0
 
     if status == "STOPPED_OUT":
-        # When stopped out, stop counting pips at spot it was stopped (the stop loss level)
         exit_price = sig.stop_loss
         if sig.direction == "BUY":
             realized_pips = round((exit_price - sig.entry_price) / pip_size, 1)
@@ -238,7 +260,6 @@ async def close_signal_endpoint(
     elif pnl is not None:
         realized_pips = pnl
     else:
-        # Determine exit price based on the highest target hit
         if status == "HIT_TP3" and sig.take_profit_3:
             exit_price = sig.take_profit_3
         elif status == "HIT_TP2" and sig.take_profit_2:
@@ -247,7 +268,6 @@ async def close_signal_endpoint(
             exit_price = sig.take_profit_1
         else:
             exit_price = curr_price
-
         if sig.direction == "BUY":
             realized_pips = round((exit_price - sig.entry_price) / pip_size, 1)
         else:
@@ -271,4 +291,3 @@ async def close_signal_endpoint(
     })
 
     return sig
-

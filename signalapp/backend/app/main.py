@@ -21,6 +21,7 @@ from app.api.endpoints.copier import router as copier_router
 from app.api.endpoints.vault import router as vault_router
 from app.api.endpoints.misc import news_router, calendar_router, risk_router, alerts_router
 from app.api.endpoints.executions import router as executions_router
+from app.api.endpoints.scanner import router as scanner_router
 
 # Background Price Streaming Task
 streaming_task = None
@@ -212,6 +213,7 @@ app.include_router(alerts_router, prefix=f"{settings.API_V1_STR}/alerts", tags=[
 app.include_router(copier_router, prefix=f"{settings.API_V1_STR}/copier", tags=["MT5 Trade Copier"])
 app.include_router(vault_router, prefix=f"{settings.API_V1_STR}/vault", tags=["MT5 Broker Vault"])
 app.include_router(executions_router, prefix=f"{settings.API_V1_STR}/executions", tags=["Trade Executions"])
+app.include_router(scanner_router, prefix=f"{settings.API_V1_STR}/scanner", tags=["Precision Scanner"])
 
 @app.get("/health")
 def api_health():

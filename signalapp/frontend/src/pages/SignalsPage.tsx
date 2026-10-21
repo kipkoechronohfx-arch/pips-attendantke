@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { SignalCard } from '../components/SignalCard';
 import { SessionWidget } from '../components/SessionWidget';
+import { PrecisionDiagnosticsPanel } from '../components/PrecisionDiagnosticsPanel';
 import { api } from '../services/api';
 import { soundFx } from '../services/audio';
 import {
@@ -21,12 +22,13 @@ import {
   Clock,
   ShieldCheck,
   XCircle,
+  Cpu,
 } from 'lucide-react';
 import { TradingSignal, StrategyProfile, ValidationReport, FeedHealth } from '../types';
 
 export const SignalsPage: React.FC = () => {
   const { signals, addSignal, addToast, lastScanAt, setLastScanAt } = useAppStore();
-  const [activeTab, setActiveTab] = useState<'BLOTTER' | 'PROFILES' | 'VALIDATION' | 'FEED_HEALTH'>('BLOTTER');
+  const [activeTab, setActiveTab] = useState<'BLOTTER' | 'PROFILES' | 'VALIDATION' | 'FEED_HEALTH' | 'DIAGNOSTICS'>('BLOTTER');
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<'ALL' | 'FOREX' | 'METALS' | 'CRYPTO'>('ALL');
   const [directionFilter, setDirectionFilter] = useState('ALL');
@@ -169,6 +171,13 @@ export const SignalsPage: React.FC = () => {
           icon={<Activity size={14} />}
           label="Feed Health"
           badge={feedHealth?.status || 'Active'}
+        />
+        <TabButton
+          active={activeTab === 'DIAGNOSTICS'}
+          onClick={() => setActiveTab('DIAGNOSTICS')}
+          icon={<Cpu size={14} />}
+          label="Precision Diagnostics"
+          badge="11-Gate"
         />
       </div>
 
@@ -557,6 +566,24 @@ export const SignalsPage: React.FC = () => {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* ────────────────── TAB 5: PRECISION DIAGNOSTICS ────────────────── */}
+      {activeTab === 'DIAGNOSTICS' && (
+        <div className="space-y-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-base font-bold text-slate-200 flex items-center gap-2">
+                <Cpu size={18} className="text-cyan-400" />
+                <span>Per-Instrument Precision Diagnostics</span>
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                3-Stage pipeline results · 11 mandatory hard gates · Real-time lifecycle tracking
+              </p>
+            </div>
+          </div>
+          <PrecisionDiagnosticsPanel />
         </div>
       )}
     </div>
