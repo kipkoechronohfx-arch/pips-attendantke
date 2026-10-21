@@ -277,10 +277,10 @@ async def equity_sync_worker() -> None:
             for acc in accounts:
                 try:
                     client = get_client(acc.broker_name)
-                        if client and acc.metaapi_account_id:
-                            info = await client.get_account_info(acc.metaapi_account_id)
-                            acc.last_equity = info.get("equity", acc.last_equity)
-                            acc.last_balance = info.get("balance", acc.last_balance)
+                    if client and acc.metaapi_account_id:
+                        info = await client.get_account_info(acc.metaapi_account_id)
+                        acc.last_equity = info.get("equity", acc.last_equity)
+                        acc.last_balance = info.get("balance", acc.last_balance)
                         acc.last_connected_at = datetime.now(timezone.utc)
                     else:
                         # Demo: small drift

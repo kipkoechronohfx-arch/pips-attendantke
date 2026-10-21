@@ -1,3 +1,4 @@
+import asyncio
 import httpx
 import time
 from typing import List, Optional, Dict, Any
@@ -60,32 +61,38 @@ class OandaDataProvider(MarketDataProvider):
         }
 
     async def _refresh_24h_stats(self) -> None:
-        """Fetch daily candle for each symbol to get real 24h high, low, open."""
+        """Fetch daily candle for each symbol to get real 24h high, low, open concurrently."""
         now = time.time()
         if now - self._h24_fetch_ts < 60.0:
             return
         self._h24_fetch_ts = now
-        for sym, oanda_sym in SYMBOL_MAP.items():
+
+        async def _fetch_one(client: httpx.AsyncClient, sym: str, oanda_sym: str) -> None:
             url = f"{self.base_url}/instruments/{oanda_sym}/candles"
             try:
-                async with httpx.AsyncClient(timeout=6.0) as client:
-                    res = await client.get(
-                        url,
-                        headers=self._headers(),
-                        params={"granularity": "D", "count": "2", "price": "M"}
-                    )
-                    if res.status_code == 200:
-                        candles = res.json().get("candles", [])
-                        if candles:
-                            today = candles[-1]
-                            m = today["mid"]
-                            self._h24_cache[sym] = (
-                                float(m["h"]),
-                                float(m["l"]),
-                                float(m["o"]),
-                            )
+                res = await client.get(
+                    url,
+                    headers=self._headers(),
+                    params={"granularity": "D", "count": "2", "price": "M"}
+                )
+                if res.status_code == 200:
+                    candles = res.json().get("candles", [])
+                    if candles:
+                        today = candles[-1]
+                        m = today["mid"]
+                        self._h24_cache[sym] = (
+                            float(m["h"]),
+                            float(m["l"]),
+                            float(m["o"]),
+                        )
             except Exception:
                 pass
+
+        try:
+            async with httpx.AsyncClient(timeout=6.0) as client:
+                await asyncio.gather(*[_fetch_one(client, sym, oanda_sym) for sym, oanda_sym in SYMBOL_MAP.items()])
+        except Exception:
+            pass
 
     async def get_quote(self, symbol: str) -> Optional[Quote]:
         norm_sym = symbol.replace("_", "/")

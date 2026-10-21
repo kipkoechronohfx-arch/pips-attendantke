@@ -13,7 +13,7 @@ import os
 import itertools
 from typing import Dict, List
 
-from .models import BrokerInfo, ServerInfo, BrokerConnectionError
+from .models import BrokerInfo, ServerInfo
 from ..metaapi.client import MetaApiClient
 
 # ----------------------------------------------------------------------
@@ -85,9 +85,7 @@ class BrokerManager:
     """
 
     def __init__(self, token: str | None = None):
-        self.token: str = token or os.getenv("METAAPI_TOKEN")
-        if not self.token:
-            raise ValueError("METAAPI_TOKEN must be set in the environment")
+        self.token: str = token or os.getenv("METAAPI_TOKEN", "")
         self._cache: Dict[str, ServerInfo] = {}
 
     async def get_client(
@@ -108,6 +106,8 @@ class BrokerManager:
         prefer_live: bool, default ``False``
             When ``require_demo`` is ``False`` try live servers first.
         """
+        if not self.token:
+            raise BrokerConnectionError("METAAPI_TOKEN is not configured.")
         broker_name = broker_name.lower()
         broker = _BROKER_CATALOG.get(broker_name, _BROKER_CATALOG["default"])
 
