@@ -151,6 +151,10 @@
     }
     .entry-time-trigger:hover { border-color: rgba(251,191,36,0.5); }
     .entry-time-trigger.has-value { border-color: rgba(251,191,36,0.6); color: #fbbf24; }
+    /* Grid span utilities */
+    .col-span-full, .lg\:col-span-12, .col-span-12 {
+      grid-column: 1 / -1 !important;
+    }
   </style>
   <!-- Flatpickr Datetime Picker -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -439,7 +443,7 @@
     <div id="dashboardPanel" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-8">
 
       <!-- Institutional Terminal Admin Broadcast Banner -->
-      <div class="lg:col-span-12 p-4 rounded-2xl bg-gradient-to-r from-cyan-950/70 via-[#071328]/85 to-blue-950/70 border border-cyan-500/30 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div style="grid-column: 1 / -1;" class="col-span-full lg:col-span-12 p-4 rounded-2xl bg-gradient-to-r from-cyan-950/70 via-[#071328]/85 to-blue-950/70 border border-cyan-500/30 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-3.5">
           <div class="w-11 h-11 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shadow-inner shrink-0">
             <i data-feather="radio" class="w-5 h-5"></i>
@@ -936,7 +940,7 @@
       <!-- Urge clients to register with your broker IB link. The link lives -->
       <!-- safely in the server .env (IB_LINK) — never exposed client-side. -->
       <!-- ─────────────────────────────────────────────────────────────── -->
-      <div style="grid-column: 1 / -1;" class="glass-card rounded-2xl p-6 border border-amber-400/30 neon-glow" style="box-shadow: 0 0 30px rgba(251,191,36,0.08);">
+      <div style="grid-column: 1 / -1; box-shadow: 0 0 30px rgba(251,191,36,0.08);" class="glass-card rounded-2xl p-6 border border-amber-400/30 neon-glow">
 
         <!-- Card Header -->
         <div class="flex items-center justify-between mb-5">
