@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { api } from '../services/api';
 import { SessionState } from '../types';
-import { Clock, Globe, ChevronRight, Wifi, WifiOff } from 'lucide-react';
+import { Clock, Globe, ChevronRight, Wifi, WifiOff, MapPin } from 'lucide-react';
 
 interface SessionWidgetProps {
   compact?: boolean;
@@ -27,8 +27,8 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({ compact = false })
 
   useEffect(() => {
     fetchSession();
-    const pollInterval = setInterval(fetchSession, 60000); // refresh session every 60s
-    const tickInterval = setInterval(() => setTick((t) => t + 1), 30000); // re-render countdown
+    const pollInterval = setInterval(fetchSession, 30000); // refresh session every 30s for live EAT time
+    const tickInterval = setInterval(() => setTick((t) => t + 1), 1000); // re-render countdown every second
     return () => {
       clearInterval(pollInterval);
       clearInterval(tickInterval);
@@ -81,6 +81,11 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({ compact = false })
             </span>
             <span className="text-slate-500">·</span>
             <span className="text-slate-400">{primary.countdown_label} {primary.countdown}</span>
+            <span className="text-slate-500">·</span>
+            <span className="text-cyan-400 flex items-center gap-0.5">
+              <MapPin size={9} />
+              {primary.local_time || (session as any).eat_time || ''}
+            </span>
           </>
         ) : (
           <>
@@ -102,18 +107,27 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({ compact = false })
           <Globe size={16} className="text-cyan-400" />
           Market Sessions
         </h3>
-        <div className="flex items-center gap-1.5 text-[10px] font-mono">
-          {entryAllowed?.allowed ? (
-            <span className="flex items-center gap-1 text-emerald-400">
-              <Wifi size={11} />
-              Entry OK
-            </span>
-          ) : (
-            <span className="flex items-center gap-1 text-rose-400">
-              <WifiOff size={11} />
-              {entryAllowed?.reason?.slice(0, 22) || 'Entry Restricted'}
+        <div className="flex items-center gap-2">
+          {/* Kenya Time Badge */}
+          {((session as any).eat_time || primary?.local_time) && (
+            <span className="flex items-center gap-1 text-[10px] font-mono font-bold text-cyan-300 bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/25">
+              <MapPin size={9} />
+              {(session as any).eat_time || primary?.local_time}
             </span>
           )}
+          <div className="flex items-center gap-1.5 text-[10px] font-mono">
+            {entryAllowed?.allowed ? (
+              <span className="flex items-center gap-1 text-emerald-400">
+                <Wifi size={11} />
+                Entry OK
+              </span>
+            ) : (
+              <span className="flex items-center gap-1 text-rose-400">
+                <WifiOff size={11} />
+                {entryAllowed?.reason?.slice(0, 22) || 'Entry Restricted'}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -137,7 +151,7 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({ compact = false })
             <div className="text-right">
               <div className="text-[10px] text-slate-500 font-mono">{primary.countdown_label}</div>
               <div className={`text-sm font-bold font-mono ${sessionColorMap[primary.id]}`}>
-                {primary.countdown}
+                {primary.countdown || '—'}
               </div>
             </div>
           </div>
@@ -173,14 +187,14 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({ compact = false })
                 className={`w-1.5 h-1.5 rounded-full ${sess.is_active ? `animate-pulse ${sessionDotMap[sess.id]}` : 'bg-slate-600'}`}
               />
               <span className={`text-[10px] font-bold ${sess.is_active ? sessionColorMap[sess.id] : 'text-slate-500'}`}>
-                {sess.id === 'LONDON' ? 'London' : sess.id === 'NEW_YORK' ? 'New York' : 'Asian'}
+                {sess.id === 'LONDON' ? 'London' : sess.id === 'NEW_YORK' ? 'New York' : sess.id === 'OVERLAP' ? 'Overlap' : 'Asian'}
               </span>
             </div>
             <div className="text-[9px] font-mono text-slate-500">
-              {sess.open}–{sess.close}
+              {sess.open}–{sess.close} EAT
             </div>
             <div className={`text-[10px] font-mono font-bold ${sess.is_active ? 'text-slate-200' : 'text-slate-600'}`}>
-              {sess.local_time}
+              {sess.is_active ? (sess.countdown || sess.local_time) : `in ${sess.countdown}`}
             </div>
           </div>
         ))}

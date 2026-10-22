@@ -220,6 +220,47 @@ function formatCountdown(totalMinutes) {
 }
 
 /**
+ * Converts a session's local open/close time into Kenya Time (Africa/Nairobi, UTC+3).
+ */
+function convertSessionTimeToTimezone(h, m, fromTimezone, toTimezone = 'Africa/Nairobi', refDate = new Date()) {
+  try {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: fromTimezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).formatToParts(refDate);
+
+    const year = parts.find((p) => p.type === 'year')?.value;
+    const month = parts.find((p) => p.type === 'month')?.value;
+    const day = parts.find((p) => p.type === 'day')?.value;
+
+    const baseIso = `${year}-${month}-${day}T${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00Z`;
+    const testDate = new Date(baseIso);
+
+    const fromParts = new Intl.DateTimeFormat('en-US', {
+      timeZone: fromTimezone,
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: false,
+    }).formatToParts(testDate);
+
+    const currentFromHour = parseInt(fromParts.find((p) => p.type === 'hour')?.value ?? '0', 10);
+    const hourDiff = currentFromHour - h;
+    const realDate = new Date(testDate.getTime() - hourDiff * 3600000);
+
+    return realDate.toLocaleTimeString('en-GB', {
+      timeZone: toTimezone,
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+  } catch {
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  }
+}
+
+/**
  * Main export: returns full session state for the given Date.
  */
 function getSessionState(date = new Date()) {
@@ -276,8 +317,16 @@ function getSessionState(date = new Date()) {
   // Active strategy profiles
   const activeProfiles = getActiveProfiles(date);
 
+  const kenyaLocal = getLocalTime(date, 'Africa/Nairobi');
+  const kenyaTimeStr = `${String(kenyaLocal.h).padStart(2, '0')}:${String(kenyaLocal.m).padStart(2, '0')}`;
+
+  const primaryEatOpen = primary ? convertSessionTimeToTimezone(primary.open.h, primary.open.m, primary.timezone, 'Africa/Nairobi', date) : null;
+  const primaryEatClose = primary ? convertSessionTimeToTimezone(primary.close.h, primary.close.m, primary.timezone, 'Africa/Nairobi', date) : null;
+
   return {
     timestamp_utc: date.toISOString(),
+    kenya_time: `${kenyaTimeStr} EAT`,
+    kenya_timezone: 'Africa/Nairobi',
     active_sessions: activeSessions.map((s) => s.id),
     is_overlap: overlapActive,
     primary_session: primary
@@ -290,6 +339,9 @@ function getSessionState(date = new Date()) {
           description: primary.description,
           countdown_label: primary.is_active ? 'Closes in' : 'Opens in',
           countdown: countdown,
+          eat_open: primaryEatOpen,
+          eat_close: primaryEatClose,
+          eat_schedule: `${primaryEatOpen} – ${primaryEatClose} EAT`,
         }
       : null,
     next_session: nextSession
@@ -313,6 +365,8 @@ function getSessionState(date = new Date()) {
     all_sessions: SESSION_DEFS.map((s) => {
       const lt = getLocalTime(date, s.timezone);
       const active = isInSession(lt, s.open, s.close);
+      const eatOpen = convertSessionTimeToTimezone(s.open.h, s.open.m, s.timezone, 'Africa/Nairobi', date);
+      const eatClose = convertSessionTimeToTimezone(s.close.h, s.close.m, s.timezone, 'Africa/Nairobi', date);
       return {
         id: s.id,
         name: s.name,
@@ -322,6 +376,9 @@ function getSessionState(date = new Date()) {
         local_time: `${String(lt.h).padStart(2, '0')}:${String(lt.m).padStart(2, '0')}`,
         open: `${String(s.open.h).padStart(2, '0')}:${String(s.open.m).padStart(2, '0')}`,
         close: `${String(s.close.h).padStart(2, '0')}:${String(s.close.m).padStart(2, '0')}`,
+        eat_open: eatOpen,
+        eat_close: eatClose,
+        eat_schedule: `${eatOpen} – ${eatClose} EAT`,
       };
     }),
   };

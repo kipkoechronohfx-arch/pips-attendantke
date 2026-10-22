@@ -29,35 +29,43 @@ router = APIRouter()
 # ──────────────────────────────────────────────────────────────────────────────
 
 def _session_state() -> dict:
-    """Compute the live session state based on UTC time."""
-    now = datetime.now(timezone.utc)
-    h = now.hour
+    """Compute the live session state based on UTC time. All times displayed in Kenya EAT (UTC+3)."""
+    now_utc = datetime.now(timezone.utc)
+    eat_offset = timedelta(hours=3)  # Kenya EAT = UTC+3, no DST
+    now_eat = now_utc + eat_offset
+    h = now_utc.hour
+    m = now_utc.minute
 
+    # Session boundaries in UTC, but labels shown in EAT (+3h)
     SESSION_DEFS = [
         {
             "id": "ASIAN",     "name": "Asian Session",
-            "color": "#8b5cf6", "open": "00:00", "close": "08:00",
+            "color": "#8b5cf6",
+            "open": "02:00", "close": "11:00",   # EAT times (UTC 23–08)
             "priority_pairs": ["AUD/USD", "NZD/USD", "USD/JPY", "GBP/JPY"],
             "description": "Low-volume range session; watch for breakout setups at London open.",
             "start_h": 23, "end_h": 8,
         },
         {
             "id": "LONDON",    "name": "London Session",
-            "color": "#3b82f6", "open": "07:00", "close": "16:00",
+            "color": "#3b82f6",
+            "open": "10:00", "close": "19:00",   # EAT times (UTC 07–16)
             "priority_pairs": ["EUR/USD", "GBP/USD", "USD/CHF", "XAU/USD"],
             "description": "Highest liquidity FX session; order block retests dominate.",
             "start_h": 7, "end_h": 16,
         },
         {
-            "id": "OVERLAP",   "name": "London–NY Overlap",
-            "color": "#10b981", "open": "13:00", "close": "17:00",
+            "id": "OVERLAP",   "name": "London\u2013NY Overlap",
+            "color": "#10b981",
+            "open": "16:00", "close": "20:00",   # EAT times (UTC 13–17)
             "priority_pairs": ["EUR/USD", "GBP/USD", "USD/JPY", "XAU/USD"],
             "description": "Maximum volatility window; trend continuation setups.",
             "start_h": 13, "end_h": 17,
         },
         {
             "id": "NEW_YORK",  "name": "New York Session",
-            "color": "#f59e0b", "open": "13:00", "close": "22:00",
+            "color": "#f59e0b",
+            "open": "16:00", "close": "01:00",   # EAT times (UTC 13–22)
             "priority_pairs": ["USD/JPY", "USD/CAD", "USD/CHF", "GBP/USD"],
             "description": "Liquidity sweep and reversal setups; news-driven moves.",
             "start_h": 13, "end_h": 22,
@@ -69,18 +77,38 @@ def _session_state() -> dict:
             return h >= s["start_h"] or h < s["end_h"]
         return s["start_h"] <= h < s["end_h"]
 
+    def _mins_to_boundary(start_h: int, end_h: int, active: bool) -> int:
+        """Returns minutes to close (if active) or to open (if inactive)."""
+        now_mins = h * 60 + m
+        if active:
+            end_mins = end_h * 60
+            diff = (end_mins - now_mins) % (24 * 60)
+        else:
+            start_mins = start_h * 60
+            diff = (start_mins - now_mins) % (24 * 60)
+        return diff
+
+    def _fmt_countdown(mins: int) -> str:
+        if mins <= 0:
+            return "Now"
+        hh = mins // 60
+        mm = mins % 60
+        if hh > 0:
+            return f"{hh}h {mm:02d}m"
+        return f"{mm}m"
+
     active = [s for s in SESSION_DEFS if _is_active(s)]
     is_overlap = any(s["id"] == "OVERLAP" for s in active)
+
+    eat_time_str = now_eat.strftime("%H:%M EAT")
 
     all_sessions = []
     for s in SESSION_DEFS:
         active_flag = _is_active(s)
-        # Next open in minutes
-        if not active_flag:
-            diff_h = (s["start_h"] - h) % 24
-            mins_to_open = diff_h * 60
-        else:
-            mins_to_open = 0
+        cd_mins = _mins_to_boundary(s["start_h"], s["end_h"], active_flag)
+        countdown_str = _fmt_countdown(cd_mins)
+        mins_to_open = 0 if active_flag else cd_mins
+
         all_sessions.append({
             "id": s["id"],
             "name": s["name"],
@@ -90,16 +118,19 @@ def _session_state() -> dict:
             "description": s.get("description"),
             "open": s["open"],
             "close": s["close"],
-            "local_time": now.strftime("%H:%M UTC"),
+            "local_time": eat_time_str,
             "minutes_to_open": mins_to_open,
-            "countdown_label": f"Opens in {diff_h}h" if not active_flag else "Active now",
+            "countdown": countdown_str,
+            "countdown_label": "Closes in" if active_flag else "Opens in",
         })
 
     primary = next((s for s in all_sessions if s["is_active"]), None)
     next_sess = next((s for s in all_sessions if not s["is_active"]), None)
 
     return {
-        "timestamp_utc": now.isoformat(),
+        "timestamp_utc": now_utc.isoformat(),
+        "timestamp_eat": now_eat.strftime("%Y-%m-%dT%H:%M:%S+03:00"),
+        "eat_time": eat_time_str,
         "active_sessions": [s["id"] for s in active],
         "is_overlap": is_overlap,
         "primary_session": primary,
@@ -111,6 +142,8 @@ def _session_state() -> dict:
 @router.get("/session")
 def get_session_state():
     return _session_state()
+
+
 
 
 # ──────────────────────────────────────────────────────────────────────────────
