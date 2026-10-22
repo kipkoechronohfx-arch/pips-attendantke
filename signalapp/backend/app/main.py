@@ -120,6 +120,7 @@ async def lifespan(app: FastAPI):
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi import Request, Response
+from app.core.rate_limit import AuthRateLimitMiddleware
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
@@ -136,6 +137,9 @@ app = FastAPI(
     description="Professional Institutional Forex Signals & Financial News API",
     lifespan=lifespan
 )
+
+# Authentication Brute-Force & Rate Limiting Guard (intercepts /auth/login, /auth/token, /auth/register)
+app.add_middleware(AuthRateLimitMiddleware)
 
 # Security Headers
 app.add_middleware(SecurityHeadersMiddleware)
