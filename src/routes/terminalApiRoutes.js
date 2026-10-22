@@ -249,7 +249,7 @@ async function getLiveQuotes() {
 
   const results = await Promise.all(fetchPromises);
   cache.quotes.data = results;
-  cache.quotes.expiry = now + 15000; // cache for 15s to respect rate limits
+  cache.quotes.expiry = now + 3500; // 3.5s cache for responsive, high-freshness interbank quotes
   return results;
 }
 
@@ -449,6 +449,25 @@ router.get('/market/tick/:symbol(*)', async (req, res) => {
         }
       }
     }
+    
+    // Fallback: Construct tick from live quotes cache to ensure continuous live ticking
+    const quotes = await getLiveQuotes();
+    const cleanTarget = cleanSym.replace(/[^A-Za-z0-9]/g, '');
+    const liveQ = quotes.find(q => q.symbol.replace(/[^A-Za-z0-9]/g, '') === cleanTarget || q.symbol === cleanSym || q.symbol === rawSym);
+    if (liveQ && liveQ.mid) {
+      const tfSeconds = { 'M1': 60, 'M5': 300, 'M15': 900, 'M30': 1800, 'H1': 3600, 'H4': 14400, 'D1': 86400 };
+      const barSec = tfSeconds[(req.query.timeframe || 'H1').toUpperCase()] || 3600;
+      const barTime = Math.floor(Date.now() / 1000 / barSec) * barSec;
+      return res.json({
+        time: barTime,
+        open: liveQ.mid,
+        high: Math.max(liveQ.high_24h || liveQ.mid, liveQ.mid),
+        low: Math.min(liveQ.low_24h || liveQ.mid, liveQ.mid),
+        close: liveQ.mid,
+        volume: 75
+      });
+    }
+
     res.status(404).json({ error: 'Tick not available' });
   } catch (err) {
     res.status(500).json({ error: err.message });
