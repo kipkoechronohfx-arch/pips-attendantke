@@ -6,12 +6,13 @@ export const API_BASE = RAW_BASE ? `${RAW_BASE}/api/v1` : '/api/v1';
 
 
 function getAuthHeaders(): HeadersInit {
-  const token = localStorage.getItem('fsp_token');
+  const token = localStorage.getItem('fsp_token') || localStorage.getItem('vip_session_token') || sessionStorage.getItem('vip_session_token');
   const headers: HeadersInit = {
     'Content-Type': 'application/json'
   };
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
+    headers['x-vip-token'] = token;
   }
   return headers;
 }
@@ -42,9 +43,13 @@ export const api = {
       throw new Error(err.detail || 'Invalid email or password');
     }
     const data = await res.json();
-    localStorage.setItem('fsp_token', data.access_token);
+    const token = data.access_token || data.sessionToken;
+    localStorage.setItem('fsp_token', token);
+    localStorage.setItem('vip_session_token', token);
+    sessionStorage.setItem('vip_session_token', token);
     localStorage.setItem('fsp_role', data.role);
     localStorage.setItem('fsp_email', data.email);
+    if (data.full_name) localStorage.setItem('pa_vip_user_name', data.full_name);
     return data;
   },
 
@@ -58,8 +63,12 @@ export const api = {
 
   logout() {
     localStorage.removeItem('fsp_token');
+    localStorage.removeItem('vip_session_token');
+    sessionStorage.removeItem('vip_session_token');
+    localStorage.removeItem('pa_vip_user_name');
     localStorage.removeItem('fsp_role');
     localStorage.removeItem('fsp_email');
+    window.location.replace('/login');
   },
 
   // Market Data

@@ -58,11 +58,26 @@ export const App: React.FC = () => {
     signals,
     updateSignalStatus,
     darkMode,
+    user,
+    setUser,
   } = useAppStore();
 
   // ── Global hooks ────────────────────────────────────────────
   useKeyboardShortcuts();
   useSwipeNavigation();
+
+  // ── Single Sign-On: Auto-authenticate shared session ────────
+  useEffect(() => {
+    const token =
+      localStorage.getItem('fsp_token') ||
+      localStorage.getItem('vip_session_token') ||
+      sessionStorage.getItem('vip_session_token');
+    if (token && !user) {
+      api.getCurrentUser()
+        .then((u) => setUser(u))
+        .catch(() => {});
+    }
+  }, [user, setUser]);
 
   // ── Dark mode class on <html> ────────────────────────────────
   useEffect(() => {

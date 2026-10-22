@@ -193,6 +193,15 @@ export const ProfilePage: React.FC = () => {
             {loading ? 'Processing...' : isLogin ? 'Sign In to Terminal' : 'Create Trader Account'}
           </button>
         </form>
+
+        <div className="mt-4 pt-4 border-t border-white/5 text-center">
+          <a
+            href="/login?return=terminal"
+            className="text-[11px] text-amber-400 hover:text-amber-300 font-mono transition-colors block"
+          >
+            Or open the Full Pips Attendant Login Page →
+          </a>
+        </div>
       </div>
     </div>
   );

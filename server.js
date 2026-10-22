@@ -268,6 +268,18 @@ app.get(['/terminal/', '/terminal/*'], (req, res) => {
   res.sendFile(path.join(__dirname, 'terminal', 'index.html'));
 });
 
+// ── Unified Login Page ─────────────────────────────────────────
+// Single login for both Pips Attendant VIP and Signal Terminal users.
+app.get(['/login', '/login.html'], (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.sendFile(path.join(__dirname, 'login.html'));
+});
+
+// ── Dashboard alias → premium.html ────────────────────────────
+app.get('/dashboard', (req, res) => {
+  res.redirect(302, '/premium.html');
+});
+
 app.use(express.static(path.join(__dirname), staticOptions));
 app.use(express.static(path.join(__dirname, 'admin'), staticOptions));
 

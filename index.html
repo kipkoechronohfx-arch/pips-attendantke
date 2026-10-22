@@ -953,8 +953,18 @@
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13M8 11l4 4 4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
                   Install App
                 </button>
+                <a id="nav-login-btn" href="/login" class="px-5 py-2.5 rounded-full text-sm font-semibold border border-white/15 text-gray-300 hover:border-amber-400/40 hover:text-white transition-all">Login</a>
                 <a href="premium.html?v=5" class="btn-gold px-6 py-2.5 rounded-full text-sm">Join VIP</a>
             </div>
+            <script>
+            (function() {
+              var t = sessionStorage.getItem('vip_session_token') || localStorage.getItem('vip_session_token');
+              if (t) {
+                var btn = document.getElementById('nav-login-btn');
+                if (btn) { btn.textContent = 'Dashboard'; btn.href = '/premium.html'; }
+              }
+            })();
+            </script>
 
             <!-- Mobile Menu Button -->
             <button class="md:hidden text-white focus:outline-none" id="mobile-menu-btn">
@@ -973,6 +983,7 @@
                 <a href="education.html" class="mobile-link block py-3 text-white hover:text-gray-300 transition-colors border-b border-white/5">Education</a>
                 <a href="about.html" class="mobile-link block py-3 text-white hover:text-gray-300 transition-colors border-b border-white/5">About</a>
                 <a href="blog.html" class="mobile-link block py-3 text-white hover:text-gray-300 transition-colors border-b border-white/5">Blog</a>
+                <a id="mob-login-btn" href="/login" class="block py-3 text-amber-400 font-semibold hover:text-amber-300 transition-colors border-b border-white/5">Login / Dashboard</a>
                 <a href="premium.html?v=5" class="btn-gold block w-full py-3.5 rounded-full text-center mt-4 text-primary font-bold">Join VIP</a>
             </div>
         </div>

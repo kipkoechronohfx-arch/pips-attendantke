@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | Pips Attendant</title>
+  <meta name="description" content="Sign in to Pips Attendant — access your VIP forex signals, trading terminal, and analytics.">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold: #f59e0b;
+      --gold-light: #fbbf24;
+      --gold-dark: #d97706;
+      --bg: #050913;
+      --surface: #0d1526;
+      --surface2: #111e35;
+      --border: rgba(255,255,255,0.07);
+      --border-gold: rgba(245,158,11,0.3);
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --error: #f87171;
+      --success: #34d399;
+      --radius: 16px;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    /* ── Animated Background ── */
+    .bg-canvas {
+      position: fixed; inset: 0; z-index: 0;
+      overflow: hidden;
+    }
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      animation: drift 18s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+    .orb-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(245,158,11,0.10) 0%, transparent 70%); top: -200px; left: -200px; animation-delay: 0s; }
+    .orb-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%); bottom: -100px; right: -100px; animation-delay: -6s; }
+    .orb-3 { width: 300px; height: 300px; background: radial-gradient(circle, rgba(139,92,246,0.07) 0%, transparent 70%); top: 40%; left: 50%; animation-delay: -12s; }
+    @keyframes drift { from { transform: translate(0, 0) scale(1); } to { transform: translate(40px, 30px) scale(1.08); } }
+
+    /* Grid lines */
+    .grid-bg {
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    /* ── Layout ── */
+    .page {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    /* ── Card ── */
+    .card {
+      width: 100%; max-width: 440px;
+      background: var(--surface);
+      border: 1px solid var(--border-gold);
+      border-radius: 24px;
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 80px rgba(245,158,11,0.06), 0 32px 64px rgba(0,0,0,0.4);
+      animation: slideUp 0.5s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(32px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+    .card-glow {
+      position: absolute; top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 80%; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(245,158,11,0.6), transparent);
+    }
+    .card-glow-top {
+      position: absolute; top: -60px; left: 50%;
+      transform: translateX(-50%);
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(245,158,11,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* ── Brand ── */
+    .brand {
+      display: flex; flex-direction: column; align-items: center;
+      margin-bottom: 32px; gap: 12px;
+    }
+    .brand-logo {
+      width: 56px; height: 56px;
+      border-radius: 16px;
+      border: 1px solid var(--border-gold);
+      background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.05));
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(245,158,11,0.15);
+    }
+    .brand-logo img { width: 100%; height: 100%; object-fit: cover; }
+    .brand-name { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+    .brand-tagline { font-size: 12px; color: var(--muted); letter-spacing: 0.5px; }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 28px;
+      gap: 4px;
+    }
+    .tab {
+      flex: 1; padding: 10px;
+      border: none; background: transparent; cursor: pointer;
+      color: var(--muted); font-size: 14px; font-weight: 600;
+      border-radius: 9px; transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .tab.active {
+      background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+      color: #000; font-weight: 700;
+      box-shadow: 0 4px 12px rgba(245,158,11,0.3);
+    }
+    .tab:not(.active):hover { color: var(--text); background: rgba(255,255,255,0.05); }
+
+    /* ── Form ── */
+    .form { display: flex; flex-direction: column; gap: 16px; }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field-label {
+      font-size: 12px; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.8px;
+    }
+    .field-input-wrap { position: relative; }
+    .field-icon {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--muted); pointer-events: none;
+      display: flex; align-items: center;
+    }
+    .field-input {
+      width: 100%; padding: 13px 14px 13px 42px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text); font-size: 15px; font-family: 'Inter', sans-serif;
+      transition: all 0.2s; outline: none;
+    }
+    .field-input::placeholder { color: var(--muted); }
+    .field-input:focus {
+      border-color: rgba(245,158,11,0.5);
+      background: rgba(0,0,0,0.5);
+      box-shadow: 0 0 0 3px rgba(245,158,11,0.08);
+    }
+    .field-input:focus + .field-focus-ring { opacity: 1; }
+
+    /* password toggle */
+    .pw-toggle {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: var(--muted);
+      padding: 4px; display: flex; align-items: center;
+      transition: color 0.2s;
+    }
+    .pw-toggle:hover { color: var(--text); }
+
+    /* ── Hidden field for register ── */
+    .register-only { display: none; }
+    .register-only.visible { display: flex; }
+
+    /* ── Error / Status ── */
+    #auth-status {
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 13px; font-weight: 500; line-height: 1.5;
+      display: none;
+    }
+    #auth-status.error { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.25); color: var(--error); display: block; }
+    #auth-status.warn  { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.25); color: var(--gold-light); display: block; }
+    #auth-status.info  { background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.2); color: var(--success); display: block; }
+
+    /* ── Submit Button ── */
+    .btn-submit {
+      width: 100%; padding: 15px;
+      background: linear-gradient(135deg, var(--gold-dark), var(--gold), var(--gold-light));
+      color: #000; font-size: 15px; font-weight: 800;
+      border: none; border-radius: 13px; cursor: pointer;
+      letter-spacing: 0.3px;
+      box-shadow: 0 8px 24px rgba(245,158,11,0.25);
+      transition: all 0.2s; position: relative; overflow: hidden;
+      font-family: 'Inter', sans-serif;
+      margin-top: 4px;
+    }
+    .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 12px 32px rgba(245,158,11,0.35); filter: brightness(1.05); }
+    .btn-submit:active { transform: translateY(0); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .btn-submit .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.3); border-top-color: #000; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 8px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── 2FA Step ── */
+    #twofa-step { display: none; flex-direction: column; gap: 16px; }
+    #twofa-step.active { display: flex; }
+
+    .otp-grid { display: flex; gap: 8px; justify-content: center; }
+    .otp-box {
+      width: 48px; height: 56px;
+      background: rgba(0,0,0,0.4); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); font-size: 22px; font-weight: 700;
+      text-align: center; font-family: 'JetBrains Mono', monospace;
+      transition: all 0.2s; outline: none;
+    }
+    .otp-box:focus { border-color: rgba(245,158,11,0.5); box-shadow: 0 0 0 3px rgba(245,158,11,0.1); }
+
+    /* ── Footer links ── */
+    .auth-footer {
+      margin-top: 24px; display: flex; flex-direction: column; gap: 12px; align-items: center;
+    }
+    .auth-footer a, .auth-footer button {
+      font-size: 13px; color: var(--muted); background: none; border: none;
+      cursor: pointer; text-decoration: none; font-family: 'Inter', sans-serif;
+      transition: color 0.15s;
+    }
+    .auth-footer a:hover, .auth-footer button:hover { color: var(--gold-light); }
+    .auth-footer .divider { display: flex; align-items: center; gap: 12px; width: 100%; color: var(--muted); font-size: 12px; }
+    .auth-footer .divider::before, .auth-footer .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .back-home {
+      position: fixed; top: 20px; left: 20px; z-index: 100;
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 16px; border-radius: 99px;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      color: var(--muted); font-size: 13px; text-decoration: none;
+      transition: all 0.2s;
+    }
+    .back-home:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+
+    /* Forgot password modal */
+    #forgot-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.8); backdrop-filter: blur(4px);
+      display: none; align-items: center; justify-content: center; padding: 20px;
+    }
+    #forgot-overlay.open { display: flex; }
+    .forgot-card {
+      background: var(--surface); border: 1px solid var(--border-gold);
+      border-radius: 20px; padding: 32px; width: 100%; max-width: 380px;
+      animation: slideUp 0.3s ease;
+    }
+    .forgot-card h3 { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+    .forgot-card p { font-size: 13px; color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
+
+    @media (max-width: 480px) {
+      .card { padding: 28px 20px; }
+      .brand-name { font-size: 19px; }
+      .otp-box { width: 40px; height: 50px; font-size: 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Animated BG -->
+<div class="bg-canvas">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+<div class="grid-bg"></div>
+
+<!-- Back to site -->
+<a href="/" class="back-home">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+  Back to site
+</a>
+
+<!-- Forgot Password Modal -->
+<div id="forgot-overlay">
+  <div class="forgot-card">
+    <h3>Reset Password</h3>
+    <p>Enter your email and we'll send you a reset link within a few minutes.</p>
+    <div class="field" style="margin-bottom:16px;">
+      <div class="field-input-wrap">
+        <span class="field-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </span>
+        <input id="forgot-email" type="email" class="field-input" placeholder="your@email.com" autocomplete="email">
+      </div>
+    </div>
+    <div id="forgot-status" style="margin-bottom:12px;font-size:13px;"></div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeForgot()" style="flex:1;padding:11px;border-radius:10px;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--muted);font-size:13px;cursor:pointer;font-family:Inter,sans-serif;">Cancel</button>
+      <button id="forgot-btn" onclick="submitForgot()" style="flex:1;padding:11px;border-radius:10px;background:linear-gradient(135deg,#d97706,#f59e0b);color:#000;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:Inter,sans-serif;">Send Link</button>
+    </div>
+  </div>
+</div>
+
+<!-- Main Page -->
+<div class="page">
+  <div class="card">
+    <div class="card-glow"></div>
+    <div class="card-glow-top"></div>
+
+    <!-- Brand -->
+    <div class="brand">
+      <div class="brand-logo">
+        <img src="/avatar.webp" alt="Pips Attendant" onerror="this.src='/favicon.png'">
+      </div>
+      <div style="text-align:center;">
+        <div class="brand-name">Pips Attendant</div>
+        <div class="brand-tagline">YOUR PROFESSIONAL TRADING EDGE</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" id="tab-login" onclick="switchTab('login')">Sign In</button>
+      <button class="tab" id="tab-register" onclick="switchTab('register')">Create Account</button>
+    </div>
+
+    <!-- Status Message -->
+    <div id="auth-status"></div>
+
+    <!-- Main Auth Form -->
+    <div id="main-form">
+      <form class="form" id="auth-form" onsubmit="handleSubmit(event)">
+
+        <!-- Name (register only) -->
+        <div class="field register-only" id="field-name">
+          <label class="field-label">Full Name</label>
+          <div class="field-input-wrap">
+            <span class="field-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </span>
+            <input id="inp-name" type="text" class="field-input" placeholder="John Trader" autocomplete="name">
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="field">
+          <label class="field-label">Email</label>
+          <div class="field-input-wrap">
+            <span class="field-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </span>
+            <input id="inp-email" type="email" class="field-input" placeholder="you@email.com" autocomplete="email" required>
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="field">
+          <label class="field-label">Password</label>
+          <div class="field-input-wrap">
+            <span class="field-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <input id="inp-password" type="password" class="field-input" placeholder="••••••••" autocomplete="current-password" required>
+            <button type="button" class="pw-toggle" onclick="togglePw()" aria-label="Toggle password">
+              <svg id="pw-eye" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn-submit" id="submit-btn">
+          Sign In to Dashboard
+        </button>
+      </form>
+    </div>
+
+    <!-- 2FA Step -->
+    <div id="twofa-step">
+      <div style="text-align:center;margin-bottom:16px;">
+        <div style="font-size:32px;margin-bottom:8px;">🔐</div>
+        <p style="color:var(--text);font-weight:700;font-size:16px;">Check your email</p>
+        <p style="color:var(--muted);font-size:13px;margin-top:4px;">Enter the 6-digit code we sent to <strong id="twofa-email-label" style="color:var(--gold-light);"></strong></p>
+      </div>
+
+      <div class="otp-grid" id="otp-grid">
+        <input class="otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+        <input class="otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+        <input class="otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+        <input class="otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+        <input class="otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+        <input class="otp-box" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+      </div>
+
+      <button class="btn-submit" id="otp-submit-btn" onclick="submitOtp()">Verify Code</button>
+
+      <div style="text-align:center;">
+        <button onclick="backToLogin()" style="font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:Inter,sans-serif;">
+          ← Back to Login
+        </button>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="auth-footer">
+      <button id="forgot-link" onclick="openForgot()">Forgot password?</button>
+      <div class="divider">secure & encrypted</div>
+      <a href="/">Back to Pips Attendant →</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── State ──────────────────────────────────────────────────────
+  let currentTab = 'login';
+  let twofaEmail = '';
+  let isSubmitting = false;
+
+  // ── Check if already logged in ─────────────────────────────────
+  (function() {
+    const token = sessionStorage.getItem('vip_session_token') || localStorage.getItem('vip_session_token');
+    if (token) {
+      const params = new URLSearchParams(window.location.search);
+      const ret = params.get('return');
+      if (ret === 'terminal') { window.location.replace('/terminal/'); return; }
+      window.location.replace('/premium.html');
+    }
+  })();
+
+  // ── Tab Switch ─────────────────────────────────────────────────
+  function switchTab(tab) {
+    currentTab = tab;
+    document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+    document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+
+    const nameField = document.getElementById('field-name');
+    nameField.classList.toggle('visible', tab === 'register');
+
+    const submitBtn = document.getElementById('submit-btn');
+    submitBtn.textContent = tab === 'login' ? 'Sign In to Dashboard' : 'Create Account';
+
+    const pw = document.getElementById('inp-password');
+    pw.autocomplete = tab === 'login' ? 'current-password' : 'new-password';
+
+    clearStatus();
+  }
+
+  // ── Password Toggle ─────────────────────────────────────────────
+  function togglePw() {
+    const inp = document.getElementById('inp-password');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+  }
+
+  // ── Status Messages ─────────────────────────────────────────────
+  function setStatus(msg, type) {
+    const el = document.getElementById('auth-status');
+    el.textContent = msg;
+    el.className = type;
+  }
+  function clearStatus() {
+    const el = document.getElementById('auth-status');
+    el.className = '';
+    el.textContent = '';
+  }
+
+  // ── Auth Submit ─────────────────────────────────────────────────
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (isSubmitting) return;
+    isSubmitting = true;
+
+    const email = document.getElementById('inp-email').value.trim().toLowerCase();
+    const password = document.getElementById('inp-password').value;
+    const name = document.getElementById('inp-name').value.trim();
+    const btn = document.getElementById('submit-btn');
+
+    if (!email || !password) {
+      setStatus('Please fill in all fields.', 'error');
+      isSubmitting = false; return;
+    }
+
+    if (currentTab === 'register') {
+      const pwRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+      if (!pwRegex.test(password)) {
+        setStatus('Password must be 8+ chars with uppercase, lowercase, number & special character.', 'error');
+        isSubmitting = false; return;
+      }
+    }
+
+    clearStatus();
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> ' + (currentTab === 'login' ? 'Signing in…' : 'Creating account…');
+
+    // Wake-up warning for cold start
+    const wakeTimer = setTimeout(() => {
+      setStatus('Server is waking up — this may take up to 60s on cold start. Please wait…', 'warn');
+    }, 5000);
+
+    try {
+      const endpoint = currentTab === 'login' ? '/api/login' : '/api/register';
+      const body = currentTab === 'login'
+        ? { email, password }
+        : { email, password, name, referralCode: new URLSearchParams(window.location.search).get('ref') || undefined };
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      clearTimeout(wakeTimer);
+
+      if (data.ok && data.twoFaRequired) {
+        // Show 2FA step
+        twofaEmail = email;
+        document.getElementById('main-form').style.display = 'none';
+        document.getElementById('twofa-step').classList.add('active');
+        document.getElementById('twofa-email-label').textContent = email;
+        document.querySelectorAll('.otp-box')[0].focus();
+        document.getElementById('forgot-link').style.display = 'none';
+      } else if (data.ok) {
+        onAuthSuccess(data);
+      } else {
+        setStatus('❌ ' + (data.error || 'Authentication failed. Please try again.'), 'error');
+      }
+    } catch (err) {
+      clearTimeout(wakeTimer);
+      setStatus('❌ Network error. Please check your connection and try again.', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = currentTab === 'login' ? 'Sign In to Dashboard' : 'Create Account';
+      isSubmitting = false;
+    }
+  }
+
+  // ── On successful auth ─────────────────────────────────────────
+  function onAuthSuccess(data) {
+    // Store session for Pips Attendant (VIP dashboard)
+    sessionStorage.setItem('vip_session_token', data.sessionToken);
+    localStorage.setItem('vip_session_token', data.sessionToken);
+    localStorage.setItem('pa_vip_user_name', data.user?.name || data.user?.email?.split('@')[0] || '');
+
+    // Also store in Signal Terminal format so /terminal/ works immediately
+    localStorage.setItem('fsp_token', data.sessionToken);
+    localStorage.setItem('fsp_email', data.user?.email || '');
+    localStorage.setItem('fsp_role', data.user?.role || 'user');
+
+    setStatus('✓ Authenticated! Redirecting…', 'info');
+
+    const params = new URLSearchParams(window.location.search);
+    const returnTo = params.get('return');
+
+    setTimeout(() => {
+      const role = (data.user?.role || '').toLowerCase();
+      if (returnTo === 'terminal' || role === 'admin' || role === 'super_admin') {
+        window.location.replace('/terminal/');
+      } else if (returnTo === 'journal') {
+        window.location.replace('/journal.html');
+      } else if (returnTo) {
+        window.location.replace('/' + returnTo);
+      } else {
+        window.location.replace('/premium.html');
+      }
+    }, 600);
+  }
+
+  // ── OTP Handling ───────────────────────────────────────────────
+  (function initOtp() {
+    const boxes = document.querySelectorAll('.otp-box');
+    boxes.forEach((box, idx) => {
+      box.addEventListener('input', e => {
+        const val = e.target.value.replace(/\D/g, '').slice(-1);
+        e.target.value = val;
+        if (val && idx < boxes.length - 1) boxes[idx + 1].focus();
+        if (getOtpValue().length === 6) submitOtp();
+      });
+      box.addEventListener('keydown', e => {
+        if (e.key === 'Backspace' && !box.value && idx > 0) boxes[idx - 1].focus();
+      });
+      box.addEventListener('paste', e => {
+        e.preventDefault();
+        const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+        boxes.forEach((b, i) => { b.value = pasted[i] || ''; });
+        if (pasted.length >= 6) submitOtp();
+        else boxes[Math.min(pasted.length, boxes.length - 1)].focus();
+      });
+    });
+  })();
+
+  function getOtpValue() {
+    return Array.from(document.querySelectorAll('.otp-box')).map(b => b.value).join('');
+  }
+
+  async function submitOtp() {
+    const otp = getOtpValue();
+    if (otp.length !== 6) { setStatus('Please enter the full 6-digit code.', 'error'); return; }
+
+    const btn = document.getElementById('otp-submit-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Verifying…';
+    clearStatus();
+
+    try {
+      const res = await fetch('/api/verify-2fa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: twofaEmail, otp })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        onAuthSuccess(data);
+      } else {
+        setStatus('❌ ' + (data.error || 'Invalid code. Please try again.'), 'error');
+        document.querySelectorAll('.otp-box').forEach(b => b.value = '');
+        document.querySelectorAll('.otp-box')[0].focus();
+      }
+    } catch (err) {
+      setStatus('❌ Network error. Please try again.', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Verify Code';
+    }
+  }
+
+  function backToLogin() {
+    document.getElementById('main-form').style.display = '';
+    document.getElementById('twofa-step').classList.remove('active');
+    document.getElementById('forgot-link').style.display = '';
+    clearStatus();
+    twofaEmail = '';
+    document.querySelectorAll('.otp-box').forEach(b => b.value = '');
+  }
+
+  // ── Forgot Password ─────────────────────────────────────────────
+  function openForgot() { document.getElementById('forgot-overlay').classList.add('open'); document.getElementById('forgot-email').focus(); }
+  function closeForgot() { document.getElementById('forgot-overlay').classList.remove('open'); document.getElementById('forgot-status').textContent = ''; }
+
+  async function submitForgot() {
+    const email = document.getElementById('forgot-email').value.trim();
+    const statusEl = document.getElementById('forgot-status');
+    if (!email) { statusEl.textContent = 'Please enter your email.'; statusEl.style.color = 'var(--error)'; return; }
+
+    const btn = document.getElementById('forgot-btn');
+    btn.disabled = true; btn.textContent = 'Sending…';
+
+    try {
+      const res = await fetch('/api/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        statusEl.textContent = '✓ Reset link sent! Check your inbox.';
+        statusEl.style.color = 'var(--success)';
+        setTimeout(closeForgot, 3000);
+      } else {
+        statusEl.textContent = data.error || 'Failed to send reset email.';
+        statusEl.style.color = 'var(--error)';
+      }
+    } catch { statusEl.textContent = 'Network error.'; statusEl.style.color = 'var(--error)'; }
+    finally { btn.disabled = false; btn.textContent = 'Send Link'; }
+  }
+
+  // Close forgot on overlay click
+  document.getElementById('forgot-overlay').addEventListener('click', e => { if (e.target === document.getElementById('forgot-overlay')) closeForgot(); });
+
+  // Auto-focus email
+  document.getElementById('inp-email').focus();
+</script>
+</body>
+</html>

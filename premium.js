@@ -2260,13 +2260,16 @@ feather.replace();
         console.log('Using default bot username');
       }
 
-      const token = sessionStorage.getItem('vip_session_token');
+      const token = sessionStorage.getItem('vip_session_token') || localStorage.getItem('vip_session_token') || localStorage.getItem('fsp_token');
       if (!token) {
-        document.getElementById('authPanel').style.display = 'block';
-        document.getElementById('paymentPanel').style.display = 'none';
-        document.getElementById('contentPanel').classList.add('hidden');
+        // Redirect to unified login page
+        window.location.replace('/login?return=premium.html');
         return;
       }
+      // Keep session tokens synchronized across storage keys
+      sessionStorage.setItem('vip_session_token', token);
+      localStorage.setItem('vip_session_token', token);
+      localStorage.setItem('fsp_token', token);
 
       try {
         const res = await fetch(`/api/me?t=${Date.now()}`, { headers: { 'x-vip-token': token } });

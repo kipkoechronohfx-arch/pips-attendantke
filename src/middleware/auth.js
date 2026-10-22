@@ -60,10 +60,16 @@ function validateAdminSession(req, res, next) {
 // ── User Session Validation ────────────────────────────────────
 // SECURITY: Legacy HMAC fallback removed. JWT-only validation going forward.
 async function validateUserSession(req, res, next) {
-  const token = req.headers['x-vip-token'] || req.query.token;
+  let token = req.headers['x-vip-token'] || req.query.token;
+  if (!token && req.headers['authorization']) {
+    const parts = req.headers['authorization'].split(' ');
+    if (parts.length === 2 && parts[0] === 'Bearer') {
+      token = parts[1];
+    }
+  }
   if (!token) {
     console.error('[Auth Error] Missing token');
-    return res.status(401).json({ ok: false, error: 'Missing token.' });
+    return res.status(401).json({ ok: false, detail: 'Missing authentication token.', error: 'Missing token.' });
   }
 
   try {

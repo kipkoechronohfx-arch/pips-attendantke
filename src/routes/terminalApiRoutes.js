@@ -1,6 +1,137 @@
 const express = require('express');
 const fetch = require('node-fetch');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const router = express.Router();
+
+// ── Auth Bridge Services (shared with Pips Attendant Node.js) ──
+const { getUserByEmail, getUserById } = require('../services/db');
+const { JWT_SECRET } = require('../middleware/auth');
+
+// ── Utility: verify bcrypt or scrypt passwords ──────────────────
+const crypto = require('crypto');
+function verifyPw(plain, hash) {
+  if (!hash) return false;
+  if (hash.includes(':')) {
+    const [salt, key] = hash.split(':');
+    const derived = crypto.scryptSync(plain, salt, 64).toString('hex');
+    return key === derived;
+  }
+  try { return bcrypt.compareSync(plain, hash); } catch { return false; }
+}
+
+// ── Bridge: POST /api/v1/auth/login ────────────────────────────
+// Authenticates against MongoDB (same DB as Pips Attendant).
+// Returns { access_token, token_type, role, email, full_name }
+// so the React Terminal's api.ts works without any changes.
+router.post('/auth/login', async (req, res) => {
+  try {
+    const { email: rawEmail, password } = req.body;
+    if (!rawEmail || !password) {
+      return res.status(400).json({ detail: 'Email and password are required.' });
+    }
+    const email = rawEmail.toLowerCase().trim();
+
+    // Lockout / rate limit is handled upstream by AuthRateLimitMiddleware or Node.js authLimiter
+    const user = await getUserByEmail(email);
+    const targetHash = user ? user.passwordHash : '$2b$10$invalidhashforenumeration0000000000000000000000000000';
+    const valid = verifyPw(password, targetHash);
+
+    if (!user || !valid) {
+      return res.status(401).json({ detail: 'Invalid email or password.' });
+    }
+
+    const role = (user.role || 'user').toUpperCase();
+    const jti = crypto.randomBytes(16).toString('hex');
+    const access_token = jwt.sign(
+      { id: String(user._id || user.id), email: user.email, role, jti },
+      JWT_SECRET,
+      { expiresIn: '30d' }
+    );
+
+    return res.json({
+      access_token,
+      token_type: 'bearer',
+      role,
+      email: user.email,
+      full_name: user.name || '',
+      user_id: String(user._id || user.id),
+      subscription_tier: user.subscriptionTier || (user.isTrial ? 'Platinum' : 'Gold'),
+      subscription_expiry: user.subscriptionExpiry || null,
+      is_trial: user.isTrial || false,
+      avatar: user.avatar || null,
+    });
+  } catch (err) {
+    logger.error('[Terminal Auth] Login error:', err.message);
+    return res.status(500).json({ detail: 'Internal server error.' });
+  }
+});
+
+// ── Bridge: POST /api/v1/auth/register ─────────────────────────
+// Proxies to Pips Attendant /api/register (same business logic).
+router.post('/auth/register', async (req, res) => {
+  try {
+    const proxyRes = await fetch(`http://localhost:${process.env.PORT || 3000}/api/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body)
+    });
+    const data = await proxyRes.json();
+    if (!data.ok) {
+      return res.status(proxyRes.status || 400).json({ detail: data.error || 'Registration failed.' });
+    }
+    // Return in FastAPI-compatible format
+    return res.json({
+      access_token: data.sessionToken,
+      token_type: 'bearer',
+      role: (data.user?.role || 'user').toUpperCase(),
+      email: data.user?.email,
+      full_name: data.user?.name || '',
+      user_id: String(data.user?.id || ''),
+    });
+  } catch (err) {
+    logger.error('[Terminal Auth] Register proxy error:', err.message);
+    return res.status(500).json({ detail: 'Internal server error.' });
+  }
+});
+
+// ── Bridge: GET /api/v1/auth/me ─────────────────────────────────
+// Returns current user profile. Validates the shared JWT.
+router.get('/auth/me', async (req, res) => {
+  try {
+    let token = null;
+    const auth = req.headers['authorization'] || '';
+    if (auth.startsWith('Bearer ')) token = auth.slice(7);
+    if (!token) token = req.headers['x-vip-token'] || req.query.token;
+
+    if (!token) return res.status(401).json({ detail: 'Missing authentication token.' });
+
+    let decoded;
+    try { decoded = jwt.verify(token, JWT_SECRET); }
+    catch { return res.status(401).json({ detail: 'Invalid or expired token.' }); }
+
+    const user = await getUserById(decoded.id);
+    if (!user) return res.status(401).json({ detail: 'User not found.' });
+
+    return res.json({
+      id: String(user._id || user.id),
+      email: user.email,
+      full_name: user.name || '',
+      role: (user.role || 'user').toUpperCase(),
+      timezone: 'Africa/Nairobi',
+      account_currency: 'USD',
+      is_active: true,
+      is_verified: user.emailVerified || true,
+      created_at: user.registeredAt || user.createdAt || new Date().toISOString(),
+      subscription_tier: user.subscriptionTier || (user.isTrial ? 'Platinum' : 'Gold'),
+      subscription_expiry: user.subscriptionExpiry || null,
+      avatar: user.avatar || null,
+    });
+  } catch (err) {
+    logger.error('[Terminal Auth] /me error:', err.message);
+    return res.status(500).json({ detail: 'Internal server error.' });
+  }
+});
 
 // ── Advanced Scanner Engines ────────────────────────────────────
 const {
