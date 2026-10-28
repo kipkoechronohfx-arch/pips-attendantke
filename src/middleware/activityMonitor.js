@@ -1,4 +1,4 @@
-﻿const logger = require('../utils/logger');
+const logger = require('../utils/logger');
 const banService = require('../services/banService');
 
 const ipActivity = new Map();
@@ -24,6 +24,13 @@ function getRealIP(req) {
 async function suspiciousActivityMonitor(req, res, next) {
   const ip = getRealIP(req);
   if (ip === 'unknown') return next();
+
+  // ── Whitelist: Authenticated admins bypass monitor & auto-unban IP ──
+  const reqAdminKey = req.headers['x-admin-key'] || (req.query && req.query.key);
+  if (reqAdminKey && process.env.ADMIN_KEY && reqAdminKey.trim() === process.env.ADMIN_KEY.trim()) {
+    await banService.unbanIP(ip).catch(() => {});
+    return next();
+  }
 
   // ── Persistent ban check (MongoDB-backed, survives restarts) ──
   const ban = await banService.isBanned(ip);

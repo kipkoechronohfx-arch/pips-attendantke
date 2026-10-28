@@ -237,27 +237,12 @@ app.use(['/admin.html', '/admin', '/admin/*'], (req, res, next) => {
 app.use(['/admin.html', '/admin', '/admin/*'], adminProbeLimiter);
 
 // 3. Gate: serve admin.html only when correct ADMIN_KEY is provided.
-// Bots hitting /admin.html without the key get a plain 403 — fast, no file served.
-// YOU access it the same way as always:
-//   https://www.pipsattendant.com/admin.html?key=YOUR_ADMIN_KEY
-// Then fill in the in-page login form (Admin Key + 2FA) as normal.
+// ── Admin Panel Serving ────────────────────────────────────────
+// Serves admin.html directly. All API routes (/api/admin/*) are protected
+// by validateAdminKey, 2FA, brute-force rate limits, and JWT session tokens.
 app.get(['/admin.html', '/admin'], (req, res) => {
-  const key = req.query.key || req.headers['x-admin-key'];
-  if (key && key === process.env.ADMIN_KEY) {
-    // Valid key → serve the admin panel
-    return res.sendFile(path.join(__dirname, 'admin.html'));
-  }
-  // No / wrong key → 403 with 800ms delay to slow down automated scanners
-  const ip = req.ip || req.socket?.remoteAddress || 'unknown';
-  logger.warn(`[ADMIN BLOCKED] IP: ${ip} | Key present: ${!!key} | UA: ${req.get('User-Agent') || 'no-ua'}`);
-  setTimeout(() => {
-    res.status(403).send(
-      '<html><body style="background:#000;color:#f00;font-family:monospace;' +
-      'display:flex;align-items:center;justify-content:center;height:100vh;margin:0">' +
-      '<div style="text-align:center"><h1>403</h1><p>Access Denied</p></div>' +
-      '</body></html>'
-    );
-  }, 800);
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
 app.use('/terminal', express.static(path.join(__dirname, 'terminal'), staticOptions));
@@ -302,11 +287,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api', suspiciousActivityMonitor);
 
 // ── Admin IP Allowlist ──────────────────────────────────────────
-const ADMIN_IP_ALLOWLIST = process.env.ADMIN_IP_ALLOWLIST ? process.env.ADMIN_IP_ALLOWLIST.split(',').map(ip => ip.trim()) : null;
+const ADMIN_IP_ALLOWLIST = process.env.ADMIN_IP_ALLOWLIST ? process.env.ADMIN_IP_ALLOWLIST.split(',').map(ip => ip.trim()).filter(Boolean) : null;
 app.use('/api/admin', (req, res, next) => {
-  if (ADMIN_IP_ALLOWLIST) {
-    const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || req.connection?.remoteAddress || 'unknown';
+  if (ADMIN_IP_ALLOWLIST && ADMIN_IP_ALLOWLIST.length > 0) {
+    const clientIp = req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || req.connection?.remoteAddress || 'unknown';
     if (!ADMIN_IP_ALLOWLIST.includes(clientIp)) {
+      logger.warn(`[ADMIN IP BLOCKED] Real IP ${clientIp} not in allowlist: ${ADMIN_IP_ALLOWLIST.join(', ')}`);
       return res.status(403).json({ ok: false, error: 'Admin access denied from this IP.' });
     }
   }

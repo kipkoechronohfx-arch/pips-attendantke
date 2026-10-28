@@ -3035,7 +3035,8 @@
           document.getElementById('botToken').value = token || '';
           document.getElementById('chatId').value = chat || '';
           document.getElementById('vipChatId').value = vipChat || '';
-          document.getElementById('adminKey').value = adminKey || '';
+          const urlKey = new URLSearchParams(window.location.search).get('key');
+          document.getElementById('adminKey').value = urlKey || adminKey || '';
         }
       }
     }
