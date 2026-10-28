@@ -25,6 +25,7 @@ const propfirmRoutes = require('./src/routes/propfirmRoutes');
 const botRoutes = require('./src/routes/botRoutes');
 const terminalApiRoutes = require('./src/routes/terminalApiRoutes');
 const { suspiciousActivityMonitor } = require('./src/middleware/activityMonitor');
+const { initBanService } = require('./src/services/banService');
 
 // ── Environment Validation ─────────────────────────────────────
 // SECURITY: JWT_SECRET, ADMIN_KEY, and PAYHERO_WEBHOOK_SECRET are required at startup.
@@ -404,6 +405,9 @@ app.set('io', io);
 async function startServer() {
   validateEnv();
   await db.connectDB();
+  // Wire MongoDB into the IP ban service so bans persist across restarts
+  const rawDb = db.getRawDb ? db.getRawDb() : null;
+  initBanService(rawDb);
   startCronJobs();
 
   server.listen(PORT, () => {

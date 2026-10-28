@@ -36,6 +36,9 @@ if (!fs.existsSync(VIP_DOCS_DIR)) fs.mkdirSync(VIP_DOCS_DIR);
 let db = null;
 let client = null;
 
+/** Exposes the raw MongoDB db instance for services that need direct collection access (e.g. banService). */
+function getRawDb() { return db; }
+
 async function connectDB() {
   const MONGODB_URI = process.env.MONGODB_URI;
   if (!MONGODB_URI || MONGODB_URI.includes('your_mongodb_atlas_uri_here')) {
@@ -1613,5 +1616,6 @@ module.exports = {
   getBlogPosts, getBlogPostBySlug, saveBlogPost, deleteBlogPost,
   getScheduledAlerts, saveScheduledAlert, deleteScheduledAlert,
   getScheduledBroadcasts, addScheduledBroadcast, deleteScheduledBroadcast,
-  ping
+  ping,
+  getRawDb
 };

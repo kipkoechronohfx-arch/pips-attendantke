@@ -1,61 +1,48 @@
-const logger = require('../utils/logger');
-const { sendEmail } = require('../services/emailService');
+﻿const logger = require('../utils/logger');
+const banService = require('../services/banService');
 
 const ipActivity = new Map();
-const bannedIPs = new Map();
-// Persistent repeat-offender blocklist — survives window resets (not server restarts)
-const permanentBlocklist = new Set();
-const WINDOW_MS = 60 * 1000;       // 1 minute
-const MAX_REQUESTS = 60;            // 60 requests per minute max
-const BAN_DURATION_MS = 60 * 60 * 1000; // 1 hour ban
-const REPEAT_BAN_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hour ban for repeat offenders
+const WINDOW_MS = 60 * 1000;        // 1 minute window
+const MAX_REQUESTS = 60;             // max requests per minute
+const BAN_1H  = 60 * 60 * 1000;     // 1 hour ban (first offence)
+const BAN_24H = 24 * 60 * 60 * 1000;// 24 hour ban (repeat offender)
 
 /**
  * Extract the real client IP, respecting Cloudflare's CF-Connecting-IP header.
- * Without this, all traffic appears to come from Cloudflare's IP (e.g. 104.22.45.40)
- * and bans incorrectly target Cloudflare rather than the actual attacker.
+ * Without this, all traffic appears to come from Cloudflare's proxy IP
+ * (e.g. 104.22.45.40) and bans incorrectly target Cloudflare rather than
+ * the actual attacker.
  */
 function getRealIP(req) {
-  // Cloudflare sets this to the original visitor IP — most reliable when behind CF
   const cfIP = req.headers['cf-connecting-ip'];
   if (cfIP) return cfIP.trim();
-  // Fallback: first entry in X-Forwarded-For (set by other proxies / Render)
   const forwarded = req.headers['x-forwarded-for'];
   if (forwarded) return forwarded.split(',')[0].trim();
   return req.ip || 'unknown';
 }
 
-function suspiciousActivityMonitor(req, res, next) {
+async function suspiciousActivityMonitor(req, res, next) {
   const ip = getRealIP(req);
-
   if (ip === 'unknown') return next();
 
-  // Block permanently blocklisted IPs immediately
-  if (permanentBlocklist.has(ip)) {
-    logger.warn(`[BLOCKLIST] Blocked request from repeat offender: ${ip}`);
+  // ── Persistent ban check (MongoDB-backed, survives restarts) ──
+  const ban = await banService.isBanned(ip);
+  if (ban) {
+    logger.warn(`[BLOCKED] Banned IP attempted access: ${ip} (expires ${ban.expiresAt})`);
     return res.status(403).json({ error: 'Access denied.' });
   }
 
   const now = Date.now();
-
-  // Check if IP is banned
-  const banExpiry = bannedIPs.get(ip);
-  if (banExpiry) {
-    if (now < banExpiry) {
-      return res.status(403).json({ error: 'Your IP has been temporarily banned due to suspicious activity.' });
-    } else {
-      bannedIPs.delete(ip);
-    }
-  }
-
   let activity = ipActivity.get(ip);
 
   if (!activity || now > activity.resetTime) {
-    activity = { 
-      count: 1, 
-      resetTime: now + WINDOW_MS, 
-      violations: activity ? activity.violations : 0, 
-      alerted: false 
+    // Fetch persisted violation count so repeat offenders are caught after restart
+    const pastViolations = await banService.getViolations(ip);
+    activity = {
+      count: 1,
+      resetTime: now + WINDOW_MS,
+      violations: pastViolations,
+      alerted: false
     };
     ipActivity.set(ip, activity);
   } else {
@@ -66,21 +53,26 @@ function suspiciousActivityMonitor(req, res, next) {
       activity.violations++;
 
       const userEmail = req.user ? req.user.email : 'Unauthenticated';
-
-      logger.warn(`[SUSPICIOUS ACTIVITY] Real IP: ${ip} (User: ${userEmail}) exceeded rate limit. Violations: ${activity.violations}`);
+      logger.warn(`[SUSPICIOUS] Real IP: ${ip} (${userEmail}) — violation #${activity.violations}`);
 
       let banMsg = '';
+      let banDuration = 0;
+      let banReason = '';
+
       if (activity.violations >= 2) {
-        // Repeat offender — escalate to 24-hour ban and add to session blocklist
-        bannedIPs.set(ip, now + REPEAT_BAN_DURATION_MS);
-        permanentBlocklist.add(ip);
-        banMsg = '\n⛔ *IP BANNED 24 HOURS (repeat offender)*';
-        logger.error(`[BANNED 24H] Repeat offender IP ${ip} banned for 24 hours.`);
-      } else if (activity.violations >= 1) {
-        bannedIPs.set(ip, now + BAN_DURATION_MS);
-        banMsg = '\n🚫 *IP BANNED FOR 1 HOUR*';
-        logger.error(`[BANNED 1H] IP ${ip} has been banned for 1 hour.`);
+        banDuration = BAN_24H;
+        banReason = `repeat offender (${activity.violations} violations)`;
+        banMsg = '\n⛔ *BANNED 24 HOURS — repeat offender*';
+        logger.error(`[BANNED 24H] ${ip} — ${banReason}`);
+      } else {
+        banDuration = BAN_1H;
+        banReason = `rate limit exceeded (${activity.violations} violation)`;
+        banMsg = '\n🚫 *BANNED 1 HOUR*';
+        logger.error(`[BANNED 1H] ${ip} — ${banReason}`);
       }
+
+      // Persist the ban to MongoDB so it survives restarts
+      await banService.banIP(ip, banDuration, banReason, activity.violations);
 
       // Notify admin via Telegram
       const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
@@ -88,7 +80,13 @@ function suspiciousActivityMonitor(req, res, next) {
         const { sendTelegramMessage } = require('../services/telegramBot');
         sendTelegramMessage(
           adminChatId,
-          `⚠️ *Suspicious Activity Detected*\n\n👤 ${userEmail}\n🌐 Real IP: \`${ip}\`\n📈 Rate: >${MAX_REQUESTS} req/min\n🛑 Violations: ${activity.violations}${banMsg}\n🕐 ${new Date().toUTCString()}`
+          `⚠️ *Suspicious Activity Detected*\n\n` +
+          `👤 ${userEmail}\n` +
+          `🌐 Real IP: \`${ip}\`\n` +
+          `📈 Rate: >${MAX_REQUESTS} req/min\n` +
+          `🛑 Violations: ${activity.violations}` +
+          `${banMsg}\n` +
+          `🕐 ${new Date().toUTCString()}`
         ).catch(() => {});
       }
     }
@@ -97,7 +95,7 @@ function suspiciousActivityMonitor(req, res, next) {
   next();
 }
 
-// Cleanup interval
+// In-memory cleanup (MongoDB handles its own expiry via TTL index)
 setInterval(() => {
   const now = Date.now();
   for (const [ip, activity] of ipActivity.entries()) {
@@ -105,15 +103,6 @@ setInterval(() => {
       ipActivity.delete(ip);
     }
   }
-  for (const [ip, expiry] of bannedIPs.entries()) {
-    if (now > expiry) {
-      bannedIPs.delete(ip);
-      ipActivity.delete(ip); // Clear violations to start fresh
-    }
-  }
 }, WINDOW_MS * 2);
 
-module.exports = {
-  suspiciousActivityMonitor,
-  bannedIPs
-};
+module.exports = { suspiciousActivityMonitor };
