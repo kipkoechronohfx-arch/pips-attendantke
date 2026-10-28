@@ -7,6 +7,11 @@ services:
     runtime: node
     plan: free
     autoDeploy: true
+    # Security: Pinned to Node.js 22.23.4+ to address Oct 2026 advisories:
+    # - eMudhra CA certificate compromise
+    # - TLS hostname check bypass (CVE)
+    # - Brotli decompression RCE (CVE)
+    nodeVersion: 22.23.4
     buildCommand: npm install && npm run build
     startCommand: node server.js
     envVars:
