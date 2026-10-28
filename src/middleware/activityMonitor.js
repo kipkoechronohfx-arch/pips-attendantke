@@ -3,14 +3,38 @@ const { sendEmail } = require('../services/emailService');
 
 const ipActivity = new Map();
 const bannedIPs = new Map();
-const WINDOW_MS = 60 * 1000; // 1 minute
-const MAX_REQUESTS = 60; // 60 requests per minute max
-const BAN_DURATION_MS = 60 * 60 * 1000; // 1 hour
+// Persistent repeat-offender blocklist — survives window resets (not server restarts)
+const permanentBlocklist = new Set();
+const WINDOW_MS = 60 * 1000;       // 1 minute
+const MAX_REQUESTS = 60;            // 60 requests per minute max
+const BAN_DURATION_MS = 60 * 60 * 1000; // 1 hour ban
+const REPEAT_BAN_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hour ban for repeat offenders
+
+/**
+ * Extract the real client IP, respecting Cloudflare's CF-Connecting-IP header.
+ * Without this, all traffic appears to come from Cloudflare's IP (e.g. 104.22.45.40)
+ * and bans incorrectly target Cloudflare rather than the actual attacker.
+ */
+function getRealIP(req) {
+  // Cloudflare sets this to the original visitor IP — most reliable when behind CF
+  const cfIP = req.headers['cf-connecting-ip'];
+  if (cfIP) return cfIP.trim();
+  // Fallback: first entry in X-Forwarded-For (set by other proxies / Render)
+  const forwarded = req.headers['x-forwarded-for'];
+  if (forwarded) return forwarded.split(',')[0].trim();
+  return req.ip || 'unknown';
+}
 
 function suspiciousActivityMonitor(req, res, next) {
-  const ip = req.ip || req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 'unknown';
-  
+  const ip = getRealIP(req);
+
   if (ip === 'unknown') return next();
+
+  // Block permanently blocklisted IPs immediately
+  if (permanentBlocklist.has(ip)) {
+    logger.warn(`[BLOCKLIST] Blocked request from repeat offender: ${ip}`);
+    return res.status(403).json({ error: 'Access denied.' });
+  }
 
   const now = Date.now();
 
@@ -40,14 +64,22 @@ function suspiciousActivityMonitor(req, res, next) {
     if (activity.count > MAX_REQUESTS && !activity.alerted) {
       activity.alerted = true;
       activity.violations++;
-      
-      const userEmail = req.user ? req.user.email : 'Unauthenticated';
-      
-      logger.warn(`[SUSPICIOUS ACTIVITY] IP ${ip} (User: ${userEmail}) exceeded rate limit. Violations: ${activity.violations}`);
 
-      if (activity.violations >= 3) {
+      const userEmail = req.user ? req.user.email : 'Unauthenticated';
+
+      logger.warn(`[SUSPICIOUS ACTIVITY] Real IP: ${ip} (User: ${userEmail}) exceeded rate limit. Violations: ${activity.violations}`);
+
+      let banMsg = '';
+      if (activity.violations >= 2) {
+        // Repeat offender — escalate to 24-hour ban and add to session blocklist
+        bannedIPs.set(ip, now + REPEAT_BAN_DURATION_MS);
+        permanentBlocklist.add(ip);
+        banMsg = '\n⛔ *IP BANNED 24 HOURS (repeat offender)*';
+        logger.error(`[BANNED 24H] Repeat offender IP ${ip} banned for 24 hours.`);
+      } else if (activity.violations >= 1) {
         bannedIPs.set(ip, now + BAN_DURATION_MS);
-        logger.error(`[BANNED] IP ${ip} has been banned for 1 hour.`);
+        banMsg = '\n🚫 *IP BANNED FOR 1 HOUR*';
+        logger.error(`[BANNED 1H] IP ${ip} has been banned for 1 hour.`);
       }
 
       // Notify admin via Telegram
@@ -56,7 +88,7 @@ function suspiciousActivityMonitor(req, res, next) {
         const { sendTelegramMessage } = require('../services/telegramBot');
         sendTelegramMessage(
           adminChatId,
-          `⚠️ *Suspicious Activity Detected*\n\n👤 ${userEmail}\n🌐 IP: \`${ip}\`\n📈 Rate: >${MAX_REQUESTS} req/min\n🛑 Violations: ${activity.violations}${activity.violations >= 3 ? '\n⛔ *IP BANNED FOR 1 HOUR*' : ''}\n🕐 ${new Date().toUTCString()}`
+          `⚠️ *Suspicious Activity Detected*\n\n👤 ${userEmail}\n🌐 Real IP: \`${ip}\`\n📈 Rate: >${MAX_REQUESTS} req/min\n🛑 Violations: ${activity.violations}${banMsg}\n🕐 ${new Date().toUTCString()}`
         ).catch(() => {});
       }
     }
