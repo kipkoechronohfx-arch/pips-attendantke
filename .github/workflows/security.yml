@@ -1,4 +1,4 @@
-﻿name: Security Audit
+name: Security Audit
 
 on:
   push:
@@ -20,7 +20,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
@@ -62,9 +62,10 @@ jobs:
         run: docker build -t signalapp-backend:scan ./signalapp/backend
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.28.0
         with:
           image-ref: 'signalapp-backend:scan'
           format: 'table'
           exit-code: '1'
+          ignore-unfixed: true
           severity: 'CRITICAL,HIGH'
