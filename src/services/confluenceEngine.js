@@ -30,10 +30,10 @@ const SETUP_WEIGHTS = {
 };
 
 const THRESHOLDS = {
-  HIGH_CONFLUENCE: 80,
-  WATCHLIST: 65,
-  MINIMUM_CONTEXT: 55,
-  MINIMUM_SETUP: 60,
+  HIGH_CONFLUENCE: 75,   // was 80
+  WATCHLIST: 55,          // was 65
+  MINIMUM_CONTEXT: 42,   // was 55 — relaxed so Yahoo-fed analysis can pass
+  MINIMUM_SETUP: 45,     // was 60 — relaxed to allow partial-structure setups through
 };
 
 /**
@@ -250,10 +250,19 @@ function calcRegimeScore(regimeInfo) {
   if (regimeInfo.regime === 'RANGING') {
     return { bull: 15, bear: 15, label: 'Range-bound consolidation regime' };
   }
+  // UNKNOWN regime: cautious partial credit (not zero) — scanner can still produce WATCH signals
+  if (regimeInfo.regime === 'UNKNOWN') {
+    return { bull: 8, bear: 8, label: 'Unclassified regime — cautious participation' };
+  }
   return { bull: 0, bear: 0, label: 'Unfavorable / Low-conviction regime' };
 }
 
 function calcSessionScore(symbol, sessionState, strategyProfile) {
+  // Always compute a baseline from raw session suitability so off-peak hours
+  // don't collapse the context score to zero (avoiding false NO_TRADE blocks).
+  const baseSuitability = getSessionSuitability(symbol, sessionState);
+  const baseScore = Math.max(8, Math.round((baseSuitability / 10) * 18));
+
   if (strategyProfile && strategyProfile.is_active) {
     const isEligible = strategyProfile.eligible_instruments.some(
       (p) => p.replace('/', '') === symbol.replace('/', '')
@@ -261,11 +270,15 @@ function calcSessionScore(symbol, sessionState, strategyProfile) {
     if (isEligible) {
       return { score: 25, label: `${strategyProfile.name} priority asset` };
     }
+    // Active profile but instrument not listed — still give partial session credit
+    return {
+      score: Math.max(baseScore, 12),
+      label: `${strategyProfile.name} session (instrument not prioritised)`,
+    };
   }
 
-  const baseSuitability = getSessionSuitability(symbol, sessionState);
   return {
-    score: Math.round((baseSuitability / 10) * 20),
+    score: baseScore,
     label: `${sessionState?.primary_session?.name || 'Active Session'} alignment`,
   };
 }

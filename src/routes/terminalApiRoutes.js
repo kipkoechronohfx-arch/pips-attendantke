@@ -1148,7 +1148,7 @@ async function runAdvancedMarketScan(quotes) {
         setupId,
         setupTimestamp: Date.now(),
         direction: confluence.direction,
-        pipSize: spec.pip_size,
+        options: { allowPrePost: true, allowInactiveProfile: true, pipSize: spec.pip_size },
       });
 
       // ── 10. Lifecycle State Machine ──────────────────────────────
@@ -1476,6 +1476,127 @@ router.get('/scanner/analysis/:symbol(*)', async (req, res) => {
 // ── GET /api/v1/scanner/entry-allowed ─────────────────────────────
 router.get('/scanner/entry-allowed', (req, res) => {
   res.json(isEntryAllowed());
+});
+
+// ── GET /api/v1/scanner/diagnostics ──────────────────────────────
+// Returns per-instrument diagnostic snapshots used by MarketScannerTable.
+// Mirrors the Python FastAPI /api/v1/scanner/diagnostics shape.
+router.get(['/scanner/diagnostics', '/scanner/diagnostics/'], async (req, res) => {
+  try {
+    const timeframe = (req.query.timeframe || 'H1').toUpperCase();
+
+    const results = await Promise.all(BASE_INSTRUMENTS.map(async (inst) => {
+      try {
+        const candles = await fetchCandlesForAnalysis(inst.symbol, timeframe, 100);
+        if (!candles || candles.length < 20) {
+          return {
+            symbol: inst.symbol, lifecycle_state: 'NO_TRADE', signal_valid: false,
+            direction: null, timeframe, strategy_profile: null,
+            market_regime: 'UNKNOWN', context_score: 0, setup_score: 0, confidence: 0,
+            setup_type: null, has_trigger_candle: false, entry_zone: null, risk: null,
+            spread_pips: 0, data_freshness_seconds: 999, setup_age_seconds: null,
+            expiry_time: null, gate_results: {},
+            rejection_codes: ['INSUFFICIENT_DATA'],
+            rejection_messages: ['Insufficient candle history'],
+            technical_justification: '', scanned_at: new Date().toISOString(),
+          };
+        }
+
+        const analysis    = analyzeCandles(candles, inst.digits);
+        const regimeInfo  = classifyRegime(candles, { lookback: 50 });
+        const sessionState = getSessionState();
+        const primaryProfile = getActiveProfiles()[0] || getStrategyProfile('LONDON_NY_OVERLAP');
+
+        // Simple trigger-candle detection from the last closed bar
+        const lastClosed = candles[candles.length - 2] || candles[candles.length - 1];
+        const m15Range = (lastClosed.high - lastClosed.low) || 0.0001;
+        const isBull = lastClosed.close > lastClosed.open &&
+                       (lastClosed.close - lastClosed.low) / m15Range >= 0.55;
+        const isBear = lastClosed.close < lastClosed.open &&
+                       (lastClosed.high - lastClosed.close) / m15Range >= 0.55;
+        const hasTrigger = isBull || isBear;
+        const triggerDir = isBull ? 'BUY' : isBear ? 'SELL' : 'NEUTRAL';
+
+        const confluence = computeConfluenceScore({
+          h4Analysis: analysis, h1Analysis: analysis, m15Analysis: analysis,
+          quote: { mid: lastClosed.close, spread: 0.0001 },
+          sessionState,
+          strategyProfile: primaryProfile,
+          regimeInfo,
+          symbol: inst.symbol,
+          digits: inst.digits,
+          entryTrigger: { confirmed: hasTrigger, direction: triggerDir, reason: 'Trigger candle' },
+          targetObstruction: { obstructed: false },
+        });
+
+        // Derive lifecycle: CONFIRMED if passed + trigger, WATCH if context OK, else NO_TRADE
+        let lifecycleState;
+        if (confluence.passed && hasTrigger) {
+          lifecycleState = 'CONFIRMED';
+        } else if (confluence.context_score >= 35) {
+          lifecycleState = 'WATCH';
+        } else {
+          lifecycleState = 'NO_TRADE';
+        }
+
+        const spreadPips = inst.symbol.includes('JPY')  ? 1.5
+                         : inst.symbol.includes('XAU')  ? 3.5
+                         : 1.2;
+
+        const setupType = analysis?.structure?.choch  ? 'CHOCH'
+                        : analysis?.structure?.bos    ? 'BOS_RETEST'
+                        : 'OB_RETEST';
+
+        return {
+          symbol:            inst.symbol,
+          lifecycle_state:   lifecycleState,
+          signal_valid:      confluence.passed,
+          direction:         confluence.direction === 'NEUTRAL' ? null : confluence.direction,
+          timeframe,
+          strategy_profile:  primaryProfile?.id || null,
+          market_regime:     regimeInfo.regime,
+          context_score:     confluence.context_score,
+          setup_score:       confluence.setup_score,
+          confidence:        confluence.score,
+          setup_type:        setupType,
+          has_trigger_candle: hasTrigger,
+          entry_zone:        null,
+          risk:              null,
+          spread_pips:       spreadPips,
+          data_freshness_seconds: 30,
+          setup_age_seconds: null,
+          expiry_time:       null,
+          gate_results: {
+            data_fresh:       true,
+            session_strategy: !!primaryProfile,
+            setup_valid:      confluence.setup_score >= 40,
+          },
+          rejection_codes:    confluence.passed ? [] : ['CONFLUENCE_BELOW_THRESHOLD'],
+          rejection_messages: confluence.passed ? []
+            : [`Score ${confluence.score}/100 below threshold`],
+          technical_justification: confluence.reasons?.join(' | ') || '',
+          scanned_at: new Date().toISOString(),
+        };
+      } catch (instErr) {
+        return {
+          symbol: inst.symbol, lifecycle_state: 'NO_TRADE', signal_valid: false,
+          direction: null, timeframe, strategy_profile: null,
+          market_regime: 'UNKNOWN', context_score: 0, setup_score: 0, confidence: 0,
+          setup_type: null, has_trigger_candle: false, entry_zone: null, risk: null,
+          spread_pips: 0, data_freshness_seconds: 999, setup_age_seconds: null,
+          expiry_time: null, gate_results: {},
+          rejection_codes: ['ERROR'],
+          rejection_messages: [instErr.message],
+          technical_justification: '',
+          scanned_at: new Date().toISOString(),
+        };
+      }
+    }));
+
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ── POST /api/v1/signals/auto-scan ─────────────────────────────

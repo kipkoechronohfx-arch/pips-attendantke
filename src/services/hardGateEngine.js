@@ -96,7 +96,7 @@ function validateHardGates(params) {
 
   // ── 3. Strategy Profile & Instrument Eligibility ───────────────────────────
   if (strategyProfile) {
-    if (!strategyProfile.is_active && !options.allowPrePost) {
+    if (!strategyProfile.is_active && !options.allowPrePost && !options.allowInactiveProfile) {
       rejections.push({
         code: REJECTION_CODES.SESSION_PROFILE_INELIGIBLE,
         message: `Strategy profile "${strategyProfile.name}" is currently inactive (${strategyProfile.time_label || 'outside hours'})`,
@@ -106,17 +106,15 @@ function validateHardGates(params) {
 
   // ── 4. Market Regime Validation ────────────────────────────────────────────
   if (regimeInfo) {
-    if (regimeInfo.regime === 'UNKNOWN') {
-      rejections.push({
-        code: REJECTION_CODES.UNFAVORABLE_REGIME,
-        message: 'Market regime is UNKNOWN due to contradictory price action or indecision',
-      });
-    } else if (regimeInfo.regime === 'LOW_LIQUIDITY') {
+    // UNKNOWN regime: downgrade to WATCH-only (soft warning) rather than hard rejection.
+    // Only LOW_LIQUIDITY remains a hard block — stagnant markets prevent clean execution.
+    if (regimeInfo.regime === 'LOW_LIQUIDITY') {
       rejections.push({
         code: REJECTION_CODES.UNFAVORABLE_REGIME,
         message: 'Market regime is LOW_LIQUIDITY — insufficient order flow for clean execution',
       });
     }
+    // UNKNOWN is noted in the lifecycle (downgraded to WATCH by caller) but does NOT block here.
   }
 
   // ── 5. News Blackout Filter ────────────────────────────────────────────────

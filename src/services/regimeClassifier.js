@@ -88,8 +88,11 @@ function classifyRegime(candles, options = {}) {
     if (swingLows[i].price < swingLows[i - 1].price) lowerLows++;
   }
 
-  const isStructuralBull = higherHighs >= 1 && higherLows >= 1 && lowerHighs === 0;
-  const isStructuralBear = lowerHighs >= 1 && lowerLows >= 1 && higherHighs === 0;
+  // Relaxed structural checks: real trends have occasional pullbacks, so we only
+  // require at least one confirmed HH+HL (bull) or LH+LL (bear) without demanding
+  // zero counter-swings — those are handled by the efficiency ratio.
+  const isStructuralBull = higherHighs >= 1 && higherLows >= 1;
+  const isStructuralBear = lowerHighs >= 1 && lowerLows >= 1;
 
   // 4. Directional Movement (DMI-style Efficiency Ratio)
   const netMove = Math.abs(lastClose - closes[0]);
@@ -151,19 +154,33 @@ function classifyRegime(candles, options = {}) {
     strategyBias = 'TREND_CONTINUATION';
     reasons.push(`Bearish trend confirmed: EMA alignment, lower highs/lows, efficiency ${efficiencyRatio.toFixed(2)}`);
   }
-  // E. Ranging / Mean Reversion
-  else if (efficiencyRatio < 0.30 && Math.abs(emaSlope20) < currentATR * 0.1) {
+  // D2. Soft Trend — EMA aligned but structure is mixed; still directionally biased
+  else if (emaAlignedBull && efficiencyRatio >= 0.28) {
+    regime = REGIMES.TRENDING;
+    direction = 'BULLISH';
+    confidence = 65;
+    strategyBias = 'TREND_CONTINUATION';
+    reasons.push(`Soft bullish trend: EMA aligned, moderate directional efficiency (${efficiencyRatio.toFixed(2)})`);
+  } else if (emaAlignedBear && efficiencyRatio >= 0.28) {
+    regime = REGIMES.TRENDING;
+    direction = 'BEARISH';
+    confidence = 65;
+    strategyBias = 'TREND_CONTINUATION';
+    reasons.push(`Soft bearish trend: EMA aligned, moderate directional efficiency (${efficiencyRatio.toFixed(2)})`);
+  }
+  // E. Ranging / Mean Reversion — widened efficiency threshold for better real-world detection
+  else if (efficiencyRatio < 0.38 && Math.abs(emaSlope20) < currentATR * 0.1) {
     regime = REGIMES.RANGING;
     direction = 'NEUTRAL';
     confidence = 75;
     strategyBias = 'RANGE_BOUND';
     reasons.push(`Consolidation/Range-bound: flat EMA slope, low directional efficiency (${efficiencyRatio.toFixed(2)})`);
   }
-  // F. Fallback: Conflicting or choppy data
+  // F. Fallback: Conflicting or choppy data — tradeable with caution (not hard-blocked)
   else {
     regime = REGIMES.UNKNOWN;
     confidence = 35;
-    strategyBias = 'AVOID';
+    strategyBias = 'CAUTIOUS';
     reasons.push('Conflicting price action: mixed moving averages and unconfirmed swing sequence');
   }
 
@@ -171,7 +188,7 @@ function classifyRegime(candles, options = {}) {
     regime,
     direction,
     confidence,
-    is_tradeable: regime !== REGIMES.UNKNOWN && regime !== REGIMES.LOW_LIQUIDITY,
+    is_tradeable: regime !== REGIMES.LOW_LIQUIDITY,
     strategy_bias: strategyBias,
     reasons,
     metrics: {
