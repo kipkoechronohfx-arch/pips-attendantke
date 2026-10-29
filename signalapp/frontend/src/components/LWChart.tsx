@@ -273,8 +273,9 @@ export const LWChart: React.FC<Props> = ({
       if (activeSignal) {
         drawSignalLines(activeSignal);
       }
-    } catch {
-      setError(`Failed to load candles for ${symbol}`);
+    } catch (err: any) {
+      console.error('[LWChart Error]:', err);
+      setError(`Failed to load candles for ${symbol}: ${err?.message || 'Network error'}`);
     } finally {
       setLoading(false);
     }

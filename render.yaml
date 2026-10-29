@@ -28,7 +28,13 @@ services:
     runtime: static
     autoDeploy: true
     staticPublishPath: ./terminal
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://www.pipsattendant.com
     routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://www.pipsattendant.com/api/*
       - type: rewrite
         source: /*
         destination: /index.html

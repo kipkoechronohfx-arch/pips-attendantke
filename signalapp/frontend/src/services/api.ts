@@ -1,8 +1,26 @@
 import { Quote, Candle, TradingSignal, NewsArticle, EconomicEvent, User, PriceAlert, SignalPerformanceStats, BrokerListItem, MT5Account, TradeExecution, ExecutionStats } from '../types';
 
-const envBase = (import.meta as any).env?.VITE_API_BASE_URL;
-const RAW_BASE = envBase ? String(envBase).trim().replace(/\/+$/, '') : '';
-export const API_BASE = RAW_BASE ? `${RAW_BASE}/api/v1` : '/api/v1';
+function resolveApiBase(): string {
+  const envBase = (import.meta as any).env?.VITE_API_BASE_URL;
+  if (envBase && String(envBase).trim()) {
+    const clean = String(envBase).trim().replace(/\/+$/, '');
+    return clean.endsWith('/api/v1') ? clean : `${clean}/api/v1`;
+  }
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    // When hosted on the separate frontend domain on Render, target the live production backend
+    if (host.includes('forex-signal-pro-frontend') || (host.includes('onrender.com') && !host.includes('pips-attendantke'))) {
+      return 'https://www.pipsattendant.com/api/v1';
+    }
+    // Local Vite dev server on 5173 -> Node backend on 3000
+    if (host === 'localhost' && window.location.port === '5173') {
+      return 'http://localhost:3000/api/v1';
+    }
+  }
+  return '/api/v1';
+}
+
+export const API_BASE = resolveApiBase();
 
 
 function getAuthHeaders(): HeadersInit {
