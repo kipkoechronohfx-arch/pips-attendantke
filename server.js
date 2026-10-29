@@ -301,7 +301,13 @@ app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // ── Suspicious Activity Monitor ─────────────────────────────────
-app.use('/api', suspiciousActivityMonitor);
+// Protects general web/admin routes; explicitly bypasses /api/v1 (terminal market data feeds)
+app.use((req, res, next) => {
+  if (req.originalUrl && (req.originalUrl.startsWith('/api/v1') || req.originalUrl.startsWith('/terminal'))) {
+    return next();
+  }
+  return suspiciousActivityMonitor(req, res, next);
+});
 
 // ── Admin IP Allowlist ──────────────────────────────────────────
 const ADMIN_IP_ALLOWLIST = process.env.ADMIN_IP_ALLOWLIST ? process.env.ADMIN_IP_ALLOWLIST.split(',').map(ip => ip.trim()).filter(Boolean) : null;

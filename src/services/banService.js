@@ -1,4 +1,4 @@
-﻿const logger = require('../utils/logger');
+const logger = require('../utils/logger');
 
 /**
  * Persistent IP Ban Service — MongoDB-backed
@@ -21,6 +21,17 @@ function initBanService(db) {
     _db.collection('banned_ips')
       .createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 })
       .catch(err => logger.warn('[BanService] TTL index warning:', err.message));
+
+    // Clear false bans caused by legitimate polling / high-frequency terminal requests
+    _db.collection('banned_ips')
+      .deleteMany({ reason: { $regex: /rate limit/i } })
+      .then(res => {
+        if (res && res.deletedCount > 0) {
+          logger.info(`[BanService] Cleared ${res.deletedCount} stale rate limit bans.`);
+        }
+      })
+      .catch(err => logger.warn('[BanService] Cleanup error:', err.message));
+
     logger.info('[BanService] MongoDB-backed IP ban service ready.');
   } else {
     logger.warn('[BanService] No DB — using in-memory ban store (bans lost on restart).');

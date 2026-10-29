@@ -22,6 +22,11 @@ function getRealIP(req) {
 }
 
 async function suspiciousActivityMonitor(req, res, next) {
+  // Never rate-limit, monitor or ban legitimate terminal API routes (quotes, candles, scanner, signals)
+  if (req.originalUrl && (req.originalUrl.startsWith('/api/v1') || req.originalUrl.startsWith('/terminal'))) {
+    return next();
+  }
+
   const ip = getRealIP(req);
   if (ip === 'unknown') return next();
 
