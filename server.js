@@ -128,17 +128,35 @@ app.use(helmet({
   } : false
 }));
 
-// ── CORS ────────────────────────────────────────────────────────
+// ── CORS & CSRF Allowed Origins ────────────────────────────────
 const ALLOWED_ORIGINS = [
   'https://pips-attendantke.onrender.com',
+  'https://forex-signal-pro-frontend.onrender.com',
   'https://www.pipsattendant.com',
+  'https://pipsattendant.com',
   'http://localhost:3000',
-  'http://127.0.0.1:3000'
+  'http://127.0.0.1:3000',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173'
 ];
+
+function isOriginAllowed(origin) {
+  if (!origin) return true;
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  try {
+    const parsed = new URL(origin);
+    const host = parsed.hostname;
+    if (host === 'pipsattendant.com' || host.endsWith('.pipsattendant.com')) return true;
+    if (host.endsWith('.onrender.com') || host.endsWith('.railway.app')) return true;
+    if (host === 'localhost' || host === '127.0.0.1') return true;
+  } catch (e) {}
+  return false;
+}
+
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (mobile apps, curl, Postman)
-    if (!origin || ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+    if (!origin || isOriginAllowed(origin)) return callback(null, true);
     callback(new Error('CORS: Origin not allowed — ' + origin));
   },
   credentials: true
@@ -152,8 +170,7 @@ app.use((req, res, next) => {
     if (origin) {
       try {
         const originUrl = new URL(origin).origin;
-        // Allow mobile apps/curl that might not have an origin header, but if they do, it must match
-        if (!ALLOWED_ORIGINS.includes(originUrl)) {
+        if (!isOriginAllowed(originUrl)) {
           return res.status(403).json({ ok: false, error: 'CSRF validation failed: Origin not allowed' });
         }
       } catch (e) {

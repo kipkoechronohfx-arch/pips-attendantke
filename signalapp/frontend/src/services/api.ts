@@ -122,7 +122,10 @@ export const api = {
       method: 'POST',
       headers: getAuthHeaders()
     });
-    if (!res.ok) throw new Error('Auto-scan failed');
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || err.detail || `Auto-scan failed (${res.status})`);
+    }
     const data = await res.json();
     return Array.isArray(data) ? data : (data.signals || []);
   },
@@ -152,8 +155,8 @@ export const api = {
       body: JSON.stringify(signalData)
     });
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ detail: 'Failed to publish signal' }));
-      throw new Error(err.detail || 'Failed to publish signal');
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || err.detail || `Failed to publish signal (${res.status})`);
     }
     return res.json();
   },
