@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { api } from '../services/api';
 import { DiagnosticEntry, Quote, TradingSignal } from '../types';
@@ -95,8 +95,8 @@ export const MarketScannerTable: React.FC<Props> = ({
     try {
       const data = await api.getDiagnostics(timeframe);
       setDiagnostics(Array.isArray(data) ? data : []);
-    } catch {
-      // Fallback
+    } catch (err: any) {
+      addToast('Scanner Error', err?.message || 'Diagnostics endpoint unreachable', 'error');
     } finally {
       setLoading(false);
     }
