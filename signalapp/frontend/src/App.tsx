@@ -293,7 +293,7 @@ export const App: React.FC = () => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="min-h-screen bg-black/35 text-slate-100 flex flex-col font-sans pb-16 lg:pb-0 relative selection:bg-amber-500/20 selection:text-amber-300" style={{overflowX:'clip'}}>
+    <div className="min-h-screen bg-transparent text-slate-100 flex flex-col font-sans pb-16 lg:pb-0 relative selection:bg-amber-500/20 selection:text-amber-300" style={{overflowX:'clip'}}>
       {/* Dubai Skyline Background Layer */}
       <div 
         className="fixed inset-0 pointer-events-none -z-10"
@@ -302,21 +302,21 @@ export const App: React.FC = () => {
           backgroundSize: 'cover',
           backgroundPosition: 'center bottom',
           backgroundRepeat: 'no-repeat',
-          opacity: 0.70
+          opacity: 0.85
         }}
       />
       <div 
         className="fixed inset-0 pointer-events-none -z-10"
         style={{
-          background: 'linear-gradient(180deg, rgba(4,7,17,0.48) 0%, rgba(4,7,17,0.10) 35%, rgba(4,7,17,0.10) 70%, rgba(4,7,17,0.72) 100%)'
+          background: 'linear-gradient(180deg, rgba(5,5,5,0.72) 0%, rgba(5,5,5,0.22) 35%, rgba(5,5,5,0.25) 70%, rgba(5,5,5,0.88) 100%)'
         }}
       />
 
-      {/* Ambient Lighting Mesh (Ultra-premium background depth) */}
+      {/* Ambient Lighting Mesh (Ultra-premium background depth matching site) */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute -top-32 left-[15%] w-[600px] h-[600px] bg-cyan-500/[0.06] rounded-full blur-[140px]" />
-        <div className="absolute top-[25%] -right-28 w-[550px] h-[550px] bg-blue-600/[0.05] rounded-full blur-[160px]" />
-        <div className="absolute bottom-[-10%] left-[25%] w-[700px] h-[700px] bg-emerald-500/[0.04] rounded-full blur-[160px]" />
+        <div className="absolute -top-32 left-[15%] w-[600px] h-[600px] bg-amber-500/[0.08] rounded-full blur-[140px]" />
+        <div className="absolute top-[25%] -right-28 w-[550px] h-[550px] bg-yellow-600/[0.06] rounded-full blur-[160px]" />
+        <div className="absolute bottom-[-10%] left-[25%] w-[700px] h-[700px] bg-cyan-500/[0.04] rounded-full blur-[160px]" />
       </div>
 
       <div className="relative z-10 flex flex-col min-h-screen">
@@ -344,7 +344,7 @@ export const App: React.FC = () => {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-16 safe-bottom bg-[#070c1a]/98 backdrop-blur-xl border-t border-white/[0.07] z-50 flex items-center justify-around px-1 font-mono">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-16 safe-bottom bg-[#050505]/85 backdrop-blur-2xl border-t border-white/[0.08] z-50 flex items-center justify-around px-1 font-mono">
         {([
           { id: 'dashboard', label: 'Overview', Icon: LayoutDashboard },
           { id: 'scanner',   label: 'Scanner',  Icon: Cpu },
@@ -361,7 +361,7 @@ export const App: React.FC = () => {
                 if ('vibrate' in navigator) navigator.vibrate(15);
               }}
               className={`relative flex flex-col items-center gap-0.5 py-1.5 px-3 rounded-xl text-[9px] font-bold tracking-wider uppercase transition-all duration-150 ${
-                isActive ? 'text-cyan-400 mobile-nav-active' : 'text-slate-500 hover:text-slate-300'
+                isActive ? 'text-amber-400 mobile-nav-active' : 'text-slate-500 hover:text-slate-300'
               }`}
             >
               <Icon size={18} strokeWidth={isActive ? 2.2 : 1.8} />

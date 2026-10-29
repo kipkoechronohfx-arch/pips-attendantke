@@ -8,7 +8,7 @@
     overflow-x: clip;
   }
   body {
-    background-color: #060913;
+    background-color: transparent;
     color: #f8fafc;
     font-family: 'Outfit', sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -16,8 +16,8 @@
     overflow-x: clip;
   }
   ::selection {
-    background-color: rgba(6, 182, 212, 0.25);
-    color: #e2f8ff;
+    background-color: rgba(212, 175, 55, 0.28);
+    color: #fef08a;
   }
   * {
     box-sizing: border-box;
@@ -30,16 +30,16 @@
 
 /* ─── Custom Scrollbars ──────────────────────────────────── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: #070c18; }
-::-webkit-scrollbar-thumb { background: #1e2d45; border-radius: 9999px; }
-::-webkit-scrollbar-thumb:hover { background: #2d4a6a; }
+::-webkit-scrollbar-track { background: rgba(5, 5, 5, 0.6); }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.16); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(212, 175, 55, 0.4); }
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
 /* ─── Focus Rings ───────────────────────────────────────── */
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
-  outline: 2px solid rgba(6, 182, 212, 0.6);
+  outline: 2px solid rgba(212, 175, 55, 0.6);
   outline-offset: 2px;
 }
 
@@ -123,37 +123,51 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 
 /* ─── Glassmorphism & Transparent Pips Attendant Surfaces ── */
 .glass-panel {
-  background: rgba(8, 14, 26, 0.42);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  background: rgba(8, 8, 12, 0.35);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-top: 1px solid rgba(212, 175, 55, 0.25);
+  border-top: 1px solid rgba(212, 175, 55, 0.32);
 }
 
 .glass-surface {
-  background: linear-gradient(135deg, rgba(12, 18, 32, 0.45) 0%, rgba(6, 10, 20, 0.55) 100%);
-  backdrop-filter: blur(16px) saturate(160%);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-top: 1px solid rgba(212, 175, 55, 0.22);
+  background: linear-gradient(135deg, rgba(14, 12, 10, 0.36) 0%, rgba(5, 5, 5, 0.46) 100%);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(212, 175, 55, 0.28);
 }
 
 .glass-surface:hover {
-  border-color: rgba(212, 175, 55, 0.35);
+  border-color: rgba(212, 175, 55, 0.45);
 }
 
 .glass-card-premium {
-  background: linear-gradient(180deg, rgba(12, 18, 32, 0.45) 0%, rgba(6, 10, 20, 0.58) 100%);
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  background: linear-gradient(180deg, rgba(16, 14, 12, 0.38) 0%, rgba(5, 5, 5, 0.48) 100%);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-top: 1px solid rgba(212, 175, 55, 0.30);
+  border-top: 1px solid rgba(212, 175, 55, 0.35);
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
 }
 
 .glass-card-premium:hover {
-  border-color: rgba(212, 175, 55, 0.38);
-  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.65), 0 0 25px rgba(212, 175, 55, 0.1);
+  border-color: rgba(212, 175, 55, 0.48);
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.65), 0 0 25px rgba(212, 175, 55, 0.15);
+}
+
+.terminal-card {
+  background: rgba(8, 8, 12, 0.38);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.terminal-input {
+  background: rgba(5, 5, 5, 0.45);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.10);
 }
 
 /* ─── Text Gradients ────────────────────────────────────── */
@@ -199,15 +213,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 
 /* ─── KPI Card Gradient Border (on hover) ───────────────── */
-/* ─── KPI Card Gradient Border (on hover) ───────────────── */
 .kpi-card {
   position: relative;
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.2s ease;
-  background: linear-gradient(180deg, rgba(12, 18, 32, 0.45) 0%, rgba(6, 10, 20, 0.58) 100%);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  background: linear-gradient(180deg, rgba(16, 14, 12, 0.38) 0%, rgba(5, 5, 5, 0.48) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-top: 1px solid rgba(212, 175, 55, 0.28);
+  border-top: 1px solid rgba(212, 175, 55, 0.32);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08), 0 8px 24px -6px rgba(0, 0, 0, 0.5);
 }
 .kpi-card::after {

@@ -9,15 +9,15 @@ export default {
     extend: {
       colors: {
         fintech: {
-          deep: '#060913',
-          surface: '#0a101f',
-          card: '#0f172a',
-          hover: '#141f38',
+          deep: '#050505',
+          surface: 'rgba(255, 255, 255, 0.03)',
+          card: 'rgba(10, 10, 14, 0.50)',
+          hover: 'rgba(255, 255, 255, 0.06)',
           border: 'rgba(255, 255, 255, 0.08)',
           bull: '#10b981',
           bear: '#f43f5e',
           accent: '#38bdf8',
-          gold: '#f59e0b'
+          gold: '#d4af37'
         }
       },
       fontFamily: {
