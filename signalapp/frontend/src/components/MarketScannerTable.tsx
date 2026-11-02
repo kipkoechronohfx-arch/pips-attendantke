@@ -46,6 +46,7 @@ export const MarketScannerTable: React.FC<Props> = ({
   compact = false,
 }) => {
   const {
+    user,
     quotes,
     signals,
     flashMap,
@@ -57,6 +58,9 @@ export const MarketScannerTable: React.FC<Props> = ({
     addToast,
     addSignal,
   } = useAppStore();
+
+  // Only admins/analysts can manually trigger market scans; clients see results only
+  const isAdmin = user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN' || user?.role === 'ANALYST';
 
   const [diagnostics, setDiagnostics] = useState<DiagnosticEntry[]>([]);
   const [loading, setLoading] = useState(false);
@@ -349,26 +353,28 @@ export const MarketScannerTable: React.FC<Props> = ({
               )}
             </div>
 
-            {/* Scan / Refresh Trigger */}
+            {/* Scan / Refresh Trigger â€” admin only */}
+            {isAdmin && (
             <button
               onClick={handleTriggerScan}
               disabled={loading}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/35 text-cyan-300 text-xs font-mono font-bold transition-all disabled:opacity-50"
             >
               <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
-              <span>{loading ? 'Scanning…' : 'Scan Now'}</span>
+              <span>{loading ? 'Scanningï¿½' : 'Scan Now'}</span>
             </button>
+            )}
           </div>
         </div>
 
         {/* Status count summary pill bar */}
         <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-white/[0.05] text-[11px] font-mono text-slate-400">
           <span>Total: <strong className="text-white">{sortedRows.length}</strong></span>
-          <span>·</span>
+          <span>ï¿½</span>
           <span>Confirmed: <strong className="text-emerald-400">{sortedRows.filter((r) => r.lifecycle === 'CONFIRMED').length}</strong></span>
-          <span>·</span>
+          <span>ï¿½</span>
           <span>Developing: <strong className="text-blue-400">{sortedRows.filter((r) => r.lifecycle.startsWith('WAITING')).length}</strong></span>
-          <span>·</span>
+          <span>ï¿½</span>
           <span>Watch: <strong className="text-amber-400">{sortedRows.filter((r) => r.lifecycle === 'WATCH').length}</strong></span>
         </div>
       </div>
@@ -509,7 +515,7 @@ export const MarketScannerTable: React.FC<Props> = ({
                               : 'text-slate-200'
                           }`}
                         >
-                          {row.price ? row.price.toFixed(digits) : '—'}
+                          {row.price ? row.price.toFixed(digits) : 'ï¿½'}
                         </span>
                       </td>
 
@@ -517,7 +523,7 @@ export const MarketScannerTable: React.FC<Props> = ({
                       {visibleCols.spread && (
                         <td className="py-3 px-3 whitespace-nowrap">
                           <span className={`font-mono ${row.spread > 3.0 ? 'text-amber-400 font-bold' : 'text-slate-400'}`}>
-                            {row.spread ? `${row.spread.toFixed(1)}p` : '—'}
+                            {row.spread ? `${row.spread.toFixed(1)}p` : 'ï¿½'}
                           </span>
                         </td>
                       )}
@@ -585,10 +591,10 @@ export const MarketScannerTable: React.FC<Props> = ({
                         <td className="py-3 px-3 whitespace-nowrap text-[10px] text-slate-400 font-mono">
                           {row.diag?.entry_zone ? (
                             <span>
-                              {row.diag.entry_zone.lower.toFixed(digits)} – {row.diag.entry_zone.upper.toFixed(digits)}
+                              {row.diag.entry_zone.lower.toFixed(digits)} ï¿½ {row.diag.entry_zone.upper.toFixed(digits)}
                             </span>
                           ) : (
-                            '—'
+                            'ï¿½'
                           )}
                         </td>
                       )}
@@ -609,7 +615,7 @@ export const MarketScannerTable: React.FC<Props> = ({
                               <span className="text-emerald-400 font-bold">{row.sig.take_profit_1.toFixed(digits)}</span>
                             </div>
                           ) : (
-                            '—'
+                            'ï¿½'
                           )}
                         </td>
                       )}
@@ -618,7 +624,7 @@ export const MarketScannerTable: React.FC<Props> = ({
                       {visibleCols.rr && (
                         <td className="py-3 px-3 whitespace-nowrap">
                           <span className={`font-mono text-xs font-bold ${row.rr >= 1.5 ? 'text-emerald-400' : 'text-slate-400'}`}>
-                            {row.rr > 0 ? `1:${row.rr.toFixed(2)}` : '—'}
+                            {row.rr > 0 ? `1:${row.rr.toFixed(2)}` : 'ï¿½'}
                           </span>
                         </td>
                       )}

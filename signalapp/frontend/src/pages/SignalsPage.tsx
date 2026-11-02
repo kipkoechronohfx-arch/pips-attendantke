@@ -27,7 +27,10 @@ import {
 import { TradingSignal, StrategyProfile, ValidationReport, FeedHealth } from '../types';
 
 export const SignalsPage: React.FC = () => {
-  const { signals, addSignal, addToast, lastScanAt, setLastScanAt } = useAppStore();
+  const { signals, addSignal, addToast, lastScanAt, setLastScanAt, user } = useAppStore();
+
+  // Only admins/analysts can manually trigger market scans; clients see results only
+  const isAdmin = user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN' || user?.role === 'ANALYST';
   const [activeTab, setActiveTab] = useState<'BLOTTER' | 'PROFILES' | 'VALIDATION' | 'FEED_HEALTH' | 'DIAGNOSTICS'>('BLOTTER');
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<'ALL' | 'FOREX' | 'METALS' | 'CRYPTO'>('ALL');
@@ -129,7 +132,8 @@ export const SignalsPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Primary Scanner Action */}
+        {/* Primary Scanner Action — admin only */}
+        {isAdmin && (
         <div className="flex items-center gap-3">
           <button
             onClick={handleScan}
@@ -140,6 +144,7 @@ export const SignalsPage: React.FC = () => {
             <span>{isScanning ? 'RUNNING DEEP SCAN…' : 'RUN HARD-GATE SCAN'}</span>
           </button>
         </div>
+        )}
       </div>
 
       {/* Navigation Tabs */}
@@ -314,6 +319,7 @@ export const SignalsPage: React.FC = () => {
               <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
                 All signals pass through independent Context, Setup Quality, and Entry Trigger validation.
               </p>
+              {isAdmin && (
               <button
                 onClick={handleScan}
                 disabled={isScanning}
@@ -321,6 +327,7 @@ export const SignalsPage: React.FC = () => {
               >
                 {isScanning ? 'Scanning…' : 'Run Hard-Gate Scan'}
               </button>
+              )}
             </div>
           )}
         </div>
