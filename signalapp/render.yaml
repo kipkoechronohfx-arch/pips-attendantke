@@ -1,7 +1,8 @@
 services:
   # ─────────────────────────────────────────
   # React Frontend (Static Site — FREE)
-  # Backend is hosted on Render (pipsattendant.com)
+  # Backend is hosted on pipsattendant.com (Node.js Express)
+  # All API calls route to https://www.pipsattendant.com/api/v1
   # ─────────────────────────────────────────
   - type: web
     name: forex-signal-pro-frontend
@@ -15,3 +16,5 @@ services:
     envVars:
       - key: VITE_API_BASE_URL
         value: https://www.pipsattendant.com
+      - key: NODE_VERSION
+        value: "20"
