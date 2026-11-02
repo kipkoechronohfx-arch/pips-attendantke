@@ -99,8 +99,12 @@ export const Sidebar: React.FC = () => {
                 <>
                   <span className="whitespace-nowrap truncate">{item.label}</span>
                   {item.badge && (
-                    <span className="ml-auto text-[8px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 tracking-wider shrink-0 font-mono">
-                      {item.badge}
+                    <span className={`ml-auto text-[8px] font-bold px-1.5 py-0.5 rounded-full tracking-wider shrink-0 font-mono ${
+                      item.id === 'signals' && !user
+                        ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
+                        : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                    }`}>
+                      {item.id === 'signals' && !user ? 'MEMBERS' : item.badge}
                     </span>
                   )}
                 </>

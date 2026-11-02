@@ -23,6 +23,8 @@ import {
   ShieldCheck,
   XCircle,
   Cpu,
+  Lock,
+  LogIn,
 } from 'lucide-react';
 import { TradingSignal, StrategyProfile, ValidationReport, FeedHealth } from '../types';
 
@@ -31,6 +33,11 @@ export const SignalsPage: React.FC = () => {
 
   // Only admins/analysts can manually trigger market scans; clients see results only
   const isAdmin = user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN' || user?.role === 'ANALYST';
+
+  // ── Auth wall: only logged-in clients can view signals ──────────────────
+  if (!user) {
+    return <SignalsAuthWall />;
+  }
   const [activeTab, setActiveTab] = useState<'BLOTTER' | 'PROFILES' | 'VALIDATION' | 'FEED_HEALTH' | 'DIAGNOSTICS'>('BLOTTER');
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<'ALL' | 'FOREX' | 'METALS' | 'CRYPTO'>('ALL');
@@ -763,3 +770,43 @@ const Tag: React.FC<{ label: string; color: string }> = ({ label, color }) => {
     </span>
   );
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Locked screen shown to unauthenticated visitors
+// ─────────────────────────────────────────────────────────────────────────────
+function SignalsAuthWall() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[65vh] gap-6 page-enter select-none">
+      {/* Glow orb */}
+      <div className="relative">
+        <div className="absolute inset-0 rounded-full bg-amber-500/20 blur-3xl scale-150" />
+        <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-500/30 flex items-center justify-center shadow-xl shadow-amber-900/20">
+          <Lock size={32} className="text-amber-400" />
+        </div>
+      </div>
+
+      {/* Heading */}
+      <div className="text-center space-y-2 max-w-sm">
+        <h2 className="text-2xl font-black text-slate-100 tracking-tight">Members Only</h2>
+        <p className="text-sm text-slate-400 leading-relaxed">
+          Live trading signals are exclusive to verified Pips Attendant members.
+          Log in to access real-time institutional setups.
+        </p>
+      </div>
+
+      {/* CTA */}
+      <div className="flex flex-col items-center gap-3">
+        <button
+          onClick={() => window.location.hash = 'profile'}
+          className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-bold text-sm transition-all shadow-lg shadow-amber-900/30 active:scale-95"
+        >
+          <LogIn size={16} />
+          <span>Log In to View Signals</span>
+        </button>
+        <p className="text-[11px] text-slate-600 font-mono">
+          Signals delivered via Telegram &amp; Web Terminal · Members only
+        </p>
+      </div>
+    </div>
+  );
+}
